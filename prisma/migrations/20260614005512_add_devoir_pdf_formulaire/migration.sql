@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "TypeExercice" ADD VALUE 'DEVOIR_PDF_FORMULAIRE';

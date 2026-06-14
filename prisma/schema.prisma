@@ -1,0 +1,381 @@
+// schema.prisma — Plateforme pédagogique Technologie / SNT (collège-lycée)
+// Stack : Next.js + Prisma + PostgreSQL (Supabase)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────────────────────────────
+//  ÉNUMÉRATIONS
+// ───────────────────────────────────────────────
+
+enum Role {
+  PROF
+  ELEVE
+}
+
+enum Niveau {
+  TROISIEME
+  SECONDE
+}
+
+enum Matiere {
+  TECHNOLOGIE
+  SNT
+}
+
+enum TypeExercice {
+  PYTHON
+  TURTLE
+  QCM
+  ARDUINO
+  CODE_OUVERT
+  DEVOIR_PDF
+  DEVOIR_PDF_FORMULAIRE
+}
+
+enum TypeQuestion {
+  CHOIX_UNIQUE
+  CHOIX_MULTIPLE
+  VRAI_FAUX
+}
+
+enum TypeContenuCours {
+  HTML
+  PDF
+}
+
+enum TypeBloc {
+  TEXTE
+  IMAGE
+  PDF
+  VIDEO
+  ACTIVITE
+  LIEN
+  EDITEUR_PYTHON
+}
+
+enum StatutPartie {
+  EN_ATTENTE
+  EN_COURS
+  TERMINEE
+}
+
+// ───────────────────────────────────────────────
+//  UTILISATEURS & CLASSES
+// ───────────────────────────────────────────────
+
+model User {
+  id         String @id @default(cuid())
+  email      String @unique
+  nom        String
+  motDePasse String
+  role       Role   @default(ELEVE)
+
+  classe   Classe? @relation(fields: [classeId], references: [id])
+  classeId String?
+
+  soumissions      Soumission[]
+  participations   ParticipantPartie[]
+  partiesHebergees PartieQuiz[]        @relation("HotePartie")
+  quizCrees        Quiz[]              @relation("AuteurQuiz")
+  notifications    Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Classe {
+  id              String @id @default(cuid())
+  nom             String
+  niveau          Niveau
+  codeInscription String @unique
+  anneeScolaire   String
+
+  eleves  User[]
+  parties PartieQuiz[]
+
+  createdAt DateTime @default(now())
+}
+
+// ───────────────────────────────────────────────
+//  COURS & EXERCICES
+// ───────────────────────────────────────────────
+
+model Cours {
+  id          String           @id @default(cuid())
+  titre       String
+  slug        String           @unique
+  typeContenu TypeContenuCours @default(HTML)
+  contenu     String           @db.Text
+  niveau      Niveau
+  matiere     Matiere
+  ordre       Int              @default(0)
+  publie      Boolean          @default(false)
+
+  pdfNom      String?
+  pdfChemin   String?
+  pdfTaille   Int?
+  pdfTypeMime String?
+
+  exercices     Exercice[]
+  piecesJointes PieceJointe[]
+  blocs         Bloc[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Bloc de contenu de la "boîte à outils" : le prof compose un cours en
+// empilant des blocs de différents types, affichés dans l'ordre (champ
+// `ordre`) côté élève.
+model Bloc {
+  id      String   @id @default(cuid())
+  cours   Cours    @relation(fields: [coursId], references: [id], onDelete: Cascade)
+  coursId String
+  type    TypeBloc
+  ordre   Int      @default(0)
+
+  // TEXTE : HTML (Tiptap, sanitizé) — VIDEO / LIEN / ACTIVITE : URL —
+  // EDITEUR_PYTHON : consigne (texte brut)
+  contenu String? @db.Text
+
+  // EDITEUR_PYTHON : code Python pré-rempli dans l'éditeur (optionnel)
+  codeDepart String? @db.Text
+
+  // LIEN / ACTIVITE : libellé du bouton/lien
+  titre String?
+
+  // ACTIVITE : outil choisi (clé de OUTILS_ACTIVITE, ou nom libre si "Autre")
+  outil String?
+
+  // IMAGE / PDF : fichier stocké dans Supabase Storage
+  fichierNom      String?
+  fichierChemin   String?
+  fichierTaille   Int?
+  fichierTypeMime String?
+
+  createdAt DateTime @default(now())
+
+  @@index([coursId])
+}
+
+model PieceJointe {
+  id       String @id @default(cuid())
+  cours    Cours  @relation(fields: [coursId], references: [id], onDelete: Cascade)
+  coursId  String
+  nom      String
+  chemin   String
+  taille   Int
+  typeMime String
+  ordre    Int    @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([coursId])
+}
+
+model Exercice {
+  id             String       @id @default(cuid())
+  cours          Cours        @relation(fields: [coursId], references: [id], onDelete: Cascade)
+  coursId        String
+  titre          String
+  consigne       String       @db.Text
+  type           TypeExercice
+  codeDepart     String?      @db.Text
+  sortieAttendue String?      @db.Text
+  points         Int          @default(1)
+  ordre          Int          @default(0)
+  dateLimite     DateTime?
+
+  sujetNom      String?
+  sujetChemin   String?
+  sujetTaille   Int?
+  sujetTypeMime String?
+
+  soumissions Soumission[]
+}
+
+model Soumission {
+  id                  String   @id @default(cuid())
+  exercice            Exercice @relation(fields: [exerciceId], references: [id], onDelete: Cascade)
+  exerciceId          String
+  eleve               User     @relation(fields: [eleveId], references: [id], onDelete: Cascade)
+  eleveId             String
+  contenu             String?  @db.Text
+  reussi              Boolean  @default(false)
+  note                Float?
+  feedback            String?  @db.Text
+  corrigeManuellement Boolean  @default(false)
+
+  fichierNom      String?
+  fichierChemin   String?
+  fichierTaille   Int?
+  fichierTypeMime String?
+
+  createdAt DateTime @default(now())
+
+  @@index([eleveId])
+  @@index([exerciceId])
+}
+
+// ───────────────────────────────────────────────
+//  PROGRESSION
+// ───────────────────────────────────────────────
+
+model Progression {
+  id          String   @id @default(cuid())
+  niveau      Niveau
+  matiere     Matiere
+  date        DateTime
+  titre       String
+  description String   @db.Text
+  ordre       Int      @default(0)
+
+  createdAt DateTime @default(now())
+}
+
+// ───────────────────────────────────────────────
+//  QUIZ LUDIQUES
+// ───────────────────────────────────────────────
+
+model Quiz {
+  id          String   @id @default(cuid())
+  titre       String
+  description String?
+  niveau      Niveau?
+  matiere     Matiere?
+  publie      Boolean  @default(false)
+
+  auteur   User   @relation("AuteurQuiz", fields: [auteurId], references: [id])
+  auteurId String
+
+  questions QuestionQuiz[]
+  parties   PartieQuiz[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuestionQuiz {
+  id             String       @id @default(cuid())
+  quiz           Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quizId         String
+  enonce         String       @db.Text
+  type           TypeQuestion @default(CHOIX_UNIQUE)
+  imageUrl       String?
+  tempsLimiteSec Int          @default(20)
+  points         Int          @default(1000)
+  ordre          Int          @default(0)
+
+  choix    ChoixQuiz[]
+  reponses ReponseQuiz[]
+}
+
+model ChoixQuiz {
+  id         String       @id @default(cuid())
+  question   QuestionQuiz @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId String
+  texte      String
+  estCorrect Boolean      @default(false)
+  ordre      Int          @default(0)
+
+  reponses ReponseQuiz[]
+}
+
+model PartieQuiz {
+  id      String       @id @default(cuid())
+  quiz    Quiz         @relation(fields: [quizId], references: [id])
+  quizId  String
+  codePin String       @unique
+  statut  StatutPartie @default(EN_ATTENTE)
+
+  hote   User   @relation("HotePartie", fields: [hoteId], references: [id])
+  hoteId String
+
+  classe   Classe? @relation(fields: [classeId], references: [id])
+  classeId String?
+
+  participants ParticipantPartie[]
+
+  createdAt DateTime  @default(now())
+  termineeA DateTime?
+}
+
+model ParticipantPartie {
+  id       String     @id @default(cuid())
+  partie   PartieQuiz @relation(fields: [partieId], references: [id], onDelete: Cascade)
+  partieId String
+
+  eleve   User?   @relation(fields: [eleveId], references: [id])
+  eleveId String?
+  pseudo  String
+
+  score Int  @default(0)
+  rang  Int?
+
+  reponses ReponseQuiz[]
+
+  @@index([partieId])
+}
+
+model ReponseQuiz {
+  id            String            @id @default(cuid())
+  participant   ParticipantPartie @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId String
+  question      QuestionQuiz      @relation(fields: [questionId], references: [id])
+  questionId    String
+  choix         ChoixQuiz?        @relation(fields: [choixId], references: [id])
+  choixId       String?
+
+  correct       Boolean @default(false)
+  tempsMs       Int
+  pointsObtenus Int     @default(0)
+
+  @@index([participantId])
+}
+
+// ───────────────────────────────────────────────
+//  LOGICIELS À TÉLÉCHARGER
+// ───────────────────────────────────────────────
+
+model Logiciel {
+  id          String @id @default(cuid())
+  titre       String
+  description String @db.Text
+
+  // Téléchargement : soit un lien externe, soit un fichier stocké dans
+  // Supabase Storage (pas forcément les deux à la fois).
+  lien String?
+
+  fichierNom      String?
+  fichierChemin   String?
+  fichierTaille   Int?
+  fichierTypeMime String?
+
+  ordre Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ───────────────────────────────────────────────
+//  NOTIFICATIONS
+// ───────────────────────────────────────────────
+
+model Notification {
+  id             String   @id @default(cuid())
+  destinataire   User     @relation(fields: [destinataireId], references: [id], onDelete: Cascade)
+  destinataireId String
+  message        String
+  lien           String?
+  lu             Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([destinataireId])
+}
