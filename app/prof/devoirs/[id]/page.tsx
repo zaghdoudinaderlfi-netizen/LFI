@@ -5,6 +5,7 @@ import { obtenirCoursParId } from "@/lib/cours";
 import { listerClasses, NIVEAU_LABELS } from "@/lib/classes";
 import { listerRosterDevoir } from "@/lib/soumissions";
 import { ApercuFichier } from "@/components/apercu-fichier";
+import { formaterNomComplet } from "@/lib/utilisateurs";
 import { CorrectionForm } from "../correction-form";
 
 export default async function DevoirRosterPage({
@@ -98,7 +99,7 @@ export default async function DevoirRosterPage({
                         key={ligne.eleve.id}
                         className="flex items-center justify-between gap-3 rounded-md border border-slate-200 p-3"
                       >
-                        <p className="font-medium text-slate-700">{ligne.eleve.nom}</p>
+                        <p className="font-medium text-slate-700">{formaterNomComplet(ligne.eleve)}</p>
                         <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
                           En attente
                         </span>
@@ -107,7 +108,7 @@ export default async function DevoirRosterPage({
                   }
 
                   const { soumission, eleves } = ligne;
-                  const nomsGroupe = eleves.map((e) => e.nom).join(", ");
+                  const nomsGroupe = eleves.map((e) => formaterNomComplet(e)).join(", ");
 
                   return (
                     <li

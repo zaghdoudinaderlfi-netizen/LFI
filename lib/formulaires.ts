@@ -1,12 +1,50 @@
 // Helpers pour les devoirs de type "PDF-formulaire" : lecture et remplissage
 // des champs AcroForm (zones de texte, cases à cocher, listes) via pdf-lib.
 
-import { PDFDocument, PDFCheckBox, PDFDropdown, PDFRadioGroup, PDFTextField } from "pdf-lib";
-import { ChampFormulaire } from "./formulaire-champs";
+import {
+  PDFDocument,
+  PDFCheckBox,
+  PDFDropdown,
+  PDFRadioGroup,
+  PDFTextField,
+  PDFField,
+} from "pdf-lib";
+import { ChampFormulaire, PositionChamp, RectanglePdf } from "./formulaire-champs";
 
 export class FormulaireError extends Error {}
 
 export type { ChampFormulaire };
+
+// Détermine, pour chaque widget (zone cliquable/éditable) d'un champ, la page
+// sur laquelle il apparaît et son rectangle (repère PDF, origine en bas à
+// gauche). Pour un groupe de boutons radio, chaque widget correspond à une
+// option distincte (valeurOption).
+function positionsDuChamp(pdfDoc: PDFDocument, champ: PDFField): PositionChamp[] {
+  const pages = pdfDoc.getPages();
+  const positions: PositionChamp[] = [];
+
+  for (const widget of champ.acroField.getWidgets()) {
+    const pageRef = widget.P();
+    let page = 0;
+    if (pageRef) {
+      const trouve = pages.findIndex((p) => p.ref.toString() === pageRef.toString());
+      if (trouve !== -1) page = trouve;
+    }
+
+    const { x, y, width, height } = widget.getRectangle();
+    const rect: RectanglePdf = { x, y, largeur: width, hauteur: height };
+
+    const position: PositionChamp = { page, rect };
+    if (champ instanceof PDFRadioGroup) {
+      const valeurOption = widget.getOnValue()?.decodeText();
+      if (valeurOption !== undefined) position.valeurOption = valeurOption;
+    }
+
+    positions.push(position);
+  }
+
+  return positions;
+}
 
 export async function lireChampsFormulaire(pdfBytes: Uint8Array): Promise<ChampFormulaire[]> {
   let pdfDoc;
@@ -21,6 +59,7 @@ export async function lireChampsFormulaire(pdfBytes: Uint8Array): Promise<ChampF
 
   for (const champ of form.getFields()) {
     const nom = champ.getName();
+    const positions = positionsDuChamp(pdfDoc, champ);
 
     if (champ instanceof PDFTextField) {
       let valeur = "";
@@ -30,13 +69,13 @@ export async function lireChampsFormulaire(pdfBytes: Uint8Array): Promise<ChampF
         // Champ de texte enrichi (XFA) non pris en charge par pdf-lib : on l'ignore.
         continue;
       }
-      champs.push({ nom, type: "texte", multiligne: champ.isMultiline(), valeur });
+      champs.push({ nom, type: "texte", multiligne: champ.isMultiline(), valeur, positions });
     } else if (champ instanceof PDFCheckBox) {
-      champs.push({ nom, type: "case", valeur: champ.isChecked() });
+      champs.push({ nom, type: "case", valeur: champ.isChecked(), positions });
     } else if (champ instanceof PDFDropdown) {
-      champs.push({ nom, type: "choix", options: champ.getOptions(), valeur: champ.getSelected()[0] ?? "" });
+      champs.push({ nom, type: "choix", options: champ.getOptions(), valeur: champ.getSelected()[0] ?? "", positions });
     } else if (champ instanceof PDFRadioGroup) {
-      champs.push({ nom, type: "choix", options: champ.getOptions(), valeur: champ.getSelected() ?? "" });
+      champs.push({ nom, type: "choix", options: champ.getOptions(), valeur: champ.getSelected() ?? "", positions });
     }
     // Les autres types de champs (boutons, signatures) ne sont pas pris en charge.
   }

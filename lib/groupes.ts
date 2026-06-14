@@ -1,7 +1,7 @@
 // Types et constantes pour le travail en groupe (binôme/trio), sans dépendance
 // à Prisma : ce module peut être importé depuis des composants client.
 
-export type CamaradeClasse = { id: string; nom: string };
+export type CamaradeClasse = { id: string; nom: string; prenom: string | null };
 
 // Un groupe = l'élève qui rend + au plus 2 coéquipiers.
 export const MAX_COEQUIPIERS = 2;

@@ -46,6 +46,10 @@ export async function soumettreFormulaireAction(
 
   const reponses: Record<string, string | boolean> = {};
   for (const champ of champs) {
+    // Un champ sans position (aucun widget détecté) n'est pas affiché à
+    // l'élève : on ne le modifie pas, pour ne pas effacer une valeur existante.
+    if (champ.positions.length === 0) continue;
+
     if (champ.type === "case") {
       reponses[champ.nom] = formData.has(`${PREFIXE_CHAMP_FORMULAIRE}${champ.nom}`);
     } else {

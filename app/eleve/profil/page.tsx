@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { NIVEAU_LABELS } from "@/lib/classes";
+import { ProfilForm } from "./profil-form";
 
 export default async function EleveProfilPage() {
   const session = await auth();
@@ -18,12 +19,6 @@ export default async function EleveProfilPage() {
 
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <dl className="flex flex-col gap-4">
-          <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              Nom
-            </dt>
-            <dd className="text-sm text-slate-800">{user?.nom}</dd>
-          </div>
           <div>
             <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
               Email
@@ -48,6 +43,14 @@ export default async function EleveProfilPage() {
             </div>
           )}
         </dl>
+      </div>
+
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-lg font-semibold text-slate-800">Prénom et nom</h2>
+        <p className="mb-4 text-sm text-slate-500">
+          Renseigne ton prénom et ton nom pour que ton professeur puisse t&apos;identifier facilement.
+        </p>
+        <ProfilForm nom={user?.nom ?? ""} prenom={user?.prenom ?? ""} />
       </div>
     </div>
   );

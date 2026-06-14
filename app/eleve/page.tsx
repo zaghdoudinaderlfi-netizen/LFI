@@ -31,7 +31,7 @@ export default async function ElevePage() {
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-800">
-          Bonjour {user?.nom?.split(" ")[0] ?? ""} 👋
+          Bonjour {user?.prenom?.trim() || user?.nom?.split(" ")[0] || ""} 👋
         </h1>
         {user?.classe && (
           <p className="text-sm text-slate-500">

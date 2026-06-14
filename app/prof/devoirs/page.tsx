@@ -2,6 +2,7 @@ import { TypeExercice } from "@prisma/client";
 import { listerSoumissionsACorriger } from "@/lib/soumissions";
 import { ApercuFichier } from "@/components/apercu-fichier";
 import { SoumissionCodeAffichage } from "@/components/python/soumission-code-affichage";
+import { formaterNomComplet } from "@/lib/utilisateurs";
 import { CorrectionForm } from "./correction-form";
 
 export default async function ProfDevoirsPage() {
@@ -26,7 +27,7 @@ export default async function ProfDevoirsPage() {
                 <div>
                   <p className="font-medium text-slate-800">{soumission.exercice.titre}</p>
                   <p className="text-sm text-slate-500">
-                    {soumission.exercice.cours.titre} · {soumission.eleve.nom}
+                    {soumission.exercice.cours.titre} · {formaterNomComplet(soumission.eleve)}
                   </p>
                 </div>
                 <p className="text-xs text-slate-400">

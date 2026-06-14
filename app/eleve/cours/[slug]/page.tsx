@@ -15,6 +15,7 @@ import { listerExercicesCodeCours } from "@/lib/exercices-code";
 import { obtenirSoumissionEleve, listerCamaradesClasse } from "@/lib/soumissions";
 import { CODE_PYTHON_DEFAUT } from "@/lib/python";
 import { NIVEAU_LABELS } from "@/lib/classes";
+import { formaterNomComplet } from "@/lib/utilisateurs";
 import { DevoirSoumissionForm } from "./devoir-soumission-form";
 import { FormulaireForm } from "./formulaire-form";
 import { ExerciceCodeRunner } from "./exercice-code-form";
@@ -130,7 +131,11 @@ export default async function CoursLecturePage({
             <ul className="flex flex-col gap-4">
               {devoirsAvecSoumission.map(({ devoir, soumission, champs, reponses, estAuteur, coequipiers, membresGroupe }) => {
                 const estFormulaire = devoir.type === TypeExercice.DEVOIR_PDF_FORMULAIRE;
-                const nomsGroupe = membresGroupe.map((m) => m.nom).join(", ");
+                const nomsGroupe = membresGroupe.map((m) => formaterNomComplet(m)).join(", ");
+                // Pour un PDF-formulaire avec des champs détectés, le document
+                // est affiché en interactif (FormulaireForm) : pas d'aperçu
+                // séparé du sujet, l'élève remplit directement le PDF affiché.
+                const formulaireInteractif = estFormulaire && champs.length > 0 && estAuteur;
 
                 return (
                   <li key={devoir.id} className="flex flex-col gap-3 rounded-md border border-slate-200 p-4">
@@ -144,7 +149,7 @@ export default async function CoursLecturePage({
                       </p>
                     </div>
 
-                    {devoir.sujetNom && devoir.sujetTaille != null && devoir.sujetTypeMime && (
+                    {devoir.sujetNom && devoir.sujetTaille != null && devoir.sujetTypeMime && !formulaireInteractif && (
                       <div className="rounded-md bg-slate-50 p-3">
                         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">
                           {estFormulaire ? "Aperçu du PDF-formulaire" : "Sujet"}
@@ -174,16 +179,17 @@ export default async function CoursLecturePage({
 
                     {!estAuteur && (
                       <p className="text-sm text-slate-600">
-                        Rendu par votre groupe (avec {nomsGroupe}). Seul {soumission!.eleve.nom} peut le modifier.
+                        Rendu par votre groupe (avec {nomsGroupe}). Seul {formaterNomComplet(soumission!.eleve)} peut le modifier.
                       </p>
                     )}
 
                     {estFormulaire ? (
                       champs.length > 0 ? (
-                        estAuteur && (
+                        formulaireInteractif && (
                           <FormulaireForm
                             exerciceId={devoir.id}
                             slug={cours.slug}
+                            pdfUrl={`/api/devoirs/${devoir.id}/sujet?octets=1`}
                             champs={champs}
                             reponses={reponses}
                             camarades={camarades}

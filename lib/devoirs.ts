@@ -292,6 +292,26 @@ export async function creerUrlSujetDevoir(
   return data.signedUrl;
 }
 
+// Télécharge les octets bruts du sujet d'un devoir (utilisé pour le lire avec
+// pdf-lib côté serveur ou le servir tel quel à pdf.js côté client).
+export async function obtenirOctetsSujetDevoir(devoir: {
+  sujetChemin: string | null;
+}): Promise<Uint8Array> {
+  if (!devoir.sujetChemin) {
+    throw new DevoirError("Aucun sujet déposé.");
+  }
+
+  const { data, error } = await supabaseAdmin.storage
+    .from(BUCKET_PIECES_JOINTES)
+    .download(devoir.sujetChemin);
+
+  if (error || !data) {
+    throw new DevoirError("Impossible de lire le sujet.");
+  }
+
+  return new Uint8Array(await data.arrayBuffer());
+}
+
 // Télécharge le PDF-formulaire d'un devoir et y lit les champs détectés.
 export async function obtenirChampsFormulaireDevoir(devoir: {
   type: TypeExercice;
@@ -301,14 +321,6 @@ export async function obtenirChampsFormulaireDevoir(devoir: {
     return [];
   }
 
-  const { data, error } = await supabaseAdmin.storage
-    .from(BUCKET_PIECES_JOINTES)
-    .download(devoir.sujetChemin);
-
-  if (error || !data) {
-    throw new DevoirError("Impossible de lire le PDF-formulaire.");
-  }
-
-  const octets = new Uint8Array(await data.arrayBuffer());
+  const octets = await obtenirOctetsSujetDevoir(devoir);
   return lireChampsFormulaire(octets);
 }

@@ -6,6 +6,7 @@ import { notifierProfs } from "./notifications";
 import { remplirFormulaire, FormulaireError } from "./formulaires";
 import { estTypeExerciceCode } from "./exercices-code";
 import { MAX_COEQUIPIERS, type CamaradeClasse } from "./groupes";
+import { formaterNomComplet } from "./utilisateurs";
 
 export class SoumissionError extends Error {}
 
@@ -36,14 +37,14 @@ export async function listerCamaradesClasse(eleveId: string): Promise<CamaradeCl
 
   return prisma.user.findMany({
     where: { classeId: eleve.classeId, role: "ELEVE", id: { not: eleveId } },
-    select: { id: true, nom: true },
+    select: { id: true, nom: true, prenom: true },
     orderBy: { nom: "asc" },
   });
 }
 
 const MEMBRE_AVEC_ELEVE = {
-  eleve: { select: { id: true, nom: true } },
-  membres: { include: { eleve: { select: { id: true, nom: true } } } },
+  eleve: { select: { id: true, nom: true, prenom: true } },
+  membres: { include: { eleve: { select: { id: true, nom: true, prenom: true } } } },
 } as const;
 
 // Vérifie que les coéquipiers choisis sont valides (classe, nombre, pas déjà
@@ -64,11 +65,12 @@ async function validerCoequipiers(
     if (!soumissionExistanteId) {
       const groupeExistant = await prisma.soumission.findFirst({
         where: { exerciceId, membres: { some: { eleveId } } },
-        select: { eleve: { select: { nom: true } } },
+        select: { eleve: { select: { nom: true, prenom: true } } },
       });
       if (groupeExistant) {
+        const nomAuteur = formaterNomComplet(groupeExistant.eleve);
         throw new SoumissionError(
-          `Tu fais déjà partie du groupe de ${groupeExistant.eleve.nom} pour ce devoir. C'est à ${groupeExistant.eleve.nom} de déposer le rendu du groupe.`
+          `Tu fais déjà partie du groupe de ${nomAuteur} pour ce devoir. C'est à ${nomAuteur} de déposer le rendu du groupe.`
         );
       }
     }
@@ -109,10 +111,12 @@ async function validerCoequipiers(
       if (!trouve) continue;
       if (id === eleveId) {
         throw new SoumissionError(
-          `Tu fais déjà partie du groupe de ${conflit.eleve.nom} pour ce devoir. Demande-lui de te retirer de son groupe (en renvoyant sa réponse sans toi) avant de rendre seul ou avec un autre groupe.`
+          `Tu fais déjà partie du groupe de ${formaterNomComplet(conflit.eleve)} pour ce devoir. Demande-lui de te retirer de son groupe (en renvoyant sa réponse sans toi) avant de rendre seul ou avec un autre groupe.`
         );
       }
-      throw new SoumissionError(`${trouve.nom} fait déjà partie du groupe de ${conflit.eleve.nom} pour ce devoir.`);
+      throw new SoumissionError(
+        `${formaterNomComplet(trouve)} fait déjà partie du groupe de ${formaterNomComplet(conflit.eleve)} pour ce devoir.`
+      );
     }
   }
 
@@ -156,7 +160,10 @@ export async function deposerSoumission(
     throw new SoumissionError("Type de fichier non autorisé (PDF ou image uniquement).");
   }
 
-  const eleve = await prisma.user.findUnique({ where: { id: eleveId }, select: { nom: true, classeId: true } });
+  const eleve = await prisma.user.findUnique({
+    where: { id: eleveId },
+    select: { nom: true, prenom: true, classeId: true },
+  });
 
   const existanteAvant = await prisma.soumission.findFirst({ where: { exerciceId, eleveId } });
   const coequipiers = await validerCoequipiers(
@@ -217,7 +224,7 @@ export async function deposerSoumission(
   await appliquerGroupe(soumission.id, coequipiers);
 
   await notifierProfs(
-    `${eleve?.nom ?? "Un élève"} a déposé « ${exercice.titre} » (${exercice.cours.titre})`,
+    `${eleve ? formaterNomComplet(eleve) : "Un élève"} a déposé « ${exercice.titre} » (${exercice.cours.titre})`,
     "/prof/devoirs"
   );
 
@@ -244,7 +251,10 @@ export async function deposerSoumissionFormulaire(
     throw new SoumissionError("Ce devoir n'a pas encore de formulaire PDF.");
   }
 
-  const eleve = await prisma.user.findUnique({ where: { id: eleveId }, select: { nom: true, classeId: true } });
+  const eleve = await prisma.user.findUnique({
+    where: { id: eleveId },
+    select: { nom: true, prenom: true, classeId: true },
+  });
 
   const existanteAvant = await prisma.soumission.findFirst({ where: { exerciceId, eleveId } });
   const coequipiers = await validerCoequipiers(
@@ -321,7 +331,7 @@ export async function deposerSoumissionFormulaire(
   await appliquerGroupe(soumission.id, coequipiers);
 
   await notifierProfs(
-    `${eleve?.nom ?? "Un élève"} a déposé « ${exercice.titre} » (${exercice.cours.titre})`,
+    `${eleve ? formaterNomComplet(eleve) : "Un élève"} a déposé « ${exercice.titre} » (${exercice.cours.titre})`,
     "/prof/devoirs"
   );
 
@@ -416,9 +426,9 @@ export async function soumettreExerciceCode(
     throw err;
   }
 
-  const eleve = await prisma.user.findUnique({ where: { id: eleveId }, select: { nom: true } });
+  const eleve = await prisma.user.findUnique({ where: { id: eleveId }, select: { nom: true, prenom: true } });
   await notifierProfs(
-    `${eleve?.nom ?? "Un élève"} a soumis « ${exercice.titre} » (${exercice.cours.titre})`,
+    `${eleve ? formaterNomComplet(eleve) : "Un élève"} a soumis « ${exercice.titre} » (${exercice.cours.titre})`,
     "/prof/devoirs"
   );
 
@@ -442,7 +452,7 @@ export async function obtenirSoumissionAvecAcces(id: string) {
 }
 
 const SOUMISSION_AVEC_CONTEXTE = {
-  eleve: { select: { id: true, nom: true } },
+  eleve: { select: { id: true, nom: true, prenom: true } },
   exercice: {
     select: {
       id: true,
@@ -499,7 +509,7 @@ export async function listerRosterDevoir(exerciceId: string, classeId: string): 
   const [eleves, soumissions] = await Promise.all([
     prisma.user.findMany({
       where: { classeId, role: "ELEVE" },
-      select: { id: true, nom: true },
+      select: { id: true, nom: true, prenom: true },
       orderBy: { nom: "asc" },
     }),
     prisma.soumission.findMany({

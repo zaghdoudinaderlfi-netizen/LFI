@@ -9,12 +9,14 @@ export async function inscrire(
   formData: FormData
 ): Promise<string | undefined> {
   const nom = formData.get("nom");
+  const prenom = formData.get("prenom");
   const email = formData.get("email");
   const motDePasse = formData.get("motDePasse");
   const codeInscription = formData.get("codeInscription");
 
   if (
     typeof nom !== "string" ||
+    typeof prenom !== "string" ||
     typeof email !== "string" ||
     typeof motDePasse !== "string" ||
     typeof codeInscription !== "string"
@@ -23,7 +25,7 @@ export async function inscrire(
   }
 
   try {
-    await inscrireEleve({ nom, email, motDePasse, codeInscription });
+    await inscrireEleve({ nom, prenom, email, motDePasse, codeInscription });
   } catch (error) {
     if (error instanceof InscriptionError) {
       return error.message;

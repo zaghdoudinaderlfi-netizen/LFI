@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { compterSoumissionsACorriger, listerSoumissionsRecentes } from "@/lib/soumissions";
 import { listerClasses, NIVEAU_LABELS } from "@/lib/classes";
+import { formaterNomComplet } from "@/lib/utilisateurs";
 
 export default async function ProfPage() {
   const [aCorrigerCount, recentes, classes] = await Promise.all([
@@ -64,7 +65,7 @@ export default async function ProfPage() {
                   <div>
                     <p className="font-medium text-slate-800">{soumission.exercice.titre}</p>
                     <p className="text-sm text-slate-500">
-                      {soumission.exercice.cours.titre} · {soumission.eleve.nom}
+                      {soumission.exercice.cours.titre} · {formaterNomComplet(soumission.eleve)}
                     </p>
                   </div>
                   <div className="text-sm text-slate-500 sm:text-right">

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MAX_COEQUIPIERS, NOM_CHAMP_COEQUIPIERS, type CamaradeClasse } from "@/lib/groupes";
+import { formaterNomComplet } from "@/lib/utilisateurs";
 
 export function CoequipierSelecteur({
   camarades,
@@ -50,7 +51,7 @@ export function CoequipierSelecteur({
                 onChange={() => basculer(camarade.id)}
                 className="h-4 w-4 rounded border-slate-300"
               />
-              {camarade.nom}
+              {formaterNomComplet(camarade)}
             </label>
           );
         })}

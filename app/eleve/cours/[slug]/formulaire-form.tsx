@@ -1,14 +1,16 @@
 "use client";
 
 import { useActionState } from "react";
-import { ChampFormulaire, formaterLabelChamp, PREFIXE_CHAMP_FORMULAIRE } from "@/lib/formulaire-champs";
+import { ChampFormulaire } from "@/lib/formulaire-champs";
 import { type CamaradeClasse } from "@/lib/groupes";
 import { soumettreFormulaireAction } from "./formulaire-actions";
 import { CoequipierSelecteur } from "./coequipier-selecteur";
+import { FormulairePdfOverlay } from "./formulaire-pdf";
 
 export function FormulaireForm({
   exerciceId,
   slug,
+  pdfUrl,
   champs,
   reponses,
   camarades,
@@ -16,6 +18,7 @@ export function FormulaireForm({
 }: {
   exerciceId: string;
   slug: string;
+  pdfUrl: string;
   champs: ChampFormulaire[];
   reponses: Record<string, string | boolean>;
   camarades: CamaradeClasse[];
@@ -29,74 +32,11 @@ export function FormulaireForm({
       <input type="hidden" name="exerciceId" value={exerciceId} />
       <input type="hidden" name="slug" value={slug} />
 
-      {champs.map((champ) => {
-        const nomChamp = `${PREFIXE_CHAMP_FORMULAIRE}${champ.nom}`;
-        const label = formaterLabelChamp(champ.nom);
-        const valeur = reponses[champ.nom] ?? champ.valeur;
+      <p className="text-sm text-slate-500">
+        Remplis directement les champs du document ci-dessous, puis envoie tes réponses.
+      </p>
 
-        if (champ.type === "texte") {
-          return (
-            <div key={champ.nom} className="flex flex-col gap-1">
-              <label htmlFor={nomChamp} className="text-sm font-medium text-slate-700">
-                {label}
-              </label>
-              {champ.multiligne ? (
-                <textarea
-                  id={nomChamp}
-                  name={nomChamp}
-                  rows={4}
-                  defaultValue={typeof valeur === "string" ? valeur : ""}
-                  className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
-                />
-              ) : (
-                <input
-                  id={nomChamp}
-                  name={nomChamp}
-                  type="text"
-                  defaultValue={typeof valeur === "string" ? valeur : ""}
-                  className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
-                />
-              )}
-            </div>
-          );
-        }
-
-        if (champ.type === "case") {
-          return (
-            <label key={champ.nom} className="flex items-center gap-2 text-sm font-medium text-slate-700">
-              <input
-                id={nomChamp}
-                name={nomChamp}
-                type="checkbox"
-                defaultChecked={typeof valeur === "boolean" ? valeur : false}
-                className="h-4 w-4 rounded border-slate-300"
-              />
-              {label}
-            </label>
-          );
-        }
-
-        return (
-          <div key={champ.nom} className="flex flex-col gap-1">
-            <label htmlFor={nomChamp} className="text-sm font-medium text-slate-700">
-              {label}
-            </label>
-            <select
-              id={nomChamp}
-              name={nomChamp}
-              defaultValue={typeof valeur === "string" ? valeur : ""}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
-            >
-              <option value="">—</option>
-              {champ.options.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        );
-      })}
+      <FormulairePdfOverlay pdfUrl={pdfUrl} champs={champs} reponses={reponses} />
 
       <CoequipierSelecteur camarades={camarades} defautCoequipiers={coequipiers} />
 

@@ -5,16 +5,18 @@ export class InscriptionError extends Error {}
 
 export async function inscrireEleve({
   nom,
+  prenom,
   email,
   motDePasse,
   codeInscription,
 }: {
   nom: string;
+  prenom: string;
   email: string;
   motDePasse: string;
   codeInscription: string;
 }) {
-  if (!nom || !email || !motDePasse || !codeInscription) {
+  if (!nom || !prenom || !email || !motDePasse || !codeInscription) {
     throw new InscriptionError("Tous les champs sont obligatoires.");
   }
 
@@ -42,6 +44,7 @@ export async function inscrireEleve({
   return prisma.user.create({
     data: {
       nom,
+      prenom,
       email,
       motDePasse: motDePasseHash,
       role: "ELEVE",

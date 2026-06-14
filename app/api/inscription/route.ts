@@ -11,13 +11,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const { nom, email, motDePasse, codeInscription } = body as Record<
+  const { nom, prenom, email, motDePasse, codeInscription } = body as Record<
     string,
     unknown
   >;
 
   if (
     typeof nom !== "string" ||
+    typeof prenom !== "string" ||
     typeof email !== "string" ||
     typeof motDePasse !== "string" ||
     typeof codeInscription !== "string"
@@ -29,9 +30,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    const user = await inscrireEleve({ nom, email, motDePasse, codeInscription });
+    const user = await inscrireEleve({ nom, prenom, email, motDePasse, codeInscription });
     return NextResponse.json(
-      { id: user.id, email: user.email, nom: user.nom, role: user.role },
+      { id: user.id, email: user.email, nom: user.nom, prenom: user.prenom, role: user.role },
       { status: 201 }
     );
   } catch (error) {
