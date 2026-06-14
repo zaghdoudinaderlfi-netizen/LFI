@@ -5,10 +5,13 @@ import { supabaseAdmin, BUCKET_PIECES_JOINTES, BUCKET_RENDUS_DEVOIRS } from "./s
 import { notifierProfs } from "./notifications";
 import { remplirFormulaire, FormulaireError } from "./formulaires";
 import { estTypeExerciceCode } from "./exercices-code";
+import { MAX_COEQUIPIERS, type CamaradeClasse } from "./groupes";
 
 export class SoumissionError extends Error {}
 
 export const TAILLE_MAX_OCTETS = 10 * 1024 * 1024; // 10 Mo
+
+export { MAX_COEQUIPIERS };
 
 const EXTENSIONS_AUTORISEES = new Set(["pdf", "jpg", "jpeg", "png", "webp"]);
 
@@ -23,7 +26,115 @@ function nomFichierSur(nomFichier: string): string {
   return base.replace(/[^a-zA-Z0-9._-]/g, "_");
 }
 
-export async function deposerSoumission(exerciceId: string, eleveId: string, fichier: File) {
+export type { CamaradeClasse };
+
+// Liste des autres élèves de la classe de `eleveId`, pour le sélecteur de
+// coéquipiers au moment de rendre un devoir.
+export async function listerCamaradesClasse(eleveId: string): Promise<CamaradeClasse[]> {
+  const eleve = await prisma.user.findUnique({ where: { id: eleveId }, select: { classeId: true } });
+  if (!eleve?.classeId) return [];
+
+  return prisma.user.findMany({
+    where: { classeId: eleve.classeId, role: "ELEVE", id: { not: eleveId } },
+    select: { id: true, nom: true },
+    orderBy: { nom: "asc" },
+  });
+}
+
+const MEMBRE_AVEC_ELEVE = {
+  eleve: { select: { id: true, nom: true } },
+  membres: { include: { eleve: { select: { id: true, nom: true } } } },
+} as const;
+
+// Vérifie que les coéquipiers choisis sont valides (classe, nombre, pas déjà
+// dans un autre groupe pour ce devoir) et renvoie la liste dédupliquée des
+// identifiants à enregistrer dans MembreGroupe.
+async function validerCoequipiers(
+  exerciceId: string,
+  eleveId: string,
+  classeId: string | null,
+  coequipierIds: string[],
+  soumissionExistanteId?: string
+): Promise<string[]> {
+  const idsUniques = [...new Set(coequipierIds)].filter((id) => id !== eleveId);
+
+  if (idsUniques.length === 0) {
+    // Un coéquipier (membre passif d'un autre groupe pour ce devoir) ne peut
+    // pas créer son propre rendu séparé : seul l'auteur du groupe dépose.
+    if (!soumissionExistanteId) {
+      const groupeExistant = await prisma.soumission.findFirst({
+        where: { exerciceId, membres: { some: { eleveId } } },
+        select: { eleve: { select: { nom: true } } },
+      });
+      if (groupeExistant) {
+        throw new SoumissionError(
+          `Tu fais déjà partie du groupe de ${groupeExistant.eleve.nom} pour ce devoir. C'est à ${groupeExistant.eleve.nom} de déposer le rendu du groupe.`
+        );
+      }
+    }
+    return [];
+  }
+
+  if (idsUniques.length > MAX_COEQUIPIERS) {
+    throw new SoumissionError(`Un groupe ne peut pas compter plus de ${MAX_COEQUIPIERS + 1} élèves.`);
+  }
+
+  if (!classeId) {
+    throw new SoumissionError("Tu n'es rattaché à aucune classe.");
+  }
+
+  const camarades = await prisma.user.findMany({
+    where: { id: { in: idsUniques }, classeId, role: "ELEVE" },
+    select: { id: true, nom: true },
+  });
+
+  if (camarades.length !== idsUniques.length) {
+    throw new SoumissionError("Un des coéquipiers sélectionnés n'appartient pas à ta classe.");
+  }
+
+  const idsAVerifier = [...idsUniques, eleveId];
+  const conflits = await prisma.soumission.findMany({
+    where: {
+      exerciceId,
+      ...(soumissionExistanteId ? { id: { not: soumissionExistanteId } } : {}),
+      OR: [{ eleveId: { in: idsAVerifier } }, { membres: { some: { eleveId: { in: idsAVerifier } } } }],
+    },
+    include: MEMBRE_AVEC_ELEVE,
+  });
+
+  for (const conflit of conflits) {
+    const membresConflit = [conflit.eleve, ...conflit.membres.map((m) => m.eleve)];
+    for (const id of idsAVerifier) {
+      const trouve = membresConflit.find((m) => m.id === id);
+      if (!trouve) continue;
+      if (id === eleveId) {
+        throw new SoumissionError(
+          `Tu fais déjà partie du groupe de ${conflit.eleve.nom} pour ce devoir. Demande-lui de te retirer de son groupe (en renvoyant sa réponse sans toi) avant de rendre seul ou avec un autre groupe.`
+        );
+      }
+      throw new SoumissionError(`${trouve.nom} fait déjà partie du groupe de ${conflit.eleve.nom} pour ce devoir.`);
+    }
+  }
+
+  return idsUniques;
+}
+
+// Remplace la liste des coéquipiers d'une soumission (MembreGroupe).
+async function appliquerGroupe(soumissionId: string, coequipierIds: string[]) {
+  await prisma.membreGroupe.deleteMany({ where: { soumissionId } });
+  if (coequipierIds.length > 0) {
+    await prisma.membreGroupe.createMany({
+      data: coequipierIds.map((eleveId) => ({ soumissionId, eleveId })),
+    });
+  }
+}
+
+export async function deposerSoumission(
+  exerciceId: string,
+  eleveId: string,
+  fichier: File,
+  coequipierIds: string[] = []
+) {
   const exercice = await prisma.exercice.findUnique({
     where: { id: exerciceId },
     include: { cours: { select: { titre: true } } },
@@ -45,6 +156,17 @@ export async function deposerSoumission(exerciceId: string, eleveId: string, fic
     throw new SoumissionError("Type de fichier non autorisé (PDF ou image uniquement).");
   }
 
+  const eleve = await prisma.user.findUnique({ where: { id: eleveId }, select: { nom: true, classeId: true } });
+
+  const existanteAvant = await prisma.soumission.findFirst({ where: { exerciceId, eleveId } });
+  const coequipiers = await validerCoequipiers(
+    exerciceId,
+    eleveId,
+    eleve?.classeId ?? null,
+    coequipierIds,
+    existanteAvant?.id
+  );
+
   const nomNettoye = nomFichierSur(fichier.name);
   const chemin = `${exerciceId}/${eleveId}/${randomUUID()}-${nomNettoye}`;
 
@@ -59,10 +181,6 @@ export async function deposerSoumission(exerciceId: string, eleveId: string, fic
     throw new SoumissionError("Échec de l'envoi du fichier.");
   }
 
-  const existante = await prisma.soumission.findFirst({
-    where: { exerciceId, eleveId },
-  });
-
   const donneesFichier = {
     fichierNom: fichier.name,
     fichierChemin: chemin,
@@ -73,14 +191,14 @@ export async function deposerSoumission(exerciceId: string, eleveId: string, fic
   let soumission;
 
   try {
-    if (existante) {
+    if (existanteAvant) {
       soumission = await prisma.soumission.update({
-        where: { id: existante.id },
+        where: { id: existanteAvant.id },
         data: donneesFichier,
       });
 
-      if (existante.fichierChemin) {
-        await supabaseAdmin.storage.from(BUCKET_RENDUS_DEVOIRS).remove([existante.fichierChemin]);
+      if (existanteAvant.fichierChemin) {
+        await supabaseAdmin.storage.from(BUCKET_RENDUS_DEVOIRS).remove([existanteAvant.fichierChemin]);
       }
     } else {
       soumission = await prisma.soumission.create({
@@ -96,7 +214,8 @@ export async function deposerSoumission(exerciceId: string, eleveId: string, fic
     throw err;
   }
 
-  const eleve = await prisma.user.findUnique({ where: { id: eleveId }, select: { nom: true } });
+  await appliquerGroupe(soumission.id, coequipiers);
+
   await notifierProfs(
     `${eleve?.nom ?? "Un élève"} a déposé « ${exercice.titre} » (${exercice.cours.titre})`,
     "/prof/devoirs"
@@ -110,7 +229,8 @@ export async function deposerSoumission(exerciceId: string, eleveId: string, fic
 export async function deposerSoumissionFormulaire(
   exerciceId: string,
   eleveId: string,
-  reponses: Record<string, string | boolean>
+  reponses: Record<string, string | boolean>,
+  coequipierIds: string[] = []
 ) {
   const exercice = await prisma.exercice.findUnique({
     where: { id: exerciceId },
@@ -123,6 +243,17 @@ export async function deposerSoumissionFormulaire(
   if (!exercice.sujetChemin || !exercice.sujetNom) {
     throw new SoumissionError("Ce devoir n'a pas encore de formulaire PDF.");
   }
+
+  const eleve = await prisma.user.findUnique({ where: { id: eleveId }, select: { nom: true, classeId: true } });
+
+  const existanteAvant = await prisma.soumission.findFirst({ where: { exerciceId, eleveId } });
+  const coequipiers = await validerCoequipiers(
+    exerciceId,
+    eleveId,
+    eleve?.classeId ?? null,
+    coequipierIds,
+    existanteAvant?.id
+  );
 
   const { data: modele, error: erreurTelechargement } = await supabaseAdmin.storage
     .from(BUCKET_PIECES_JOINTES)
@@ -157,8 +288,6 @@ export async function deposerSoumissionFormulaire(
     throw new SoumissionError("Échec de l'enregistrement du formulaire rempli.");
   }
 
-  const existante = await prisma.soumission.findFirst({ where: { exerciceId, eleveId } });
-
   const donnees = {
     contenu: JSON.stringify(reponses),
     fichierNom,
@@ -170,14 +299,14 @@ export async function deposerSoumissionFormulaire(
   let soumission;
 
   try {
-    if (existante) {
+    if (existanteAvant) {
       soumission = await prisma.soumission.update({
-        where: { id: existante.id },
+        where: { id: existanteAvant.id },
         data: donnees,
       });
 
-      if (existante.fichierChemin) {
-        await supabaseAdmin.storage.from(BUCKET_RENDUS_DEVOIRS).remove([existante.fichierChemin]);
+      if (existanteAvant.fichierChemin) {
+        await supabaseAdmin.storage.from(BUCKET_RENDUS_DEVOIRS).remove([existanteAvant.fichierChemin]);
       }
     } else {
       soumission = await prisma.soumission.create({
@@ -189,7 +318,8 @@ export async function deposerSoumissionFormulaire(
     throw err;
   }
 
-  const eleve = await prisma.user.findUnique({ where: { id: eleveId }, select: { nom: true } });
+  await appliquerGroupe(soumission.id, coequipiers);
+
   await notifierProfs(
     `${eleve?.nom ?? "Un élève"} a déposé « ${exercice.titre} » (${exercice.cours.titre})`,
     "/prof/devoirs"
@@ -295,14 +425,20 @@ export async function soumettreExerciceCode(
   return { soumission, reussiAuto: reussiAuto ?? null };
 }
 
+// Renvoie la soumission de `eleveId` pour cet exercice, qu'il en soit
+// l'auteur (eleveId) ou un coéquipier désigné (MembreGroupe).
 export async function obtenirSoumissionEleve(exerciceId: string, eleveId: string) {
   return prisma.soumission.findFirst({
-    where: { exerciceId, eleveId },
+    where: { exerciceId, OR: [{ eleveId }, { membres: { some: { eleveId } } }] },
+    include: MEMBRE_AVEC_ELEVE,
   });
 }
 
 export async function obtenirSoumissionAvecAcces(id: string) {
-  return prisma.soumission.findUnique({ where: { id } });
+  return prisma.soumission.findUnique({
+    where: { id },
+    include: { membres: { select: { eleveId: true } } },
+  });
 }
 
 const SOUMISSION_AVEC_CONTEXTE = {
@@ -341,10 +477,61 @@ export async function listerSoumissionsRecentes(limit = 5) {
 
 export async function listerNotesEleve(eleveId: string) {
   return prisma.soumission.findMany({
-    where: { eleveId, corrigeManuellement: true },
+    where: {
+      OR: [{ eleveId }, { membres: { some: { eleveId } } }],
+      corrigeManuellement: true,
+    },
     include: SOUMISSION_AVEC_CONTEXTE,
     orderBy: { createdAt: "desc" },
   });
+}
+
+export type LigneRosterDevoir =
+  | { statut: "rendu"; soumission: SoumissionAvecGroupe; eleves: CamaradeClasse[] }
+  | { statut: "attente"; eleve: CamaradeClasse };
+
+type SoumissionAvecGroupe = NonNullable<Awaited<ReturnType<typeof obtenirSoumissionEleve>>>;
+
+// Pour la page de correction d'un devoir : la liste des élèves d'une classe
+// avec leur état de rendu. Les membres d'un même groupe apparaissent ensemble
+// sur une seule ligne.
+export async function listerRosterDevoir(exerciceId: string, classeId: string): Promise<LigneRosterDevoir[]> {
+  const [eleves, soumissions] = await Promise.all([
+    prisma.user.findMany({
+      where: { classeId, role: "ELEVE" },
+      select: { id: true, nom: true },
+      orderBy: { nom: "asc" },
+    }),
+    prisma.soumission.findMany({
+      where: { exerciceId },
+      include: MEMBRE_AVEC_ELEVE,
+    }),
+  ]);
+
+  const soumissionParEleve = new Map<string, SoumissionAvecGroupe>();
+  for (const s of soumissions) {
+    soumissionParEleve.set(s.eleveId, s);
+    for (const m of s.membres) soumissionParEleve.set(m.eleveId, s);
+  }
+
+  const dejaAffiches = new Set<string>();
+  const lignes: LigneRosterDevoir[] = [];
+
+  for (const eleve of eleves) {
+    if (dejaAffiches.has(eleve.id)) continue;
+
+    const soumission = soumissionParEleve.get(eleve.id);
+    if (soumission) {
+      const membresGroupe = [soumission.eleve, ...soumission.membres.map((m) => m.eleve)];
+      for (const membre of membresGroupe) dejaAffiches.add(membre.id);
+      lignes.push({ statut: "rendu", soumission, eleves: membresGroupe });
+    } else {
+      dejaAffiches.add(eleve.id);
+      lignes.push({ statut: "attente", eleve });
+    }
+  }
+
+  return lignes;
 }
 
 export async function noterSoumission(

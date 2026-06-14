@@ -12,7 +12,7 @@ import { listerBlocsCours } from "@/lib/blocs";
 import { listerPiecesJointes } from "@/lib/pieces-jointes";
 import { listerDevoirsCours, obtenirChampsFormulaireDevoir } from "@/lib/devoirs";
 import { listerExercicesCodeCours } from "@/lib/exercices-code";
-import { obtenirSoumissionEleve } from "@/lib/soumissions";
+import { obtenirSoumissionEleve, listerCamaradesClasse } from "@/lib/soumissions";
 import { CODE_PYTHON_DEFAUT } from "@/lib/python";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { DevoirSoumissionForm } from "./devoir-soumission-form";
@@ -47,6 +47,8 @@ export default async function CoursLecturePage({
   const piecesJointes = await listerPiecesJointes(cours.id);
   const blocs = await listerBlocsCours(cours.id);
 
+  const camarades = await listerCamaradesClasse(user.id);
+
   const devoirs = await listerDevoirsCours(cours.id);
   const devoirsAvecSoumission = await Promise.all(
     devoirs.map(async (devoir) => {
@@ -70,7 +72,15 @@ export default async function CoursLecturePage({
         }
       }
 
-      return { devoir, soumission, champs, reponses };
+      // Travail en groupe : l'élève est soit l'auteur du rendu (et peut le
+      // modifier), soit un coéquipier désigné (rendu en lecture seule).
+      const estAuteur = !soumission || soumission.eleve.id === user.id;
+      const coequipiers = estAuteur ? soumission?.membres.map((m) => m.eleve.id) ?? [] : [];
+      const membresGroupe = soumission
+        ? [soumission.eleve, ...soumission.membres.map((m) => m.eleve)].filter((m) => m.id !== user.id)
+        : [];
+
+      return { devoir, soumission, champs, reponses, estAuteur, coequipiers, membresGroupe };
     })
   );
 
@@ -118,8 +128,9 @@ export default async function CoursLecturePage({
             <h2 className="text-lg font-semibold text-slate-800">Devoirs à rendre</h2>
 
             <ul className="flex flex-col gap-4">
-              {devoirsAvecSoumission.map(({ devoir, soumission, champs, reponses }) => {
+              {devoirsAvecSoumission.map(({ devoir, soumission, champs, reponses, estAuteur, coequipiers, membresGroupe }) => {
                 const estFormulaire = devoir.type === TypeExercice.DEVOIR_PDF_FORMULAIRE;
+                const nomsGroupe = membresGroupe.map((m) => m.nom).join(", ");
 
                 return (
                   <li key={devoir.id} className="flex flex-col gap-3 rounded-md border border-slate-200 p-4">
@@ -161,26 +172,43 @@ export default async function CoursLecturePage({
                       </div>
                     )}
 
+                    {!estAuteur && (
+                      <p className="text-sm text-slate-600">
+                        Rendu par votre groupe (avec {nomsGroupe}). Seul {soumission!.eleve.nom} peut le modifier.
+                      </p>
+                    )}
+
                     {estFormulaire ? (
                       champs.length > 0 ? (
-                        <FormulaireForm
-                          exerciceId={devoir.id}
-                          slug={cours.slug}
-                          champs={champs}
-                          reponses={reponses}
-                        />
+                        estAuteur && (
+                          <FormulaireForm
+                            exerciceId={devoir.id}
+                            slug={cours.slug}
+                            champs={champs}
+                            reponses={reponses}
+                            camarades={camarades}
+                            coequipiers={coequipiers}
+                          />
+                        )
                       ) : (
                         <p className="text-sm text-slate-500">
                           Le formulaire n&apos;est pas encore disponible pour ce devoir.
                         </p>
                       )
                     ) : (
-                      <>
-                        {!soumission?.fichierNom && (
-                          <p className="text-sm text-slate-500">Pas encore déposé.</p>
-                        )}
-                        <DevoirSoumissionForm exerciceId={devoir.id} slug={cours.slug} />
-                      </>
+                      estAuteur && (
+                        <>
+                          {!soumission?.fichierNom && (
+                            <p className="text-sm text-slate-500">Pas encore déposé.</p>
+                          )}
+                          <DevoirSoumissionForm
+                            exerciceId={devoir.id}
+                            slug={cours.slug}
+                            camarades={camarades}
+                            coequipiers={coequipiers}
+                          />
+                        </>
+                      )
                     )}
                   </li>
                 );

@@ -1,14 +1,20 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
+import { type CamaradeClasse } from "@/lib/groupes";
 import { deposerSoumissionAction } from "./soumissions-actions";
+import { CoequipierSelecteur } from "./coequipier-selecteur";
 
 export function DevoirSoumissionForm({
   exerciceId,
   slug,
+  camarades,
+  coequipiers,
 }: {
   exerciceId: string;
   slug: string;
+  camarades: CamaradeClasse[];
+  coequipiers: string[];
 }) {
   const [message, formAction, isPending] = useActionState(deposerSoumissionAction, undefined);
   const formRef = useRef<HTMLFormElement>(null);
@@ -41,6 +47,9 @@ export function DevoirSoumissionForm({
           className="rounded-md border border-slate-300 px-3 py-2 text-sm file:mr-3 file:rounded file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
         />
         <p className="text-xs text-slate-400">PDF ou photo (jpg, png, webp), 10 Mo maximum.</p>
+      </div>
+      <div className="sm:basis-full">
+        <CoequipierSelecteur camarades={camarades} defautCoequipiers={coequipiers} />
       </div>
       <button
         type="submit"

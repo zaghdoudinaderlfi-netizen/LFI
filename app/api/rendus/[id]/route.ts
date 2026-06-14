@@ -22,7 +22,10 @@ export async function GET(
     return NextResponse.json({ error: "Rendu introuvable." }, { status: 404 });
   }
 
-  const accesAutorise = session.user.role === "PROF" || soumission.eleveId === session.user.id;
+  const accesAutorise =
+    session.user.role === "PROF" ||
+    soumission.eleveId === session.user.id ||
+    soumission.membres.some((m) => m.eleveId === session.user.id);
   if (!accesAutorise) {
     return NextResponse.json({ error: "Accès refusé." }, { status: 403 });
   }

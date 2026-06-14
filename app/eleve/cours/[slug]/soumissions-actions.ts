@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { obtenirDevoir } from "@/lib/devoirs";
 import { deposerSoumission, SoumissionError } from "@/lib/soumissions";
+import { NOM_CHAMP_COEQUIPIERS } from "@/lib/groupes";
 
 export async function deposerSoumissionAction(
   _prevState: string | undefined,
@@ -42,8 +43,10 @@ export async function deposerSoumissionAction(
     return "Accès refusé.";
   }
 
+  const coequipierIds = formData.getAll(NOM_CHAMP_COEQUIPIERS).filter((v) => typeof v === "string") as string[];
+
   try {
-    await deposerSoumission(exerciceId, session.user.id, fichier);
+    await deposerSoumission(exerciceId, session.user.id, fichier, coequipierIds);
   } catch (error) {
     if (error instanceof SoumissionError) return error.message;
     throw error;

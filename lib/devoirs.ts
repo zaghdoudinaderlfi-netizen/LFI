@@ -105,7 +105,7 @@ export async function listerDevoirsAFaire(eleveId: string, niveau: Niveau) {
     include: {
       cours: { select: { id: true, titre: true, slug: true } },
       soumissions: {
-        where: { eleveId },
+        where: { OR: [{ eleveId }, { membres: { some: { eleveId } } }] },
         select: { id: true, corrigeManuellement: true, note: true },
       },
     },

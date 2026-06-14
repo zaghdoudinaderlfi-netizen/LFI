@@ -80,6 +80,7 @@ model User {
   classeId String?
 
   soumissions      Soumission[]
+  groupesMembre    MembreGroupe[]
   participations   ParticipantPartie[]
   partiesHebergees PartieQuiz[]        @relation("HotePartie")
   quizCrees        Quiz[]              @relation("AuteurQuiz")
@@ -217,10 +218,28 @@ model Soumission {
   fichierTaille   Int?
   fichierTypeMime String?
 
+  membres MembreGroupe[]
+
   createdAt DateTime @default(now())
 
   @@index([eleveId])
   @@index([exerciceId])
+}
+
+// Travail en groupe (binôme/trio) : en plus de l'élève auteur de la
+// Soumission (eleveId), 1 à 2 coéquipiers désignés par lui apparaissent ici.
+// Le rendu, la note et l'appréciation s'appliquent à tous les membres.
+model MembreGroupe {
+  id           String     @id @default(cuid())
+  soumission   Soumission @relation(fields: [soumissionId], references: [id], onDelete: Cascade)
+  soumissionId String
+  eleve        User       @relation(fields: [eleveId], references: [id], onDelete: Cascade)
+  eleveId      String
+
+  createdAt DateTime @default(now())
+
+  @@unique([soumissionId, eleveId])
+  @@index([eleveId])
 }
 
 // ───────────────────────────────────────────────

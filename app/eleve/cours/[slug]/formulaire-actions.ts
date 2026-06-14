@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { obtenirDevoir, obtenirChampsFormulaireDevoir } from "@/lib/devoirs";
 import { deposerSoumissionFormulaire, SoumissionError } from "@/lib/soumissions";
 import { PREFIXE_CHAMP_FORMULAIRE } from "@/lib/formulaire-champs";
+import { NOM_CHAMP_COEQUIPIERS } from "@/lib/groupes";
 
 export async function soumettreFormulaireAction(
   _prevState: string | undefined,
@@ -53,8 +54,10 @@ export async function soumettreFormulaireAction(
     }
   }
 
+  const coequipierIds = formData.getAll(NOM_CHAMP_COEQUIPIERS).filter((v) => typeof v === "string") as string[];
+
   try {
-    await deposerSoumissionFormulaire(exerciceId, session.user.id, reponses);
+    await deposerSoumissionFormulaire(exerciceId, session.user.id, reponses, coequipierIds);
   } catch (error) {
     if (error instanceof SoumissionError) return error.message;
     throw error;

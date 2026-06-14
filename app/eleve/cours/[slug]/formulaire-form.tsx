@@ -2,18 +2,24 @@
 
 import { useActionState } from "react";
 import { ChampFormulaire, formaterLabelChamp, PREFIXE_CHAMP_FORMULAIRE } from "@/lib/formulaire-champs";
+import { type CamaradeClasse } from "@/lib/groupes";
 import { soumettreFormulaireAction } from "./formulaire-actions";
+import { CoequipierSelecteur } from "./coequipier-selecteur";
 
 export function FormulaireForm({
   exerciceId,
   slug,
   champs,
   reponses,
+  camarades,
+  coequipiers,
 }: {
   exerciceId: string;
   slug: string;
   champs: ChampFormulaire[];
   reponses: Record<string, string | boolean>;
+  camarades: CamaradeClasse[];
+  coequipiers: string[];
 }) {
   const [message, formAction, isPending] = useActionState(soumettreFormulaireAction, undefined);
   const envoye = message === "Formulaire envoyé.";
@@ -91,6 +97,8 @@ export function FormulaireForm({
           </div>
         );
       })}
+
+      <CoequipierSelecteur camarades={camarades} defautCoequipiers={coequipiers} />
 
       <button
         type="submit"
