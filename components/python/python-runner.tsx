@@ -192,7 +192,7 @@ export function PythonRunner({
         <div
           ref={turtleRef}
           id={turtleId}
-          className="flex justify-center overflow-auto rounded-md border border-slate-200 bg-white p-2 [&>canvas]:h-auto [&>canvas]:max-w-full"
+          className="relative mx-auto aspect-square w-full max-w-[400px] overflow-hidden rounded-md border border-slate-200 bg-white [&>canvas]:!absolute [&>canvas]:!inset-0 [&>canvas]:!m-0 [&>canvas]:h-full [&>canvas]:w-full"
         />
       </div>
 
