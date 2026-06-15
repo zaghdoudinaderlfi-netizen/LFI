@@ -6,11 +6,13 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import {
   creerDevoir,
+  definirModeRemiseFormulaire,
   definirSujetDevoir,
   definirSujetFormulaire,
   supprimerDevoir,
   supprimerSujetDevoir,
   DevoirError,
+  ModeRemiseFormulaire,
 } from "@/lib/devoirs";
 
 async function revaliderCours(coursId: string) {
@@ -39,6 +41,7 @@ export async function creerDevoirAction(
   const dateLimite = formData.get("dateLimite");
   const type = formData.get("type");
   const sujet = formData.get("sujet");
+  const modeRemise = formData.get("modeRemise");
 
   if (
     typeof coursId !== "string" ||
@@ -60,6 +63,11 @@ export async function creerDevoirAction(
     return "Le PDF-formulaire est obligatoire pour ce type de devoir.";
   }
 
+  const modeRemiseValide =
+    modeRemise === ModeRemiseFormulaire.EN_LIGNE || modeRemise === ModeRemiseFormulaire.TELECHARGEMENT
+      ? modeRemise
+      : ModeRemiseFormulaire.EN_LIGNE;
+
   let devoir;
   try {
     devoir = await creerDevoir(coursId, {
@@ -68,6 +76,7 @@ export async function creerDevoirAction(
       points: Number(points),
       dateLimite: typeof dateLimite === "string" && dateLimite ? new Date(dateLimite) : null,
       type,
+      modeRemise: modeRemiseValide,
     });
   } catch (error) {
     if (error instanceof DevoirError) return error.message;
@@ -176,6 +185,38 @@ export async function definirSujetFormulaireAction(
 
   await revaliderCours(coursId);
   return "Sujet ajouté.";
+}
+
+export async function definirModeRemiseFormulaireAction(
+  _prevState: string | undefined,
+  formData: FormData
+): Promise<string | undefined> {
+  const session = await auth();
+  if (session?.user?.role !== "PROF") {
+    return "Accès réservé aux professeurs.";
+  }
+
+  const devoirId = formData.get("devoirId");
+  const coursId = formData.get("coursId");
+  const modeRemise = formData.get("modeRemise");
+
+  if (typeof devoirId !== "string" || typeof coursId !== "string") {
+    return "Formulaire invalide.";
+  }
+
+  if (modeRemise !== ModeRemiseFormulaire.EN_LIGNE && modeRemise !== ModeRemiseFormulaire.TELECHARGEMENT) {
+    return "Mode de remise invalide.";
+  }
+
+  try {
+    await definirModeRemiseFormulaire(devoirId, modeRemise);
+  } catch (error) {
+    if (error instanceof DevoirError) return error.message;
+    throw error;
+  }
+
+  await revaliderCours(coursId);
+  return "Mode de remise mis à jour.";
 }
 
 export async function supprimerSujetDevoirAction(formData: FormData): Promise<void> {

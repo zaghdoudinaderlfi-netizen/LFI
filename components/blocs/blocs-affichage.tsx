@@ -1,5 +1,5 @@
 import type { Bloc } from "@prisma/client";
-import { ExternalLink } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 import { nettoyerHtml } from "@/lib/sanitize-html";
 import { libelleOutil, urlVideoEmbed } from "@/lib/blocs";
 import { CODE_PYTHON_DEFAUT } from "@/lib/python";
@@ -15,7 +15,7 @@ export async function BlocsAffichage({ blocs }: { blocs: Bloc[] }) {
 
   const elements = await Promise.all(blocs.map((bloc) => afficherBloc(bloc)));
 
-  return <div className="flex flex-col gap-6">{elements}</div>;
+  return <div className="flex flex-col gap-8">{elements}</div>;
 }
 
 async function afficherBloc(bloc: Bloc) {
@@ -27,7 +27,7 @@ async function afficherBloc(bloc: Bloc) {
       return (
         <div
           key={bloc.id}
-          className="prose prose-slate max-w-none"
+          className="prose-cours"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       );
@@ -35,13 +35,14 @@ async function afficherBloc(bloc: Bloc) {
 
     case "IMAGE":
       return (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          key={bloc.id}
-          src={`/api/blocs/${bloc.id}/fichier?inline=1`}
-          alt={bloc.fichierNom ?? ""}
-          className="max-h-[80vh] w-full rounded-md border border-slate-200 object-contain"
-        />
+        <figure key={bloc.id} className="flex flex-col gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/api/blocs/${bloc.id}/fichier?inline=1`}
+            alt={bloc.fichierNom ?? "Image du cours"}
+            className="mx-auto max-h-[80vh] w-full rounded-xl border border-space-border object-contain"
+          />
+        </figure>
       );
 
     case "PDF":
@@ -50,12 +51,13 @@ async function afficherBloc(bloc: Bloc) {
           <iframe
             src={`/api/blocs/${bloc.id}/fichier?inline=1`}
             title={bloc.fichierNom ?? "Document PDF"}
-            className="h-[80vh] w-full rounded-md border border-slate-200"
+            className="h-[80vh] w-full rounded-xl border border-space-border bg-white"
           />
           <a
             href={`/api/blocs/${bloc.id}/fichier`}
-            className="self-start text-xs font-medium text-slate-500 hover:underline"
+            className="link-muted inline-flex items-center gap-1.5 self-start text-xs font-medium"
           >
+            <Download className="h-3.5 w-3.5" />
             Télécharger le PDF
           </a>
         </div>
@@ -66,7 +68,7 @@ async function afficherBloc(bloc: Bloc) {
       if (!url) return null;
 
       return (
-        <div key={bloc.id} className="aspect-video w-full overflow-hidden rounded-md border border-slate-200">
+        <div key={bloc.id} className="aspect-video w-full overflow-hidden rounded-xl border border-space-border">
           <iframe
             src={url}
             title="Vidéo"
@@ -80,8 +82,8 @@ async function afficherBloc(bloc: Bloc) {
 
     case "EDITEUR_PYTHON":
       return (
-        <div key={bloc.id} className="flex flex-col gap-3 rounded-md border border-slate-200 p-4">
-          <p className="whitespace-pre-wrap text-sm text-slate-700">{bloc.contenu}</p>
+        <div key={bloc.id} className="card flex flex-col gap-3 p-4 sm:p-6">
+          <p className="whitespace-pre-wrap text-sm text-ink-secondary">{bloc.contenu}</p>
           <PythonRunner codeInitial={bloc.codeDepart || CODE_PYTHON_DEFAUT} />
         </div>
       );
@@ -93,7 +95,7 @@ async function afficherBloc(bloc: Bloc) {
           href={bloc.contenu ?? "#"}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 rounded-md bg-slate-800 px-4 py-3 text-center text-sm font-medium text-white hover:bg-slate-700"
+          className="btn-primary justify-center py-3 text-center"
         >
           <ExternalLink className="h-4 w-4 shrink-0" />
           {bloc.titre || `Ouvrir l'activité ${libelleOutil(bloc.outil ?? "")}`}
@@ -107,7 +109,7 @@ async function afficherBloc(bloc: Bloc) {
           href={bloc.contenu ?? "#"}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 rounded-md border border-slate-200 px-4 py-3 text-sm font-medium text-blue-600 hover:bg-slate-50 hover:underline"
+          className="card-interactive flex items-center gap-2 px-4 py-3 text-sm font-medium text-neon-cyan hover:underline"
         >
           <ExternalLink className="h-4 w-4 shrink-0" />
           {bloc.titre}

@@ -1,10 +1,15 @@
+import { Gamepad2 } from "lucide-react";
+
 export default function ProfQuizPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <h1 className="text-2xl font-bold text-slate-800">Quiz</h1>
+      <h1 className="page-title animate-fade-in-up">Quiz</h1>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm">
-        <p className="text-slate-500">
+      <div className="card animate-fade-in-up flex flex-col items-center gap-3 p-10 text-center [animation-delay:60ms]">
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-space-surface2 text-neon-violet shadow-glow-soft">
+          <Gamepad2 className="h-7 w-7" />
+        </span>
+        <p className="text-ink-secondary">
           La création de quiz ludiques arrive bientôt.
         </p>
       </div>

@@ -1,4 +1,5 @@
 import type { Notification } from "@prisma/client";
+import { CheckCheck } from "lucide-react";
 
 export function NotificationsListe({
   notifications,
@@ -13,11 +14,12 @@ export function NotificationsListe({
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-slate-800">Notifications</h1>
+      <div className="flex items-center justify-between gap-4 animate-fade-in-up">
+        <h1 className="page-title">Notifications</h1>
         {nonLues > 0 && (
           <form action={toutMarquerLuAction}>
-            <button type="submit" className="text-sm text-slate-500 hover:underline">
+            <button type="submit" className="btn-ghost text-sm">
+              <CheckCheck className="h-4 w-4" />
               Tout marquer comme lu
             </button>
           </form>
@@ -25,11 +27,11 @@ export function NotificationsListe({
       </div>
 
       {notifications.length === 0 ? (
-        <div className="rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <p className="text-slate-500">Aucune notification pour le moment.</p>
+        <div className="card animate-fade-in-up p-6 text-center">
+          <p className="text-ink-secondary">Aucune notification pour le moment.</p>
         </div>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-2 animate-fade-in-up [animation-delay:60ms]">
           {notifications.map((notif) => (
             <li key={notif.id}>
               <form action={ouvrirAction}>
@@ -37,17 +39,20 @@ export function NotificationsListe({
                 <input type="hidden" name="lien" value={notif.lien ?? ""} />
                 <button
                   type="submit"
-                  className={`flex w-full flex-col gap-1 rounded-lg border p-4 text-left shadow-sm transition-colors hover:border-slate-300 sm:flex-row sm:items-center sm:justify-between sm:gap-4 ${
-                    notif.lu ? "border-slate-200 bg-white" : "border-slate-300 bg-slate-50"
+                  className={`card-interactive flex w-full flex-col gap-1 p-4 text-left sm:flex-row sm:items-center sm:justify-between sm:gap-4 ${
+                    notif.lu ? "" : "border-neon-cyan/40 bg-space-surface2/80"
                   }`}
                 >
                   <span className="flex items-center gap-2">
                     {!notif.lu && (
-                      <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" aria-hidden />
+                      <span
+                        className="h-2 w-2 shrink-0 rounded-full bg-neon-pink shadow-[0_0_8px_rgba(244,114,182,0.7)]"
+                        aria-hidden="true"
+                      />
                     )}
-                    <span className="text-sm text-slate-800">{notif.message}</span>
+                    <span className="text-sm text-ink-primary">{notif.message}</span>
                   </span>
-                  <span className="text-xs text-slate-400 sm:shrink-0">
+                  <span className="text-xs text-ink-muted sm:shrink-0">
                     {notif.createdAt.toLocaleString("fr-FR", {
                       dateStyle: "short",
                       timeStyle: "short",

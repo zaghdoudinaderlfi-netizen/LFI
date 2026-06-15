@@ -146,7 +146,7 @@ export function PythonRunner({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="overflow-hidden rounded-md border border-slate-300">
+      <div className="overflow-hidden rounded-xl border border-space-border">
         <CodeMirror
           value={code}
           height="220px"
@@ -158,13 +158,8 @@ export function PythonRunner({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={gererExecuter}
-          disabled={enCours}
-          className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-        >
-          {enCours ? "Exécution..." : "▶ Exécuter"}
+        <button type="button" onClick={gererExecuter} disabled={enCours} className="btn-secondary">
+          ▶ {enCours ? "Exécution..." : "Exécuter"}
         </button>
 
         {onSoumettre && (
@@ -172,7 +167,7 @@ export function PythonRunner({
             type="button"
             onClick={gererSoumettre}
             disabled={enCours}
-            className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-500 disabled:opacity-50"
+            className="btn border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
           >
             {enCours ? "..." : soumissionLabel}
           </button>
@@ -180,19 +175,19 @@ export function PythonRunner({
       </div>
 
       <div>
-        <p className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-400">Sortie</p>
-        <pre className="min-h-[3rem] max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md bg-slate-900 p-3 text-xs text-green-400">
+        <p className="mb-1 text-xs font-medium uppercase tracking-wide text-ink-muted">Sortie</p>
+        <pre className="min-h-[3rem] max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-xl border border-space-border bg-space-deep p-3 text-xs text-emerald-300">
           {sortie || (enCours ? "..." : "(aucune sortie)")}
         </pre>
-        {erreur && <p className="mt-1 whitespace-pre-wrap break-words text-xs text-red-600">{erreur}</p>}
+        {erreur && <p className="mt-1 whitespace-pre-wrap break-words text-xs text-red-400">{erreur}</p>}
       </div>
 
       <div className={aDessin ? "flex flex-col gap-1" : "hidden"}>
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Dessin (turtle)</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">Dessin (turtle)</p>
         <div
           ref={turtleRef}
           id={turtleId}
-          className="relative mx-auto aspect-square w-full max-w-[400px] overflow-hidden rounded-md border border-slate-200 bg-white [&>canvas]:!absolute [&>canvas]:!inset-0 [&>canvas]:!m-0 [&>canvas]:h-full [&>canvas]:w-full"
+          className="relative mx-auto aspect-square w-full max-w-[400px] overflow-hidden rounded-xl border border-space-border bg-white [&>canvas]:!absolute [&>canvas]:!inset-0 [&>canvas]:!m-0 [&>canvas]:h-full [&>canvas]:w-full"
         />
       </div>
 
@@ -200,12 +195,12 @@ export function PythonRunner({
         <p
           className={`text-sm ${
             resultat.erreur
-              ? "text-red-600"
+              ? "text-red-400"
               : resultat.reussi === true
-                ? "text-green-600"
+                ? "text-emerald-400"
                 : resultat.reussi === false
-                  ? "text-amber-600"
-                  : "text-slate-600"
+                  ? "text-amber-400"
+                  : "text-ink-secondary"
           }`}
           role="alert"
         >

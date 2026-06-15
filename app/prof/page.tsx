@@ -1,10 +1,22 @@
 import Link from "next/link";
+import { ClipboardCheck, ListPlus, PlusCircle } from "lucide-react";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { compterSoumissionsACorriger, listerSoumissionsRecentes } from "@/lib/soumissions";
 import { listerClasses, NIVEAU_LABELS } from "@/lib/classes";
 import { formaterNomComplet } from "@/lib/utilisateurs";
+import { AvatarDisplay } from "@/components/avatar/avatar-display";
 
 export default async function ProfPage() {
-  const [aCorrigerCount, recentes, classes] = await Promise.all([
+  const session = await auth();
+
+  const [user, aCorrigerCount, recentes, classes] = await Promise.all([
+    session?.user?.id
+      ? prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true },
+        })
+      : Promise.resolve(null),
     compterSoumissionsACorriger(),
     listerSoumissionsRecentes(5),
     listerClasses(),
@@ -12,25 +24,33 @@ export default async function ProfPage() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <h1 className="text-2xl font-bold text-slate-800">Tableau de bord</h1>
+      <div className="flex items-center gap-4 animate-fade-in-up">
+        {user && <AvatarDisplay user={user} neutre taille="lg" />}
+        <div>
+          <p className="eyebrow">Bonjour</p>
+          <h1 className="page-title">
+            {user?.prenom?.trim() || user?.nom?.split(" ")[0] || ""}
+          </h1>
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Link
-          href="/prof/cours/nouveau"
-          className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50"
-        >
-          <p className="font-bold text-slate-800">+ Créer un cours</p>
-          <p className="mt-1 text-sm text-slate-500">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 animate-fade-in-up [animation-delay:60ms]">
+        <Link href="/prof/cours/nouveau" className="card-interactive flex flex-col gap-2 p-6">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-neon-blue to-neon-violet shadow-glow-soft">
+            <PlusCircle className="h-5 w-5 text-space-bg" />
+          </span>
+          <p className="font-semibold text-ink-primary">Créer un cours</p>
+          <p className="text-sm text-ink-secondary">
             Ajoute un nouveau cours de Technologie ou SNT.
           </p>
         </Link>
 
-        <Link
-          href="/prof/cours"
-          className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50"
-        >
-          <p className="font-bold text-slate-800">+ Créer un devoir</p>
-          <p className="mt-1 text-sm text-slate-500">
+        <Link href="/prof/cours" className="card-interactive flex flex-col gap-2 p-6">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-neon-cyan to-neon-blue shadow-glow-soft">
+            <ListPlus className="h-5 w-5 text-space-bg" />
+          </span>
+          <p className="font-semibold text-ink-primary">Créer un devoir</p>
+          <p className="text-sm text-ink-secondary">
             Ajoute un devoir depuis la page d&apos;un de tes cours.
           </p>
         </Link>
@@ -38,39 +58,50 @@ export default async function ProfPage() {
 
       <Link
         href="/prof/devoirs"
-        className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-6 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50"
+        className="card-interactive flex items-center justify-between p-6 animate-fade-in-up [animation-delay:120ms]"
       >
-        <div>
-          <h2 className="text-lg font-bold text-slate-800">Copies à corriger</h2>
-          <p className="text-sm text-slate-500">
-            Travaux remis par les élèves, en attente de correction.
-          </p>
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-space-surface2 text-neon-pink">
+            <ClipboardCheck className="h-5 w-5" />
+          </span>
+          <div>
+            <h2 className="section-title">Copies à corriger</h2>
+            <p className="text-sm text-ink-secondary">
+              Travaux remis par les élèves, en attente de correction.
+            </p>
+          </div>
         </div>
-        <p className="text-3xl font-bold text-slate-800">{aCorrigerCount}</p>
+        <p className="font-heading text-3xl font-bold text-ink-primary">{aCorrigerCount}</p>
       </Link>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-bold text-slate-800">Derniers travaux remis</h2>
+      <section className="card animate-fade-in-up p-6 [animation-delay:180ms]">
+        <h2 className="section-title mb-4">Derniers travaux remis</h2>
 
         {recentes.length === 0 ? (
-          <p className="text-sm text-slate-500">Aucun travail remis pour le moment.</p>
+          <p className="text-sm text-ink-muted">Aucun travail remis pour le moment.</p>
         ) : (
           <ul className="flex flex-col gap-3">
             {recentes.map((soumission) => (
               <li key={soumission.id}>
                 <Link
                   href="/prof/devoirs"
-                  className="flex flex-col gap-1 rounded-md border border-slate-200 p-4 transition-colors hover:border-slate-300 hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
+                  className="card-interactive flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
-                    <p className="font-medium text-slate-800">{soumission.exercice.titre}</p>
-                    <p className="text-sm text-slate-500">
+                    <p className="font-medium text-ink-primary">{soumission.exercice.titre}</p>
+                    <p className="text-sm text-ink-secondary">
                       {soumission.exercice.cours.titre} · {formaterNomComplet(soumission.eleve)}
                     </p>
                   </div>
-                  <div className="text-sm text-slate-500 sm:text-right">
-                    <p>{soumission.createdAt.toLocaleDateString("fr-FR")}</p>
-                    <p className={soumission.corrigeManuellement ? "text-green-600" : "text-amber-600"}>
+                  <div className="text-sm sm:text-right">
+                    <p className="text-ink-muted">{soumission.createdAt.toLocaleDateString("fr-FR")}</p>
+                    <p
+                      className={
+                        soumission.corrigeManuellement
+                          ? "font-medium text-emerald-400"
+                          : "font-medium text-amber-400"
+                      }
+                    >
                       {soumission.corrigeManuellement ? "Corrigé" : "À corriger"}
                     </p>
                   </div>
@@ -81,18 +112,18 @@ export default async function ProfPage() {
         )}
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="card animate-fade-in-up p-6 [animation-delay:240ms]">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-800">Mes classes</h2>
-          <Link href="/prof/classes" className="text-sm text-slate-500 hover:underline">
+          <h2 className="section-title">Mes classes</h2>
+          <Link href="/prof/classes" className="link-muted text-sm">
             Gérer
           </Link>
         </div>
 
         {classes.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-ink-muted">
             Aucune classe pour le moment.{" "}
-            <Link href="/prof/classes" className="underline">
+            <Link href="/prof/classes" className="link-muted underline">
               Crée ta première classe
             </Link>
             .
@@ -102,16 +133,16 @@ export default async function ProfPage() {
             {classes.map((classe) => (
               <li
                 key={classe.id}
-                className="flex flex-col gap-2 rounded-md border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-2 rounded-xl border border-space-border bg-space-surface2/60 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <p className="font-medium text-slate-800">{classe.nom}</p>
-                  <p className="text-sm text-slate-500">
+                  <p className="font-medium text-ink-primary">{classe.nom}</p>
+                  <p className="text-sm text-ink-secondary">
                     {NIVEAU_LABELS[classe.niveau]} · {classe.anneeScolaire} ·{" "}
                     {classe.nombreEleves} {classe.nombreEleves > 1 ? "élèves" : "élève"}
                   </p>
                 </div>
-                <span className="rounded-md bg-slate-100 px-3 py-1 font-mono text-sm font-bold text-slate-800">
+                <span className="rounded-lg border border-space-border bg-space-surface px-3 py-1 font-mono text-sm font-bold text-neon-cyan">
                   {classe.codeInscription}
                 </span>
               </li>

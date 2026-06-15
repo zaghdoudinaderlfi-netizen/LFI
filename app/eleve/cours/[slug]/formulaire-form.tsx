@@ -1,11 +1,14 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { Send } from "lucide-react";
 import { ChampFormulaire } from "@/lib/formulaire-champs";
 import { type CamaradeClasse } from "@/lib/groupes";
 import { soumettreFormulaireAction } from "./formulaire-actions";
 import { CoequipierSelecteur } from "./coequipier-selecteur";
 import { FormulairePdfOverlay } from "./formulaire-pdf";
+import { useToast } from "@/components/ui/toast";
+import { SuccessBurst } from "@/components/ui/success-burst";
 
 export function FormulaireForm({
   exerciceId,
@@ -26,13 +29,27 @@ export function FormulaireForm({
 }) {
   const [message, formAction, isPending] = useActionState(soumettreFormulaireAction, undefined);
   const envoye = message === "Formulaire envoyé.";
+  const { addToast } = useToast();
+  const [showBurst, setShowBurst] = useState(false);
+
+  useEffect(() => {
+    if (envoye) {
+      addToast({ type: "success", message: "Réponses envoyées avec succès !" });
+      setShowBurst(true);
+      const timeout = setTimeout(() => setShowBurst(false), 700);
+      return () => clearTimeout(timeout);
+    }
+    if (message) {
+      addToast({ type: "error", message });
+    }
+  }, [envoye, message, addToast]);
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded-md border border-slate-200 p-3">
+    <form action={formAction} className="flex flex-col gap-3 rounded-xl border border-space-border bg-space-surface2/60 p-3">
       <input type="hidden" name="exerciceId" value={exerciceId} />
       <input type="hidden" name="slug" value={slug} />
 
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-ink-secondary">
         Remplis directement les champs du document ci-dessous, puis envoie tes réponses.
       </p>
 
@@ -40,16 +57,16 @@ export function FormulaireForm({
 
       <CoequipierSelecteur camarades={camarades} defautCoequipiers={coequipiers} />
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="self-start rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-      >
-        {isPending ? "Envoi..." : "Envoyer mes réponses"}
-      </button>
+      <div className="flex items-center gap-2 self-start">
+        <button type="submit" disabled={isPending} className="btn-primary self-start">
+          <Send className="h-4 w-4" />
+          {isPending ? "Envoi..." : "Envoyer mes réponses"}
+        </button>
+        <SuccessBurst show={showBurst} />
+      </div>
 
       {message && (
-        <p className={`text-sm ${envoye ? "text-green-600" : "text-red-600"}`} role="alert">
+        <p className={`text-sm ${envoye ? "text-emerald-400" : "text-red-400"}`} role="alert">
           {message}
         </p>
       )}

@@ -1,3 +1,4 @@
+import { Paperclip } from "lucide-react";
 import { ApercuFichier } from "@/components/apercu-fichier";
 
 type Piece = {
@@ -11,8 +12,11 @@ export function PiecesJointesListe({ pieces }: { pieces: Piece[] }) {
   if (pieces.length === 0) return null;
 
   return (
-    <div className="mb-6 flex flex-col gap-3 rounded-md border border-slate-200 bg-slate-50 p-4">
-      <p className="text-sm font-medium text-slate-700">Pièces jointes</p>
+    <div className="mb-6 flex flex-col gap-3 rounded-xl border border-space-border bg-space-surface2/60 p-4">
+      <p className="flex items-center gap-1.5 text-sm font-medium text-ink-primary">
+        <Paperclip className="h-4 w-4 text-neon-cyan" />
+        Pièces jointes
+      </p>
       <ul className="flex flex-col gap-3">
         {pieces.map((piece) => (
           <li key={piece.id}>

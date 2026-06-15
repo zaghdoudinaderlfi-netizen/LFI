@@ -38,6 +38,15 @@ enum TypeExercice {
   DEVOIR_PDF_FORMULAIRE
 }
 
+// Pour un devoir DEVOIR_PDF_FORMULAIRE, mode de remise choisi par le prof :
+// - EN_LIGNE : l'élève remplit les champs du PDF directement sur le site.
+// - TELECHARGEMENT : l'élève télécharge le PDF-formulaire, le remplit dans
+//   son propre lecteur PDF, puis dépose le fichier rempli (façon Capytale).
+enum ModeRemiseFormulaire {
+  EN_LIGNE
+  TELECHARGEMENT
+}
+
 enum TypeQuestion {
   CHOIX_UNIQUE
   CHOIX_MULTIPLE
@@ -76,6 +85,11 @@ model User {
   prenom     String?
   motDePasse String
   role       Role    @default(ELEVE)
+
+  // Avatar (constructeur façon Kahoot, élèves uniquement). Null = avatar
+  // par défaut généré à partir de l'identifiant (lib/avatar.ts).
+  avatarStyle   String?
+  avatarOptions Json?
 
   classe   Classe? @relation(fields: [classeId], references: [id])
   classeId String?
@@ -198,6 +212,9 @@ model Exercice {
   sujetChemin   String?
   sujetTaille   Int?
   sujetTypeMime String?
+
+  // DEVOIR_PDF_FORMULAIRE uniquement : mode de remise choisi par le prof.
+  modeRemise ModeRemiseFormulaire @default(EN_LIGNE)
 
   soumissions Soumission[]
 }

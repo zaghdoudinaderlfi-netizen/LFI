@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { AvatarDisplay } from "@/components/avatar/avatar-display";
 
 export default async function ProfProfilPage() {
   const session = await auth();
@@ -10,30 +11,24 @@ export default async function ProfProfilPage() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <h1 className="text-2xl font-bold text-slate-800">Profil</h1>
+      <h1 className="page-title animate-fade-in-up">Profil</h1>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <dl className="flex flex-col gap-4">
+      <section className="card animate-fade-in-up flex flex-col gap-4 p-6">
+        <div className="flex items-center gap-4">
+          {user && <AvatarDisplay user={user} neutre taille="xl" />}
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              Nom
-            </dt>
-            <dd className="text-sm text-slate-800">{user?.nom}</dd>
+            <p className="text-lg font-semibold text-ink-primary">
+              {[user?.prenom, user?.nom].filter(Boolean).join(" ")}
+            </p>
+            <p className="text-sm text-ink-secondary">{user?.email}</p>
           </div>
-          <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              Email
-            </dt>
-            <dd className="text-sm text-slate-800">{user?.email}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              Rôle
-            </dt>
-            <dd className="text-sm text-slate-800">Professeur</dd>
-          </div>
+        </div>
+
+        <dl className="border-t border-space-border pt-4">
+          <dt className="eyebrow mb-1">Rôle</dt>
+          <dd className="text-sm text-ink-primary">Professeur</dd>
         </dl>
-      </div>
+      </section>
     </div>
   );
 }

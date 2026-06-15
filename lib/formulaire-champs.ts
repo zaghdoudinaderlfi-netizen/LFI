@@ -23,6 +23,17 @@ export type ChampFormulaire =
 // afin de les distinguer des autres champs du formulaire de soumission.
 export const PREFIXE_CHAMP_FORMULAIRE = "champ__";
 
+// Mode de remise d'un devoir PDF-formulaire (cf. enum Prisma ModeRemiseFormulaire,
+// dont les valeurs sont exactement "EN_LIGNE" | "TELECHARGEMENT"). Dupliqué ici,
+// sans dépendance à lib/prisma, pour rester importable depuis des composants client.
+export type ModeRemiseFormulaireValeur = "EN_LIGNE" | "TELECHARGEMENT";
+
+export const MODE_REMISE_FORMULAIRE_LABELS: Record<ModeRemiseFormulaireValeur, string> = {
+  EN_LIGNE: "En ligne (l'élève remplit les champs directement sur le site)",
+  TELECHARGEMENT:
+    "Téléchargement (l'élève télécharge le PDF, le remplit dans son lecteur, puis le dépose)",
+};
+
 // Transforme un nom de champ technique ("Nom_eleve", "date-de-rendu") en libellé lisible.
 export function formaterLabelChamp(nom: string): string {
   const propre = nom.replace(/[_\-.]+/g, " ").trim();

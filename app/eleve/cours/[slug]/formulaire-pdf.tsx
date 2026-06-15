@@ -13,7 +13,9 @@ type PageRendue = { largeur: number; hauteur: number; image: string; viewport: P
 
 // Convertit le rectangle (repère PDF, origine en bas à gauche) d'un champ en
 // position/taille CSS dans la page rendue (repère écran, origine en haut à
-// gauche), en respectant l'échelle et la rotation de la page.
+// gauche), en respectant l'échelle et la rotation de la page. Les valeurs
+// sont exprimées en pourcentage de la page : la couche reste alignée même si
+// la page est redimensionnée (zoom, responsive...).
 function styleDePosition(viewport: PageViewport, rect: RectanglePdf): CSSProperties {
   const [x1, y1, x2, y2] = viewport.convertToViewportRectangle([
     rect.x,
@@ -24,10 +26,10 @@ function styleDePosition(viewport: PageViewport, rect: RectanglePdf): CSSPropert
 
   return {
     position: "absolute",
-    left: Math.min(x1, x2),
-    top: Math.min(y1, y2),
-    width: Math.abs(x2 - x1),
-    height: Math.abs(y2 - y1),
+    left: `${(Math.min(x1, x2) / viewport.width) * 100}%`,
+    top: `${(Math.min(y1, y2) / viewport.height) * 100}%`,
+    width: `${(Math.abs(x2 - x1) / viewport.width) * 100}%`,
+    height: `${(Math.abs(y2 - y1) / viewport.height) * 100}%`,
   };
 }
 
@@ -94,11 +96,11 @@ export function FormulairePdfOverlay({
   }, [pdfUrl]);
 
   if (erreur) {
-    return <p className="text-sm text-red-600">{erreur}</p>;
+    return <p className="text-sm text-red-400">{erreur}</p>;
   }
 
   if (!pages) {
-    return <p className="text-sm text-slate-500">Chargement du PDF…</p>;
+    return <p className="text-sm text-ink-muted">Chargement du PDF…</p>;
   }
 
   return (
@@ -106,16 +108,14 @@ export function FormulairePdfOverlay({
       {pages.map((page, indexPage) => (
         <div
           key={indexPage}
-          className="relative w-full overflow-x-auto rounded-md border border-slate-200 bg-white"
+          className="relative w-full overflow-hidden rounded-xl border border-space-border bg-white"
+          style={{ aspectRatio: `${page.largeur} / ${page.hauteur}` }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={page.image}
             alt={`Page ${indexPage + 1} du PDF-formulaire`}
-            width={page.largeur}
-            height={page.hauteur}
-            className="block"
-            style={{ width: page.largeur, height: page.hauteur }}
+            className="absolute inset-0 h-full w-full"
           />
 
           {champs.flatMap((champ) => {

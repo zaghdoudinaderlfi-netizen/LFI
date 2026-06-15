@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import type { Logiciel } from "@prisma/client";
-import { ArrowUp, ArrowDown, Trash2 } from "lucide-react";
+import { ArrowUp, ArrowDown, Package, Trash2 } from "lucide-react";
 import { formaterTaille } from "@/lib/fichiers";
 import {
   ajouterFichierLogicielAction,
@@ -12,19 +12,15 @@ import {
   supprimerLogicielAction,
 } from "./actions";
 
-const champClasse =
-  "rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400";
-const labelClasse = "text-sm font-medium text-slate-700";
-
 export function LogicielItem({ logiciel, index, total }: { logiciel: Logiciel; index: number; total: number }) {
   const [messageInfos, formActionInfos, isPendingInfos] = useActionState(modifierLogicielAction, undefined);
   const [messageFichier, formActionFichier, isPendingFichier] = useActionState(ajouterFichierLogicielAction, undefined);
   const [messageRetrait, formActionRetrait, isPendingRetrait] = useActionState(supprimerFichierLogicielAction, undefined);
 
   return (
-    <li className="flex flex-col gap-4 rounded-md border border-slate-200 p-4">
+    <li className="flex flex-col gap-4 rounded-xl border border-space-border bg-space-surface2/60 p-4">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-slate-800">{logiciel.titre}</p>
+        <p className="text-sm font-semibold text-ink-primary">{logiciel.titre}</p>
 
         <div className="flex shrink-0 items-center gap-1">
           <form action={deplacerLogicielAction}>
@@ -33,7 +29,7 @@ export function LogicielItem({ logiciel, index, total }: { logiciel: Logiciel; i
             <button
               type="submit"
               disabled={index === 0}
-              className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+              className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-space-surface2 hover:text-ink-primary disabled:opacity-30"
               aria-label="Monter"
               title="Monter"
             >
@@ -46,7 +42,7 @@ export function LogicielItem({ logiciel, index, total }: { logiciel: Logiciel; i
             <button
               type="submit"
               disabled={index === total - 1}
-              className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+              className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-space-surface2 hover:text-ink-primary disabled:opacity-30"
               aria-label="Descendre"
               title="Descendre"
             >
@@ -62,7 +58,7 @@ export function LogicielItem({ logiciel, index, total }: { logiciel: Logiciel; i
             <input type="hidden" name="id" value={logiciel.id} />
             <button
               type="submit"
-              className="rounded-md p-1.5 text-red-600 hover:bg-red-50"
+              className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-red-500/10 hover:text-red-400"
               aria-label="Supprimer"
               title="Supprimer"
             >
@@ -76,7 +72,7 @@ export function LogicielItem({ logiciel, index, total }: { logiciel: Logiciel; i
         <input type="hidden" name="id" value={logiciel.id} />
 
         <div className="flex flex-col gap-1">
-          <label htmlFor={`titre-${logiciel.id}`} className={labelClasse}>
+          <label htmlFor={`titre-${logiciel.id}`} className="field-label">
             Titre
           </label>
           <input
@@ -85,12 +81,12 @@ export function LogicielItem({ logiciel, index, total }: { logiciel: Logiciel; i
             type="text"
             defaultValue={logiciel.titre}
             required
-            className={champClasse}
+            className="input"
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor={`description-${logiciel.id}`} className={labelClasse}>
+          <label htmlFor={`description-${logiciel.id}`} className="field-label">
             Description
           </label>
           <textarea
@@ -99,12 +95,12 @@ export function LogicielItem({ logiciel, index, total }: { logiciel: Logiciel; i
             defaultValue={logiciel.description}
             required
             rows={2}
-            className={`${champClasse} resize-y`}
+            className="input resize-y"
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor={`lien-${logiciel.id}`} className={labelClasse}>
+          <label htmlFor={`lien-${logiciel.id}`} className="field-label">
             Lien de téléchargement
           </label>
           <input
@@ -113,36 +109,30 @@ export function LogicielItem({ logiciel, index, total }: { logiciel: Logiciel; i
             type="url"
             placeholder="https://..."
             defaultValue={logiciel.lien ?? ""}
-            className={champClasse}
+            className="input"
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={isPendingInfos}
-          className="self-start rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-        >
+        <button type="submit" disabled={isPendingInfos} className="btn-secondary self-start">
           {isPendingInfos ? "Enregistrement..." : "Enregistrer"}
         </button>
         {messageInfos && (
-          <p className={`text-sm ${messageInfos === "Modifications enregistrées." ? "text-green-600" : "text-red-600"}`} role="alert">
+          <p className={`text-sm ${messageInfos === "Modifications enregistrées." ? "text-emerald-400" : "text-red-400"}`} role="alert">
             {messageInfos}
           </p>
         )}
       </form>
 
-      <div className="flex flex-col gap-2 rounded-md bg-slate-50 p-3">
+      <div className="flex flex-col gap-2 rounded-lg border border-space-border bg-space-surface/60 p-3">
         {logiciel.fichierNom ? (
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="truncate text-sm text-slate-700">
-              📦 {logiciel.fichierNom}
+            <p className="flex items-center gap-2 truncate text-sm text-ink-secondary">
+              <Package className="h-4 w-4 shrink-0 text-neon-cyan" />
+              {logiciel.fichierNom}
               {logiciel.fichierTaille != null && ` (${formaterTaille(logiciel.fichierTaille)})`}
             </p>
             <div className="flex items-center gap-3">
-              <a
-                href={`/api/logiciels/${logiciel.id}/fichier`}
-                className="text-xs font-medium text-slate-500 hover:underline"
-              >
+              <a href={`/api/logiciels/${logiciel.id}/fichier`} className="link-muted text-xs font-medium">
                 Télécharger
               </a>
               <form action={formActionRetrait}>
@@ -150,7 +140,7 @@ export function LogicielItem({ logiciel, index, total }: { logiciel: Logiciel; i
                 <button
                   type="submit"
                   disabled={isPendingRetrait}
-                  className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
+                  className="text-xs font-medium text-red-400 transition-colors hover:text-red-300 disabled:opacity-50"
                 >
                   Retirer le fichier
                 </button>
@@ -158,10 +148,10 @@ export function LogicielItem({ logiciel, index, total }: { logiciel: Logiciel; i
             </div>
           </div>
         ) : (
-          <p className="text-xs text-slate-500">Aucun fichier hébergé pour ce logiciel.</p>
+          <p className="text-xs text-ink-muted">Aucun fichier hébergé pour ce logiciel.</p>
         )}
         {messageRetrait && (
-          <p className={`text-xs ${messageRetrait === "Fichier retiré." ? "text-green-600" : "text-red-600"}`} role="alert">
+          <p className={`text-xs ${messageRetrait === "Fichier retiré." ? "text-emerald-400" : "text-red-400"}`} role="alert">
             {messageRetrait}
           </p>
         )}
@@ -173,18 +163,14 @@ export function LogicielItem({ logiciel, index, total }: { logiciel: Logiciel; i
             type="file"
             accept=".zip,.exe,.msi,.dmg,.deb,.appimage,.7z,.tar,.gz"
             required
-            className="rounded-md border border-slate-300 text-sm file:mr-3 file:rounded file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-sm"
+            className="input file:mr-3 file:rounded file:border-0 file:bg-space-surface file:px-3 file:py-1 file:text-sm file:text-ink-primary"
           />
-          <button
-            type="submit"
-            disabled={isPendingFichier}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-white disabled:opacity-50"
-          >
+          <button type="submit" disabled={isPendingFichier} className="btn-secondary">
             {isPendingFichier ? "Envoi..." : logiciel.fichierNom ? "Remplacer le fichier" : "Ajouter un fichier"}
           </button>
         </form>
         {messageFichier && (
-          <p className={`text-xs ${messageFichier === "Fichier ajouté." ? "text-green-600" : "text-red-600"}`} role="alert">
+          <p className={`text-xs ${messageFichier === "Fichier ajouté." ? "text-emerald-400" : "text-red-400"}`} role="alert">
             {messageFichier}
           </p>
         )}

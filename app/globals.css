@@ -1,3 +1,184 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --font-heading: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+/* ───────────────────────────────────────────────
+   Fond "espace" : nébuleuses + étoiles (CSS pur,
+   léger, fixe — pas d'images à charger).
+   ─────────────────────────────────────────────── */
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+  background-color: #060814;
+  color: #eef2ff;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+body::before {
+  z-index: -2;
+  background:
+    radial-gradient(ellipse 900px 600px at 10% -10%, rgba(96, 165, 250, 0.16), transparent 60%),
+    radial-gradient(ellipse 800px 600px at 110% 0%, rgba(167, 139, 250, 0.16), transparent 60%),
+    radial-gradient(ellipse 700px 700px at 50% 120%, rgba(34, 211, 238, 0.10), transparent 60%);
+}
+
+body::after {
+  z-index: -1;
+  opacity: 0.55;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.7), transparent 100%),
+    radial-gradient(1px 1px at 70% 65%, rgba(255, 255, 255, 0.5), transparent 100%),
+    radial-gradient(1.5px 1.5px at 40% 80%, rgba(255, 255, 255, 0.6), transparent 100%),
+    radial-gradient(1px 1px at 90% 15%, rgba(255, 255, 255, 0.5), transparent 100%),
+    radial-gradient(1.5px 1.5px at 15% 60%, rgba(255, 255, 255, 0.45), transparent 100%),
+    radial-gradient(1px 1px at 55% 10%, rgba(255, 255, 255, 0.6), transparent 100%);
+  background-repeat: repeat;
+  background-size: 360px 360px;
+}
+
+/* ───────────────────────────────────────────────
+   Accessibilité : focus clavier visible, mouvement
+   réduit pour celles et ceux qui le demandent.
+   ─────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ───────────────────────────────────────────────
+   Scrollbar (thème sombre)
+   ─────────────────────────────────────────────── */
+
+* {
+  scrollbar-color: #3b4674 #0a0e1f;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0e1f;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a3354;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3b4674;
+}
+
+/* ───────────────────────────────────────────────
+   Composants réutilisables
+   ─────────────────────────────────────────────── */
+
+@layer components {
+  /* Cartes */
+  .card {
+    @apply rounded-2xl border border-space-border bg-space-surface/70 shadow-card backdrop-blur-sm;
+  }
+  .card-interactive {
+    @apply card transition-all duration-200 hover:-translate-y-0.5 hover:border-neon-blue/40 hover:shadow-glow-soft;
+  }
+
+  /* Boutons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .btn-primary {
+    @apply btn bg-gradient-to-r from-neon-blue to-neon-violet font-semibold text-space-bg shadow-glow-soft hover:brightness-110 hover:shadow-glow-violet;
+  }
+  .btn-secondary {
+    @apply btn border border-space-border bg-space-surface2 text-ink-primary hover:border-neon-cyan/50 hover:text-neon-cyan;
+  }
+  .btn-ghost {
+    @apply btn text-ink-secondary hover:bg-space-surface2 hover:text-ink-primary;
+  }
+  .btn-danger {
+    @apply btn border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20;
+  }
+
+  /* Champs de formulaire */
+  .field-label {
+    @apply text-sm font-medium text-ink-secondary;
+  }
+  .input {
+    @apply w-full rounded-lg border border-space-border bg-space-surface2/80 px-3 py-2 text-sm text-ink-primary placeholder:text-ink-muted transition-colors focus-visible:border-neon-cyan/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan/30;
+  }
+
+  /* Titres et libellés */
+  .page-title {
+    @apply font-heading text-2xl font-bold tracking-tight text-ink-primary sm:text-3xl;
+  }
+  .section-title {
+    @apply font-heading text-lg font-semibold text-ink-primary;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-wider text-neon-cyan/80;
+  }
+  .link-muted {
+    @apply text-ink-secondary transition-colors hover:text-neon-cyan;
+  }
+  .badge {
+    @apply inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold;
+  }
+
+  /* Contenu de cours (lecture) */
+  .prose-cours {
+    @apply prose prose-invert max-w-none sm:prose-lg prose-headings:font-heading prose-headings:font-semibold prose-headings:text-ink-primary prose-p:leading-relaxed prose-p:text-ink-secondary prose-a:text-neon-cyan prose-a:no-underline hover:prose-a:underline prose-strong:text-ink-primary prose-blockquote:border-neon-violet/50 prose-blockquote:text-ink-secondary prose-li:text-ink-secondary prose-img:mx-auto prose-img:block prose-img:rounded-xl prose-hr:border-space-border;
+  }
+
+  /* États de chargement */
+  .skeleton {
+    @apply relative overflow-hidden rounded-lg bg-space-surface2/80;
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+    animation: shimmer 1.6s infinite;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}

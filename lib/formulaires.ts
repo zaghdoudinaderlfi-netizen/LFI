@@ -8,12 +8,39 @@ import {
   PDFRadioGroup,
   PDFTextField,
   PDFField,
+  PDFPage,
+  PDFWidgetAnnotation,
+  PDFDict,
 } from "pdf-lib";
 import { ChampFormulaire, PositionChamp, RectanglePdf } from "./formulaire-champs";
 
 export class FormulaireError extends Error {}
 
 export type { ChampFormulaire };
+
+// Détermine l'index de la page sur laquelle apparaît un widget. La plupart
+// des PDF renseignent /P sur le widget, mais certains outils (LibreOffice...)
+// l'omettent : en repli, on cherche la page dont le tableau /Annots référence
+// ce widget (égalité de référence sur son dictionnaire).
+function indexPageDuWidget(pdfDoc: PDFDocument, pages: PDFPage[], widget: PDFWidgetAnnotation): number {
+  const pageRef = widget.P();
+  if (pageRef) {
+    const trouve = pages.findIndex((p) => p.ref.toString() === pageRef.toString());
+    if (trouve !== -1) return trouve;
+  }
+
+  for (let i = 0; i < pages.length; i++) {
+    const annots = pages[i].node.Annots();
+    if (!annots) continue;
+
+    for (let j = 0; j < annots.size(); j++) {
+      const annot = pdfDoc.context.lookup(annots.get(j));
+      if (annot instanceof PDFDict && annot === widget.dict) return i;
+    }
+  }
+
+  return 0;
+}
 
 // Détermine, pour chaque widget (zone cliquable/éditable) d'un champ, la page
 // sur laquelle il apparaît et son rectangle (repère PDF, origine en bas à
@@ -24,12 +51,7 @@ function positionsDuChamp(pdfDoc: PDFDocument, champ: PDFField): PositionChamp[]
   const positions: PositionChamp[] = [];
 
   for (const widget of champ.acroField.getWidgets()) {
-    const pageRef = widget.P();
-    let page = 0;
-    if (pageRef) {
-      const trouve = pages.findIndex((p) => p.ref.toString() === pageRef.toString());
-      if (trouve !== -1) page = trouve;
-    }
+    const page = indexPageDuWidget(pdfDoc, pages, widget);
 
     const { x, y, width, height } = widget.getRectangle();
     const rect: RectanglePdf = { x, y, largeur: width, hauteur: height };

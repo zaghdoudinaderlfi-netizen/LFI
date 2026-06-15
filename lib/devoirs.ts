@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { Niveau, TypeExercice } from "@prisma/client";
+import { ModeRemiseFormulaire, Niveau, TypeExercice } from "@prisma/client";
 import { prisma } from "./prisma";
 import { supabaseAdmin, BUCKET_PIECES_JOINTES } from "./supabase";
 import { EXTENSIONS_DOCUMENTS, TAILLE_MAX_OCTETS, extensionDe, nomFichierSur } from "./fichiers";
@@ -13,8 +13,10 @@ export const TYPES_DEVOIR = [TypeExercice.DEVOIR_PDF, TypeExercice.DEVOIR_PDF_FO
 
 export const TYPE_DEVOIR_LABELS: Record<(typeof TYPES_DEVOIR)[number], string> = {
   [TypeExercice.DEVOIR_PDF]: "Envoi de fichier",
-  [TypeExercice.DEVOIR_PDF_FORMULAIRE]: "PDF-formulaire (rempli en ligne)",
+  [TypeExercice.DEVOIR_PDF_FORMULAIRE]: "PDF-formulaire",
 };
+
+export { ModeRemiseFormulaire };
 
 function estTypeDevoir(type: TypeExercice): type is (typeof TYPES_DEVOIR)[number] {
   return (TYPES_DEVOIR as readonly TypeExercice[]).includes(type);
@@ -26,6 +28,7 @@ type DevoirInput = {
   points: number;
   dateLimite?: Date | null;
   type: TypeExercice;
+  modeRemise?: ModeRemiseFormulaire;
 };
 
 function validerDevoirInput({ titre, consigne, points, type }: DevoirInput) {
@@ -62,6 +65,7 @@ export async function creerDevoir(coursId: string, data: DevoirInput) {
       type: data.type,
       points: data.points,
       dateLimite: data.dateLimite ?? null,
+      modeRemise: data.modeRemise ?? ModeRemiseFormulaire.EN_LIGNE,
     },
   });
 
@@ -124,6 +128,20 @@ export async function obtenirDevoir(id: string) {
   return devoir;
 }
 
+// DEVOIR_PDF_FORMULAIRE uniquement : change le mode de remise (Mode A "en
+// ligne" ou Mode B "téléchargement", cf. ModeRemiseFormulaire).
+export async function definirModeRemiseFormulaire(devoirId: string, mode: ModeRemiseFormulaire) {
+  const devoir = await prisma.exercice.findUnique({ where: { id: devoirId } });
+  if (!devoir || devoir.type !== TypeExercice.DEVOIR_PDF_FORMULAIRE) {
+    throw new DevoirError("Devoir introuvable.");
+  }
+
+  return prisma.exercice.update({
+    where: { id: devoirId },
+    data: { modeRemise: mode },
+  });
+}
+
 export async function definirSujetDevoir(devoirId: string, fichier: File) {
   const devoir = await prisma.exercice.findUnique({ where: { id: devoirId } });
   if (!devoir || devoir.type !== TypeExercice.DEVOIR_PDF) {
@@ -179,9 +197,11 @@ export async function definirSujetDevoir(devoirId: string, fichier: File) {
   }
 }
 
-// PDF-formulaire : le sujet doit être un PDF contenant des champs AcroForm
-// (zones de texte, cases à cocher...). Sans champ détecté, on refuse le fichier
-// pour que le prof sache qu'il doit le préparer avec un outil PDF avant.
+// PDF-formulaire : le sujet doit être un PDF. En mode EN_LIGNE, il doit en plus
+// contenir des champs AcroForm (zones de texte, cases à cocher...) puisque
+// l'élève les remplit directement sur le site ; sans champ détecté, on refuse
+// le fichier pour que le prof sache qu'il doit le préparer avec un outil PDF
+// avant (ou choisir le mode TELECHARGEMENT).
 export async function definirSujetFormulaire(devoirId: string, fichier: File) {
   const devoir = await prisma.exercice.findUnique({ where: { id: devoirId } });
   if (!devoir || devoir.type !== TypeExercice.DEVOIR_PDF_FORMULAIRE) {
@@ -211,9 +231,9 @@ export async function definirSujetFormulaire(devoirId: string, fichier: File) {
     throw err;
   }
 
-  if (champs.length === 0) {
+  if (champs.length === 0 && devoir.modeRemise === ModeRemiseFormulaire.EN_LIGNE) {
     throw new DevoirError(
-      "Ce PDF ne contient pas de champs remplissables (zones de texte ou cases à cocher). Prépare-le avec un outil PDF (LibreOffice, Acrobat...) avant de le déposer."
+      "Ce PDF ne contient pas de champs remplissables (zones de texte ou cases à cocher). Prépare-le avec un outil PDF (LibreOffice, Acrobat...) avant de le déposer, ou choisis le mode « Téléchargement »."
     );
   }
 

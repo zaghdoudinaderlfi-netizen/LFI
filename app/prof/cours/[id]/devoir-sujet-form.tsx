@@ -36,7 +36,7 @@ export function DevoirSujetForm({
       <input type="hidden" name="devoirId" value={devoirId} />
       <input type="hidden" name="coursId" value={coursId} />
       <div className="flex flex-1 flex-col gap-1">
-        <label htmlFor={`sujet-${devoirId}`} className="text-sm font-medium text-slate-700">
+        <label htmlFor={`sujet-${devoirId}`} className="field-label">
           {estFormulaire
             ? aDejaSujet
               ? "Remplacer le PDF-formulaire"
@@ -51,19 +51,15 @@ export function DevoirSujetForm({
           type="file"
           accept={estFormulaire ? ".pdf" : ".pdf,.jpg,.jpeg,.png,.webp"}
           required
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm file:mr-3 file:rounded file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+          className="input file:mr-3 file:rounded file:border-0 file:bg-space-surface file:px-3 file:py-1 file:text-sm file:text-ink-primary"
         />
       </div>
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-white disabled:opacity-50"
-      >
+      <button type="submit" disabled={isPending} className="btn-secondary">
         {isPending ? "Envoi..." : aDejaSujet ? "Remplacer" : "Ajouter"}
       </button>
       {message && (
         <p
-          className={`text-sm sm:basis-full ${ajoute ? "text-green-600" : "text-red-600"}`}
+          className={`text-sm sm:basis-full ${ajoute ? "text-emerald-400" : "text-red-400"}`}
           role="alert"
         >
           {message}

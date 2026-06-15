@@ -5,14 +5,6 @@ import { TypeExercice } from "@prisma/client";
 import { TYPE_EXERCICE_CODE_LABELS, TYPES_EXERCICE_CODE } from "@/lib/exercices-code-constants";
 import { creerExerciceCodeAction } from "./exercices-code-actions";
 
-const champClasse =
-  "rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400";
-
-const champClasseMono =
-  "rounded-md border border-slate-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-slate-400";
-
-const labelClasse = "text-sm font-medium text-slate-700";
-
 export function ExerciceCodeForm({ coursId }: { coursId: string }) {
   const [message, formAction, isPending] = useActionState(creerExerciceCodeAction, undefined);
   const formRef = useRef<HTMLFormElement>(null);
@@ -27,11 +19,11 @@ export function ExerciceCodeForm({ coursId }: { coursId: string }) {
   }, [ajoute]);
 
   return (
-    <form ref={formRef} action={formAction} className="flex flex-col gap-3 rounded-md border border-slate-200 p-4">
+    <form ref={formRef} action={formAction} className="flex flex-col gap-3 rounded-xl border border-space-border bg-space-surface2/60 p-4">
       <input type="hidden" name="coursId" value={coursId} />
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="titre-exercice-code" className={labelClasse}>
+        <label htmlFor="titre-exercice-code" className="field-label">
           Titre de l&apos;exercice
         </label>
         <input
@@ -40,12 +32,12 @@ export function ExerciceCodeForm({ coursId }: { coursId: string }) {
           type="text"
           required
           placeholder="ex. Boucle for et affichage"
-          className={champClasse}
+          className="input"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="consigne-exercice-code" className={labelClasse}>
+        <label htmlFor="consigne-exercice-code" className="field-label">
           Consigne
         </label>
         <textarea
@@ -54,12 +46,12 @@ export function ExerciceCodeForm({ coursId }: { coursId: string }) {
           rows={3}
           required
           placeholder="Décris ce que l'élève doit coder..."
-          className={champClasse}
+          className="input"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="type-exercice-code" className={labelClasse}>
+        <label htmlFor="type-exercice-code" className="field-label">
           Type d&apos;exercice
         </label>
         <select
@@ -67,7 +59,7 @@ export function ExerciceCodeForm({ coursId }: { coursId: string }) {
           name="type"
           value={type}
           onChange={(e) => setType(e.target.value as (typeof TYPES_EXERCICE_CODE)[number])}
-          className={champClasse}
+          className="input"
         >
           {TYPES_EXERCICE_CODE.map((t) => (
             <option key={t} value={t}>
@@ -78,7 +70,7 @@ export function ExerciceCodeForm({ coursId }: { coursId: string }) {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="codeDepart-exercice-code" className={labelClasse}>
+        <label htmlFor="codeDepart-exercice-code" className="field-label">
           Code de départ (optionnel)
         </label>
         <textarea
@@ -86,13 +78,13 @@ export function ExerciceCodeForm({ coursId }: { coursId: string }) {
           name="codeDepart"
           rows={6}
           placeholder={`print("Bonjour, le monde !")`}
-          className={champClasseMono}
+          className="input font-mono"
         />
       </div>
 
       {type === TypeExercice.PYTHON && (
         <div className="flex flex-col gap-1">
-          <label htmlFor="sortieAttendue-exercice-code" className={labelClasse}>
+          <label htmlFor="sortieAttendue-exercice-code" className="field-label">
             Sortie attendue (correction automatique)
           </label>
           <textarea
@@ -101,9 +93,9 @@ export function ExerciceCodeForm({ coursId }: { coursId: string }) {
             rows={4}
             required
             placeholder={`Bonjour, le monde !`}
-            className={champClasseMono}
+            className="input font-mono"
           />
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-ink-muted">
             La sortie du programme de l&apos;élève (ce qu&apos;affiche <code>print</code>) sera comparée à ce texte
             pour déterminer automatiquement la réussite.
           </p>
@@ -111,7 +103,7 @@ export function ExerciceCodeForm({ coursId }: { coursId: string }) {
       )}
 
       {type === TypeExercice.TURTLE && (
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-ink-muted">
           Exercice de dessin (module turtle) : pas de correction automatique. Tu corriges manuellement (note +
           appréciation), avec éventuellement une capture du dessin de l&apos;élève.
         </p>
@@ -119,7 +111,7 @@ export function ExerciceCodeForm({ coursId }: { coursId: string }) {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1">
-          <label htmlFor="points-exercice-code" className={labelClasse}>
+          <label htmlFor="points-exercice-code" className="field-label">
             Barème (points)
           </label>
           <input
@@ -130,28 +122,24 @@ export function ExerciceCodeForm({ coursId }: { coursId: string }) {
             step={1}
             required
             defaultValue={10}
-            className={champClasse}
+            className="input"
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="dateLimite-exercice-code" className={labelClasse}>
+          <label htmlFor="dateLimite-exercice-code" className="field-label">
             Date limite (optionnel)
           </label>
-          <input id="dateLimite-exercice-code" name="dateLimite" type="date" className={champClasse} />
+          <input id="dateLimite-exercice-code" name="dateLimite" type="date" className="input" />
         </div>
       </div>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="self-start rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-      >
+      <button type="submit" disabled={isPending} className="btn-primary self-start">
         {isPending ? "Ajout..." : "Ajouter l'exercice"}
       </button>
 
       {message && (
-        <p className={`text-sm ${ajoute ? "text-green-600" : "text-red-600"}`} role="alert">
+        <p className={`text-sm ${ajoute ? "text-emerald-400" : "text-red-400"}`} role="alert">
           {message}
         </p>
       )}

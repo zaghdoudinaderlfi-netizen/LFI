@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { modifierProfilAction } from "./actions";
+import { useToast } from "@/components/ui/toast";
 
 export function ProfilForm({
   nom,
@@ -12,11 +13,17 @@ export function ProfilForm({
 }) {
   const [message, formAction, isPending] = useActionState(modifierProfilAction, undefined);
   const enregistre = message === "Profil mis à jour.";
+  const { addToast } = useToast();
+
+  useEffect(() => {
+    if (!message) return;
+    addToast({ type: enregistre ? "success" : "error", message });
+  }, [message, enregistre, addToast]);
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
-        <label htmlFor="prenom" className="text-sm font-medium text-slate-700">
+        <label htmlFor="prenom" className="field-label">
           Prénom
         </label>
         <input
@@ -25,12 +32,12 @@ export function ProfilForm({
           type="text"
           defaultValue={prenom}
           autoComplete="given-name"
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+          className="input"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="nom" className="text-sm font-medium text-slate-700">
+        <label htmlFor="nom" className="field-label">
           Nom
         </label>
         <input
@@ -40,20 +47,16 @@ export function ProfilForm({
           required
           defaultValue={nom}
           autoComplete="family-name"
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+          className="input"
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="self-start rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-      >
+      <button type="submit" disabled={isPending} className="btn-primary self-start">
         {isPending ? "Enregistrement..." : "Enregistrer"}
       </button>
 
       {message && (
-        <p className={`text-sm ${enregistre ? "text-green-600" : "text-red-600"}`} role="alert">
+        <p className={`text-sm ${enregistre ? "text-emerald-400" : "text-red-400"}`} role="alert">
           {message}
         </p>
       )}

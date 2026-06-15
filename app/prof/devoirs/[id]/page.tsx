@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { obtenirDevoir, TYPE_DEVOIR_LABELS } from "@/lib/devoirs";
 import { obtenirCoursParId } from "@/lib/cours";
 import { listerClasses, NIVEAU_LABELS } from "@/lib/classes";
 import { listerRosterDevoir } from "@/lib/soumissions";
 import { ApercuFichier } from "@/components/apercu-fichier";
+import { AvatarDisplay } from "@/components/avatar/avatar-display";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 import { CorrectionForm } from "../correction-form";
 
@@ -39,57 +41,50 @@ export default async function DevoirRosterPage({
   const lignes = classeId ? await listerRosterDevoir(id, classeId) : [];
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <div>
-        <Link href={`/prof/cours/${cours.id}`} className="text-sm text-slate-500 hover:underline">
-          ← Retour au cours
+    <div className="mx-auto flex max-w-3xl flex-col gap-6 pb-10">
+      <div className="animate-fade-in-up">
+        <Link href={`/prof/cours/${cours.id}`} className="link-muted inline-flex items-center gap-1.5 text-sm">
+          <ArrowLeft className="h-4 w-4" />
+          Retour au cours
         </Link>
-        <h1 className="mt-1 text-2xl font-bold text-slate-800">{devoir.titre}</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="page-title mt-1">{devoir.titre}</h1>
+        <p className="text-sm text-ink-secondary">
           {cours.titre} · {TYPE_DEVOIR_LABELS[devoir.type as keyof typeof TYPE_DEVOIR_LABELS]} · Barème :{" "}
           {devoir.points} pts
         </p>
       </div>
 
       {classesNiveau.length === 0 ? (
-        <p className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
+        <p className="card animate-fade-in-up p-6 text-sm text-ink-muted [animation-delay:60ms]">
           Aucune classe de {NIVEAU_LABELS[cours.niveau]} n&apos;est encore créée.
         </p>
       ) : (
         <>
           {classesNiveau.length > 1 && (
-            <form className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <label htmlFor="classe" className="text-sm font-medium text-slate-700">
+            <form className="card animate-fade-in-up flex items-center gap-2 p-4 [animation-delay:60ms]">
+              <label htmlFor="classe" className="field-label">
                 Classe :
               </label>
-              <select
-                id="classe"
-                name="classe"
-                defaultValue={classeId}
-                className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
-              >
+              <select id="classe" name="classe" defaultValue={classeId} className="input">
                 {classesNiveau.map((classe) => (
                   <option key={classe.id} value={classe.id}>
                     {classe.nom}
                   </option>
                 ))}
               </select>
-              <button
-                type="submit"
-                className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-              >
+              <button type="submit" className="btn-secondary">
                 Afficher
               </button>
             </form>
           )}
 
-          <div className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-800">
+          <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:120ms]">
+            <h2 className="section-title">
               {classesNiveau.find((c) => c.id === classeId)?.nom}
             </h2>
 
             {lignes.length === 0 ? (
-              <p className="text-sm text-slate-500">Aucun élève dans cette classe.</p>
+              <p className="text-sm text-ink-muted">Aucun élève dans cette classe.</p>
             ) : (
               <ul className="flex flex-col gap-4">
                 {lignes.map((ligne) => {
@@ -97,10 +92,13 @@ export default async function DevoirRosterPage({
                     return (
                       <li
                         key={ligne.eleve.id}
-                        className="flex items-center justify-between gap-3 rounded-md border border-slate-200 p-3"
+                        className="flex items-center justify-between gap-3 rounded-xl border border-space-border bg-space-surface2/60 p-3"
                       >
-                        <p className="font-medium text-slate-700">{formaterNomComplet(ligne.eleve)}</p>
-                        <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+                        <span className="inline-flex items-center gap-2 text-sm font-medium text-ink-primary">
+                          <AvatarDisplay user={ligne.eleve} taille="sm" />
+                          {formaterNomComplet(ligne.eleve)}
+                        </span>
+                        <span className="badge bg-amber-500/10 px-3 text-amber-400 ring-1 ring-amber-500/30">
                           En attente
                         </span>
                       </li>
@@ -108,29 +106,33 @@ export default async function DevoirRosterPage({
                   }
 
                   const { soumission, eleves } = ligne;
-                  const nomsGroupe = eleves.map((e) => formaterNomComplet(e)).join(", ");
 
                   return (
                     <li
                       key={soumission.id}
-                      className="flex flex-col gap-3 rounded-md border border-slate-200 p-3"
+                      className="flex flex-col gap-3 rounded-xl border border-space-border bg-space-surface2/60 p-3"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="font-medium text-slate-700">
-                          {nomsGroupe}
+                        <div className="flex flex-wrap items-center gap-3">
+                          {eleves.map((eleve) => (
+                            <span key={eleve.id} className="inline-flex items-center gap-2 text-sm font-medium text-ink-primary">
+                              <AvatarDisplay user={eleve} taille="sm" />
+                              {formaterNomComplet(eleve)}
+                            </span>
+                          ))}
                           {eleves.length > 1 && (
-                            <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+                            <span className="badge bg-space-surface2 px-2 text-ink-secondary ring-1 ring-space-border">
                               Groupe de {eleves.length}
                             </span>
                           )}
-                        </p>
+                        </div>
                         <div className="flex items-center gap-2">
                           {soumission.corrigeManuellement ? (
-                            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                            <span className="badge bg-emerald-500/10 px-3 text-emerald-400 ring-1 ring-emerald-500/30">
                               Corrigé : {soumission.note} / {devoir.points}
                             </span>
                           ) : (
-                            <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                            <span className="badge bg-neon-cyan/10 px-3 text-neon-cyan ring-1 ring-neon-cyan/30">
                               Rendu le {soumission.createdAt.toLocaleDateString("fr-FR")}
                             </span>
                           )}
@@ -138,7 +140,7 @@ export default async function DevoirRosterPage({
                       </div>
 
                       {soumission.fichierNom && soumission.fichierTaille != null && soumission.fichierTypeMime && (
-                        <div className="rounded-md bg-slate-50 p-3">
+                        <div className="rounded-xl border border-space-border bg-space-surface/60 p-3">
                           <ApercuFichier
                             nom={soumission.fichierNom}
                             taille={soumission.fichierTaille}
@@ -149,7 +151,7 @@ export default async function DevoirRosterPage({
                       )}
 
                       {soumission.corrigeManuellement && soumission.feedback && (
-                        <p className="text-sm text-slate-600">Commentaire : {soumission.feedback}</p>
+                        <p className="text-sm text-ink-secondary">Commentaire : {soumission.feedback}</p>
                       )}
 
                       <CorrectionForm soumissionId={soumission.id} bareme={devoir.points} />

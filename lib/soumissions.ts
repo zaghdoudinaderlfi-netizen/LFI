@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { TypeExercice } from "@prisma/client";
+import { ModeRemiseFormulaire, TypeExercice } from "@prisma/client";
 import { prisma } from "./prisma";
 import { supabaseAdmin, BUCKET_PIECES_JOINTES, BUCKET_RENDUS_DEVOIRS } from "./supabase";
 import { notifierProfs } from "./notifications";
@@ -43,8 +43,10 @@ export async function listerCamaradesClasse(eleveId: string): Promise<CamaradeCl
 }
 
 const MEMBRE_AVEC_ELEVE = {
-  eleve: { select: { id: true, nom: true, prenom: true } },
-  membres: { include: { eleve: { select: { id: true, nom: true, prenom: true } } } },
+  eleve: { select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true } },
+  membres: {
+    include: { eleve: { select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true } } },
+  },
 } as const;
 
 // Vérifie que les coéquipiers choisis sont valides (classe, nombre, pas déjà
@@ -143,7 +145,13 @@ export async function deposerSoumission(
     where: { id: exerciceId },
     include: { cours: { select: { titre: true } } },
   });
-  if (!exercice || exercice.type !== TypeExercice.DEVOIR_PDF) {
+  // Dépôt de fichier : devoirs "Envoi de fichier", ou PDF-formulaire en mode
+  // "Téléchargement" (l'élève dépose le PDF rempli avec son propre lecteur).
+  const modeAccepte =
+    exercice?.type === TypeExercice.DEVOIR_PDF ||
+    (exercice?.type === TypeExercice.DEVOIR_PDF_FORMULAIRE &&
+      exercice.modeRemise === ModeRemiseFormulaire.TELECHARGEMENT);
+  if (!exercice || !modeAccepte) {
     throw new SoumissionError("Devoir introuvable.");
   }
 
@@ -245,6 +253,10 @@ export async function deposerSoumissionFormulaire(
   });
   if (!exercice || exercice.type !== TypeExercice.DEVOIR_PDF_FORMULAIRE) {
     throw new SoumissionError("Devoir introuvable.");
+  }
+
+  if (exercice.modeRemise !== ModeRemiseFormulaire.EN_LIGNE) {
+    throw new SoumissionError("Ce devoir se rend par dépôt de fichier (mode téléchargement).");
   }
 
   if (!exercice.sujetChemin || !exercice.sujetNom) {
@@ -452,7 +464,7 @@ export async function obtenirSoumissionAvecAcces(id: string) {
 }
 
 const SOUMISSION_AVEC_CONTEXTE = {
-  eleve: { select: { id: true, nom: true, prenom: true } },
+  eleve: { select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true } },
   exercice: {
     select: {
       id: true,
@@ -509,7 +521,7 @@ export async function listerRosterDevoir(exerciceId: string, classeId: string): 
   const [eleves, soumissions] = await Promise.all([
     prisma.user.findMany({
       where: { classeId, role: "ELEVE" },
-      select: { id: true, nom: true, prenom: true },
+      select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true },
       orderBy: { nom: "asc" },
     }),
     prisma.soumission.findMany({

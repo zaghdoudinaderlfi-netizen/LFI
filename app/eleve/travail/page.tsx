@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CheckCircle2, ListChecks } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { listerDevoirsAFaire } from "@/lib/devoirs";
@@ -22,24 +23,27 @@ export default async function EleveTravailPage() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <h1 className="text-2xl font-bold text-slate-800">Travail à faire</h1>
+      <h1 className="page-title animate-fade-in-up">Travail à faire</h1>
 
       {!user?.classe ? (
-        <div className="rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <p className="text-slate-500">
+        <div className="card animate-fade-in-up p-6 text-center">
+          <p className="text-ink-secondary">
             Tu n&apos;es rattaché à aucune classe pour le moment.
           </p>
         </div>
       ) : devoirs.length === 0 ? (
-        <div className="rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <p className="text-slate-500">Aucun devoir pour le moment.</p>
+        <div className="card animate-fade-in-up p-6 text-center">
+          <p className="text-ink-secondary">Aucun devoir pour le moment.</p>
         </div>
       ) : (
         <>
-          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-lg font-bold text-slate-800">À rendre</h2>
+          <section className="card animate-fade-in-up p-6 [animation-delay:60ms]">
+            <h2 className="section-title mb-4 flex items-center gap-2">
+              <ListChecks className="h-5 w-5 text-neon-violet" />
+              À rendre
+            </h2>
             {aFaire.length === 0 ? (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-ink-muted">
                 Tu as rendu tous les devoirs disponibles. 🎉
               </p>
             ) : (
@@ -48,13 +52,13 @@ export default async function EleveTravailPage() {
                   <li key={devoir.id}>
                     <Link
                       href={`/eleve/cours/${devoir.cours.slug}`}
-                      className="flex flex-col gap-1 rounded-md border border-slate-200 p-4 transition-colors hover:border-slate-300 hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
+                      className="card-interactive flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div>
-                        <p className="font-medium text-slate-800">{devoir.titre}</p>
-                        <p className="text-sm text-slate-500">{devoir.cours.titre}</p>
+                        <p className="font-medium text-ink-primary">{devoir.titre}</p>
+                        <p className="text-sm text-ink-secondary">{devoir.cours.titre}</p>
                       </div>
-                      <div className="text-sm text-slate-500 sm:text-right">
+                      <div className="text-sm text-ink-muted sm:text-right">
                         <p>Barème : {devoir.points} pts</p>
                         {devoir.dateLimite && (
                           <p>
@@ -68,23 +72,32 @@ export default async function EleveTravailPage() {
                 ))}
               </ul>
             )}
-          </div>
+          </section>
 
           {rendus.length > 0 && (
-            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="mb-4 text-lg font-bold text-slate-800">Déjà rendus</h2>
+            <section className="card animate-fade-in-up p-6 [animation-delay:120ms]">
+              <h2 className="section-title mb-4 flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                Déjà rendus
+              </h2>
               <ul className="flex flex-col gap-3">
                 {rendus.map((devoir) => (
                   <li key={devoir.id}>
                     <Link
                       href={`/eleve/cours/${devoir.cours.slug}`}
-                      className="flex flex-col gap-1 rounded-md border border-slate-200 p-4 transition-colors hover:border-slate-300 hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
+                      className="card-interactive flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div>
-                        <p className="font-medium text-slate-800">{devoir.titre}</p>
-                        <p className="text-sm text-slate-500">{devoir.cours.titre}</p>
+                        <p className="font-medium text-ink-primary">{devoir.titre}</p>
+                        <p className="text-sm text-ink-secondary">{devoir.cours.titre}</p>
                       </div>
-                      <p className="text-sm text-slate-500">
+                      <p
+                        className={
+                          devoir.soumission?.corrigeManuellement
+                            ? "font-heading font-bold text-neon-cyan"
+                            : "text-sm text-ink-muted"
+                        }
+                      >
                         {devoir.soumission?.corrigeManuellement
                           ? `Note : ${devoir.soumission.note} / ${devoir.points}`
                           : "Rendu · en attente de correction"}
@@ -93,7 +106,7 @@ export default async function EleveTravailPage() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </section>
           )}
         </>
       )}

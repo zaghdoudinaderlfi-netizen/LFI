@@ -17,9 +17,13 @@ import {
   Menu,
   X,
   LogOut,
+  Rocket,
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/app/actions";
+import { AvatarDisplay } from "@/components/avatar/avatar-display";
+import { PageTransition } from "@/components/ui/page-transition";
+import { formaterNomComplet } from "@/lib/utilisateurs";
 
 type Role = "ELEVE" | "PROF";
 
@@ -27,6 +31,14 @@ type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+};
+
+type ShellUser = {
+  id: string;
+  nom: string;
+  prenom?: string | null;
+  avatarStyle?: string | null;
+  avatarOptions?: unknown;
 };
 
 const NAV_ITEMS: Record<Role, NavItem[]> = {
@@ -64,12 +76,12 @@ const NOTIFICATIONS_HREF: Record<Role, string> = {
 
 export function AppShell({
   role,
-  userName,
+  user,
   notificationsNonLues,
   children,
 }: {
   role: Role;
-  userName: string;
+  user: ShellUser;
   notificationsNonLues: number;
   children: React.ReactNode;
 }) {
@@ -79,10 +91,31 @@ export function AppShell({
   const items = NAV_ITEMS[role];
   const dashboardHref = DASHBOARD_HREF[role];
   const notificationsHref = NOTIFICATIONS_HREF[role];
+  const userName = formaterNomComplet(user);
 
   function estActif(href: string) {
     if (href === dashboardHref) return pathname === href;
     return pathname === href || pathname.startsWith(`${href}/`);
+  }
+
+  function Logo() {
+    return (
+      <Link href={dashboardHref} className="flex items-center gap-2">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-neon-blue to-neon-violet shadow-glow-soft">
+          <Rocket className="h-4 w-4 text-space-bg" />
+        </span>
+        <span className="font-heading text-lg font-bold tracking-tight text-ink-primary">LFI</span>
+      </Link>
+    );
+  }
+
+  function NotificationBadge({ count }: { count: number }) {
+    if (count <= 0) return null;
+    return (
+      <span className="badge animate-pop-in bg-neon-pink text-space-bg shadow-[0_0_10px_rgba(244,114,182,0.6)]">
+        {count > 99 ? "99+" : count}
+      </span>
+    );
   }
 
   function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
@@ -99,19 +132,15 @@ export function AppShell({
               href={item.href}
               onClick={onNavigate}
               aria-current={actif ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 ${
                 actif
-                  ? "bg-slate-800 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
+                  ? "bg-gradient-to-r from-neon-blue/15 to-neon-violet/15 text-ink-primary shadow-[inset_0_0_0_1px_rgba(34,211,238,0.25)]"
+                  : "text-ink-secondary hover:bg-space-surface2 hover:text-ink-primary"
               }`}
             >
-              <Icon className="h-5 w-5 shrink-0" />
+              <Icon className={`h-5 w-5 shrink-0 ${actif ? "text-neon-cyan" : ""}`} />
               <span className="flex-1">{item.label}</span>
-              {badge > 0 && (
-                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white">
-                  {badge > 99 ? "99+" : badge}
-                </span>
-              )}
+              <NotificationBadge count={badge} />
             </Link>
           );
         })}
@@ -119,27 +148,29 @@ export function AppShell({
     );
   }
 
+  function UserCard() {
+    return (
+      <div className="mb-3 flex items-center gap-3">
+        <AvatarDisplay user={user} neutre={role === "PROF"} taille="md" />
+        <p className="truncate text-sm font-medium text-ink-primary">{userName}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 lg:flex">
+    <div className="min-h-screen lg:flex">
       {/* Menu latéral (écrans larges) */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-slate-200 lg:bg-white">
-        <div className="flex h-16 items-center border-b border-slate-200 px-6">
-          <Link href={dashboardHref} className="text-lg font-bold text-slate-800">
-            LFI
-          </Link>
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-space-border lg:bg-space-surface/60 lg:backdrop-blur-xl">
+        <div className="flex h-16 items-center border-b border-space-border px-6">
+          <Logo />
         </div>
         <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
           <NavLinks />
         </div>
-        <div className="border-t border-slate-200 p-4">
-          <p className="mb-2 truncate text-sm font-medium text-slate-700">
-            {userName}
-          </p>
+        <div className="border-t border-space-border p-4">
+          <UserCard />
           <form action={logout}>
-            <button
-              type="submit"
-              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
-            >
+            <button type="submit" className="btn-ghost w-full justify-start">
               <LogOut className="h-4 w-4" />
               Se déconnecter
             </button>
@@ -149,19 +180,17 @@ export function AppShell({
 
       <div className="flex min-h-screen flex-1 flex-col">
         {/* Barre supérieure (mobile / tablette) */}
-        <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
-          <Link href={dashboardHref} className="text-lg font-bold text-slate-800">
-            LFI
-          </Link>
+        <div className="sticky top-0 z-30 flex items-center justify-between border-b border-space-border bg-space-surface/80 px-4 py-3 backdrop-blur-xl lg:hidden">
+          <Logo />
           <div className="flex items-center gap-2">
             <Link
               href={notificationsHref}
-              className="relative rounded-md p-2 text-slate-600 hover:bg-slate-100"
+              className="relative rounded-lg p-2 text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
               aria-label="Notifications"
             >
               <Bell className="h-5 w-5" />
               {notificationsNonLues > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 animate-pop-in items-center justify-center rounded-full bg-neon-pink px-1 text-[10px] font-bold text-space-bg shadow-[0_0_10px_rgba(244,114,182,0.6)]">
                   {notificationsNonLues > 99 ? "99+" : notificationsNonLues}
                 </span>
               )}
@@ -169,7 +198,7 @@ export function AppShell({
             <button
               type="button"
               onClick={() => setMenuOuvert(true)}
-              className="rounded-md p-2 text-slate-600 hover:bg-slate-100"
+              className="rounded-lg p-2 text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
               aria-label="Ouvrir le menu"
             >
               <Menu className="h-6 w-6" />
@@ -181,16 +210,16 @@ export function AppShell({
         {menuOuvert && (
           <div className="fixed inset-0 z-40 lg:hidden">
             <div
-              className="absolute inset-0 bg-black/30"
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setMenuOuvert(false)}
             />
-            <div className="absolute left-0 top-0 flex h-full w-64 flex-col bg-white p-4 shadow-lg">
+            <div className="absolute left-0 top-0 flex h-full w-64 flex-col border-r border-space-border bg-space-deep p-4 shadow-2xl animate-fade-in-up">
               <div className="mb-4 flex items-center justify-between">
-                <span className="text-lg font-bold text-slate-800">LFI</span>
+                <Logo />
                 <button
                   type="button"
                   onClick={() => setMenuOuvert(false)}
-                  className="rounded-md p-2 text-slate-600 hover:bg-slate-100"
+                  className="rounded-lg p-2 text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
                   aria-label="Fermer le menu"
                 >
                   <X className="h-5 w-5" />
@@ -199,15 +228,10 @@ export function AppShell({
               <div className="flex-1 overflow-y-auto">
                 <NavLinks onNavigate={() => setMenuOuvert(false)} />
               </div>
-              <div className="border-t border-slate-200 pt-4">
-                <p className="mb-2 truncate text-sm font-medium text-slate-700">
-                  {userName}
-                </p>
+              <div className="border-t border-space-border pt-4">
+                <UserCard />
                 <form action={logout}>
-                  <button
-                    type="submit"
-                    className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
-                  >
+                  <button type="submit" className="btn-ghost w-full justify-start">
                     <LogOut className="h-4 w-4" />
                     Se déconnecter
                   </button>
@@ -218,7 +242,7 @@ export function AppShell({
         )}
 
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
       </div>
     </div>
