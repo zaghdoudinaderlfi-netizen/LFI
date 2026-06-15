@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 170" width="460" height="170" role="img" aria-label="Nadtech">
+  <title>Nadtech</title>
+  <!-- Monogramme N tricolore -->
+  <rect x="40" y="35" width="24" height="100" fill="#22d3ee"/>
+  <polygon points="40,35 64,35 140,135 116,135" fill="#ec4899"/>
+  <rect x="116" y="35" width="24" height="100" fill="#8b5cf6"/>
+  <!-- Wordmark : police remplacable selon ton theme -->
+  <text x="172" y="108" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="62" font-weight="700">
+    <tspan fill="#8b5cf6">Nad</tspan><tspan fill="#06b6d4">tech</tspan>
+  </text>
+</svg>

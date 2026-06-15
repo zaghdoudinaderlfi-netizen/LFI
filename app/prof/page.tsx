@@ -37,7 +37,7 @@ export default async function ProfPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 animate-fade-in-up [animation-delay:60ms]">
         <Link href="/prof/cours/nouveau" className="card-interactive flex flex-col gap-2 p-6">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-neon-blue to-neon-violet shadow-glow-soft">
-            <PlusCircle className="h-5 w-5 text-space-bg" />
+            <PlusCircle className="h-5 w-5 text-accent-fg" />
           </span>
           <p className="font-semibold text-ink-primary">Créer un cours</p>
           <p className="text-sm text-ink-secondary">
@@ -47,7 +47,7 @@ export default async function ProfPage() {
 
         <Link href="/prof/cours" className="card-interactive flex flex-col gap-2 p-6">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-neon-cyan to-neon-blue shadow-glow-soft">
-            <ListPlus className="h-5 w-5 text-space-bg" />
+            <ListPlus className="h-5 w-5 text-accent-fg" />
           </span>
           <p className="font-semibold text-ink-primary">Créer un devoir</p>
           <p className="text-sm text-ink-secondary">

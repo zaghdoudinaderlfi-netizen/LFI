@@ -10,23 +10,26 @@ const config: Config = {
     extend: {
       colors: {
         space: {
-          bg: "#060814",
-          deep: "#0a0e1f",
-          surface: "#11162b",
-          surface2: "#171d38",
-          border: "#2a3354",
-          borderlight: "#3b4674",
+          bg: "rgb(var(--space-bg) / <alpha-value>)",
+          deep: "rgb(var(--space-deep) / <alpha-value>)",
+          surface: "rgb(var(--space-surface) / <alpha-value>)",
+          surface2: "rgb(var(--space-surface2) / <alpha-value>)",
+          border: "rgb(var(--space-border) / <alpha-value>)",
+          borderlight: "rgb(var(--space-borderlight) / <alpha-value>)",
         },
         neon: {
-          cyan: "#22d3ee",
-          blue: "#60a5fa",
-          violet: "#a78bfa",
-          pink: "#f472b6",
+          cyan: "rgb(var(--neon-cyan) / <alpha-value>)",
+          blue: "rgb(var(--neon-blue) / <alpha-value>)",
+          violet: "rgb(var(--neon-violet) / <alpha-value>)",
+          pink: "rgb(var(--neon-pink) / <alpha-value>)",
         },
         ink: {
-          primary: "#eef2ff",
-          secondary: "#aab4d4",
-          muted: "#7c87ad",
+          primary: "rgb(var(--ink-primary) / <alpha-value>)",
+          secondary: "rgb(var(--ink-secondary) / <alpha-value>)",
+          muted: "rgb(var(--ink-muted) / <alpha-value>)",
+        },
+        accent: {
+          fg: "rgb(var(--accent-fg) / <alpha-value>)",
         },
       },
       fontFamily: {
@@ -34,10 +37,10 @@ const config: Config = {
         sans: ["var(--font-body)", "system-ui", "sans-serif"],
       },
       boxShadow: {
-        "glow-cyan": "0 0 0 1px rgba(34,211,238,0.25), 0 8px 30px -10px rgba(34,211,238,0.35)",
-        "glow-violet": "0 0 0 1px rgba(167,139,250,0.25), 0 8px 30px -10px rgba(167,139,250,0.35)",
-        "glow-soft": "0 8px 30px -12px rgba(96,165,250,0.25)",
-        card: "0 1px 0 0 rgba(255,255,255,0.03) inset, 0 10px 30px -15px rgba(0,0,0,0.6)",
+        "glow-cyan": "0 0 0 1px rgb(var(--neon-cyan) / 0.25), 0 8px 30px -10px rgb(var(--neon-cyan) / 0.35)",
+        "glow-violet": "0 0 0 1px rgb(var(--neon-violet) / 0.25), 0 8px 30px -10px rgb(var(--neon-violet) / 0.35)",
+        "glow-soft": "0 8px 30px -12px rgb(var(--neon-blue) / 0.25)",
+        card: "var(--shadow-card)",
       },
       keyframes: {
         "fade-in-up": {

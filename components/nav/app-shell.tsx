@@ -17,12 +17,12 @@ import {
   Menu,
   X,
   LogOut,
-  Rocket,
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/app/actions";
 import { AvatarDisplay } from "@/components/avatar/avatar-display";
 import { PageTransition } from "@/components/ui/page-transition";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 
 type Role = "ELEVE" | "PROF";
@@ -100,11 +100,8 @@ export function AppShell({
 
   function Logo() {
     return (
-      <Link href={dashboardHref} className="flex items-center gap-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-neon-blue to-neon-violet shadow-glow-soft">
-          <Rocket className="h-4 w-4 text-space-bg" />
-        </span>
-        <span className="font-heading text-lg font-bold tracking-tight text-ink-primary">LFI</span>
+      <Link href={dashboardHref} className="flex items-center">
+        <img src="/nadtech-logo.svg" alt="Nadtech" className="h-7 w-auto" />
       </Link>
     );
   }
@@ -112,7 +109,7 @@ export function AppShell({
   function NotificationBadge({ count }: { count: number }) {
     if (count <= 0) return null;
     return (
-      <span className="badge animate-pop-in bg-neon-pink text-space-bg shadow-[0_0_10px_rgba(244,114,182,0.6)]">
+      <span className="badge animate-pop-in bg-neon-pink text-accent-fg shadow-[0_0_10px_rgba(244,114,182,0.6)]">
         {count > 99 ? "99+" : count}
       </span>
     );
@@ -161,8 +158,9 @@ export function AppShell({
     <div className="min-h-screen lg:flex">
       {/* Menu latéral (écrans larges) */}
       <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-space-border lg:bg-space-surface/60 lg:backdrop-blur-xl">
-        <div className="flex h-16 items-center border-b border-space-border px-6">
+        <div className="flex h-16 items-center justify-between border-b border-space-border px-6">
           <Logo />
+          <ThemeToggle />
         </div>
         <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
           <NavLinks />
@@ -183,6 +181,7 @@ export function AppShell({
         <div className="sticky top-0 z-30 flex items-center justify-between border-b border-space-border bg-space-surface/80 px-4 py-3 backdrop-blur-xl lg:hidden">
           <Logo />
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Link
               href={notificationsHref}
               className="relative rounded-lg p-2 text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
@@ -190,7 +189,7 @@ export function AppShell({
             >
               <Bell className="h-5 w-5" />
               {notificationsNonLues > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 animate-pop-in items-center justify-center rounded-full bg-neon-pink px-1 text-[10px] font-bold text-space-bg shadow-[0_0_10px_rgba(244,114,182,0.6)]">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 animate-pop-in items-center justify-center rounded-full bg-neon-pink px-1 text-[10px] font-bold text-accent-fg shadow-[0_0_10px_rgba(244,114,182,0.6)]">
                   {notificationsNonLues > 99 ? "99+" : notificationsNonLues}
                 </span>
               )}
@@ -216,14 +215,17 @@ export function AppShell({
             <div className="absolute left-0 top-0 flex h-full w-64 flex-col border-r border-space-border bg-space-deep p-4 shadow-2xl animate-fade-in-up">
               <div className="mb-4 flex items-center justify-between">
                 <Logo />
-                <button
-                  type="button"
-                  onClick={() => setMenuOuvert(false)}
-                  className="rounded-lg p-2 text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
-                  aria-label="Fermer le menu"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <ThemeToggle />
+                  <button
+                    type="button"
+                    onClick={() => setMenuOuvert(false)}
+                    className="rounded-lg p-2 text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
+                    aria-label="Fermer le menu"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
               <div className="flex-1 overflow-y-auto">
                 <NavLinks onNavigate={() => setMenuOuvert(false)} />

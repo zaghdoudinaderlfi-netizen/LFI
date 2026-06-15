@@ -8,19 +8,82 @@
 }
 
 /* ───────────────────────────────────────────────
+   Thème clair / sombre — variables de couleur.
+   Les utilitaires Tailwind (space-*, ink-*, neon-*)
+   référencent ces variables via rgb(var(--x) / a),
+   donc tout le site bascule automatiquement quand
+   la classe .dark est ajoutée/retirée sur <html>.
+   ─────────────────────────────────────────────── */
+
+:root {
+  color-scheme: light;
+
+  --space-bg: 244 246 253;
+  --space-deep: 231 236 250;
+  --space-surface: 255 255 255;
+  --space-surface2: 238 241 251;
+  --space-border: 215 222 239;
+  --space-borderlight: 195 205 234;
+
+  --ink-primary: 15 23 42;
+  --ink-secondary: 71 85 105;
+  --ink-muted: 100 116 139;
+
+  --neon-cyan: 14 116 144;
+  --neon-blue: 37 99 235;
+  --neon-violet: 124 58 237;
+  --neon-pink: 219 39 119;
+
+  /* Texte/icônes posés sur un fond saturé (boutons, badges) : clair en
+     thème clair (les neons y sont plus foncés), sombre en thème sombre
+     (les neons y sont plus lumineux) — toujours un bon contraste. */
+  --accent-fg: 255 255 255;
+
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.8) inset, 0 10px 30px -15px rgb(15 23 42 / 0.12);
+  --skeleton-shimmer: rgba(15, 23, 42, 0.05);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --space-bg: 6 8 20;
+  --space-deep: 10 14 31;
+  --space-surface: 17 22 43;
+  --space-surface2: 23 29 56;
+  --space-border: 42 51 84;
+  --space-borderlight: 59 70 116;
+
+  --ink-primary: 238 242 255;
+  --ink-secondary: 170 180 212;
+  --ink-muted: 124 135 173;
+
+  --neon-cyan: 34 211 238;
+  --neon-blue: 96 165 250;
+  --neon-violet: 167 139 250;
+  --neon-pink: 244 114 182;
+
+  --accent-fg: 6 8 20;
+
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.03) inset, 0 10px 30px -15px rgb(0 0 0 / 0.6);
+  --skeleton-shimmer: rgba(255, 255, 255, 0.06);
+}
+
+/* ───────────────────────────────────────────────
    Fond "espace" : nébuleuses + étoiles (CSS pur,
-   léger, fixe — pas d'images à charger).
+   léger, fixe — pas d'images à charger). Version
+   douce en thème clair, plus contrastée en sombre.
    ─────────────────────────────────────────────── */
 
 html {
-  color-scheme: dark;
+  scroll-behavior: smooth;
 }
 
 body {
   position: relative;
   min-height: 100vh;
-  background-color: #060814;
-  color: #eef2ff;
+  background-color: rgb(var(--space-bg));
+  color: rgb(var(--ink-primary));
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 body::before,
@@ -34,14 +97,21 @@ body::after {
 body::before {
   z-index: -2;
   background:
-    radial-gradient(ellipse 900px 600px at 10% -10%, rgba(96, 165, 250, 0.16), transparent 60%),
-    radial-gradient(ellipse 800px 600px at 110% 0%, rgba(167, 139, 250, 0.16), transparent 60%),
-    radial-gradient(ellipse 700px 700px at 50% 120%, rgba(34, 211, 238, 0.10), transparent 60%);
+    radial-gradient(ellipse 900px 600px at 10% -10%, rgb(var(--neon-blue) / 0.10), transparent 60%),
+    radial-gradient(ellipse 800px 600px at 110% 0%, rgb(var(--neon-violet) / 0.10), transparent 60%),
+    radial-gradient(ellipse 700px 700px at 50% 120%, rgb(var(--neon-cyan) / 0.08), transparent 60%);
+}
+
+.dark body::before {
+  background:
+    radial-gradient(ellipse 900px 600px at 10% -10%, rgb(var(--neon-blue) / 0.16), transparent 60%),
+    radial-gradient(ellipse 800px 600px at 110% 0%, rgb(var(--neon-violet) / 0.16), transparent 60%),
+    radial-gradient(ellipse 700px 700px at 50% 120%, rgb(var(--neon-cyan) / 0.10), transparent 60%);
 }
 
 body::after {
   z-index: -1;
-  opacity: 0.55;
+  opacity: 0;
   background-image:
     radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.7), transparent 100%),
     radial-gradient(1px 1px at 70% 65%, rgba(255, 255, 255, 0.5), transparent 100%),
@@ -51,6 +121,11 @@ body::after {
     radial-gradient(1px 1px at 55% 10%, rgba(255, 255, 255, 0.6), transparent 100%);
   background-repeat: repeat;
   background-size: 360px 360px;
+  transition: opacity 0.2s ease;
+}
+
+.dark body::after {
+  opacity: 0.55;
 }
 
 /* ───────────────────────────────────────────────
@@ -59,7 +134,7 @@ body::after {
    ─────────────────────────────────────────────── */
 
 :focus-visible {
-  outline: 2px solid #22d3ee;
+  outline: 2px solid rgb(var(--neon-cyan));
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -76,11 +151,11 @@ body::after {
 }
 
 /* ───────────────────────────────────────────────
-   Scrollbar (thème sombre)
+   Scrollbar
    ─────────────────────────────────────────────── */
 
 * {
-  scrollbar-color: #3b4674 #0a0e1f;
+  scrollbar-color: rgb(var(--space-borderlight)) rgb(var(--space-deep));
 }
 
 ::-webkit-scrollbar {
@@ -88,14 +163,14 @@ body::after {
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #0a0e1f;
+  background: rgb(var(--space-deep));
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a3354;
+  background: rgb(var(--space-border));
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b4674;
+  background: rgb(var(--space-borderlight));
 }
 
 /* ───────────────────────────────────────────────
@@ -119,7 +194,7 @@ body::after {
     transform: scale(0.98);
   }
   .btn-primary {
-    @apply btn bg-gradient-to-r from-neon-blue to-neon-violet font-semibold text-space-bg shadow-glow-soft hover:brightness-110 hover:shadow-glow-violet;
+    @apply btn bg-gradient-to-r from-neon-blue to-neon-violet font-semibold text-accent-fg shadow-glow-soft hover:brightness-110 hover:shadow-glow-violet;
   }
   .btn-secondary {
     @apply btn border border-space-border bg-space-surface2 text-ink-primary hover:border-neon-cyan/50 hover:text-neon-cyan;
@@ -128,7 +203,7 @@ body::after {
     @apply btn text-ink-secondary hover:bg-space-surface2 hover:text-ink-primary;
   }
   .btn-danger {
-    @apply btn border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20;
+    @apply btn border border-red-500/30 bg-red-500/10 text-red-500 hover:bg-red-500/20 dark:text-red-300;
   }
 
   /* Champs de formulaire */
@@ -158,7 +233,7 @@ body::after {
 
   /* Contenu de cours (lecture) */
   .prose-cours {
-    @apply prose prose-invert max-w-none sm:prose-lg prose-headings:font-heading prose-headings:font-semibold prose-headings:text-ink-primary prose-p:leading-relaxed prose-p:text-ink-secondary prose-a:text-neon-cyan prose-a:no-underline hover:prose-a:underline prose-strong:text-ink-primary prose-blockquote:border-neon-violet/50 prose-blockquote:text-ink-secondary prose-li:text-ink-secondary prose-img:mx-auto prose-img:block prose-img:rounded-xl prose-hr:border-space-border;
+    @apply prose max-w-none sm:prose-lg prose-headings:font-heading prose-headings:font-semibold prose-headings:text-ink-primary prose-p:leading-relaxed prose-p:text-ink-secondary prose-a:text-neon-cyan prose-a:no-underline hover:prose-a:underline prose-strong:text-ink-primary prose-blockquote:border-neon-violet/50 prose-blockquote:text-ink-secondary prose-li:text-ink-secondary prose-img:mx-auto prose-img:block prose-img:rounded-xl prose-hr:border-space-border dark:prose-invert;
   }
 
   /* États de chargement */
@@ -169,8 +244,16 @@ body::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+    background: linear-gradient(90deg, transparent, var(--skeleton-shimmer), transparent);
     animation: shimmer 1.6s infinite;
+  }
+
+  /* Avatars : force le SVG DiceBear à remplir son cadre circulaire,
+     quelle que soit la taille demandée au générateur. */
+  .avatar-frame svg {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 }
 

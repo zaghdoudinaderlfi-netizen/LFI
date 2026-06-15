@@ -70,7 +70,7 @@ export function AvatarBuilder({ seed, configInitiale }: { seed: string; configIn
       <div className="flex flex-col items-center gap-4 sm:w-52 sm:shrink-0">
         <div
           key={previewSvg}
-          className="h-40 w-40 overflow-hidden rounded-full bg-space-surface2 shadow-glow-cyan ring-2 ring-neon-cyan/40 animate-pop-in"
+          className="avatar-frame h-40 w-40 overflow-hidden rounded-full bg-space-surface2 shadow-glow-cyan ring-2 ring-neon-cyan/40 animate-pop-in"
           dangerouslySetInnerHTML={{ __html: previewSvg }}
         />
 
@@ -125,7 +125,7 @@ export function AvatarBuilder({ seed, configInitiale }: { seed: string; configIn
               onClick={() => setCategorieActive(cat.key)}
               className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                 categorie.key === cat.key
-                  ? "bg-gradient-to-r from-neon-blue to-neon-violet text-space-bg"
+                  ? "bg-gradient-to-r from-neon-blue to-neon-violet text-accent-fg"
                   : "border border-space-border text-ink-secondary hover:border-neon-cyan/40 hover:text-ink-primary"
               }`}
             >
@@ -203,7 +203,7 @@ function ControleAvatar({
                 <span className="text-[10px] font-medium text-ink-muted">Aucun</span>
               ) : (
                 <span
-                  className="h-full w-full"
+                  className="avatar-frame h-full w-full"
                   dangerouslySetInnerHTML={{ __html: genererApercuChoix(config, control, choix.value, seed, 56) }}
                 />
               )}

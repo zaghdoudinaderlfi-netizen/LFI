@@ -32,7 +32,7 @@ export function AvatarDisplay({
     <span
       role="img"
       aria-label="Avatar"
-      className={`inline-flex shrink-0 overflow-hidden rounded-full bg-space-surface2 ring-1 ring-space-border ${TAILLES[taille]} ${className}`}
+      className={`avatar-frame inline-flex shrink-0 overflow-hidden rounded-full bg-space-surface2 ring-1 ring-space-border ${TAILLES[taille]} ${className}`}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );
