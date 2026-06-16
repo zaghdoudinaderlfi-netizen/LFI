@@ -8,47 +8,63 @@ import {
   type CategorieMessage,
 } from "@/lib/mascotte-messages";
 
-type Etat = "actif" | "endormi";
+type Etat = "actif" | "endormi" | "rebond";
 
-const DELAI_SOMMEIL_MS = 60_000;   // 60 s d'inactivité → dort
-const DELAI_BULLE_MS  = 9_000;    // chaque bulle s'affiche 9 s
-const DELAI_ROTATION_MS = 50_000; // rotation motivation/conseil toutes les 50 s
+const DELAI_SOMMEIL_MS  = 60_000;  // 60 s d'inactivité → dort
+const DELAI_BULLE_MS    = 9_000;   // bulle visible 9 s
+const DELAI_ROTATION_MS = 50_000;  // rotation motivation/conseil toutes les 50 s
 
 const CATEGORIES_ROTATION: CategorieMessage[] = ["motivation", "conseil"];
 
-// Variantes Framer Motion ─────────────────────────────────────────────────────
+// ── Variantes Framer Motion ───────────────────────────────────────────────────
 
 const variantesAvatar = {
   actif: {
-    y: [0, -7, 0],
-    scale: [1, 1.025, 1],
-    transition: { duration: 3, repeat: Infinity, ease: "easeInOut" as const },
+    y:       [0, -7, 0],
+    rotate:  0,
+    scale:   [1, 1.025, 1],
+    opacity: 1,
+    transition: {
+      y:       { duration: 3, repeat: Infinity, ease: "easeInOut" as const },
+      scale:   { duration: 3, repeat: Infinity, ease: "easeInOut" as const },
+      rotate:  { duration: 0.45, ease: "easeOut" as const },
+      opacity: { duration: 0.35 },
+    },
   },
   endormi: {
-    y: [0, -2, 0],
-    scale: [1, 1.01, 1],
-    opacity: 0.65,
-    transition: { duration: 5, repeat: Infinity, ease: "easeInOut" as const },
+    y:       [0, -2, 0],
+    rotate:  18,           // penché — comme s'endormir sur son bureau
+    scale:   [1, 1.01, 1],
+    opacity: 0.62,
+    transition: {
+      y:       { duration: 5, repeat: Infinity, ease: "easeInOut" as const },
+      scale:   { duration: 5, repeat: Infinity, ease: "easeInOut" as const },
+      rotate:  { duration: 0.9, ease: "easeOut" as const },
+      opacity: { duration: 0.5 },
+    },
+  },
+  rebond: {
+    y:       [0, -28, 6, -16, 3, 0],
+    rotate:  [0, -7, 8, -4, 0],
+    scale:   [1, 1.22, 0.87, 1.12, 0.97, 1],
+    opacity: 1,
+    transition: { duration: 0.72, ease: "easeOut" as const },
   },
 };
 
 const variantesBulle = {
   initial: { opacity: 0, scale: 0.82, x: -8 },
   animate: {
-    opacity: 1,
-    scale: 1,
-    x: 0,
+    opacity: 1, scale: 1, x: 0,
     transition: { type: "spring" as const, stiffness: 320, damping: 24 },
   },
   exit: {
-    opacity: 0,
-    scale: 0.9,
-    x: -6,
+    opacity: 0, scale: 0.9, x: -6,
     transition: { duration: 0.2 },
   },
 };
 
-// Composant principal ─────────────────────────────────────────────────────────
+// ── Composant ─────────────────────────────────────────────────────────────────
 
 export function Mascotte({
   svgAvatar,
@@ -59,12 +75,12 @@ export function Mascotte({
 }) {
   const [etat, setEtatState] = useState<Etat>("actif");
   const [message, setMessage] = useState<string | null>(null);
-  const [bulleId, setBulleId] = useState(0); // clé unique pour AnimatePresence
+  const [bulleId, setBulleId] = useState(0);
   const [montrerBulle, setMontrerBulle] = useState(false);
 
-  const etatRef = useRef<Etat>("actif");
-  const timerSommeil = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const timerBulle   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const etatRef       = useRef<Etat>("actif");
+  const timerSommeil  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerBulle    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const indexRotation = useRef(0);
 
   // ── Helpers ──────────────────────────────────────────────────────────────
@@ -78,9 +94,7 @@ export function Mascotte({
     setMessage(texte);
     setMontrerBulle(true);
     setBulleId((id) => id + 1);
-
     if (timerBulle.current) clearTimeout(timerBulle.current);
-    // Les bulles de sommeil restent jusqu'au réveil
     if (dureeMs > 0) {
       timerBulle.current = setTimeout(() => setMontrerBulle(false), dureeMs);
     }
@@ -106,12 +120,9 @@ export function Mascotte({
   // ── Montage ──────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    // Message de bienvenue
-    const categorie = categorieParHeure();
-    obtenirMessage(categorie).then((texte) => afficherBulle(texte));
+    obtenirMessage(categorieParHeure()).then((texte) => afficherBulle(texte));
     resetTimerSommeil();
 
-    // Rotation motivation/conseil
     const intervalRotation = setInterval(async () => {
       if (etatRef.current === "endormi") return;
       const cats = CATEGORIES_ROTATION;
@@ -121,16 +132,15 @@ export function Mascotte({
       afficherBulle(texte);
     }, DELAI_ROTATION_MS);
 
-    // Encouragement en attente (depuis une Server Action via sessionStorage)
     try {
       const pending = sessionStorage.getItem("mascotte:pending");
       if (pending) {
         sessionStorage.removeItem("mascotte:pending");
         const { texte } = JSON.parse(pending) as { texte?: string };
-        if (texte) setTimeout(() => afficherBulle(texte), 900);
+        if (texte) setTimeout(() => { setEtat("rebond"); afficherBulle(texte); }, 900);
       }
     } catch {
-      // sessionStorage non disponible (SSR guard)
+      // sessionStorage non disponible (guard SSR)
     }
 
     return () => {
@@ -150,13 +160,13 @@ export function Mascotte({
     return () => evts.forEach((e) => window.removeEventListener(e, onActivity));
   }, [reveiller]);
 
-  // ── Événement externe : encouragement depuis n'importe quel composant ─────
+  // ── Événement externe : encouragement ────────────────────────────────────
 
   useEffect(() => {
     const handler = (e: Event) => {
       const texte = (e as CustomEvent<{ texte?: string }>).detail?.texte;
       if (texte) {
-        setEtat("actif");
+        setEtat("rebond"); // rebond joyeux !
         resetTimerSommeil();
         afficherBulle(texte);
       }
@@ -172,10 +182,16 @@ export function Mascotte({
       {/* Avatar animé */}
       <div className="relative shrink-0">
         <motion.div
-          animate={etat === "actif" ? variantesAvatar.actif : variantesAvatar.endormi}
+          animate={etat}
+          variants={variantesAvatar}
+          style={{ originX: "50%", originY: "80%" }}
+          onAnimationComplete={(def) => {
+            // Après le rebond, retour à l'état actif (floating doux)
+            if (def === "rebond") setEtat("actif");
+          }}
         >
           <div
-            className="h-20 w-20 sm:h-24 sm:w-24 overflow-hidden rounded-full ring-2 ring-neon-cyan/40 shadow-glow-cyan"
+            className="h-24 w-24 overflow-hidden rounded-full ring-2 ring-neon-cyan/40 shadow-glow-cyan"
             dangerouslySetInnerHTML={{ __html: svgAvatar }}
           />
         </motion.div>
@@ -184,21 +200,19 @@ export function Mascotte({
         <AnimatePresence>
           {etat === "endormi" && (
             <>
-              {([
-                { delay: 0,   size: 10, dx: 20, dy: -28 },
-                { delay: 0.7, size: 13, dx: 30, dy: -44 },
-                { delay: 1.4, size: 16, dx: 22, dy: -62 },
-              ] as const).map(({ delay, size, dx, dy }, i) => (
+              {(
+                [
+                  { delay: 0,   size: 10, dx: 22, dy: -28 },
+                  { delay: 0.7, size: 13, dx: 32, dy: -46 },
+                  { delay: 1.4, size: 16, dx: 24, dy: -64 },
+                ] as const
+              ).map(({ delay, size, dx, dy }, i) => (
                 <motion.span
                   key={i}
                   className="absolute top-1 right-0 font-bold text-neon-cyan pointer-events-none select-none"
                   style={{ fontSize: size }}
                   initial={{ opacity: 0, x: 16, y: 0 }}
-                  animate={{
-                    opacity: [0, 1, 1, 0],
-                    x: [16, dx],
-                    y: [0, dy],
-                  }}
+                  animate={{ opacity: [0, 1, 1, 0], x: [16, dx], y: [0, dy] }}
                   transition={{
                     delay,
                     duration: 2.2,
@@ -226,9 +240,7 @@ export function Mascotte({
             exit="exit"
             className="relative max-w-[220px] sm:max-w-xs"
           >
-            {/* Fond de la bulle */}
             <div className="rounded-2xl rounded-bl-sm border border-space-border bg-space-surface2 px-4 py-2.5 shadow-md">
-              {/* Queue (triangle) */}
               <span
                 aria-hidden
                 className="absolute -left-[7px] bottom-3 h-3.5 w-3.5 rotate-45 rounded-sm border-b border-l border-space-border bg-space-surface2"

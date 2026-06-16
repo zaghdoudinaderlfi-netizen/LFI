@@ -1,30 +1,13 @@
-// Constructeur d'avatar façon Kahoot, basé sur DiceBear (libre de droits,
-// composable). Les élèves choisissent un personnage plein corps puis le
-// personnalisent (visage, yeux, coiffure, vêtements, accessoires, fond).
-// La config (style + options) est stockée en JSON dans User.avatarOptions.
+// Système d'avatar basé sur Avataaars (Pablo Stanley) via @dicebear/avataaars.
+// Mêmes visuels que le package React "avataaars" original, compatible React 19.
+// La config (style "avataaars" + options) est stockée en JSON dans User.avatarOptions.
 
 import { createAvatar } from "@dicebear/core";
-import * as botttsNeutral from "@dicebear/bottts-neutral";
-import * as openPeeps from "@dicebear/open-peeps";
-import * as miniavs from "@dicebear/miniavs";
-import * as personas from "@dicebear/personas";
+import * as avataaars from "@dicebear/avataaars";
 
-export type AvatarStyleId = "peeps" | "mini" | "personas";
-
-export const AVATAR_STYLES: { id: AvatarStyleId; label: string; description: string }[] = [
-  { id: "peeps", label: "Aventurier", description: "Un personnage complet, plein d'expressions et de coiffures" },
-  { id: "mini", label: "Mini", description: "Un petit perso tout en couleur, des cheveux au t-shirt" },
-  { id: "personas", label: "Perso", description: "Un avatar coloré et stylé" },
-];
-
-const STYLE_MODULES: Record<AvatarStyleId, Parameters<typeof createAvatar>[0]> = {
-  peeps: openPeeps as unknown as Parameters<typeof createAvatar>[0],
-  mini: miniavs as unknown as Parameters<typeof createAvatar>[0],
-  personas: personas as unknown as Parameters<typeof createAvatar>[0],
-};
-
-/** Valeur sentinelle « aucun » pour les parties optionnelles (lunettes, barbe...). */
 export const AUCUN = "_aucun_";
+
+export type AvatarStyleId = "avataaars";
 
 export type AvatarOptions = Record<string, string>;
 
@@ -33,12 +16,15 @@ export type AvatarConfig = {
   options: AvatarOptions;
 };
 
-export type AvatarChoice = { value: string; label: string };
+export type AvatarChoice = {
+  value: string;
+  label: string;
+  hex?: string; // couleur hexadécimale pour les swatches (sans le #)
+};
 
 export type AvatarControl = {
   optionKey: string;
-  /** Si présent : "Aucun" met cette probabilité à 0, sinon 100. */
-  probabilityKey?: string;
+  probabilityKey?: string; // non utilisé, conservé pour compatibilité actions.ts
   label: string;
   type: "visuel" | "couleur";
   choices: AvatarChoice[];
@@ -50,119 +36,356 @@ export type AvatarCategory = {
   controls: AvatarControl[];
 };
 
-// ───────────────────────────────────────────────
-//  Palettes de couleurs (thème techno/espace)
-// ───────────────────────────────────────────────
+// ── Génération SVG ─────────────────────────────────────────────────────────────
 
-const FOND_CHOICES: AvatarChoice[] = [
-  { value: "0b1224", label: "Nuit" },
-  { value: "1e1b4b", label: "Indigo" },
-  { value: "312e81", label: "Violet" },
-  { value: "0c4a6e", label: "Océan" },
-  { value: "164e63", label: "Cyan profond" },
-  { value: "581c87", label: "Améthyste" },
-  { value: "134e4a", label: "Émeraude" },
-  { value: "3f3f46", label: "Gris sidéral" },
+/**
+ * Préfixe tous les id= et url(#...) avec un identifiant dérivé du seed.
+ * Déterministe (même seed → même préfixe) : évite les collisions d'IDs dans le DOM
+ * et ne cause pas de mismatch SSR/client.
+ */
+function prefixerIds(svg: string, seed: string): string {
+  const prefix = seed.replace(/[^a-z0-9]/gi, "").slice(0, 10) || "av";
+  return svg
+    .replace(/\bid="([^"]+)"/g, (_, id) => `id="${id}-${prefix}"`)
+    .replace(/url\(#([^)]+)\)/g, (_, id) => `url(#${id}-${prefix})`);
+}
+
+function optionsDicebear(o: AvatarOptions): Record<string, unknown> {
+  const hasAccessory = Boolean(o.accessories && o.accessories !== "");
+  return {
+    style: ["default"],          // "default" = sans cercle de fond
+    top: [o.top || "shortCurly"],
+    topProbability: 100,
+    hairColor: [o.hairColor || "724133"],
+    hatColor: [o.hatColor || "262e33"],
+    accessories: hasAccessory ? [o.accessories] : [],
+    accessoriesProbability: hasAccessory ? 100 : 0,
+    clothing: [o.clothing || "hoodie"],
+    clothesColor: [o.clothesColor || "b1e2ff"],
+    clothingGraphic: [o.clothingGraphic || "bat"],
+    eyes: [o.eyes || "default"],
+    eyebrows: [o.eyebrows || "default"],
+    mouth: [o.mouth || "smile"],
+    skinColor: [o.skinColor || "edb98a"],
+    facialHair: [],
+    facialHairProbability: 0,
+  };
+}
+
+/** Génère le SVG Avataaars à partir d'une config (déterministe). */
+export function genererAvatarSvg(config: AvatarConfig, seed: string, taille = 96): string {
+  const avatar = createAvatar(avataaars as Parameters<typeof createAvatar>[0], {
+    seed,
+    size: taille,
+    radius: 50,
+    backgroundType: ["solid"],
+    backgroundColor: ["ffffff"],
+    ...optionsDicebear(config.options),
+  });
+  return prefixerIds(avatar.toString(), seed);
+}
+
+/** SVG d'aperçu pour une vignette du constructeur (change une seule option). */
+export function genererApercuChoix(
+  config: AvatarConfig,
+  control: AvatarControl,
+  valeurChoix: string,
+  seed: string,
+  taille = 64
+): string {
+  const optionsModifiees = { ...config.options, [control.optionKey]: valeurChoix };
+  return genererAvatarSvg({ ...config, options: optionsModifiees }, seed + control.optionKey + valeurChoix, taille);
+}
+
+// ── Config par défaut & utilitaires ──────────────────────────────────────────
+
+const DEFAULT_OPTIONS: AvatarOptions = {
+  top:             "shortCurly",
+  hairColor:       "724133",
+  hatColor:        "262e33",
+  accessories:     "",
+  clothing:        "hoodie",
+  clothesColor:    "b1e2ff",
+  clothingGraphic: "bat",
+  eyes:            "default",
+  eyebrows:        "default",
+  mouth:           "smile",
+  skinColor:       "edb98a",
+};
+
+export function configAvatarParDefaut(_style?: AvatarStyleId): AvatarConfig {
+  return { style: "avataaars", options: { ...DEFAULT_OPTIONS } };
+}
+
+/** Config unique dérivée du seed (user.id) — pour les utilisateurs sans avatar personnalisé. */
+export function configAvatarSeed(seed: string): AvatarConfig {
+  const h = (salt: number) =>
+    [...seed].reduce((acc, c, i) => acc + c.charCodeAt(0) * (i + salt + 1), 0);
+  const pick = (arr: string[], salt: number) => arr[Math.abs(h(salt)) % arr.length];
+
+  return {
+    style: "avataaars",
+    options: {
+      top:             pick(TOP_VALUES, 1),
+      hairColor:       pick(HAIR_COLORS, 2),
+      hatColor:        pick(COLOR_VALUES, 3),
+      accessories:     "",
+      clothing:        pick(CLOTHING_VALUES, 5),
+      clothesColor:    pick(COLOR_VALUES, 6),
+      clothingGraphic: pick(GRAPHIC_VALUES, 7),
+      eyes:            pick(EYE_VALUES, 8),
+      eyebrows:        pick(EYEBROW_VALUES, 9),
+      mouth:           pick(MOUTH_VALUES, 10),
+      skinColor:       pick(SKIN_COLORS, 11),
+    },
+  };
+}
+
+export function estStyleAvatar(v: unknown): v is AvatarStyleId {
+  return v === "avataaars";
+}
+
+export function configAvatarUtilisateur(user: {
+  avatarStyle?: string | null;
+  avatarOptions?: unknown;
+  id?: string;
+}): AvatarConfig {
+  if (
+    user.avatarStyle === "avataaars" &&
+    typeof user.avatarOptions === "object" &&
+    user.avatarOptions !== null
+  ) {
+    return { style: "avataaars", options: user.avatarOptions as AvatarOptions };
+  }
+  if (user.id) return configAvatarSeed(user.id);
+  return configAvatarParDefaut();
+}
+
+// ── Style unique ──────────────────────────────────────────────────────────────
+
+export const AVATAR_STYLES: { id: AvatarStyleId; label: string; description: string }[] = [
+  { id: "avataaars", label: "Cartoon", description: "Personnage cartoon personnalisable" },
 ];
 
-function visuels(controlLabel: string, valeurs: string[]): AvatarChoice[] {
-  return valeurs.map((value, index) => ({ value, label: `${controlLabel} ${index + 1}` }));
+// ── Valeurs d'options ─────────────────────────────────────────────────────────
+
+const TOP_VALUES = [
+  "shortCurly", "shortFlat", "shortRound", "shortWaved", "theCaesar",
+  "theCaesarAndSidePart", "sides", "frizzle", "shaggy", "shaggyMullet",
+  "dreads01", "dreads02", "straight01", "straight02", "straightAndStrand",
+  "bigHair", "bob", "bun", "curly", "curvy", "miaWallace", "longButNotTooLong",
+  "shavedSides", "frida", "fro", "froBand", "dreads",
+  "hat", "winterHat1", "winterHat02", "winterHat03", "winterHat04",
+];
+
+const HAIR_COLORS = [
+  "a55728", "2c1b18", "b58143", "d6b370",
+  "724133", "4a312c", "f59797", "ecdcbf", "c93305", "e8e1e1",
+];
+
+const COLOR_VALUES = [
+  "262e33", "65c9ff", "5199e4", "25557c", "e6e6e6", "929598", "3c4f5c",
+  "b1e2ff", "a7ffc4", "ffdeb5", "ffafb9", "ffffb1", "ff488e", "ff5c5c", "ffffff",
+];
+
+const SKIN_COLORS = ["614335", "d08b5b", "ae5d29", "edb98a", "ffdbb4", "fd9841", "f8d25c"];
+
+const CLOTHING_VALUES = [
+  "blazerAndShirt", "blazerAndSweater", "collarAndSweater", "graphicShirt",
+  "hoodie", "overall", "shirtCrewNeck", "shirtScoopNeck", "shirtVNeck",
+];
+
+const GRAPHIC_VALUES = [
+  "bat", "bear", "cumbia", "deer", "diamond", "hola", "pizza", "resist",
+  "skull", "skullOutline",
+];
+
+const EYE_VALUES = [
+  "closed", "cry", "default", "eyeRoll", "happy", "hearts",
+  "side", "squint", "surprised", "winkWacky", "wink", "xDizzy",
+];
+
+const EYEBROW_VALUES = [
+  "angryNatural", "defaultNatural", "flatNatural", "frownNatural",
+  "raisedExcitedNatural", "sadConcernedNatural", "unibrowNatural", "upDownNatural",
+  "angry", "default", "raisedExcited", "sadConcerned", "upDown",
+];
+
+const MOUTH_VALUES = [
+  "concerned", "default", "disbelief", "eating", "grimace", "sad",
+  "screamOpen", "serious", "smile", "tongue", "twinkle", "vomit",
+];
+
+// ── Palettes avec libellés (pour le constructeur) ─────────────────────────────
+
+function swatch(hex: string, label: string): AvatarChoice {
+  return { value: hex, label, hex };
 }
 
-function avecAucun(choix: AvatarChoice[]): AvatarChoice[] {
-  return [{ value: AUCUN, label: "Aucun" }, ...choix];
-}
-
-// ───────────────────────────────────────────────
-//  Catégories par style
-// ───────────────────────────────────────────────
+// ── Catégories du constructeur ────────────────────────────────────────────────
 
 export const AVATAR_CATEGORIES: Record<AvatarStyleId, AvatarCategory[]> = {
-  // "Aventurier" (Open Peeps) : personnage entier dessiné à la main, plein
-  // d'expressions et de coiffures/couvre-chefs. Pilosité faciale optionnelle
-  // (désactivée par défaut) pour rester adapté aux ados.
-  peeps: [
+  avataaars: [
     {
-      key: "visage",
-      label: "Visage",
+      key: "peau",
+      label: "Peau",
       controls: [
-        {
-          optionKey: "face",
-          label: "Expression",
-          type: "visuel",
-          choices: [
-            { value: "smile", label: "Souriant" },
-            { value: "smileBig", label: "Grand sourire" },
-            { value: "smileLOL", label: "Mort de rire" },
-            { value: "cheeky", label: "Coquin" },
-            { value: "awe", label: "Émerveillé" },
-            { value: "cute", label: "Mignon" },
-            { value: "calm", label: "Zen" },
-            { value: "lovingGrin1", label: "Charmeur" },
-            { value: "lovingGrin2", label: "Yeux en cœur" },
-            { value: "hectic", label: "Stressé" },
-            { value: "serious", label: "Sérieux" },
-            { value: "suspicious", label: "Méfiant" },
-            { value: "tired", label: "Fatigué" },
-            { value: "eyesClosed", label: "Yeux fermés" },
-            { value: "rage", label: "Énervé" },
-            { value: "veryAngry", label: "Furieux" },
-          ],
-        },
         {
           optionKey: "skinColor",
           label: "Couleur de peau",
           type: "couleur",
           choices: [
-            { value: "ffdbb4", label: "Claire" },
-            { value: "edb98a", label: "Dorée" },
-            { value: "d08b5b", label: "Bronze" },
-            { value: "ae5d29", label: "Brune" },
-            { value: "694d3d", label: "Foncée" },
+            swatch("ffdbb4", "Très claire"),
+            swatch("edb98a", "Claire"),
+            swatch("fd9841", "Dorée"),
+            swatch("f8d25c", "Cartoon"),
+            swatch("d08b5b", "Brune"),
+            swatch("ae5d29", "Foncée"),
+            swatch("614335", "Très foncée"),
           ],
         },
       ],
     },
     {
-      key: "cheveux",
-      label: "Coiffure & couvre-chef",
+      key: "coiffure",
+      label: "Coiffure",
       controls: [
         {
-          optionKey: "head",
-          label: "Coiffure / couvre-chef",
+          optionKey: "top",
+          label: "Style de coiffure",
           type: "visuel",
           choices: [
-            { value: "afro", label: "Afro" },
-            { value: "bangs", label: "Frange" },
-            { value: "bantuKnots", label: "Bantu knots" },
-            { value: "bun", label: "Chignon" },
-            { value: "buns", label: "Couettes" },
-            { value: "cornrows", label: "Tresses collées" },
-            { value: "dreads1", label: "Dreadlocks" },
-            { value: "flatTop", label: "Flat top" },
-            { value: "hatBeanie", label: "Bonnet" },
-            { value: "hatHip", label: "Casquette" },
-            { value: "longCurly", label: "Longs bouclés" },
-            { value: "mohawk", label: "Crête" },
-            { value: "pomp", label: "Pompadour" },
-            { value: "short2", label: "Coupe courte" },
+            // Cheveux courts
+            { value: "shortCurly",           label: "Court bouclé" },
+            { value: "shortFlat",             label: "Court plat" },
+            { value: "shortRound",            label: "Court rond" },
+            { value: "shortWaved",            label: "Court ondulé" },
+            { value: "theCaesar",             label: "César" },
+            { value: "theCaesarAndSidePart",  label: "César côté" },
+            { value: "sides",                 label: "Dégradé" },
+            { value: "frizzle",               label: "Frisé court" },
+            { value: "shaggy",                label: "Shaggy" },
+            { value: "shaggyMullet",          label: "Shaggy mullet" },
+            { value: "dreads01",              label: "Dreads courts" },
+            { value: "dreads02",              label: "Dreads tressés" },
+            // Cheveux longs
+            { value: "straight01",            label: "Long lisse" },
+            { value: "straight02",            label: "Long lisse 2" },
+            { value: "straightAndStrand",     label: "Long + mèche" },
+            { value: "bigHair",               label: "Long volumineux" },
+            { value: "bob",                   label: "Bob" },
+            { value: "bun",                   label: "Chignon" },
+            { value: "curly",                 label: "Long bouclé" },
+            { value: "curvy",                 label: "Long ondulé" },
+            { value: "miaWallace",            label: "Mi-long lisse" },
+            { value: "longButNotTooLong",     label: "Pas trop long" },
+            { value: "shavedSides",           label: "Rasé sur côtés" },
+            { value: "frida",                 label: "Frida" },
+            { value: "fro",                   label: "Afro" },
+            { value: "froBand",               label: "Afro + bandeau" },
+            { value: "dreads",                label: "Dreads longs" },
+            // Chapeaux (hijab et turban exclus — neutralité)
+            { value: "hat",                   label: "Casquette" },
+            { value: "winterHat1",            label: "Bonnet 1" },
+            { value: "winterHat02",           label: "Bonnet 2" },
+            { value: "winterHat03",           label: "Bonnet 3" },
+            { value: "winterHat04",           label: "Bonnet 4" },
           ],
         },
         {
-          optionKey: "headContrastColor",
-          label: "Couleur cheveux / couvre-chef",
+          optionKey: "hairColor",
+          label: "Couleur des cheveux",
           type: "couleur",
           choices: [
-            { value: "2c1b18", label: "Brun foncé" },
-            { value: "e8e1e1", label: "Blanc" },
-            { value: "ecdcbf", label: "Blond platine" },
-            { value: "d6b370", label: "Blond" },
-            { value: "f59797", label: "Rose" },
-            { value: "b58143", label: "Caramel" },
-            { value: "a55728", label: "Roux" },
-            { value: "724133", label: "Châtain" },
-            { value: "4a312c", label: "Noir" },
-            { value: "c93305", label: "Rouge vif" },
+            swatch("a55728", "Auburn"),
+            swatch("2c1b18", "Noir"),
+            swatch("b58143", "Blond clair"),
+            swatch("d6b370", "Blond doré"),
+            swatch("724133", "Brun"),
+            swatch("4a312c", "Brun foncé"),
+            swatch("f59797", "Rose pastel"),
+            swatch("ecdcbf", "Platine"),
+            swatch("c93305", "Roux"),
+            swatch("e8e1e1", "Gris argenté"),
+          ],
+        },
+        {
+          optionKey: "hatColor",
+          label: "Couleur du chapeau",
+          type: "couleur",
+          choices: [
+            swatch("262e33", "Noir"),       swatch("65c9ff", "Bleu clair"),
+            swatch("5199e4", "Bleu"),       swatch("25557c", "Bleu foncé"),
+            swatch("e6e6e6", "Gris clair"), swatch("929598", "Gris"),
+            swatch("3c4f5c", "Chiné"),      swatch("b1e2ff", "Bleu pastel"),
+            swatch("a7ffc4", "Vert pastel"),swatch("ffdeb5", "Orange pastel"),
+            swatch("ffafb9", "Rose pastel"),swatch("ffffb1", "Jaune pastel"),
+            swatch("ff488e", "Rose"),       swatch("ff5c5c", "Rouge"),
+            swatch("ffffff", "Blanc"),
+          ],
+        },
+      ],
+    },
+    {
+      key: "visage",
+      label: "Visage",
+      controls: [
+        {
+          optionKey: "eyes",
+          label: "Yeux",
+          type: "visuel",
+          choices: [
+            { value: "default",   label: "Normal" },
+            { value: "happy",     label: "Heureux" },
+            { value: "wink",      label: "Clin d'œil" },
+            { value: "surprised", label: "Surpris" },
+            { value: "squint",    label: "Plissés" },
+            { value: "side",      label: "Côté" },
+            { value: "hearts",    label: "Cœurs" },
+            { value: "xDizzy",    label: "Étourdi" },
+            { value: "eyeRoll",   label: "Roulés" },
+            { value: "closed",    label: "Fermés" },
+            { value: "cry",       label: "Pleurant" },
+            { value: "winkWacky", label: "Clin loufoque" },
+          ],
+        },
+        {
+          optionKey: "eyebrows",
+          label: "Sourcils",
+          type: "visuel",
+          choices: [
+            { value: "default",                label: "Normal" },
+            { value: "defaultNatural",         label: "Naturel" },
+            { value: "raisedExcited",          label: "Relevés" },
+            { value: "raisedExcitedNatural",   label: "Relevés nat." },
+            { value: "flatNatural",            label: "Plats" },
+            { value: "frownNatural",           label: "Froncés" },
+            { value: "angryNatural",           label: "En colère nat." },
+            { value: "angry",                  label: "En colère" },
+            { value: "sadConcerned",           label: "Inquiets" },
+            { value: "sadConcernedNatural",    label: "Inquiets nat." },
+            { value: "unibrowNatural",         label: "Monobrow" },
+            { value: "upDown",                 label: "Haut-bas" },
+            { value: "upDownNatural",          label: "Haut-bas nat." },
+          ],
+        },
+        {
+          optionKey: "mouth",
+          label: "Bouche",
+          type: "visuel",
+          choices: [
+            { value: "smile",      label: "Sourire" },
+            { value: "default",    label: "Normal" },
+            { value: "twinkle",    label: "Pétillant" },
+            { value: "tongue",     label: "Langue" },
+            { value: "eating",     label: "Qui mange" },
+            { value: "grimace",    label: "Grimace" },
+            { value: "serious",    label: "Sérieux" },
+            { value: "sad",        label: "Triste" },
+            { value: "concerned",  label: "Inquiet" },
+            { value: "disbelief",  label: "Incrédule" },
+            { value: "screamOpen", label: "Cri" },
+            { value: "vomit",      label: "Malade" },
           ],
         },
       ],
@@ -172,17 +395,51 @@ export const AVATAR_CATEGORIES: Record<AvatarStyleId, AvatarCategory[]> = {
       label: "Vêtements",
       controls: [
         {
-          optionKey: "clothingColor",
-          label: "Couleur du haut",
+          optionKey: "clothing",
+          label: "Style de vêtement",
+          type: "visuel",
+          choices: [
+            { value: "blazerAndShirt",   label: "Blazer + chemise" },
+            { value: "blazerAndSweater", label: "Blazer + pull" },
+            { value: "collarAndSweater", label: "Pull col" },
+            { value: "graphicShirt",     label: "T-shirt graphique" },
+            { value: "hoodie",           label: "Sweat à capuche" },
+            { value: "overall",          label: "Salopette" },
+            { value: "shirtCrewNeck",    label: "T-shirt col rond" },
+            { value: "shirtScoopNeck",   label: "T-shirt col plongé" },
+            { value: "shirtVNeck",       label: "T-shirt col V" },
+          ],
+        },
+        {
+          optionKey: "clothesColor",
+          label: "Couleur du vêtement",
           type: "couleur",
           choices: [
-            { value: "e78276", label: "Corail" },
-            { value: "ffcf77", label: "Jaune" },
-            { value: "fdea6b", label: "Citron" },
-            { value: "78e185", label: "Vert" },
-            { value: "9ddadb", label: "Turquoise" },
-            { value: "8fa7df", label: "Bleu" },
-            { value: "e279c7", label: "Magenta" },
+            swatch("262e33", "Noir"),       swatch("65c9ff", "Bleu clair"),
+            swatch("5199e4", "Bleu"),       swatch("25557c", "Bleu foncé"),
+            swatch("e6e6e6", "Gris clair"), swatch("929598", "Gris"),
+            swatch("3c4f5c", "Chiné"),      swatch("b1e2ff", "Bleu pastel"),
+            swatch("a7ffc4", "Vert pastel"),swatch("ffdeb5", "Orange pastel"),
+            swatch("ffafb9", "Rose pastel"),swatch("ffffb1", "Jaune pastel"),
+            swatch("ff488e", "Rose"),       swatch("ff5c5c", "Rouge"),
+            swatch("ffffff", "Blanc"),
+          ],
+        },
+        {
+          optionKey: "clothingGraphic",
+          label: "Motif (T-shirt graphique)",
+          type: "visuel",
+          choices: [
+            { value: "bat",         label: "Chauve-souris" },
+            { value: "cumbia",      label: "Musique" },
+            { value: "deer",        label: "Cerf" },
+            { value: "diamond",     label: "Diamant" },
+            { value: "hola",        label: "Hola" },
+            { value: "pizza",       label: "Pizza" },
+            { value: "resist",      label: "Resist" },
+            { value: "bear",        label: "Ours" },
+            { value: "skullOutline",label: "Tête de mort" },
+            { value: "skull",       label: "Crâne" },
           ],
         },
       ],
@@ -193,478 +450,19 @@ export const AVATAR_CATEGORIES: Record<AvatarStyleId, AvatarCategory[]> = {
       controls: [
         {
           optionKey: "accessories",
-          probabilityKey: "accessoriesProbability",
           label: "Lunettes",
           type: "visuel",
-          choices: avecAucun([
-            { value: "glasses", label: "Lunettes rondes" },
-            { value: "glasses2", label: "Lunettes carrées" },
-            { value: "glasses3", label: "Lunettes ovales" },
-            { value: "glasses4", label: "Lunettes fines" },
-            { value: "glasses5", label: "Lunettes larges" },
-            { value: "sunglasses", label: "Lunettes de soleil" },
-            { value: "sunglasses2", label: "Lunettes de soleil rondes" },
-            { value: "eyepatch", label: "Cache-œil" },
-          ]),
-        },
-        {
-          optionKey: "mask",
-          probabilityKey: "maskProbability",
-          label: "Masque",
-          type: "visuel",
-          choices: avecAucun([
-            { value: "medicalMask", label: "Masque chirurgical" },
-            { value: "respirator", label: "Masque FFP2" },
-          ]),
-        },
-      ],
-    },
-    {
-      key: "fond",
-      label: "Fond",
-      controls: [{ optionKey: "backgroundColor", label: "Fond", type: "couleur", choices: FOND_CHOICES }],
-    },
-  ],
-
-  // "Mini" (Mini Avatars) : petit personnage entier (tête + t-shirt), très
-  // simple et coloré. Moustache optionnelle, désactivée par défaut.
-  mini: [
-    {
-      key: "visage",
-      label: "Visage",
-      controls: [
-        {
-          optionKey: "head",
-          label: "Forme du visage",
-          type: "visuel",
           choices: [
-            { value: "normal", label: "Normal" },
-            { value: "wide", label: "Large" },
-            { value: "thin", label: "Fin" },
-          ],
-        },
-        {
-          optionKey: "skinColor",
-          label: "Couleur de peau",
-          type: "couleur",
-          choices: [
-            { value: "ffe0bd", label: "Très claire" },
-            { value: "ffcb7e", label: "Claire" },
-            { value: "f5d0c5", label: "Rosée" },
-            { value: "e8b58a", label: "Dorée" },
-            { value: "c68642", label: "Bronze" },
-            { value: "8d5524", label: "Brune" },
-            { value: "5a3825", label: "Foncée" },
-          ],
-        },
-        {
-          optionKey: "blushes",
-          probabilityKey: "blushesProbability",
-          label: "Joues roses",
-          type: "visuel",
-          choices: avecAucun([{ value: "default", label: "Joues roses" }]),
-        },
-      ],
-    },
-    {
-      key: "yeux",
-      label: "Yeux",
-      controls: [
-        {
-          optionKey: "eyes",
-          label: "Regard",
-          type: "visuel",
-          choices: [
-            { value: "normal", label: "Normal" },
-            { value: "confident", label: "Confiant" },
-            { value: "happy", label: "Joyeux" },
-          ],
-        },
-        {
-          optionKey: "mouth",
-          label: "Bouche",
-          type: "visuel",
-          choices: [
-            { value: "default", label: "Sourire" },
-            { value: "missingTooth", label: "Dent manquante" },
+            { value: "",              label: "Aucune" },
+            { value: "kurt",          label: "Rondes" },
+            { value: "prescription01",label: "Classiques" },
+            { value: "prescription02",label: "Fines" },
+            { value: "round",         label: "Cercles" },
+            { value: "sunglasses",    label: "Soleil" },
+            { value: "wayfarers",     label: "Carrées" },
           ],
         },
       ],
-    },
-    {
-      key: "cheveux",
-      label: "Coiffure",
-      controls: [
-        {
-          optionKey: "hair",
-          label: "Coiffure",
-          type: "visuel",
-          choices: [
-            { value: "balndess", label: "Chauve" },
-            { value: "slaughter", label: "Crête rebelle" },
-            { value: "ponyTail", label: "Queue de cheval" },
-            { value: "long", label: "Longs" },
-            { value: "curly", label: "Bouclés" },
-            { value: "stylish", label: "Stylé" },
-            { value: "elvis", label: "Banane" },
-            { value: "classic02", label: "Classique 1" },
-            { value: "classic01", label: "Classique 2" },
-          ],
-        },
-        {
-          optionKey: "hairColor",
-          label: "Couleur des cheveux",
-          type: "couleur",
-          choices: [
-            { value: "47280b", label: "Brun" },
-            { value: "1b0b47", label: "Violet" },
-            { value: "ad3a20", label: "Roux" },
-            { value: "2c2c2c", label: "Noir" },
-            { value: "d4a017", label: "Blond doré" },
-            { value: "1f6f8b", label: "Bleu" },
-            { value: "2e8b57", label: "Vert" },
-            { value: "e0218a", label: "Rose vif" },
-          ],
-        },
-      ],
-    },
-    {
-      key: "vetements",
-      label: "Vêtements",
-      controls: [
-        {
-          optionKey: "body",
-          label: "Haut",
-          type: "visuel",
-          choices: [
-            { value: "tShirt", label: "T-shirt" },
-            { value: "golf", label: "Polo" },
-          ],
-        },
-        {
-          optionKey: "bodyColor",
-          label: "Couleur du haut",
-          type: "couleur",
-          choices: [
-            { value: "e05a33", label: "Orange" },
-            { value: "3633e0", label: "Bleu" },
-            { value: "ff4dd8", label: "Rose" },
-            { value: "22c55e", label: "Vert" },
-            { value: "facc15", label: "Jaune" },
-            { value: "8b5cf6", label: "Violet" },
-            { value: "06b6d4", label: "Cyan" },
-            { value: "1f2937", label: "Noir" },
-          ],
-        },
-      ],
-    },
-    {
-      key: "accessoires",
-      label: "Accessoires",
-      controls: [
-        {
-          optionKey: "glasses",
-          probabilityKey: "glassesProbability",
-          label: "Lunettes",
-          type: "visuel",
-          choices: avecAucun([{ value: "normal", label: "Lunettes" }]),
-        },
-      ],
-    },
-    {
-      key: "fond",
-      label: "Fond",
-      controls: [{ optionKey: "backgroundColor", label: "Fond", type: "couleur", choices: FOND_CHOICES }],
-    },
-  ],
-
-  // "Perso" (Personas) : avatar buste + vêtements, coloré et stylé.
-  personas: [
-    {
-      key: "visage",
-      label: "Visage",
-      controls: [
-        {
-          optionKey: "skinColor",
-          label: "Couleur de peau",
-          type: "couleur",
-          choices: [
-            { value: "eeb4a4", label: "Très claire" },
-            { value: "e7a391", label: "Claire" },
-            { value: "e5a07e", label: "Dorée" },
-            { value: "d78774", label: "Bronze" },
-            { value: "b16a5b", label: "Brun clair" },
-            { value: "92594b", label: "Brune" },
-            { value: "623d36", label: "Foncée" },
-          ],
-        },
-        {
-          optionKey: "body",
-          label: "Silhouette",
-          type: "visuel",
-          choices: [
-            { value: "squared", label: "Carrée" },
-            { value: "rounded", label: "Ronde" },
-            { value: "small", label: "Petite" },
-            { value: "checkered", label: "À carreaux" },
-          ],
-        },
-        {
-          optionKey: "nose",
-          label: "Nez",
-          type: "visuel",
-          choices: [
-            { value: "mediumRound", label: "Nez moyen" },
-            { value: "smallRound", label: "Petit nez" },
-            { value: "wrinkles", label: "Nez marqué" },
-          ],
-        },
-      ],
-    },
-    {
-      key: "yeux",
-      label: "Yeux",
-      controls: [
-        {
-          optionKey: "eyes",
-          label: "Yeux",
-          type: "visuel",
-          choices: [
-            { value: "open", label: "Ouverts" },
-            { value: "sleep", label: "Endormis" },
-            { value: "wink", label: "Clin d'œil" },
-            { value: "glasses", label: "Lunettes" },
-            { value: "happy", label: "Joyeux" },
-            { value: "sunglasses", label: "Lunettes de soleil" },
-          ],
-        },
-      ],
-    },
-    {
-      key: "bouche",
-      label: "Bouche",
-      controls: [
-        {
-          optionKey: "mouth",
-          label: "Bouche",
-          type: "visuel",
-          choices: [
-            { value: "smile", label: "Sourire" },
-            { value: "frown", label: "Moue" },
-            { value: "surprise", label: "Surprise" },
-            { value: "pacifier", label: "Tétine" },
-            { value: "bigSmile", label: "Grand sourire" },
-            { value: "smirk", label: "Sourire en coin" },
-            { value: "lips", label: "Lèvres" },
-          ],
-        },
-      ],
-    },
-    {
-      key: "cheveux",
-      label: "Cheveux",
-      controls: [
-        {
-          optionKey: "hair",
-          label: "Coiffure",
-          type: "visuel",
-          choices: visuels("Coiffure", [
-            "long",
-            "sideShave",
-            "shortCombover",
-            "curlyHighTop",
-            "bobCut",
-            "curly",
-            "pigtails",
-            "buzzcut",
-            "bald",
-            "mohawk",
-          ]),
-        },
-        {
-          optionKey: "hairColor",
-          label: "Couleur des cheveux",
-          type: "couleur",
-          choices: [
-            { value: "362c47", label: "Brun foncé" },
-            { value: "6c4545", label: "Brun roux" },
-            { value: "e15c66", label: "Corail" },
-            { value: "e16381", label: "Rose" },
-            { value: "f27d65", label: "Pêche" },
-            { value: "f29c65", label: "Abricot" },
-            { value: "dee1f5", label: "Lavande" },
-          ],
-        },
-      ],
-    },
-    {
-      key: "accessoires",
-      label: "Accessoires",
-      controls: [
-        {
-          optionKey: "clothingColor",
-          label: "Couleur des vêtements",
-          type: "couleur",
-          choices: [
-            { value: "456dff", label: "Bleu" },
-            { value: "54d7c7", label: "Turquoise" },
-            { value: "7555ca", label: "Violet" },
-            { value: "6dbb58", label: "Vert" },
-            { value: "e24553", label: "Rouge" },
-            { value: "f3b63a", label: "Jaune" },
-            { value: "f55d81", label: "Rose" },
-          ],
-        },
-      ],
-    },
-    {
-      key: "fond",
-      label: "Fond",
-      controls: [{ optionKey: "backgroundColor", label: "Fond", type: "couleur", choices: FOND_CHOICES }],
     },
   ],
 };
-
-// ───────────────────────────────────────────────
-//  Configuration par défaut / validation
-// ───────────────────────────────────────────────
-
-export function estStyleAvatar(valeur: unknown): valeur is AvatarStyleId {
-  return typeof valeur === "string" && AVATAR_STYLES.some((s) => s.id === valeur);
-}
-
-function optionsParDefaut(style: AvatarStyleId): AvatarOptions {
-  const options: AvatarOptions = {};
-  for (const categorie of AVATAR_CATEGORIES[style]) {
-    for (const control of categorie.controls) {
-      if (control.probabilityKey) {
-        // Par défaut, les parties optionnelles (lunettes, barbe, masque...)
-        // sont désactivées : l'élève les active lui-même s'il le souhaite.
-        options[control.optionKey] = AUCUN;
-        continue;
-      }
-      const choixReel = control.choices.find((c) => c.value !== AUCUN);
-      if (choixReel) options[control.optionKey] = choixReel.value;
-    }
-  }
-  return options;
-}
-
-export function configAvatarParDefaut(style: AvatarStyleId): AvatarConfig {
-  return { style, options: optionsParDefaut(style) };
-}
-
-function hashChaine(valeur: string): number {
-  let h = 0;
-  for (let i = 0; i < valeur.length; i++) {
-    h = (h * 31 + valeur.charCodeAt(i)) >>> 0;
-  }
-  return h;
-}
-
-/** Config d'avatar d'un utilisateur : config sauvegardée, ou config par défaut dérivée de son id. */
-export function configAvatarUtilisateur(user: {
-  id: string;
-  avatarStyle?: string | null;
-  avatarOptions?: unknown;
-}): AvatarConfig {
-  if (
-    estStyleAvatar(user.avatarStyle) &&
-    user.avatarOptions &&
-    typeof user.avatarOptions === "object" &&
-    !Array.isArray(user.avatarOptions)
-  ) {
-    const options: AvatarOptions = {};
-    for (const [cle, valeur] of Object.entries(user.avatarOptions as Record<string, unknown>)) {
-      if (typeof valeur === "string") options[cle] = valeur;
-    }
-    return { style: user.avatarStyle, options };
-  }
-
-  const style = AVATAR_STYLES[hashChaine(user.id) % AVATAR_STYLES.length].id;
-  return configAvatarParDefaut(style);
-}
-
-// ───────────────────────────────────────────────
-//  Génération SVG (DiceBear)
-// ───────────────────────────────────────────────
-
-function optionsDicebear(config: AvatarConfig): Record<string, unknown> {
-  const resultat: Record<string, unknown> = {};
-
-  for (const categorie of AVATAR_CATEGORIES[config.style]) {
-    for (const control of categorie.controls) {
-      const valeur = config.options[control.optionKey];
-
-      if (control.optionKey === "backgroundColor") {
-        resultat.backgroundColor = [valeur || optionsParDefaut(config.style).backgroundColor];
-        continue;
-      }
-
-      if (control.probabilityKey) {
-        if (!valeur || valeur === AUCUN) {
-          resultat[control.probabilityKey] = 0;
-        } else {
-          resultat[control.optionKey] = [valeur];
-          resultat[control.probabilityKey] = 100;
-        }
-      } else if (valeur) {
-        resultat[control.optionKey] = [valeur];
-      }
-    }
-  }
-
-  return resultat;
-}
-
-/**
- * Préfixe tous les id= et url(#...) d'un SVG avec un identifiant dérivé du seed.
- * Déterministe (même seed → même préfixe) : pas de mismatch SSR/client.
- * Évite les collisions de masques entre avatars d'utilisateurs différents.
- */
-function prefixerIds(svg: string, seed: string): string {
-  const prefix = seed.replace(/[^a-z0-9]/gi, "").slice(0, 10) || "av";
-  return svg
-    .replace(/\bid="([^"]+)"/g, (_, id) => `id="${id}-${prefix}"`)
-    .replace(/url\(#([^)]+)\)/g, (_, id) => `url(#${id}-${prefix})`);
-}
-
-/** Génère le SVG d'un avatar à partir de sa config (déterministe). */
-export function genererAvatarSvg(config: AvatarConfig, seed: string, taille = 96): string {
-  const style = STYLE_MODULES[config.style];
-  const avatar = createAvatar(style, {
-    seed,
-    size: taille,
-    radius: 50,
-    backgroundType: ["solid"],
-    ...optionsDicebear(config),
-  });
-  return prefixerIds(avatar.toString(), seed);
-}
-
-/** Avatar simple/neutre (côté prof, ou élève sans configuration personnalisée). */
-export function genererAvatarNeutreSvg(seed: string, taille = 96): string {
-  const avatar = createAvatar(botttsNeutral as unknown as Parameters<typeof createAvatar>[0], {
-    seed,
-    size: taille,
-    radius: 50,
-    backgroundType: ["solid"],
-    backgroundColor: ["27314f"],
-  });
-  return prefixerIds(avatar.toString(), seed);
-}
-
-/** Aperçu d'un seul choix (utilisé par le constructeur pour les vignettes). */
-export function genererApercuChoix(
-  config: AvatarConfig,
-  control: AvatarControl,
-  valeurChoix: string,
-  seed: string,
-  taille = 64
-): string {
-  const optionsModifiees: AvatarConfig = {
-    style: config.style,
-    options: { ...config.options, [control.optionKey]: valeurChoix },
-  };
-  return genererAvatarSvg(optionsModifiees, seed, taille);
-}

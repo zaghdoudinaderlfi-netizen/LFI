@@ -1,4 +1,4 @@
-import { configAvatarUtilisateur, genererAvatarNeutreSvg, genererAvatarSvg } from "@/lib/avatar";
+import { configAvatarUtilisateur, configAvatarSeed, genererAvatarSvg } from "@/lib/avatar";
 
 const TAILLES = {
   xs: "h-6 w-6",
@@ -11,9 +11,8 @@ const TAILLES = {
 export type TailleAvatar = keyof typeof TAILLES;
 
 /**
- * Affiche l'avatar d'un utilisateur (élève : config personnalisée ou
- * dérivée de son id ; prof : avatar simple/neutre). Le SVG est généré
- * côté serveur ou client, sans appel réseau (DiceBear local).
+ * Affiche l'avatar Avataaars d'un utilisateur (SVG généré côté serveur ou client).
+ * neutre=true → config dérivée du seed (pour les profs sans avatar personnalisé).
  */
 export function AvatarDisplay({
   user,
@@ -26,13 +25,14 @@ export function AvatarDisplay({
   taille?: TailleAvatar;
   className?: string;
 }) {
-  const svg = neutre ? genererAvatarNeutreSvg(user.id) : genererAvatarSvg(configAvatarUtilisateur(user), user.id);
+  const config = neutre ? configAvatarSeed(user.id) : configAvatarUtilisateur(user);
+  const svg = genererAvatarSvg(config, user.id);
 
   return (
     <span
       role="img"
       aria-label="Avatar"
-      className={`avatar-frame inline-flex shrink-0 overflow-hidden rounded-full bg-space-surface2 ring-1 ring-space-border ${TAILLES[taille]} ${className}`}
+      className={`inline-flex shrink-0 overflow-hidden rounded-full ${TAILLES[taille]} ${className}`}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );
