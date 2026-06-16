@@ -6,7 +6,8 @@ import { listerDerniersCoursPublies, MATIERE_LABELS } from "@/lib/cours";
 import { listerDevoirsAFaire } from "@/lib/devoirs";
 import { listerNotesEleve } from "@/lib/soumissions";
 import { NIVEAU_LABELS } from "@/lib/classes";
-import { AvatarDisplay } from "@/components/avatar/avatar-display";
+import { configAvatarUtilisateur, genererAvatarSvg } from "@/lib/avatar";
+import { Mascotte } from "@/components/mascotte/mascotte";
 
 export default async function ElevePage() {
   const session = await auth();
@@ -29,10 +30,16 @@ export default async function ElevePage() {
   const devoirsAFaire = devoirs.filter((devoir) => !devoir.soumission).slice(0, 4);
   const dernieresNotes = notes.slice(0, 4);
 
+  const svgMascotte = user
+    ? genererAvatarSvg(configAvatarUtilisateur(user), user.id, 96)
+    : null;
+
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <div className="flex items-center gap-4 animate-fade-in-up">
-        {user && <AvatarDisplay user={user} taille="lg" />}
+        {svgMascotte ? (
+          <Mascotte svgAvatar={svgMascotte} prenom={user?.prenom} />
+        ) : null}
         <div>
           <p className="eyebrow">Bonjour</p>
           <h1 className="page-title">

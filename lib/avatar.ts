@@ -617,6 +617,18 @@ function optionsDicebear(config: AvatarConfig): Record<string, unknown> {
   return resultat;
 }
 
+/**
+ * Préfixe tous les id= et url(#...) d'un SVG avec un identifiant dérivé du seed.
+ * Déterministe (même seed → même préfixe) : pas de mismatch SSR/client.
+ * Évite les collisions de masques entre avatars d'utilisateurs différents.
+ */
+function prefixerIds(svg: string, seed: string): string {
+  const prefix = seed.replace(/[^a-z0-9]/gi, "").slice(0, 10) || "av";
+  return svg
+    .replace(/\bid="([^"]+)"/g, (_, id) => `id="${id}-${prefix}"`)
+    .replace(/url\(#([^)]+)\)/g, (_, id) => `url(#${id}-${prefix})`);
+}
+
 /** Génère le SVG d'un avatar à partir de sa config (déterministe). */
 export function genererAvatarSvg(config: AvatarConfig, seed: string, taille = 96): string {
   const style = STYLE_MODULES[config.style];
@@ -625,10 +637,9 @@ export function genererAvatarSvg(config: AvatarConfig, seed: string, taille = 96
     size: taille,
     radius: 50,
     backgroundType: ["solid"],
-    randomizeIds: true,
     ...optionsDicebear(config),
   });
-  return avatar.toString();
+  return prefixerIds(avatar.toString(), seed);
 }
 
 /** Avatar simple/neutre (côté prof, ou élève sans configuration personnalisée). */
@@ -639,9 +650,8 @@ export function genererAvatarNeutreSvg(seed: string, taille = 96): string {
     radius: 50,
     backgroundType: ["solid"],
     backgroundColor: ["27314f"],
-    randomizeIds: true,
   });
-  return avatar.toString();
+  return prefixerIds(avatar.toString(), seed);
 }
 
 /** Aperçu d'un seul choix (utilisé par le constructeur pour les vignettes). */
