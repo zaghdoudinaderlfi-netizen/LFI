@@ -1,5 +1,6 @@
 "use server";
 
+import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -32,6 +33,75 @@ export async function modifierProfilAction(
 
   revalidatePath("/eleve/profil");
   return "Profil mis à jour.";
+}
+
+export async function changerMdpAction(
+  _prev: string | undefined,
+  formData: FormData,
+): Promise<string | undefined> {
+  const session = await auth();
+  if (!session?.user) return "Non connecté.";
+
+  const ancien = formData.get("ancien");
+  const nouveau = formData.get("nouveau");
+  const confirmation = formData.get("confirmation");
+
+  if (
+    typeof ancien !== "string" ||
+    typeof nouveau !== "string" ||
+    typeof confirmation !== "string"
+  ) return "Formulaire invalide.";
+
+  if (nouveau.length < 8) return "Le nouveau mot de passe doit faire au moins 8 caractères.";
+  if (nouveau !== confirmation) return "Les deux mots de passe ne correspondent pas.";
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { motDePasse: true },
+  });
+  if (!user) return "Utilisateur introuvable.";
+
+  const valide = await bcrypt.compare(ancien, user.motDePasse);
+  if (!valide) return "Le mot de passe actuel est incorrect.";
+
+  const hash = await bcrypt.hash(nouveau, 12);
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { motDePasse: hash, doitChangerMdp: false },
+  });
+
+  return "ok";
+}
+
+export async function modifierEmailAction(
+  _prev: string | undefined,
+  formData: FormData,
+): Promise<string | undefined> {
+  const session = await auth();
+  if (!session?.user) return "Non connecté.";
+
+  const email = formData.get("email");
+  if (typeof email !== "string") return "Formulaire invalide.";
+
+  const emailNettoye = email.trim().toLowerCase();
+  if (emailNettoye && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNettoye)) {
+    return "Adresse email invalide.";
+  }
+
+  if (emailNettoye) {
+    const existant = await prisma.user.findFirst({
+      where: { email: emailNettoye, NOT: { id: session.user.id } },
+    });
+    if (existant) return "Cette adresse email est déjà utilisée par un autre compte.";
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { email: emailNettoye || session.user.email! },
+  });
+
+  revalidatePath("/eleve/profil");
+  return "ok";
 }
 
 /** Sauvegarde la config d'avatar (constructeur). Renvoie "ok" ou un message d'erreur. */

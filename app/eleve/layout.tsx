@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { compterNotificationsNonLues } from "@/lib/notifications";
@@ -14,7 +15,14 @@ export default async function EleveLayout({
     ? await Promise.all([
         prisma.user.findUnique({
           where: { id: session.user.id },
-          select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true },
+          select: {
+            id: true,
+            nom: true,
+            prenom: true,
+            avatarStyle: true,
+            avatarOptions: true,
+            doitChangerMdp: true,
+          },
         }),
         compterNotificationsNonLues(session.user.id),
       ])
@@ -26,7 +34,20 @@ export default async function EleveLayout({
       user={user ?? { id: session?.user?.id ?? "", nom: session?.user?.name ?? "" }}
       notificationsNonLues={notificationsNonLues}
     >
-      {children}
+      <>
+        {user?.doitChangerMdp && (
+          <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+            <p className="text-sm font-medium text-amber-400">
+              Ton professeur a réinitialisé ton mot de passe.{" "}
+              <Link href="/eleve/profil#securite" className="underline hover:text-amber-300">
+                Change-le maintenant
+              </Link>{" "}
+              pour sécuriser ton compte.
+            </p>
+          </div>
+        )}
+        {children}
+      </>
     </AppShell>
   );
 }
