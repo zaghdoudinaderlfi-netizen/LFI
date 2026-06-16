@@ -101,7 +101,7 @@ export function AppShell({
   function Logo() {
     return (
       <Link href={dashboardHref} className="flex items-center">
-        <img src="/nadtech-logo.svg" alt="Nadtech" className="h-7 w-auto" />
+        <img src="/nadtech-logo.svg" alt="Nadtech" className="h-12 w-auto" />
       </Link>
     );
   }

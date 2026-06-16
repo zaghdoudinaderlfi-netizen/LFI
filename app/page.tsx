@@ -85,8 +85,8 @@ export default async function Home() {
       {/* En-tête / accroche */}
       <section className="mx-auto flex max-w-6xl flex-col items-center px-4 py-20 text-center sm:px-6 sm:py-28 lg:px-8">
         <p className="eyebrow animate-fade-in-up">Plateforme pédagogique</p>
-        <h1 className="mt-3 animate-fade-in-up font-heading text-5xl font-bold tracking-tight text-ink-primary [animation-delay:60ms] sm:text-7xl">
-          Nadtech
+        <h1 className="mt-3 animate-fade-in-up [animation-delay:60ms]">
+          <img src="/nadtech-logo.svg" alt="Nadtech" className="h-16 w-auto sm:h-20 lg:h-24" />
         </h1>
         <p className="mt-4 max-w-2xl animate-fade-in-up text-balance text-lg text-ink-secondary [animation-delay:120ms]">
           Plateforme pédagogique de Technologie &amp; SNT — cours, exercices interactifs et code en ligne.

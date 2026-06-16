@@ -1,32 +1,29 @@
 // Constructeur d'avatar façon Kahoot, basé sur DiceBear (libre de droits,
-// composable). Les élèves choisissent un style puis personnalisent chaque
-// partie (visage/peau, yeux, bouche, cheveux/casque, accessoires, fond).
+// composable). Les élèves choisissent un personnage plein corps puis le
+// personnalisent (visage, yeux, coiffure, vêtements, accessoires, fond).
 // La config (style + options) est stockée en JSON dans User.avatarOptions.
 
 import { createAvatar } from "@dicebear/core";
-import * as bottts from "@dicebear/bottts";
 import * as botttsNeutral from "@dicebear/bottts-neutral";
-import * as adventurer from "@dicebear/adventurer";
+import * as openPeeps from "@dicebear/open-peeps";
+import * as miniavs from "@dicebear/miniavs";
 import * as personas from "@dicebear/personas";
-import * as avataaars from "@dicebear/avataaars";
 
-export type AvatarStyleId = "adventurer" | "bottts" | "personas" | "avataaars";
+export type AvatarStyleId = "peeps" | "mini" | "personas";
 
 export const AVATAR_STYLES: { id: AvatarStyleId; label: string; description: string }[] = [
-  { id: "adventurer", label: "Aventurier", description: "Un personnage à customiser de la tête aux pieds" },
-  { id: "bottts", label: "Robot", description: "Un robot bien futuriste" },
+  { id: "peeps", label: "Aventurier", description: "Un personnage complet, plein d'expressions et de coiffures" },
+  { id: "mini", label: "Mini", description: "Un petit perso tout en couleur, des cheveux au t-shirt" },
   { id: "personas", label: "Perso", description: "Un avatar coloré et stylé" },
-  { id: "avataaars", label: "Cartoon", description: "Un avatar dessiné, plein d'expressions" },
 ];
 
 const STYLE_MODULES: Record<AvatarStyleId, Parameters<typeof createAvatar>[0]> = {
-  bottts: bottts as unknown as Parameters<typeof createAvatar>[0],
-  adventurer: adventurer as unknown as Parameters<typeof createAvatar>[0],
+  peeps: openPeeps as unknown as Parameters<typeof createAvatar>[0],
+  mini: miniavs as unknown as Parameters<typeof createAvatar>[0],
   personas: personas as unknown as Parameters<typeof createAvatar>[0],
-  avataaars: avataaars as unknown as Parameters<typeof createAvatar>[0],
 };
 
-/** Valeur sentinelle « aucun » pour les parties optionnelles (lunettes, casque...). */
+/** Valeur sentinelle « aucun » pour les parties optionnelles (lunettes, barbe...). */
 export const AUCUN = "_aucun_";
 
 export type AvatarOptions = Record<string, string>;
@@ -81,81 +78,112 @@ function avecAucun(choix: AvatarChoice[]): AvatarChoice[] {
 // ───────────────────────────────────────────────
 
 export const AVATAR_CATEGORIES: Record<AvatarStyleId, AvatarCategory[]> = {
-  bottts: [
+  // "Aventurier" (Open Peeps) : personnage entier dessiné à la main, plein
+  // d'expressions et de coiffures/couvre-chefs. Pilosité faciale optionnelle
+  // (désactivée par défaut) pour rester adapté aux ados.
+  peeps: [
     {
       key: "visage",
       label: "Visage",
       controls: [
         {
           optionKey: "face",
-          label: "Forme",
+          label: "Expression",
           type: "visuel",
-          choices: visuels("Forme", ["round01", "round02", "square01", "square02", "square03", "square04"]),
+          choices: [
+            { value: "smile", label: "Souriant" },
+            { value: "smileBig", label: "Grand sourire" },
+            { value: "smileLOL", label: "Mort de rire" },
+            { value: "cheeky", label: "Coquin" },
+            { value: "awe", label: "Émerveillé" },
+            { value: "cute", label: "Mignon" },
+            { value: "calm", label: "Zen" },
+            { value: "lovingGrin1", label: "Charmeur" },
+            { value: "lovingGrin2", label: "Yeux en cœur" },
+            { value: "hectic", label: "Stressé" },
+            { value: "serious", label: "Sérieux" },
+            { value: "suspicious", label: "Méfiant" },
+            { value: "tired", label: "Fatigué" },
+            { value: "eyesClosed", label: "Yeux fermés" },
+            { value: "rage", label: "Énervé" },
+            { value: "veryAngry", label: "Furieux" },
+          ],
         },
         {
-          optionKey: "baseColor",
-          label: "Couleur",
+          optionKey: "skinColor",
+          label: "Couleur de peau",
           type: "couleur",
           choices: [
-            { value: "1e88e5", label: "Bleu" },
-            { value: "00acc1", label: "Cyan" },
-            { value: "5e35b1", label: "Violet" },
-            { value: "8e24aa", label: "Magenta" },
-            { value: "43a047", label: "Vert" },
-            { value: "fb8c00", label: "Orange" },
-            { value: "d81b60", label: "Rose" },
-            { value: "757575", label: "Gris" },
+            { value: "ffdbb4", label: "Claire" },
+            { value: "edb98a", label: "Dorée" },
+            { value: "d08b5b", label: "Bronze" },
+            { value: "ae5d29", label: "Brune" },
+            { value: "694d3d", label: "Foncée" },
           ],
         },
       ],
     },
     {
-      key: "yeux",
-      label: "Yeux",
-      controls: [
-        {
-          optionKey: "eyes",
-          label: "Yeux",
-          type: "visuel",
-          choices: visuels("Yeux", ["bulging", "eva", "glow", "happy", "hearts", "robocop", "round", "sensor"]),
-        },
-      ],
-    },
-    {
-      key: "bouche",
-      label: "Bouche",
-      controls: [
-        {
-          optionKey: "mouth",
-          probabilityKey: "mouthProbability",
-          label: "Bouche",
-          type: "visuel",
-          choices: avecAucun(visuels("Bouche", ["bite", "diagram", "grill01", "grill02", "smile01", "square01"])),
-        },
-      ],
-    },
-    {
       key: "cheveux",
-      label: "Casque",
+      label: "Coiffure & couvre-chef",
       controls: [
         {
-          optionKey: "top",
-          probabilityKey: "topProbability",
-          label: "Casque",
+          optionKey: "head",
+          label: "Coiffure / couvre-chef",
           type: "visuel",
-          choices: avecAucun(
-            visuels("Casque", [
-              "antenna",
-              "antennaCrooked",
-              "bulb01",
-              "glowingBulb01",
-              "glowingBulb02",
-              "horns",
-              "lights",
-              "pyramid",
-              "radar",
-            ])
-          ),
+          choices: [
+            { value: "afro", label: "Afro" },
+            { value: "bangs", label: "Frange" },
+            { value: "bantuKnots", label: "Bantu knots" },
+            { value: "bun", label: "Chignon" },
+            { value: "buns", label: "Couettes" },
+            { value: "cornrows", label: "Tresses collées" },
+            { value: "dreads1", label: "Dreadlocks" },
+            { value: "flatTop", label: "Flat top" },
+            { value: "hatBeanie", label: "Bonnet" },
+            { value: "hatHip", label: "Casquette" },
+            { value: "longCurly", label: "Longs bouclés" },
+            { value: "mohawk", label: "Crête" },
+            { value: "pomp", label: "Pompadour" },
+            { value: "short2", label: "Coupe courte" },
+          ],
+        },
+        {
+          optionKey: "headContrastColor",
+          label: "Couleur cheveux / couvre-chef",
+          type: "couleur",
+          choices: [
+            { value: "2c1b18", label: "Brun foncé" },
+            { value: "e8e1e1", label: "Blanc" },
+            { value: "ecdcbf", label: "Blond platine" },
+            { value: "d6b370", label: "Blond" },
+            { value: "f59797", label: "Rose" },
+            { value: "b58143", label: "Caramel" },
+            { value: "a55728", label: "Roux" },
+            { value: "724133", label: "Châtain" },
+            { value: "4a312c", label: "Noir" },
+            { value: "c93305", label: "Rouge vif" },
+          ],
+        },
+      ],
+    },
+    {
+      key: "vetements",
+      label: "Vêtements",
+      controls: [
+        {
+          optionKey: "clothingColor",
+          label: "Couleur du haut",
+          type: "couleur",
+          choices: [
+            { value: "e78276", label: "Corail" },
+            { value: "ffcf77", label: "Jaune" },
+            { value: "fdea6b", label: "Citron" },
+            { value: "78e185", label: "Vert" },
+            { value: "9ddadb", label: "Turquoise" },
+            { value: "8fa7df", label: "Bleu" },
+            { value: "e279c7", label: "Magenta" },
+          ],
         },
       ],
     },
@@ -164,13 +192,30 @@ export const AVATAR_CATEGORIES: Record<AvatarStyleId, AvatarCategory[]> = {
       label: "Accessoires",
       controls: [
         {
-          optionKey: "sides",
-          probabilityKey: "sidesProbability",
-          label: "Accessoire",
+          optionKey: "accessories",
+          probabilityKey: "accessoriesProbability",
+          label: "Lunettes",
           type: "visuel",
-          choices: avecAucun(
-            visuels("Accessoire", ["antenna01", "antenna02", "cables01", "cables02", "round", "square", "squareAssymetric"])
-          ),
+          choices: avecAucun([
+            { value: "glasses", label: "Lunettes rondes" },
+            { value: "glasses2", label: "Lunettes carrées" },
+            { value: "glasses3", label: "Lunettes ovales" },
+            { value: "glasses4", label: "Lunettes fines" },
+            { value: "glasses5", label: "Lunettes larges" },
+            { value: "sunglasses", label: "Lunettes de soleil" },
+            { value: "sunglasses2", label: "Lunettes de soleil rondes" },
+            { value: "eyepatch", label: "Cache-œil" },
+          ]),
+        },
+        {
+          optionKey: "mask",
+          probabilityKey: "maskProbability",
+          label: "Masque",
+          type: "visuel",
+          choices: avecAucun([
+            { value: "medicalMask", label: "Masque chirurgical" },
+            { value: "respirator", label: "Masque FFP2" },
+          ]),
         },
       ],
     },
@@ -181,21 +226,43 @@ export const AVATAR_CATEGORIES: Record<AvatarStyleId, AvatarCategory[]> = {
     },
   ],
 
-  adventurer: [
+  // "Mini" (Mini Avatars) : petit personnage entier (tête + t-shirt), très
+  // simple et coloré. Moustache optionnelle, désactivée par défaut.
+  mini: [
     {
       key: "visage",
-      label: "Peau",
+      label: "Visage",
       controls: [
+        {
+          optionKey: "head",
+          label: "Forme du visage",
+          type: "visuel",
+          choices: [
+            { value: "normal", label: "Normal" },
+            { value: "wide", label: "Large" },
+            { value: "thin", label: "Fin" },
+          ],
+        },
         {
           optionKey: "skinColor",
           label: "Couleur de peau",
           type: "couleur",
           choices: [
-            { value: "f2d3b1", label: "Claire" },
-            { value: "ecad80", label: "Dorée" },
-            { value: "9e5622", label: "Brune" },
-            { value: "763900", label: "Foncée" },
+            { value: "ffe0bd", label: "Très claire" },
+            { value: "ffcb7e", label: "Claire" },
+            { value: "f5d0c5", label: "Rosée" },
+            { value: "e8b58a", label: "Dorée" },
+            { value: "c68642", label: "Bronze" },
+            { value: "8d5524", label: "Brune" },
+            { value: "5a3825", label: "Foncée" },
           ],
+        },
+        {
+          optionKey: "blushes",
+          probabilityKey: "blushesProbability",
+          label: "Joues roses",
+          type: "visuel",
+          choices: avecAucun([{ value: "default", label: "Joues roses" }]),
         },
       ],
     },
@@ -205,56 +272,88 @@ export const AVATAR_CATEGORIES: Record<AvatarStyleId, AvatarCategory[]> = {
       controls: [
         {
           optionKey: "eyes",
-          label: "Yeux",
+          label: "Regard",
           type: "visuel",
-          choices: visuels("Yeux", ["variant01", "variant04", "variant07", "variant10", "variant13", "variant16", "variant20", "variant24"]),
+          choices: [
+            { value: "normal", label: "Normal" },
+            { value: "confident", label: "Confiant" },
+            { value: "happy", label: "Joyeux" },
+          ],
         },
-        {
-          optionKey: "eyebrows",
-          label: "Sourcils",
-          type: "visuel",
-          choices: visuels("Sourcils", ["variant01", "variant03", "variant05", "variant07", "variant09", "variant12"]),
-        },
-      ],
-    },
-    {
-      key: "bouche",
-      label: "Bouche",
-      controls: [
         {
           optionKey: "mouth",
           label: "Bouche",
           type: "visuel",
-          choices: visuels("Bouche", ["variant02", "variant05", "variant08", "variant11", "variant14", "variant18", "variant22", "variant26"]),
+          choices: [
+            { value: "default", label: "Sourire" },
+            { value: "missingTooth", label: "Dent manquante" },
+          ],
         },
       ],
     },
     {
       key: "cheveux",
-      label: "Cheveux",
+      label: "Coiffure",
       controls: [
         {
           optionKey: "hair",
-          probabilityKey: "hairProbability",
           label: "Coiffure",
           type: "visuel",
-          choices: avecAucun(
-            visuels("Coiffure", ["short01", "short04", "short08", "short12", "short16", "long01", "long05", "long10", "long15", "long20"])
-          ),
+          choices: [
+            { value: "balndess", label: "Chauve" },
+            { value: "slaughter", label: "Crête rebelle" },
+            { value: "ponyTail", label: "Queue de cheval" },
+            { value: "long", label: "Longs" },
+            { value: "curly", label: "Bouclés" },
+            { value: "stylish", label: "Stylé" },
+            { value: "elvis", label: "Banane" },
+            { value: "classic02", label: "Classique 1" },
+            { value: "classic01", label: "Classique 2" },
+          ],
         },
         {
           optionKey: "hairColor",
           label: "Couleur des cheveux",
           type: "couleur",
           choices: [
-            { value: "ac6511", label: "Auburn" },
-            { value: "cb6820", label: "Roux" },
-            { value: "ab2a18", label: "Rouge" },
-            { value: "e5d7a3", label: "Blond" },
-            { value: "0e0e0e", label: "Noir" },
-            { value: "afafaf", label: "Gris" },
-            { value: "3eac2c", label: "Vert" },
-            { value: "592454", label: "Violet" },
+            { value: "47280b", label: "Brun" },
+            { value: "1b0b47", label: "Violet" },
+            { value: "ad3a20", label: "Roux" },
+            { value: "2c2c2c", label: "Noir" },
+            { value: "d4a017", label: "Blond doré" },
+            { value: "1f6f8b", label: "Bleu" },
+            { value: "2e8b57", label: "Vert" },
+            { value: "e0218a", label: "Rose vif" },
+          ],
+        },
+      ],
+    },
+    {
+      key: "vetements",
+      label: "Vêtements",
+      controls: [
+        {
+          optionKey: "body",
+          label: "Haut",
+          type: "visuel",
+          choices: [
+            { value: "tShirt", label: "T-shirt" },
+            { value: "golf", label: "Polo" },
+          ],
+        },
+        {
+          optionKey: "bodyColor",
+          label: "Couleur du haut",
+          type: "couleur",
+          choices: [
+            { value: "e05a33", label: "Orange" },
+            { value: "3633e0", label: "Bleu" },
+            { value: "ff4dd8", label: "Rose" },
+            { value: "22c55e", label: "Vert" },
+            { value: "facc15", label: "Jaune" },
+            { value: "8b5cf6", label: "Violet" },
+            { value: "06b6d4", label: "Cyan" },
+            { value: "1f2937", label: "Noir" },
           ],
         },
       ],
@@ -268,29 +367,7 @@ export const AVATAR_CATEGORIES: Record<AvatarStyleId, AvatarCategory[]> = {
           probabilityKey: "glassesProbability",
           label: "Lunettes",
           type: "visuel",
-          choices: avecAucun(visuels("Lunettes", ["variant01", "variant02", "variant03", "variant04", "variant05"])),
-        },
-        {
-          optionKey: "features",
-          probabilityKey: "featuresProbability",
-          label: "Détail",
-          type: "visuel",
-          choices: [
-            { value: AUCUN, label: "Aucun" },
-            { value: "mustache", label: "Moustache" },
-            { value: "blush", label: "Joues roses" },
-            { value: "birthmark", label: "Grain de beauté" },
-            { value: "freckles", label: "Taches de rousseur" },
-          ],
-        },
-        {
-          optionKey: "earrings",
-          probabilityKey: "earringsProbability",
-          label: "Boucle d'oreille",
-          type: "visuel",
-          choices: avecAucun(
-            visuels("Boucle d'oreille", ["variant01", "variant02", "variant03", "variant04", "variant05", "variant06"])
-          ),
+          choices: avecAucun([{ value: "normal", label: "Lunettes" }]),
         },
       ],
     },
@@ -301,6 +378,7 @@ export const AVATAR_CATEGORIES: Record<AvatarStyleId, AvatarCategory[]> = {
     },
   ],
 
+  // "Perso" (Personas) : avatar buste + vêtements, coloré et stylé.
   personas: [
     {
       key: "visage",
@@ -424,21 +502,6 @@ export const AVATAR_CATEGORIES: Record<AvatarStyleId, AvatarCategory[]> = {
       label: "Accessoires",
       controls: [
         {
-          optionKey: "facialHair",
-          probabilityKey: "facialHairProbability",
-          label: "Barbe",
-          type: "visuel",
-          choices: [
-            { value: AUCUN, label: "Aucune" },
-            { value: "beardMustache", label: "Barbe complète" },
-            { value: "pyramid", label: "Barbe pyramidale" },
-            { value: "walrus", label: "Moustache" },
-            { value: "goatee", label: "Bouc" },
-            { value: "shadow", label: "Ombre" },
-            { value: "soulPatch", label: "Mouche" },
-          ],
-        },
-        {
           optionKey: "clothingColor",
           label: "Couleur des vêtements",
           type: "couleur",
@@ -451,205 +514,6 @@ export const AVATAR_CATEGORIES: Record<AvatarStyleId, AvatarCategory[]> = {
             { value: "f3b63a", label: "Jaune" },
             { value: "f55d81", label: "Rose" },
           ],
-        },
-      ],
-    },
-    {
-      key: "fond",
-      label: "Fond",
-      controls: [{ optionKey: "backgroundColor", label: "Fond", type: "couleur", choices: FOND_CHOICES }],
-    },
-  ],
-
-  avataaars: [
-    {
-      key: "visage",
-      label: "Peau",
-      controls: [
-        {
-          optionKey: "skinColor",
-          label: "Couleur de peau",
-          type: "couleur",
-          choices: [
-            { value: "f2d3b1", label: "Très claire" },
-            { value: "ecad80", label: "Claire" },
-            { value: "d08b5b", label: "Dorée" },
-            { value: "9e5622", label: "Brune" },
-            { value: "763900", label: "Foncée" },
-            { value: "614335", label: "Très foncée" },
-          ],
-        },
-      ],
-    },
-    {
-      key: "yeux",
-      label: "Yeux",
-      controls: [
-        {
-          optionKey: "eyes",
-          label: "Expression des yeux",
-          type: "visuel",
-          choices: visuels("Yeux", [
-            "default",
-            "happy",
-            "wink",
-            "winkWacky",
-            "hearts",
-            "squint",
-            "surprised",
-            "side",
-            "closed",
-            "cry",
-            "eyeRoll",
-            "xDizzy",
-          ]),
-        },
-        {
-          optionKey: "eyebrows",
-          label: "Sourcils",
-          type: "visuel",
-          choices: visuels("Sourcils", [
-            "defaultNatural",
-            "raisedExcitedNatural",
-            "angryNatural",
-            "sadConcernedNatural",
-            "flatNatural",
-            "upDownNatural",
-            "unibrowNatural",
-            "angry",
-          ]),
-        },
-      ],
-    },
-    {
-      key: "bouche",
-      label: "Bouche",
-      controls: [
-        {
-          optionKey: "mouth",
-          label: "Expression de la bouche",
-          type: "visuel",
-          choices: visuels("Bouche", [
-            "default",
-            "smile",
-            "twinkle",
-            "eating",
-            "grimace",
-            "sad",
-            "screamOpen",
-            "serious",
-            "tongue",
-            "disbelief",
-            "concerned",
-            "vomit",
-          ]),
-        },
-      ],
-    },
-    {
-      key: "cheveux",
-      label: "Cheveux & couvre-tête",
-      controls: [
-        {
-          optionKey: "top",
-          probabilityKey: "topProbability",
-          label: "Coiffure / couvre-tête",
-          type: "visuel",
-          choices: avecAucun(
-            visuels("Coiffure", [
-              "shortFlat",
-              "shortRound",
-              "shortWaved",
-              "shortCurly",
-              "theCaesar",
-              "curly",
-              "bigHair",
-              "bob",
-              "straight01",
-              "dreads01",
-              "fro",
-              "frizzle",
-              "hat",
-              "turban",
-              "winterHat1",
-            ])
-          ),
-        },
-        {
-          optionKey: "hairColor",
-          label: "Couleur des cheveux",
-          type: "couleur",
-          choices: [
-            { value: "ac6511", label: "Auburn" },
-            { value: "cb6820", label: "Roux" },
-            { value: "ab2a18", label: "Rouge" },
-            { value: "e5d7a3", label: "Blond" },
-            { value: "0e0e0e", label: "Noir" },
-            { value: "afafaf", label: "Gris" },
-            { value: "3eac2c", label: "Vert" },
-            { value: "592454", label: "Violet" },
-          ],
-        },
-      ],
-    },
-    {
-      key: "vetements",
-      label: "Vêtements",
-      controls: [
-        {
-          optionKey: "clothing",
-          label: "Tenue",
-          type: "visuel",
-          choices: visuels("Tenue", [
-            "shirtCrewNeck",
-            "hoodie",
-            "blazerAndShirt",
-            "blazerAndSweater",
-            "collarAndSweater",
-            "graphicShirt",
-            "overall",
-            "shirtScoopNeck",
-            "shirtVNeck",
-          ]),
-        },
-        {
-          optionKey: "clothesColor",
-          label: "Couleur des vêtements",
-          type: "couleur",
-          choices: [
-            { value: "456dff", label: "Bleu" },
-            { value: "54d7c7", label: "Turquoise" },
-            { value: "7555ca", label: "Violet" },
-            { value: "6dbb58", label: "Vert" },
-            { value: "e24553", label: "Rouge" },
-            { value: "f3b63a", label: "Jaune" },
-            { value: "f55d81", label: "Rose" },
-            { value: "262e33", label: "Noir" },
-          ],
-        },
-      ],
-    },
-    {
-      key: "accessoires",
-      label: "Accessoires",
-      controls: [
-        {
-          optionKey: "accessories",
-          probabilityKey: "accessoriesProbability",
-          label: "Lunettes",
-          type: "visuel",
-          choices: avecAucun(
-            visuels("Lunettes", ["round", "prescription01", "prescription02", "wayfarers", "sunglasses", "kurt", "eyepatch"])
-          ),
-        },
-        {
-          optionKey: "facialHair",
-          probabilityKey: "facialHairProbability",
-          label: "Barbe / moustache",
-          type: "visuel",
-          choices: avecAucun(
-            visuels("Barbe", ["beardLight", "beardMedium", "beardMajestic", "moustacheFancy", "moustacheMagnum"])
-          ),
         },
       ],
     },
@@ -673,6 +537,12 @@ function optionsParDefaut(style: AvatarStyleId): AvatarOptions {
   const options: AvatarOptions = {};
   for (const categorie of AVATAR_CATEGORIES[style]) {
     for (const control of categorie.controls) {
+      if (control.probabilityKey) {
+        // Par défaut, les parties optionnelles (lunettes, barbe, masque...)
+        // sont désactivées : l'élève les active lui-même s'il le souhaite.
+        options[control.optionKey] = AUCUN;
+        continue;
+      }
       const choixReel = control.choices.find((c) => c.value !== AUCUN);
       if (choixReel) options[control.optionKey] = choixReel.value;
     }
@@ -755,6 +625,7 @@ export function genererAvatarSvg(config: AvatarConfig, seed: string, taille = 96
     size: taille,
     radius: 50,
     backgroundType: ["solid"],
+    randomizeIds: true,
     ...optionsDicebear(config),
   });
   return avatar.toString();
@@ -768,6 +639,7 @@ export function genererAvatarNeutreSvg(seed: string, taille = 96): string {
     radius: 50,
     backgroundType: ["solid"],
     backgroundColor: ["27314f"],
+    randomizeIds: true,
   });
   return avatar.toString();
 }

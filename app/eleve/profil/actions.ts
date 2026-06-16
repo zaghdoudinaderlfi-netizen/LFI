@@ -57,7 +57,9 @@ export async function enregistrerAvatarAction(
       const valide = control.choices.some((c) => c.value === valeur);
       optionsValidees[control.optionKey] = valide
         ? valeur
-        : control.choices.find((c) => c.value !== AUCUN)?.value ?? control.choices[0].value;
+        : control.probabilityKey
+          ? AUCUN
+          : control.choices.find((c) => c.value !== AUCUN)?.value ?? control.choices[0].value;
     }
   }
 

@@ -15,7 +15,7 @@ export default async function ConnexionPage() {
     <main className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
       <div className="mb-6 flex w-full max-w-sm items-center justify-between animate-fade-in-up">
         <Link href="/" className="flex items-center">
-          <img src="/nadtech-logo.svg" alt="Nadtech" className="h-9 w-auto" />
+          <img src="/nadtech-logo.svg" alt="Nadtech" className="h-12 w-auto" />
         </Link>
         <ThemeToggle />
       </div>

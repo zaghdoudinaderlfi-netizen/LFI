@@ -18,7 +18,7 @@ export function LandingHeader() {
     <header className="sticky top-0 z-30 border-b border-space-border bg-space-surface/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center">
-          <img src="/nadtech-logo.svg" alt="Nadtech" className="h-7 w-auto" />
+          <img src="/nadtech-logo.svg" alt="Nadtech" className="h-12 w-auto" />
         </Link>
 
         <nav className="hidden items-center gap-6 lg:flex">
