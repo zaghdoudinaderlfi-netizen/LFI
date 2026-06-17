@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ClipboardList, Code2 } from "lucide-react";
+import { ArrowLeft, CalendarDays, ClipboardList, Code2 } from "lucide-react";
 import { TypeExercice } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -117,23 +117,32 @@ export default async function CoursLecturePage({
           Retour aux cours
         </Link>
 
-        <article className="card animate-fade-in-up p-6 sm:p-10">
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <span className="badge bg-space-surface2 px-3 text-neon-cyan ring-1 ring-neon-cyan/30">
-              {MATIERE_LABELS[cours.matiere]}
-            </span>
-            <span className="badge bg-space-surface2 px-3 text-ink-secondary ring-1 ring-space-border">
-              {NIVEAU_LABELS[cours.niveau]}
-            </span>
-          </div>
-          <h1 className="page-title mb-6">{cours.titre}</h1>
-          <PiecesJointesListe pieces={piecesJointes} />
-          <CoursContenu cours={cours} />
-          {blocs.length > 0 && (
-            <div className="mt-8">
-              <BlocsAffichage blocs={blocs} />
+        <article className="card animate-fade-in-up overflow-hidden">
+          {/* Bandeau header */}
+          <div className="bg-gradient-to-br from-neon-blue/10 to-neon-violet/10 border-b border-space-border px-6 pt-6 pb-5 sm:px-10">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <span className="badge bg-space-surface2/80 px-3 text-neon-cyan ring-1 ring-neon-cyan/30">
+                {MATIERE_LABELS[cours.matiere]}
+              </span>
+              <span className="badge bg-space-surface2/80 px-3 text-ink-secondary ring-1 ring-space-border">
+                {NIVEAU_LABELS[cours.niveau]}
+              </span>
             </div>
-          )}
+            <h1 className="text-3xl font-extrabold tracking-tight text-ink-primary sm:text-4xl font-heading">
+              {cours.titre}
+            </h1>
+          </div>
+
+          {/* Contenu */}
+          <div className="p-6 sm:p-10">
+            <PiecesJointesListe pieces={piecesJointes} />
+            <CoursContenu cours={cours} />
+            {blocs.length > 0 && (
+              <div className="mt-8">
+                <BlocsAffichage blocs={blocs} />
+              </div>
+            )}
+          </div>
         </article>
 
         {devoirsAvecSoumission.length > 0 && (
@@ -157,15 +166,19 @@ export default async function CoursLecturePage({
                 const formulaireInteractif = estFormulaire && !modeTelechargement && champs.length > 0 && estAuteur;
 
                 return (
-                  <li key={devoir.id} className="flex flex-col gap-3 rounded-xl border border-space-border bg-space-surface2/60 p-4">
+                  <li key={devoir.id} className="flex flex-col gap-3 rounded-xl border border-l-4 border-neon-violet border-space-border bg-space-surface2/40 p-4">
                     <div>
-                      <p className="font-medium text-ink-primary">{devoir.titre}</p>
-                      <p className="whitespace-pre-wrap text-sm text-ink-secondary">{devoir.consigne}</p>
-                      <p className="mt-1 text-xs text-ink-muted">
-                        Barème : {devoir.points} pts
-                        {devoir.dateLimite &&
-                          ` · à rendre avant le ${devoir.dateLimite.toLocaleDateString("fr-FR")}`}
-                      </p>
+                      <p className="font-semibold text-base text-ink-primary">{devoir.titre}</p>
+                      <p className="whitespace-pre-wrap text-sm text-ink-secondary mt-1">{devoir.consigne}</p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+                        <span>Barème : {devoir.points} pts</span>
+                        {devoir.dateLimite && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-amber-400 ring-1 ring-amber-500/20">
+                            <CalendarDays className="h-3 w-3" />
+                            avant le {devoir.dateLimite.toLocaleDateString("fr-FR")}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {devoir.sujetNom && devoir.sujetTaille != null && devoir.sujetTypeMime && !formulaireInteractif && (
@@ -256,15 +269,19 @@ export default async function CoursLecturePage({
 
             <ul className="flex flex-col gap-6">
               {exercicesCodeAvecSoumission.map(({ exercice, soumission, donnees }) => (
-                <li key={exercice.id} className="flex flex-col gap-3 rounded-xl border border-space-border bg-space-surface2/60 p-4">
+                <li key={exercice.id} className="flex flex-col gap-3 rounded-xl border border-l-4 border-neon-cyan border-space-border bg-space-surface2/40 p-4">
                   <div>
-                    <p className="font-medium text-ink-primary">{exercice.titre}</p>
-                    <p className="whitespace-pre-wrap text-sm text-ink-secondary">{exercice.consigne}</p>
-                    <p className="mt-1 text-xs text-ink-muted">
-                      Barème : {exercice.points} pts
-                      {exercice.dateLimite &&
-                        ` · à rendre avant le ${exercice.dateLimite.toLocaleDateString("fr-FR")}`}
-                    </p>
+                    <p className="font-semibold text-base text-ink-primary">{exercice.titre}</p>
+                    <p className="whitespace-pre-wrap text-sm text-ink-secondary mt-1">{exercice.consigne}</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+                      <span>Barème : {exercice.points} pts</span>
+                      {exercice.dateLimite && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-amber-400 ring-1 ring-amber-500/20">
+                          <CalendarDays className="h-3 w-3" />
+                          avant le {exercice.dateLimite.toLocaleDateString("fr-FR")}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <ExerciceCodeRunner

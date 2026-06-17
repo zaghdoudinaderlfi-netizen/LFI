@@ -4,7 +4,7 @@
 
 :root {
   --font-heading: "Space Grotesk", system-ui, sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, sans-serif;
 }
 
 /* ───────────────────────────────────────────────
@@ -83,6 +83,8 @@ body {
   min-height: 100vh;
   background-color: rgb(var(--space-bg));
   color: rgb(var(--ink-primary));
+  font-size: 1rem;
+  line-height: 1.65;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -216,10 +218,10 @@ body::after {
 
   /* Titres et libellés */
   .page-title {
-    @apply font-heading text-2xl font-bold tracking-tight text-ink-primary sm:text-3xl;
+    @apply font-heading text-3xl font-extrabold tracking-tight text-ink-primary sm:text-4xl;
   }
   .section-title {
-    @apply font-heading text-lg font-semibold text-ink-primary;
+    @apply font-heading text-xl font-semibold text-ink-primary;
   }
   .eyebrow {
     @apply text-xs font-semibold uppercase tracking-wider text-neon-cyan/80;
@@ -233,7 +235,7 @@ body::after {
 
   /* Contenu de cours (lecture) */
   .prose-cours {
-    @apply prose max-w-none sm:prose-lg prose-headings:font-heading prose-headings:font-semibold prose-headings:text-ink-primary prose-p:leading-relaxed prose-p:text-ink-secondary prose-a:text-neon-cyan prose-a:no-underline hover:prose-a:underline prose-strong:text-ink-primary prose-blockquote:border-neon-violet/50 prose-blockquote:text-ink-secondary prose-li:text-ink-secondary prose-img:mx-auto prose-img:block prose-img:rounded-xl prose-hr:border-space-border dark:prose-invert;
+    @apply prose prose-lg max-w-none prose-headings:font-heading prose-headings:font-extrabold prose-headings:text-ink-primary prose-p:text-base prose-p:leading-relaxed prose-p:text-ink-secondary prose-a:text-neon-cyan prose-a:no-underline hover:prose-a:underline prose-strong:text-ink-primary prose-blockquote:border-neon-violet/50 prose-blockquote:text-ink-secondary prose-li:text-ink-secondary prose-img:mx-auto prose-img:block prose-img:rounded-xl prose-hr:border-space-border dark:prose-invert;
   }
 
   /* États de chargement */

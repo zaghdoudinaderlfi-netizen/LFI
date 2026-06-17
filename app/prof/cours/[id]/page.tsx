@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ClipboardList, Code2, FileText, Layers, Paperclip } from "lucide-react";
 import { TypeExercice } from "@prisma/client";
 import { ApercuFichier } from "@/components/apercu-fichier";
+import { SupprimerCoursButton } from "./supprimer-cours-button";
 import { obtenirCoursParId, MATIERE_LABELS } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { listerPiecesJointes, formaterTaille } from "@/lib/pieces-jointes";
@@ -72,9 +73,12 @@ export default async function ModifierCoursPage({
               {NIVEAU_LABELS[cours.niveau]} · {MATIERE_LABELS[cours.matiere]}
             </p>
           </div>
-          <Link href={`/prof/cours/${cours.id}/apercu`} className="btn-secondary shrink-0">
-            Aperçu
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <Link href={`/prof/cours/${cours.id}/apercu`} className="btn-secondary">
+              Aperçu
+            </Link>
+            <SupprimerCoursButton coursId={cours.id} titreCours={cours.titre} />
+          </div>
         </div>
 
         <div className="card animate-fade-in-up p-6">

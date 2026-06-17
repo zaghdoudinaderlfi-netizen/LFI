@@ -3,7 +3,7 @@ import { Matiere, Niveau, TypeContenuCours } from "@prisma/client";
 import { prisma } from "./prisma";
 import { notifierElevesDuNiveau } from "./notifications";
 import { nomFichierSur } from "./fichiers";
-import { supabaseAdmin, BUCKET_PIECES_JOINTES } from "./supabase";
+import { supabaseAdmin, BUCKET_PIECES_JOINTES, BUCKET_RENDUS_DEVOIRS } from "./supabase";
 import { convertirDocxEnHtml, supprimerImagesCours } from "./docx";
 
 export class CoursError extends Error {}
@@ -233,4 +233,65 @@ export async function listerDerniersCoursPublies(niveau: Niveau, limit = 5) {
     orderBy: { updatedAt: "desc" },
     take: limit,
   });
+}
+
+export async function supprimerCours(id: string) {
+  const cours = await prisma.cours.findUnique({
+    where: { id },
+    include: {
+      blocs: { select: { fichierChemin: true } },
+      piecesJointes: { select: { chemin: true } },
+      exercices: {
+        select: {
+          sujetChemin: true,
+          soumissions: { select: { fichierChemin: true } },
+        },
+      },
+    },
+  });
+
+  if (!cours) throw new CoursError("Cours introuvable.");
+
+  // Supprimer les fichiers des soumissions élèves (rendus-lfi)
+  const cheminsSoumissions = cours.exercices
+    .flatMap((e) => e.soumissions.map((s) => s.fichierChemin))
+    .filter((c): c is string => !!c);
+  if (cheminsSoumissions.length > 0) {
+    await supabaseAdmin.storage.from(BUCKET_RENDUS_DEVOIRS).remove(cheminsSoumissions);
+  }
+
+  // Supprimer les sujets des devoirs/exercices (fichiers-lfi)
+  const cheminsSujets = cours.exercices
+    .map((e) => e.sujetChemin)
+    .filter((c): c is string => !!c);
+  if (cheminsSujets.length > 0) {
+    await supabaseAdmin.storage.from(BUCKET_PIECES_JOINTES).remove(cheminsSujets);
+  }
+
+  // Supprimer les fichiers des blocs IMAGE/PDF (fichiers-lfi)
+  const cheminsBlocs = cours.blocs
+    .map((b) => b.fichierChemin)
+    .filter((c): c is string => !!c);
+  if (cheminsBlocs.length > 0) {
+    await supabaseAdmin.storage.from(BUCKET_PIECES_JOINTES).remove(cheminsBlocs);
+  }
+
+  // Supprimer les pièces jointes (fichiers-lfi)
+  const cheminsPJ = cours.piecesJointes.map((p) => p.chemin);
+  if (cheminsPJ.length > 0) {
+    await supabaseAdmin.storage.from(BUCKET_PIECES_JOINTES).remove(cheminsPJ);
+  }
+
+  // Supprimer le PDF du cours si applicable (fichiers-lfi)
+  if (cours.pdfChemin) {
+    await supabaseAdmin.storage.from(BUCKET_PIECES_JOINTES).remove([cours.pdfChemin]);
+  }
+
+  // Supprimer le dossier d'images (cours HTML importé depuis Word)
+  if (cours.typeContenu === TypeContenuCours.HTML) {
+    await supprimerImagesCours(id);
+  }
+
+  // Supprimer le cours en DB (cascade gère exercices, soumissions, blocs, PJ)
+  await prisma.cours.delete({ where: { id } });
 }

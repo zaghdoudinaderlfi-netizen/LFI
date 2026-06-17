@@ -459,7 +459,21 @@ export async function obtenirSoumissionEleve(exerciceId: string, eleveId: string
 export async function obtenirSoumissionAvecAcces(id: string) {
   return prisma.soumission.findUnique({
     where: { id },
-    include: { membres: { select: { eleveId: true } } },
+    include: {
+      membres: {
+        select: {
+          eleveId: true,
+          eleve: { select: { nom: true, prenom: true } },
+        },
+      },
+      eleve: { select: { id: true, nom: true, prenom: true } },
+      exercice: {
+        select: {
+          titre: true,
+          cours: { select: { titre: true } },
+        },
+      },
+    },
   });
 }
 
@@ -586,13 +600,14 @@ export async function noterSoumission(
 
 export async function creerUrlTelechargementSoumission(
   soumission: { fichierChemin: string | null; fichierNom: string | null },
-  options?: { inline?: boolean }
+  options?: { inline?: boolean; nomFichier?: string }
 ) {
   if (!soumission.fichierChemin || !soumission.fichierNom) {
     throw new SoumissionError("Aucun fichier déposé.");
   }
 
-  const signedOptions = options?.inline ? undefined : { download: soumission.fichierNom };
+  const nomPourTelechargement = options?.nomFichier ?? soumission.fichierNom;
+  const signedOptions = options?.inline ? undefined : { download: nomPourTelechargement };
 
   const { data, error } = await supabaseAdmin.storage
     .from(BUCKET_RENDUS_DEVOIRS)

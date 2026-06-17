@@ -10,6 +10,7 @@ import {
   creerCours,
   modifierCours,
   remplacerContenuCours,
+  supprimerCours,
 } from "@/lib/cours";
 import { DocxError } from "@/lib/docx";
 import { TAILLE_MAX_OCTETS, extensionDe } from "@/lib/fichiers";
@@ -159,4 +160,22 @@ export async function remplacerContenuAction(
   revalidatePath(`/prof/cours/${id}/apercu`);
 
   return "Contenu remplacé.";
+}
+
+export async function supprimerCoursAction(formData: FormData): Promise<void> {
+  const session = await auth();
+  if (session?.user?.role !== "PROF") return;
+
+  const id = formData.get("coursId");
+  if (typeof id !== "string") return;
+
+  try {
+    await supprimerCours(id);
+  } catch (error) {
+    if (error instanceof CoursError) return;
+    throw error;
+  }
+
+  revalidatePath("/prof/cours");
+  redirect("/prof/cours");
 }
