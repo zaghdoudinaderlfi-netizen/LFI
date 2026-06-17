@@ -7,7 +7,7 @@ import {
   useTransition,
 } from "react";
 import { ChevronDown, ChevronUp, KeyRound, Pencil, X, Copy, Check } from "lucide-react";
-import { NIVEAU_LABELS } from "@/lib/classes";
+import { NIVEAU_LABELS } from "@/lib/classes-constants";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 import { useToast } from "@/components/ui/toast";
 import { reinitMdpEleveAction, modifierEleveAction } from "./actions";

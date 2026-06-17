@@ -1,12 +1,9 @@
 import { Niveau } from "@prisma/client";
 import { prisma } from "./prisma";
 
-export class ClasseError extends Error {}
+export { NIVEAU_LABELS } from "./classes-constants";
 
-export const NIVEAU_LABELS: Record<Niveau, string> = {
-  TROISIEME: "3ème",
-  SECONDE: "2nde",
-};
+export class ClasseError extends Error {}
 
 const PREFIXES_NIVEAU: Record<Niveau, string> = {
   TROISIEME: "3",
