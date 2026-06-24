@@ -57,9 +57,11 @@ export async function modifierPageInteractiveAction(
     }
   }
 
+  const correctionVisible = formData.get("correctionVisible") === "on";
+
   await prisma.cours.update({
     where: { id: coursId },
-    data: { pageInteractive, titreInteractif, imageCouvertureChemin },
+    data: { pageInteractive, titreInteractif, imageCouvertureChemin, correctionVisible },
   });
 
   revalidatePath(`/prof/cours/${coursId}`);

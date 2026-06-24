@@ -11,17 +11,20 @@ export function PageInteractiveForm({
   titreInteractif,
   imageCouvertureUrl,
   fichiersDisponibles,
+  correctionVisible,
 }: {
   coursId: string;
   pageInteractive: string | null;
   titreInteractif: string | null;
   imageCouvertureUrl: string | null;
   fichiersDisponibles: string[];
+  correctionVisible: boolean;
 }) {
   const [message, formAction, isPending] = useActionState(modifierPageInteractiveAction, undefined);
   const { addToast } = useToast();
   const [apercu, setApercu] = useState<string | null>(null);
   const [supprimerImage, setSupprimerImage] = useState(false);
+  const [corrVisible, setCorrVisible] = useState(correctionVisible);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -131,6 +134,29 @@ export function PageInteractiveForm({
         />
         <p className="text-xs text-ink-muted">PNG, JPG, WebP — 5 Mo max. Affiché en vignette dans la liste des cours.</p>
       </div>
+
+      {/* Interrupteur corrections */}
+      {pageInteractive && (
+        <label className="flex items-center gap-3 cursor-pointer select-none w-fit">
+          <div
+            role="switch"
+            aria-checked={corrVisible}
+            onClick={() => setCorrVisible((v) => !v)}
+            className={`relative h-6 w-11 rounded-full transition-colors ${corrVisible ? "bg-neon-blue" : "bg-space-border"}`}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${corrVisible ? "translate-x-5" : "translate-x-0"}`}
+            />
+          </div>
+          <span className="text-sm font-medium text-ink-secondary">
+            Corrections visibles :{" "}
+            <span className={corrVisible ? "text-neon-blue font-semibold" : "text-ink-muted"}>
+              {corrVisible ? "oui" : "non"}
+            </span>
+          </span>
+          <input type="hidden" name="correctionVisible" value={corrVisible ? "on" : "off"} />
+        </label>
+      )}
 
       {fichiersDisponibles.length > 0 && (
         <button type="submit" disabled={isPending} className="btn-primary self-start">

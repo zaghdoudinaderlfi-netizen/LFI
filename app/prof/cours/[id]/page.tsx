@@ -171,6 +171,7 @@ export default async function ModifierCoursPage({
             titreInteractif={cours.titreInteractif}
             imageCouvertureUrl={urlImageCouverture(cours.imageCouvertureChemin)}
             fichiersDisponibles={listerFichiersHtmlCours()}
+            correctionVisible={cours.correctionVisible}
           />
         </div>
 

@@ -168,6 +168,9 @@ model Cours {
   // Image de couverture (chemin dans le bucket public images-cours-lfi)
   imageCouvertureChemin String?
 
+  // Quand true, le lien élève inclut ?corrige=1 (corrections affichées dans la page HTML)
+  correctionVisible Boolean @default(false)
+
   exercices     Exercice[]
   piecesJointes PieceJointe[]
   blocs         Bloc[]

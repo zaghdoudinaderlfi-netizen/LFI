@@ -139,7 +139,7 @@ export default async function CoursLecturePage({
 
             {cours.pageInteractive ? (
               <a
-                href={`/cours/${cours.pageInteractive}`}
+                href={`/cours/${cours.pageInteractive}${cours.correctionVisible ? "?corrige=1" : ""}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group mb-6 flex flex-col overflow-hidden rounded-xl border border-space-border bg-space-surface2/60 transition-all hover:border-neon-blue/50 hover:shadow-lg hover:shadow-neon-blue/10"
