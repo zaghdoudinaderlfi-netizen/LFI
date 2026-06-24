@@ -83,10 +83,12 @@ export default async function EleveProfilPage() {
       {/* Changer le mot de passe */}
       <section id="securite" className="card animate-fade-in-up p-6 [animation-delay:240ms]">
         <h2 className="section-title mb-1">Mot de passe</h2>
-        <p className="mb-4 text-sm text-ink-secondary">
-          Confirme ton mot de passe actuel avant d&apos;en définir un nouveau.
-        </p>
-        <ChangerMdpForm action={changerMdpAction} />
+        {!user?.doitChangerMdp && (
+          <p className="mb-4 text-sm text-ink-secondary">
+            Confirme ton mot de passe actuel avant d&apos;en définir un nouveau.
+          </p>
+        )}
+        <ChangerMdpForm action={changerMdpAction} forcé={user?.doitChangerMdp ?? false} />
       </section>
     </div>
   );

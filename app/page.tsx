@@ -89,7 +89,7 @@ export default async function Home() {
           <img src="/nadtech-logo.svg" alt="Nadtech" className="h-16 w-auto sm:h-20 lg:h-24" />
         </h1>
         <p className="mt-4 max-w-2xl animate-fade-in-up text-balance text-lg text-ink-secondary [animation-delay:120ms]">
-          Plateforme pédagogique de Technologie &amp; SNT — cours, exercices interactifs et code en ligne.
+          Plateforme pédagogique de Technologie, SNT &amp; NSI — cours, exercices interactifs et code en ligne.
         </p>
         <div className="mt-8 flex animate-fade-in-up flex-wrap items-center justify-center gap-3 [animation-delay:180ms]">
           <Link href="/connexion" className="btn-secondary">
@@ -105,7 +105,7 @@ export default async function Home() {
       <section id="fonctionnalites" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <p className="eyebrow">Fonctionnalités</p>
-          <h2 className="page-title mt-2">Tout pour apprendre la Technologie &amp; le SNT</h2>
+          <h2 className="page-title mt-2">Tout pour apprendre la Technologie, le SNT &amp; la NSI</h2>
         </div>
 
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -1,14 +1,35 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { ClipboardCheck, ListPlus, PlusCircle } from "lucide-react";
+import { Matiere } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { compterSoumissionsACorriger, listerSoumissionsRecentes } from "@/lib/soumissions";
 import { listerClasses, NIVEAU_LABELS } from "@/lib/classes";
+import { NIVEAU_PAR_MATIERE } from "@/lib/classes-constants";
+import { MATIERE_LABELS } from "@/lib/cours";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 import { AvatarDisplay } from "@/components/avatar/avatar-display";
+import { MatieresTabs } from "@/components/prof/matiere-tabs";
 
-export default async function ProfPage() {
+const MATIERES_VALIDES = new Set<string>(["TECHNOLOGIE", "SNT", "NSI"]);
+
+function estMatiereValide(m: string | null | undefined): m is Matiere {
+  return !!m && MATIERES_VALIDES.has(m);
+}
+
+export default async function ProfPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ matiere?: string }>;
+}) {
+  const { matiere: matiereParam } = await searchParams;
+  const matiere: Matiere | null = estMatiereValide(matiereParam) ? matiereParam : null;
+
   const session = await auth();
+
+  // Le niveau de classe correspondant à la matière sélectionnée
+  const niveauFiltré = matiere ? NIVEAU_PAR_MATIERE[matiere] : undefined;
 
   const [user, aCorrigerCount, recentes, classes] = await Promise.all([
     session?.user?.id
@@ -17,10 +38,17 @@ export default async function ProfPage() {
           select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true },
         })
       : Promise.resolve(null),
-    compterSoumissionsACorriger(),
-    listerSoumissionsRecentes(5),
+    compterSoumissionsACorriger(matiere ?? undefined),
+    listerSoumissionsRecentes(5, matiere ?? undefined),
     listerClasses(),
   ]);
+
+  // Filtre les classes par niveau si une matière est active
+  const classesFiltrees = niveauFiltré
+    ? classes.filter((c) => c.niveau === niveauFiltré)
+    : classes;
+
+  const labelMatiere = matiere ? MATIERE_LABELS[matiere] : null;
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -34,6 +62,11 @@ export default async function ProfPage() {
         </div>
       </div>
 
+      {/* Sélecteur de matière */}
+      <Suspense fallback={null}>
+        <MatieresTabs matiereActive={matiere} />
+      </Suspense>
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 animate-fade-in-up [animation-delay:60ms]">
         <Link href="/prof/cours/nouveau" className="card-interactive flex flex-col gap-2 p-6">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-neon-blue to-neon-violet shadow-glow-soft">
@@ -41,7 +74,9 @@ export default async function ProfPage() {
           </span>
           <p className="font-semibold text-ink-primary">Créer un cours</p>
           <p className="text-sm text-ink-secondary">
-            Ajoute un nouveau cours de Technologie ou SNT.
+            {labelMatiere
+              ? `Ajoute un nouveau cours de ${labelMatiere}.`
+              : "Ajoute un cours de Technologie, SNT ou NSI."}
           </p>
         </Link>
 
@@ -57,7 +92,7 @@ export default async function ProfPage() {
       </div>
 
       <Link
-        href="/prof/devoirs"
+        href={matiere ? `/prof/devoirs?matiere=${matiere}` : "/prof/devoirs"}
         className="card-interactive flex items-center justify-between p-6 animate-fade-in-up [animation-delay:120ms]"
       >
         <div className="flex items-center gap-3">
@@ -65,7 +100,9 @@ export default async function ProfPage() {
             <ClipboardCheck className="h-5 w-5" />
           </span>
           <div>
-            <h2 className="section-title">Copies à corriger</h2>
+            <h2 className="section-title">
+              Copies à corriger{labelMatiere ? ` — ${labelMatiere}` : ""}
+            </h2>
             <p className="text-sm text-ink-secondary">
               Travaux remis par les élèves, en attente de correction.
             </p>
@@ -75,7 +112,9 @@ export default async function ProfPage() {
       </Link>
 
       <section className="card animate-fade-in-up p-6 [animation-delay:180ms]">
-        <h2 className="section-title mb-4">Derniers travaux remis</h2>
+        <h2 className="section-title mb-4">
+          Derniers travaux remis{labelMatiere ? ` — ${labelMatiere}` : ""}
+        </h2>
 
         {recentes.length === 0 ? (
           <p className="text-sm text-ink-muted">Aucun travail remis pour le moment.</p>
@@ -114,23 +153,27 @@ export default async function ProfPage() {
 
       <section className="card animate-fade-in-up p-6 [animation-delay:240ms]">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="section-title">Mes classes</h2>
+          <h2 className="section-title">
+            Mes classes{labelMatiere ? ` — ${labelMatiere}` : ""}
+          </h2>
           <Link href="/prof/classes" className="link-muted text-sm">
             Gérer
           </Link>
         </div>
 
-        {classes.length === 0 ? (
+        {classesFiltrees.length === 0 ? (
           <p className="text-sm text-ink-muted">
-            Aucune classe pour le moment.{" "}
+            {labelMatiere
+              ? `Aucune classe de ${labelMatiere} (${niveauFiltré ? NIVEAU_LABELS[niveauFiltré] : ""}) pour le moment.`
+              : "Aucune classe pour le moment."}{" "}
             <Link href="/prof/classes" className="link-muted underline">
-              Crée ta première classe
+              {classesFiltrees.length === 0 && classes.length > 0 ? "Créer une classe" : "Crée ta première classe"}
             </Link>
             .
           </p>
         ) : (
           <ul className="flex flex-col gap-3">
-            {classes.map((classe) => (
+            {classesFiltrees.map((classe) => (
               <li
                 key={classe.id}
                 className="flex flex-col gap-2 rounded-xl border border-space-border bg-space-surface2/60 p-4 sm:flex-row sm:items-center sm:justify-between"

@@ -47,11 +47,9 @@ export function CoursForm({
 
       {!cours?.id && (
         <p className="rounded-lg border border-space-border bg-space-surface2/60 p-3 text-sm text-ink-secondary">
-          Importe directement un fichier Word (.docx) ou PDF : son contenu
-          deviendra celui du cours. Les fichiers Word sont convertis en texte
-          mis en forme (titres, paragraphes, images) ; les fichiers PDF sont
-          affichés dans une visionneuse intégrée. Tu pourras ajouter des
-          pièces jointes et des devoirs une fois le cours créé.
+          Le fichier est <strong className="text-ink-primary">optionnel</strong> : tu peux créer le cours avec
+          seulement un titre, puis ajouter le contenu (blocs texte/image/vidéo, import Word ou PDF,
+          cours interactif HTML…) depuis la page d&apos;édition.
         </p>
       )}
 
@@ -84,6 +82,7 @@ export function CoursForm({
           >
             <option value="TROISIEME">3ème</option>
             <option value="SECONDE">2nde</option>
+            <option value="PREMIERE">1ère</option>
           </select>
         </div>
 
@@ -100,6 +99,7 @@ export function CoursForm({
           >
             <option value="TECHNOLOGIE">Technologie</option>
             <option value="SNT">SNT</option>
+            <option value="NSI">NSI</option>
           </select>
         </div>
       </div>
@@ -107,18 +107,17 @@ export function CoursForm({
       {!cours?.id && (
         <div className="flex flex-col gap-1">
           <label htmlFor="fichier" className="field-label">
-            Contenu du cours (Word ou PDF)
+            Contenu du cours — optionnel (Word ou PDF)
           </label>
           <input
             id="fichier"
             name="fichier"
             type="file"
             accept=".docx,.pdf"
-            required
             className="input file:mr-3 file:rounded file:border-0 file:bg-space-surface file:px-3 file:py-1 file:text-sm file:text-ink-primary"
           />
           <p className="text-xs text-ink-muted">
-            Fichier .docx ou .pdf, 10 Mo maximum.
+            .docx ou .pdf, 10 Mo max. Laisse vide pour créer un cours vierge.
           </p>
         </div>
       )}

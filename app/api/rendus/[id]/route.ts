@@ -6,7 +6,8 @@ import {
   SoumissionError,
 } from "@/lib/soumissions";
 
-function slugifier(texte: string): string {
+// Retire les accents, garde les majuscules, remplace les caractères non-alphanum par "-".
+function slugifierTitre(texte: string): string {
   return texte
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
@@ -15,21 +16,43 @@ function slugifier(texte: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+// Retire les accents et caractères non-alphanum, conserve la casse d'origine.
+function slugifierNom(texte: string): string {
+  return texte
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-zA-Z0-9]+/g, "")
+    .trim();
+}
+
+// "dupont" → "Dupont", "DUPONT" → "Dupont"
+function capitaliser(mot: string): string {
+  if (!mot) return mot;
+  return mot.charAt(0).toUpperCase() + mot.slice(1).toLowerCase();
+}
+
+// Produit "Nom_Prenom" pour un élève, ou "Nom1_Prenom1-Nom2_Prenom2" pour un groupe.
+function partiesEleve(nom: string, prenom: string | null): string {
+  const n = capitaliser(slugifierNom(nom));
+  const p = prenom ? capitaliser(slugifierNom(prenom)) : null;
+  return p ? `${n}_${p}` : n;
+}
+
 function construireNomFichier(
   soumission: NonNullable<Awaited<ReturnType<typeof obtenirSoumissionAvecAcces>>>,
   extension: string
 ): string {
   const auteur = soumission.eleve;
-  const partiesNom = [auteur.nom, auteur.prenom].filter((v): v is string => !!v).map(slugifier);
+  const partieAuteur = partiesEleve(auteur.nom, auteur.prenom ?? null);
 
-  const membres = soumission.membres.flatMap((m) =>
-    [m.eleve.nom, m.eleve.prenom].filter((v): v is string => !!v).map(slugifier)
+  const partiesMembres = soumission.membres.map((m) =>
+    partiesEleve(m.eleve.nom, m.eleve.prenom ?? null)
   );
 
-  const titreCours = slugifier(soumission.exercice.cours.titre).slice(0, 30).replace(/-+$/, "");
+  const titreCours = slugifierTitre(soumission.exercice.cours.titre).slice(0, 30).replace(/-+$/, "");
 
-  const parties = [...partiesNom, ...membres, titreCours].filter(Boolean);
-  return `${parties.join("_")}.${extension}`;
+  const parties = [partieAuteur, ...partiesMembres, titreCours].filter(Boolean);
+  return `${parties.join("-")}.${extension}`;
 }
 
 export async function GET(

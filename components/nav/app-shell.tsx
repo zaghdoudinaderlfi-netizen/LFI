@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   LogOut,
+  ChevronDown,
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/app/actions";
@@ -76,6 +77,11 @@ const NOTIFICATIONS_HREF: Record<Role, string> = {
   PROF: "/prof/notifications",
 };
 
+const PROFIL_HREF: Record<Role, string> = {
+  ELEVE: "/eleve/profil",
+  PROF: "/prof/profil",
+};
+
 export function AppShell({
   role,
   user,
@@ -89,10 +95,12 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const [menuOuvert, setMenuOuvert] = useState(false);
+  const [userMenuOuvert, setUserMenuOuvert] = useState(false);
 
   const items = NAV_ITEMS[role];
   const dashboardHref = DASHBOARD_HREF[role];
   const notificationsHref = NOTIFICATIONS_HREF[role];
+  const profilHref = PROFIL_HREF[role];
   const userName = formaterNomComplet(user);
 
   function estActif(href: string) {
@@ -147,11 +155,58 @@ export function AppShell({
     );
   }
 
-  function UserCard() {
+  function UserMenu({ compact = false }: { compact?: boolean }) {
     return (
-      <div className="mb-3 flex items-center gap-3">
-        <AvatarDisplay user={user} neutre={role === "PROF"} taille="md" />
-        <p className="truncate text-sm font-medium text-ink-primary">{userName}</p>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => { setUserMenuOuvert((o) => !o); setMenuOuvert(false); }}
+          className={`flex items-center gap-2 rounded-lg text-sm font-medium text-ink-primary transition-colors hover:bg-space-surface2 ${
+            compact ? "p-1" : "w-full px-2 py-1.5"
+          }`}
+          aria-label="Menu utilisateur"
+          aria-expanded={userMenuOuvert}
+        >
+          <AvatarDisplay user={user} neutre={role === "PROF"} taille={compact ? "xs" : "sm"} />
+          {!compact && (
+            <>
+              <span className="flex-1 truncate text-left">{userName}</span>
+              <ChevronDown
+                className={`h-4 w-4 shrink-0 text-ink-muted transition-transform duration-200 ${
+                  userMenuOuvert ? "rotate-180" : ""
+                }`}
+              />
+            </>
+          )}
+        </button>
+
+        {userMenuOuvert && (
+          <>
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setUserMenuOuvert(false)}
+            />
+            <div className="absolute left-0 z-50 mt-1 w-48 rounded-xl border border-space-border bg-space-deep p-1 shadow-xl">
+              <Link
+                href={profilHref}
+                onClick={() => setUserMenuOuvert(false)}
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
+              >
+                <User className="h-4 w-4" />
+                Mon profil
+              </Link>
+              <form action={logout}>
+                <button
+                  type="submit"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Se déconnecter
+                </button>
+              </form>
+            </div>
+          </>
+        )}
       </div>
     );
   }
@@ -164,26 +219,25 @@ export function AppShell({
           <Logo />
           <ThemeToggle />
         </div>
+        {/* Menu utilisateur en haut à gauche */}
+        <div className="border-b border-space-border px-3 py-2">
+          <UserMenu />
+        </div>
         <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
           <NavLinks />
-        </div>
-        <div className="border-t border-space-border p-4">
-          <UserCard />
-          <form action={logout}>
-            <button type="submit" className="btn-ghost w-full justify-start">
-              <LogOut className="h-4 w-4" />
-              Se déconnecter
-            </button>
-          </form>
         </div>
       </aside>
 
       <div className="flex min-h-screen flex-1 flex-col">
         {/* Barre supérieure (mobile / tablette) */}
         <div className="sticky top-0 z-30 flex items-center justify-between border-b border-space-border bg-space-surface/80 px-4 py-3 backdrop-blur-xl lg:hidden">
-          <Logo />
+          {/* Gauche : avatar utilisateur + logo */}
           <div className="flex items-center gap-2">
-            <ThemeToggle />
+            <UserMenu compact />
+            <Logo />
+          </div>
+          {/* Droite : notifications + menu */}
+          <div className="flex items-center gap-2">
             <Link
               href={notificationsHref}
               className="relative rounded-lg p-2 text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
@@ -196,9 +250,10 @@ export function AppShell({
                 </span>
               )}
             </Link>
+            <ThemeToggle />
             <button
               type="button"
-              onClick={() => setMenuOuvert(true)}
+              onClick={() => { setMenuOuvert(true); setUserMenuOuvert(false); }}
               className="rounded-lg p-2 text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
               aria-label="Ouvrir le menu"
             >
@@ -231,15 +286,6 @@ export function AppShell({
               </div>
               <div className="flex-1 overflow-y-auto">
                 <NavLinks onNavigate={() => setMenuOuvert(false)} />
-              </div>
-              <div className="border-t border-space-border pt-4">
-                <UserCard />
-                <form action={logout}>
-                  <button type="submit" className="btn-ghost w-full justify-start">
-                    <LogOut className="h-4 w-4" />
-                    Se déconnecter
-                  </button>
-                </form>
               </div>
             </div>
           </div>

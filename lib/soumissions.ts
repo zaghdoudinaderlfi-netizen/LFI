@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { ModeRemiseFormulaire, TypeExercice } from "@prisma/client";
+import { Matiere, ModeRemiseFormulaire, TypeExercice } from "@prisma/client";
 import { prisma } from "./prisma";
 import { supabaseAdmin, BUCKET_PIECES_JOINTES, BUCKET_RENDUS_DEVOIRS } from "./supabase";
 import { notifierProfs } from "./notifications";
@@ -233,7 +233,7 @@ export async function deposerSoumission(
 
   await notifierProfs(
     `${eleve ? formaterNomComplet(eleve) : "Un élève"} a déposé « ${exercice.titre} » (${exercice.cours.titre})`,
-    "/prof/devoirs"
+    `/prof/devoirs/${exerciceId}`
   );
 
   return soumission;
@@ -344,7 +344,7 @@ export async function deposerSoumissionFormulaire(
 
   await notifierProfs(
     `${eleve ? formaterNomComplet(eleve) : "Un élève"} a déposé « ${exercice.titre} » (${exercice.cours.titre})`,
-    "/prof/devoirs"
+    `/prof/devoirs/${exerciceId}`
   );
 
   return soumission;
@@ -441,7 +441,7 @@ export async function soumettreExerciceCode(
   const eleve = await prisma.user.findUnique({ where: { id: eleveId }, select: { nom: true, prenom: true } });
   await notifierProfs(
     `${eleve ? formaterNomComplet(eleve) : "Un élève"} a soumis « ${exercice.titre} » (${exercice.cours.titre})`,
-    "/prof/devoirs"
+    `/prof/devoirs/${exerciceId}`
   );
 
   return { soumission, reussiAuto: reussiAuto ?? null };
@@ -491,21 +491,30 @@ const SOUMISSION_AVEC_CONTEXTE = {
   },
 } as const;
 
-export async function listerSoumissionsACorriger() {
+export async function listerSoumissionsACorriger(matiere?: string) {
   return prisma.soumission.findMany({
-    where: { corrigeManuellement: false },
+    where: {
+      corrigeManuellement: false,
+      ...(matiere ? { exercice: { cours: { matiere: matiere as Matiere } } } : {}),
+    },
     include: SOUMISSION_AVEC_CONTEXTE,
     orderBy: { createdAt: "asc" },
   });
 }
 
-export async function compterSoumissionsACorriger() {
-  return prisma.soumission.count({ where: { corrigeManuellement: false } });
+export async function compterSoumissionsACorriger(matiere?: string) {
+  return prisma.soumission.count({
+    where: {
+      corrigeManuellement: false,
+      ...(matiere ? { exercice: { cours: { matiere: matiere as Matiere } } } : {}),
+    },
+  });
 }
 
-export async function listerSoumissionsRecentes(limit = 5) {
+export async function listerSoumissionsRecentes(limit = 5, matiere?: string) {
   return prisma.soumission.findMany({
     take: limit,
+    where: matiere ? { exercice: { cours: { matiere: matiere as Matiere } } } : {},
     include: SOUMISSION_AVEC_CONTEXTE,
     orderBy: { createdAt: "desc" },
   });

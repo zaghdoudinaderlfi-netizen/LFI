@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ui/toast";
 
 type Action = (
@@ -8,22 +9,39 @@ type Action = (
   formData: FormData,
 ) => Promise<string | undefined>;
 
-export function ChangerMdpForm({ action }: { action: Action }) {
+export function ChangerMdpForm({
+  action,
+  forcé = false,
+}: {
+  action: Action;
+  forcé?: boolean;
+}) {
   const [message, formAction, isPending] = useActionState(action, undefined);
+  const { update } = useSession();
   const { addToast } = useToast();
   const reussi = message === "ok";
 
   useEffect(() => {
     if (!message) return;
     if (reussi) {
+      // Rafraîchit le JWT sans déconnecter l'utilisateur
+      update({ doitChangerMdp: false });
       addToast({ type: "success", message: "Mot de passe modifié avec succès." });
     } else {
       addToast({ type: "error", message });
     }
-  }, [message, reussi, addToast]);
+  }, [message, reussi, addToast, update]);
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
+      {forcé && !reussi && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+          <p className="text-sm font-medium text-amber-400">
+            Ton professeur a réinitialisé ton mot de passe. Tu dois en choisir un nouveau
+            pour accéder à la plateforme.
+          </p>
+        </div>
+      )}
       <div className="flex flex-col gap-1">
         <label htmlFor="ancien" className="field-label">
           Mot de passe actuel

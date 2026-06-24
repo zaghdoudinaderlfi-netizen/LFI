@@ -25,8 +25,8 @@ function lireInfosFormulaire(formData: FormData) {
     return null;
   }
 
-  if (niveau !== "TROISIEME" && niveau !== "SECONDE") return null;
-  if (matiere !== "TECHNOLOGIE" && matiere !== "SNT") return null;
+  if (niveau !== "TROISIEME" && niveau !== "SECONDE" && niveau !== "PREMIERE") return null;
+  if (matiere !== "TECHNOLOGIE" && matiere !== "SNT" && matiere !== "NSI") return null;
 
   return {
     titre,
@@ -37,14 +37,15 @@ function lireInfosFormulaire(formData: FormData) {
 }
 
 type ResultatContenuFichier =
-  | { ok: true; contenu: ContenuFichier }
+  | { ok: true; contenu: ContenuFichier | null }
   | { ok: false; erreur: string };
 
 async function lireContenuFichier(formData: FormData): Promise<ResultatContenuFichier> {
   const fichier = formData.get("fichier");
 
+  // Pas de fichier : autorisé à la création, contenu null
   if (!(fichier instanceof File) || fichier.size === 0) {
-    return { ok: false, erreur: "Sélectionne un fichier Word (.docx) ou PDF (.pdf)." };
+    return { ok: true, contenu: null };
   }
 
   if (fichier.size > TAILLE_MAX_OCTETS) {
@@ -146,6 +147,9 @@ export async function remplacerContenuAction(
   const resultatFichier = await lireContenuFichier(formData);
   if (!resultatFichier.ok) {
     return resultatFichier.erreur;
+  }
+  if (!resultatFichier.contenu) {
+    return "Sélectionne un fichier Word (.docx) ou PDF (.pdf).";
   }
 
   try {

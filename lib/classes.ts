@@ -8,6 +8,7 @@ export class ClasseError extends Error {}
 const PREFIXES_NIVEAU: Record<Niveau, string> = {
   TROISIEME: "3",
   SECONDE: "2",
+  PREMIERE: "1",
 };
 
 const ANNEE_SCOLAIRE_REGEX = /^(\d{4})-(\d{4})$/;

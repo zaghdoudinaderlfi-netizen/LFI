@@ -21,11 +21,13 @@ enum Role {
 enum Niveau {
   TROISIEME
   SECONDE
+  PREMIERE
 }
 
 enum Matiere {
   TECHNOLOGIE
   SNT
+  NSI
 }
 
 enum TypeExercice {
@@ -156,6 +158,15 @@ model Cours {
   pdfChemin   String?
   pdfTaille   Int?
   pdfTypeMime String?
+
+  // Fichier HTML interactif dans public/cours/ (ex: "nsi-ch1.html")
+  pageInteractive String?
+
+  // Titre affiché sur la carte de couverture (optionnel, prioritaire sur `titre`)
+  titreInteractif String?
+
+  // Image de couverture (chemin dans le bucket public images-cours-lfi)
+  imageCouvertureChemin String?
 
   exercices     Exercice[]
   piecesJointes PieceJointe[]

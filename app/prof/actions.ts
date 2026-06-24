@@ -26,7 +26,7 @@ export async function creerClasseAction(
     return "Formulaire invalide.";
   }
 
-  if (niveau !== "TROISIEME" && niveau !== "SECONDE") {
+  if (niveau !== "TROISIEME" && niveau !== "SECONDE" && niveau !== "PREMIERE") {
     return "Niveau invalide.";
   }
 

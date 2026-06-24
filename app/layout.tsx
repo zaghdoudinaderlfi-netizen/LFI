@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Nunito } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
+import { AuthSessionProvider } from "@/components/session-provider";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -19,7 +20,23 @@ const nunito = Nunito({
 
 export const metadata: Metadata = {
   title: "Nadtech — Plateforme pédagogique",
-  description: "Cours, exercices interactifs et code en ligne — Technologie & SNT",
+  description: "Cours, exercices interactifs et code en ligne — Technologie, SNT & NSI",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Nadtech",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#22d3ee" },
+    { media: "(prefers-color-scheme: light)", color: "#0e7490" },
+  ],
 };
 
 // Applique le thème (clair/sombre) choisi par l'utilisateur avant le premier
@@ -45,11 +62,16 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${nunito.variable} dark`}
       suppressHydrationWarning
     >
+      <head>
+        <link rel="apple-touch-icon" href="/icon-512.png" />
+      </head>
       <body className="font-sans antialiased">
         <Script id="theme-init" strategy="beforeInteractive">
           {THEME_INIT_SCRIPT}
         </Script>
-        <ToastProvider>{children}</ToastProvider>
+        <AuthSessionProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );

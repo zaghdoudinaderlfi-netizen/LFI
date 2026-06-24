@@ -34,8 +34,9 @@ export function ClasseForm({
           Niveau
         </label>
         <select id="niveau" name="niveau" required defaultValue="TROISIEME" className="input">
-          <option value="TROISIEME">3ème</option>
-          <option value="SECONDE">2nde</option>
+          <option value="TROISIEME">3ème — Technologie</option>
+          <option value="SECONDE">2nde — SNT</option>
+          <option value="PREMIERE">1ère — NSI</option>
         </select>
       </div>
 

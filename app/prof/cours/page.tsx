@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, BookOpen, PlusCircle } from "lucide-react";
+import { ArrowLeft, BookOpen, MonitorPlay, PlusCircle } from "lucide-react";
 import { listerCoursProf, MATIERE_LABELS } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
 
@@ -41,8 +41,17 @@ export default async function ProfCoursPage() {
               >
                 <div>
                   <p className="eyebrow mb-1 flex items-center gap-1.5">
-                    <BookOpen className="h-3.5 w-3.5" />
+                    {c.pageInteractive ? (
+                      <MonitorPlay className="h-3.5 w-3.5 text-neon-blue" />
+                    ) : (
+                      <BookOpen className="h-3.5 w-3.5" />
+                    )}
                     {MATIERE_LABELS[c.matiere]}
+                    {c.pageInteractive && (
+                      <span className="badge bg-neon-blue/15 px-2 text-neon-blue ring-1 ring-neon-blue/30">
+                        Interactif
+                      </span>
+                    )}
                   </p>
                   <p className="font-medium text-ink-primary">{c.titre}</p>
                   <p className="text-sm text-ink-secondary">{NIVEAU_LABELS[c.niveau]}</p>

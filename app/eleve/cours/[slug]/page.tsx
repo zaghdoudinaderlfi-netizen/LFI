@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarDays, ClipboardList, Code2 } from "lucide-react";
+import { ArrowLeft, CalendarDays, ClipboardList, Code2, MonitorPlay } from "lucide-react";
 import { TypeExercice } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -9,7 +9,7 @@ import { BlocsAffichage } from "@/components/blocs/blocs-affichage";
 import { PiecesJointesListe } from "@/components/pieces-jointes-liste";
 import { ApercuFichier } from "@/components/apercu-fichier";
 import { ReadingProgress } from "@/components/ui/reading-progress";
-import { obtenirCoursPublieParSlug, MATIERE_LABELS } from "@/lib/cours";
+import { obtenirCoursPublieParSlug, MATIERE_LABELS, urlImageCouverture } from "@/lib/cours";
 import { listerBlocsCours } from "@/lib/blocs";
 import { listerPiecesJointes } from "@/lib/pieces-jointes";
 import { listerDevoirsCours, obtenirChampsFormulaireDevoir, ModeRemiseFormulaire } from "@/lib/devoirs";
@@ -111,7 +111,7 @@ export default async function CoursLecturePage({
       <div className="mx-auto flex max-w-3xl flex-col gap-6 pb-10">
         <Link
           href="/eleve/cours"
-          className="link-muted inline-flex w-fit items-center gap-1.5 text-sm animate-fade-in-up"
+          className="btn-secondary w-fit animate-fade-in-up"
         >
           <ArrowLeft className="h-4 w-4" />
           Retour aux cours
@@ -136,7 +136,56 @@ export default async function CoursLecturePage({
           {/* Contenu */}
           <div className="p-6 sm:p-10">
             <PiecesJointesListe pieces={piecesJointes} />
-            <CoursContenu cours={cours} />
+
+            {cours.pageInteractive ? (
+              <a
+                href={`/cours/${cours.pageInteractive}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group mb-6 flex flex-col overflow-hidden rounded-xl border border-space-border bg-space-surface2/60 transition-all hover:border-neon-blue/50 hover:shadow-lg hover:shadow-neon-blue/10"
+              >
+                {/* Vignette */}
+                <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-neon-blue/15 to-neon-violet/20">
+                  {(() => {
+                    const imageUrl = urlImageCouverture(cours.imageCouvertureChemin);
+                    return imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={imageUrl}
+                        alt=""
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <MonitorPlay className="h-16 w-16 text-neon-blue/30" />
+                      </div>
+                    );
+                  })()}
+                  <span className="absolute bottom-3 left-3 badge bg-neon-blue/20 px-2.5 py-1 text-neon-blue ring-1 ring-neon-blue/40 backdrop-blur-sm">
+                    <MonitorPlay className="mr-1.5 inline h-3.5 w-3.5" />
+                    Cours interactif
+                  </span>
+                </div>
+
+                {/* Corps */}
+                <div className="flex items-center justify-between gap-4 p-5">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-neon-blue/70 mb-1">
+                      {MATIERE_LABELS[cours.matiere]}
+                    </p>
+                    <p className="font-semibold text-ink-primary text-lg leading-snug">
+                      {cours.titreInteractif ?? cours.titre}
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-lg bg-neon-blue/10 px-4 py-2 text-sm font-medium text-neon-blue ring-1 ring-neon-blue/30 group-hover:bg-neon-blue/20 transition-colors">
+                    Ouvrir →
+                  </span>
+                </div>
+              </a>
+            ) : (
+              <CoursContenu cours={cours} />
+            )}
+
             {blocs.length > 0 && (
               <div className="mt-8">
                 <BlocsAffichage blocs={blocs} />

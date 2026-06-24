@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { ArrowLeft, BookOpen, MonitorPlay } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { listerCoursPublies, MATIERE_LABELS } from "@/lib/cours";
+import { listerCoursPublies, MATIERE_LABELS, urlImageCouverture } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
 
 export default async function EleveCoursPage() {
@@ -42,21 +42,68 @@ export default async function EleveCoursPage() {
             Aucun cours disponible pour le moment.
           </p>
         ) : (
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {cours.map((c) => (
-              <li key={c.id}>
-                <Link
-                  href={`/eleve/cours/${c.slug}`}
-                  className="card-interactive flex h-full flex-col gap-1 p-4"
-                >
-                  <span className="eyebrow flex items-center gap-1.5">
-                    <BookOpen className="h-3.5 w-3.5" />
-                    {MATIERE_LABELS[c.matiere]}
-                  </span>
-                  <span className="font-medium text-ink-primary">{c.titre}</span>
-                </Link>
-              </li>
-            ))}
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {cours.map((c) => {
+              const estInteractif = !!c.pageInteractive;
+              const imageUrl = urlImageCouverture(c.imageCouvertureChemin);
+
+              if (estInteractif) {
+                return (
+                  <li key={c.id}>
+                    <a
+                      href={`/cours/${c.pageInteractive}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="card-interactive flex h-full flex-col overflow-hidden"
+                    >
+                      {/* Vignette de couverture */}
+                      <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-neon-blue/15 to-neon-violet/20">
+                        {imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={imageUrl}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center">
+                            <MonitorPlay className="h-10 w-10 text-neon-blue/40" />
+                          </div>
+                        )}
+                        <span className="absolute bottom-2 left-2 badge bg-neon-blue/20 px-2 text-neon-blue ring-1 ring-neon-blue/40 backdrop-blur-sm">
+                          <MonitorPlay className="mr-1 inline h-3 w-3" />
+                          Cours interactif
+                        </span>
+                      </div>
+
+                      {/* Corps de la carte */}
+                      <div className="flex flex-col gap-1 p-4">
+                        <span className="eyebrow flex items-center gap-1.5 text-neon-blue/70">
+                          {MATIERE_LABELS[c.matiere]}
+                        </span>
+                        <span className="font-medium text-ink-primary">{c.titreInteractif ?? c.titre}</span>
+                        <span className="mt-1 text-xs text-ink-muted">Ouvre dans un nouvel onglet</span>
+                      </div>
+                    </a>
+                  </li>
+                );
+              }
+
+              return (
+                <li key={c.id}>
+                  <Link
+                    href={`/eleve/cours/${c.slug}`}
+                    className="card-interactive flex h-full flex-col gap-1 p-4"
+                  >
+                    <span className="eyebrow flex items-center gap-1.5">
+                      <BookOpen className="h-3.5 w-3.5" />
+                      {MATIERE_LABELS[c.matiere]}
+                    </span>
+                    <span className="font-medium text-ink-primary">{c.titre}</span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

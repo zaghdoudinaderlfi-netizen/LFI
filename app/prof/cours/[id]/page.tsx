@@ -1,10 +1,12 @@
+import fs from "fs";
+import path from "path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ClipboardList, Code2, FileText, Layers, Paperclip } from "lucide-react";
+import { ArrowLeft, ClipboardList, Code2, FileText, Layers, MonitorPlay, Paperclip } from "lucide-react";
 import { TypeExercice } from "@prisma/client";
 import { ApercuFichier } from "@/components/apercu-fichier";
 import { SupprimerCoursButton } from "./supprimer-cours-button";
-import { obtenirCoursParId, MATIERE_LABELS } from "@/lib/cours";
+import { obtenirCoursParId, MATIERE_LABELS, urlImageCouverture } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { listerPiecesJointes, formaterTaille } from "@/lib/pieces-jointes";
 import {
@@ -28,6 +30,19 @@ import { DevoirSujetForm } from "./devoir-sujet-form";
 import { supprimerDevoirAction, supprimerSujetDevoirAction } from "./devoirs-actions";
 import { ExerciceCodeForm } from "./exercices-code-form";
 import { supprimerExerciceCodeAction } from "./exercices-code-actions";
+import { PageInteractiveForm } from "./page-interactive-form";
+
+function listerFichiersHtmlCours(): string[] {
+  try {
+    const dir = path.join(process.cwd(), "public", "cours");
+    return fs
+      .readdirSync(dir)
+      .filter((f) => f.endsWith(".html"))
+      .sort();
+  } catch {
+    return [];
+  }
+}
 
 export default async function ModifierCoursPage({
   params,
@@ -121,6 +136,42 @@ export default async function ModifierCoursPage({
 
           <BlocListeProf coursId={cours.id} blocs={blocs} />
           <BlocsForm coursId={cours.id} />
+        </div>
+
+        <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:150ms]">
+          <div>
+            <h2 className="section-title flex items-center gap-2">
+              <MonitorPlay className="h-5 w-5 text-neon-blue" />
+              Page interactive
+            </h2>
+            <p className="mt-1 text-sm text-ink-secondary">
+              Associe un fichier HTML interactif (depuis <code className="text-neon-cyan">public/cours/</code>) à ce cours.
+              Les élèves verront un bouton « Ouvrir le cours interactif » qui ouvre la page dans un nouvel onglet.
+            </p>
+          </div>
+
+          {cours.pageInteractive && (
+            <p className="text-sm text-ink-secondary">
+              Page associée : <span className="font-medium text-neon-cyan">{cours.pageInteractive}</span>
+              {" · "}
+              <a
+                href={`/cours/${cours.pageInteractive}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-neon-blue underline underline-offset-2"
+              >
+                Ouvrir
+              </a>
+            </p>
+          )}
+
+          <PageInteractiveForm
+            coursId={cours.id}
+            pageInteractive={cours.pageInteractive}
+            titreInteractif={cours.titreInteractif}
+            imageCouvertureUrl={urlImageCouverture(cours.imageCouvertureChemin)}
+            fichiersDisponibles={listerFichiersHtmlCours()}
+          />
         </div>
 
         <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:180ms]">

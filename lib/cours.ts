@@ -3,14 +3,55 @@ import { Matiere, Niveau, TypeContenuCours } from "@prisma/client";
 import { prisma } from "./prisma";
 import { notifierElevesDuNiveau } from "./notifications";
 import { nomFichierSur } from "./fichiers";
-import { supabaseAdmin, BUCKET_PIECES_JOINTES, BUCKET_RENDUS_DEVOIRS } from "./supabase";
+import { supabaseAdmin, BUCKET_PIECES_JOINTES, BUCKET_RENDUS_DEVOIRS, BUCKET_IMAGES_COURS, assurerBucketPublic } from "./supabase";
 import { convertirDocxEnHtml, supprimerImagesCours } from "./docx";
+
+const PREFIX_COUVERTURE = "couvertures";
+const EXTENSIONS_IMAGE_COUVERTURE = new Set(["png", "jpg", "jpeg", "gif", "webp"]);
+const TAILLE_MAX_IMAGE = 5 * 1024 * 1024; // 5 Mo
+
+export function urlImageCouverture(chemin: string | null): string | null {
+  if (!chemin) return null;
+  const { data } = supabaseAdmin.storage.from(BUCKET_IMAGES_COURS).getPublicUrl(chemin);
+  return data.publicUrl;
+}
+
+export async function televerserImageCouverture(coursId: string, fichier: File): Promise<string> {
+  if (fichier.size > TAILLE_MAX_IMAGE) {
+    throw new CoursError("L'image dépasse la taille maximale autorisée (5 Mo).");
+  }
+
+  const ext = fichier.name.split(".").pop()?.toLowerCase() ?? "";
+  if (!EXTENSIONS_IMAGE_COUVERTURE.has(ext)) {
+    throw new CoursError("Format d'image non supporté. Utilise PNG, JPG, GIF ou WebP.");
+  }
+
+  await assurerBucketPublic(BUCKET_IMAGES_COURS);
+
+  const nomNettoye = nomFichierSur(fichier.name);
+  const chemin = `${PREFIX_COUVERTURE}/${coursId}/${randomUUID()}-${nomNettoye}`;
+
+  const { error } = await supabaseAdmin.storage.from(BUCKET_IMAGES_COURS).upload(chemin, fichier, {
+    contentType: fichier.type || "image/png",
+    upsert: false,
+  });
+
+  if (error) throw new CoursError("Échec de l'envoi de l'image de couverture.");
+
+  return chemin;
+}
+
+async function supprimerImageCouverture(chemin: string | null) {
+  if (!chemin) return;
+  await supabaseAdmin.storage.from(BUCKET_IMAGES_COURS).remove([chemin]);
+}
 
 export class CoursError extends Error {}
 
 export const MATIERE_LABELS: Record<Matiere, string> = {
   TECHNOLOGIE: "Technologie",
   SNT: "SNT",
+  NSI: "NSI",
 };
 
 const PREFIX_PDF_COURS = "cours-pdf";
@@ -102,16 +143,28 @@ function contenuEstVide(cours: { typeContenu: TypeContenuCours; contenu: string;
   return cours.typeContenu === TypeContenuCours.HTML ? !cours.contenu.trim() : !cours.pdfChemin;
 }
 
-export async function creerCours(data: CoursInfoInput, contenuFichier: ContenuFichier) {
+const CONTENU_VIDE = {
+  typeContenu: TypeContenuCours.HTML,
+  contenu: "",
+  pdfNom: null,
+  pdfChemin: null,
+  pdfTaille: null,
+  pdfTypeMime: null,
+} as const;
+
+export async function creerCours(data: CoursInfoInput, contenuFichier: ContenuFichier | null) {
   if (!data.titre.trim()) {
     throw new CoursError("Le titre est obligatoire.");
   }
 
   const slug = await genererSlugUnique(data.titre);
-  const champsContenu = await resoudreContenu(randomUUID(), contenuFichier);
+  const champsContenu = contenuFichier
+    ? await resoudreContenu(randomUUID(), contenuFichier)
+    : CONTENU_VIDE;
 
+  // Sans fichier ni blocs, on ne peut pas publier directement depuis le formulaire de création.
   if (data.publie && contenuEstVide(champsContenu)) {
-    throw new CoursError("Le contenu importé est vide : impossible de publier ce cours.");
+    throw new CoursError("Ajoute du contenu (blocs ou fichier importé) avant de publier ce cours.");
   }
 
   const cours = await prisma.cours.create({
@@ -137,7 +190,10 @@ export async function creerCours(data: CoursInfoInput, contenuFichier: ContenuFi
 }
 
 export async function modifierCours(id: string, data: CoursInfoInput) {
-  const cours = await prisma.cours.findUnique({ where: { id } });
+  const cours = await prisma.cours.findUnique({
+    where: { id },
+    include: { _count: { select: { blocs: true } } },
+  });
   if (!cours) {
     throw new CoursError("Cours introuvable.");
   }
@@ -146,8 +202,12 @@ export async function modifierCours(id: string, data: CoursInfoInput) {
     throw new CoursError("Le titre est obligatoire.");
   }
 
-  if (data.publie && contenuEstVide(cours)) {
-    throw new CoursError("Ce cours n'a pas encore de contenu : importe un fichier Word ou PDF avant de le publier.");
+  const aContenu =
+    !contenuEstVide(cours) || cours._count.blocs > 0 || !!cours.pageInteractive;
+  if (data.publie && !aContenu) {
+    throw new CoursError(
+      "Ce cours n'a pas encore de contenu : ajoute des blocs, importe un fichier ou associe une page interactive avant de le publier."
+    );
   }
 
   const titre = data.titre.trim();
@@ -285,6 +345,11 @@ export async function supprimerCours(id: string) {
   // Supprimer le PDF du cours si applicable (fichiers-lfi)
   if (cours.pdfChemin) {
     await supabaseAdmin.storage.from(BUCKET_PIECES_JOINTES).remove([cours.pdfChemin]);
+  }
+
+  // Supprimer l'image de couverture si présente
+  if (cours.imageCouvertureChemin) {
+    await supprimerImageCouverture(cours.imageCouvertureChemin);
   }
 
   // Supprimer le dossier d'images (cours HTML importé depuis Word)
