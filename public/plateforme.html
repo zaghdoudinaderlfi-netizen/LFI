@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plateforme — Technologie · SNT · NSI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15103a;          /* fond nuit/écran */
+    --ink-2:#1d1652;        /* surface */
+    --ink-3:#291f6e;        /* surface haute */
+    --line:#3a2f85;         /* bordures */
+    --txt:#f4f1ff;          /* texte */
+    --muted:#a99fe0;        /* texte secondaire */
+    --techno:#ffb13d;       /* Technologie — ambre */
+    --snt:#3dd6f5;          /* SNT — cyan */
+    --nsi:#ff5da2;          /* NSI — magenta */
+    --shadow: 6px 6px 0 #0d0926;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Space Grotesk",system-ui,sans-serif;
+    background:var(--ink);
+    color:var(--txt);
+    line-height:1.5;
+    overflow-x:hidden;
+    background-image:
+      radial-gradient(circle at 18% 12%, rgba(61,214,245,.10), transparent 38%),
+      radial-gradient(circle at 84% 8%, rgba(255,93,162,.10), transparent 38%),
+      radial-gradient(circle at 50% 120%, rgba(255,177,61,.10), transparent 45%);
+  }
+  .mono{font-family:"Space Mono",monospace}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+  a{color:inherit;text-decoration:none}
+
+  /* ---------- Fenêtre / chrome ---------- */
+  .screen{
+    margin:22px auto 0;
+    max-width:1180px;
+    border:2px solid var(--line);
+    border-radius:20px;
+    background:linear-gradient(180deg,var(--ink-2),var(--ink));
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .topbar{
+    display:flex;align-items:center;gap:14px;
+    padding:13px 18px;
+    border-bottom:2px solid var(--line);
+    background:var(--ink-3);
+  }
+  .dots{display:flex;gap:7px}
+  .dots i{width:13px;height:13px;border-radius:50%;display:block}
+  .dots i:nth-child(1){background:var(--nsi)}
+  .dots i:nth-child(2){background:var(--techno)}
+  .dots i:nth-child(3){background:var(--snt)}
+  .winname{font-family:"Space Mono",monospace;font-size:13px;color:var(--muted)}
+  .topbar .cta-mini{
+    margin-left:auto;font-family:"Space Mono",monospace;font-size:13px;
+    padding:7px 14px;border:2px solid var(--line);border-radius:9px;
+    color:var(--txt);transition:.15s;
+  }
+  .topbar .cta-mini:hover{background:var(--ink);border-color:var(--snt);color:var(--snt)}
+
+  /* ---------- Héros ---------- */
+  .hero{
+    display:grid;grid-template-columns:1.05fr .95fr;gap:36px;
+    padding:46px 40px 40px;align-items:center;
+  }
+  .eyebrow{
+    font-family:"Space Mono",monospace;font-size:14px;color:var(--snt);
+    display:inline-flex;align-items:center;gap:9px;margin-bottom:20px;
+    border:2px solid var(--line);border-radius:999px;padding:6px 14px;background:var(--ink-3);
+  }
+  .eyebrow .blink{width:9px;height:16px;background:var(--snt);display:inline-block;animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:0}}
+  h1{
+    font-size:clamp(42px,6.4vw,76px);line-height:.98;letter-spacing:-.02em;font-weight:700;
+    margin-bottom:18px;
+  }
+  h1 .w1{color:var(--nsi)}
+  h1 .w2{color:var(--techno)}
+  h1 .w3{color:var(--snt)}
+  .lead{font-size:18px;color:var(--muted);max-width:42ch;margin-bottom:28px}
+  .lead b{color:var(--txt);font-weight:600}
+  .actions{display:flex;flex-wrap:wrap;gap:14px}
+  .btn{
+    font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:16px;cursor:pointer;
+    padding:14px 22px;border-radius:13px;border:2px solid #0d0926;
+    transition:transform .12s, box-shadow .12s;
+  }
+  .btn-run{background:var(--nsi);color:#1a0a14;box-shadow:5px 5px 0 #0d0926}
+  .btn-ghost{background:var(--ink-3);color:var(--txt);border-color:var(--line);box-shadow:5px 5px 0 #0d0926}
+  .btn:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 #0d0926}
+  .btn:active{transform:translate(5px,5px);box-shadow:0 0 0 #0d0926}
+
+  /* éditeur de code */
+  .editor{
+    border:2px solid var(--line);border-radius:14px;overflow:hidden;background:#120d33;
+    box-shadow:var(--shadow);
+  }
+  .editor .tabs{display:flex;font-family:"Space Mono",monospace;font-size:12px;border-bottom:2px solid var(--line)}
+  .editor .tabs span{padding:9px 14px;color:var(--muted)}
+  .editor .tabs .on{color:var(--nsi);border-bottom:2px solid var(--nsi);margin-bottom:-2px;background:#190f3f}
+  .editor pre{
+    font-family:"Space Mono",monospace;font-size:13.5px;line-height:1.7;
+    padding:16px 16px 8px;color:#cdc6f5;white-space:pre;overflow-x:auto;
+  }
+  .editor .runbar{display:flex;align-items:center;gap:10px;padding:10px 16px 14px}
+  .editor .runbar button{
+    font-family:"Space Mono",monospace;font-weight:700;font-size:13px;cursor:pointer;
+    background:var(--nsi);color:#1a0a14;border:2px solid #0d0926;border-radius:9px;
+    padding:8px 16px;box-shadow:3px 3px 0 #0d0926;transition:transform .1s,box-shadow .1s;
+  }
+  .editor .runbar button:hover{transform:translate(1px,1px);box-shadow:2px 2px 0 #0d0926}
+  .editor .runbar .status{font-family:"Space Mono",monospace;font-size:12px;color:var(--muted)}
+  .kw{color:var(--snt)}.fn{color:var(--techno)}.num{color:#b6f09c}.cm{color:#6f63b0}.str{color:#ff9ec9}
+
+  /* écran de sortie turtle */
+  .canvasbox{
+    margin-top:14px;border:2px solid var(--line);border-radius:14px;background:#0e0a2a;
+    box-shadow:var(--shadow);position:relative;aspect-ratio:1/1;overflow:hidden;
+  }
+  .canvasbox .scanlines{position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px)}
+  .canvasbox svg{width:100%;height:100%;display:block}
+  .canvasbox .hint{position:absolute;left:14px;bottom:12px;font-family:"Space Mono",monospace;
+    font-size:11px;color:var(--muted)}
+
+  /* ---------- Cartouches ---------- */
+  .cartridges{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:6px 40px 44px}
+  .cart{
+    position:relative;border:2px solid var(--line);border-radius:16px;padding:22px;
+    background:var(--ink-2);box-shadow:5px 5px 0 #0d0926;cursor:default;
+    transition:transform .14s, box-shadow .14s, border-color .14s;overflow:hidden;
+  }
+  .cart:hover{transform:translate(-2px,-3px);box-shadow:7px 9px 0 #0d0926}
+  .cart .tag{font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.04em}
+  .cart h3{font-size:24px;margin:6px 0 6px}
+  .cart p{font-size:14px;color:var(--muted)}
+  .cart .glyph{position:absolute;right:-10px;top:-12px;font-size:78px;opacity:.14;transition:.2s}
+  .cart:hover .glyph{opacity:.28;transform:rotate(8deg) scale(1.05)}
+  .cart.t1{border-top:5px solid var(--techno)}
+  .cart.t1 .tag,.cart.t1 h3{color:var(--techno)}
+  .cart.t2{border-top:5px solid var(--snt)}
+  .cart.t2 .tag,.cart.t2 h3{color:var(--snt)}
+  .cart.t3{border-top:5px solid var(--nsi)}
+  .cart.t3 .tag,.cart.t3 h3{color:var(--nsi)}
+  .cart.t1 .gear{display:inline-block;animation:spin 6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- Fonctionnalités ---------- */
+  .section{padding:64px 0 76px}
+  .sec-head{margin-bottom:34px}
+  .sec-head .kicker{font-family:"Space Mono",monospace;color:var(--techno);font-size:14px;
+    border:2px solid var(--line);border-radius:999px;padding:6px 14px;display:inline-block;margin-bottom:16px;background:var(--ink-2)}
+  .sec-head h2{font-size:clamp(30px,4.4vw,46px);letter-spacing:-.02em;line-height:1.04}
+  .sec-head h2 em{font-style:normal;color:var(--snt)}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .feat{
+    border:2px solid var(--line);border-radius:16px;padding:24px;background:var(--ink-2);
+    box-shadow:5px 5px 0 #0d0926;transition:transform .14s, box-shadow .14s;
+  }
+  .feat:hover{transform:translate(-2px,-3px);box-shadow:7px 9px 0 #0d0926}
+  .feat .ic{
+    width:50px;height:50px;border-radius:12px;display:grid;place-items:center;font-size:24px;
+    border:2px solid #0d0926;margin-bottom:16px;box-shadow:3px 3px 0 #0d0926;
+  }
+  .feat h4{font-size:19px;margin-bottom:7px}
+  .feat p{font-size:14.5px;color:var(--muted)}
+  .feat .xp{display:inline-block;margin-top:14px;font-family:"Space Mono",monospace;font-size:11px;
+    color:var(--muted);border:1px dashed var(--line);border-radius:7px;padding:4px 9px}
+  .c-a{background:var(--nsi)} .c-b{background:var(--snt)} .c-c{background:var(--techno)}
+  .c-d{background:#b6f09c} .c-e{background:#c89bff} .c-f{background:#ff8d6b}
+
+  footer{border-top:2px solid var(--line);padding:30px 0;color:var(--muted);
+    font-family:"Space Mono",monospace;font-size:13px;text-align:center}
+
+  @media (max-width:860px){
+    .hero{grid-template-columns:1fr;padding:34px 22px 30px;gap:28px}
+    .cartridges{grid-template-columns:1fr;padding:0 22px 34px}
+    .grid{grid-template-columns:1fr}
+    .topbar .cta-mini{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto}
+  }
+  :focus-visible{outline:3px solid var(--snt);outline-offset:3px;border-radius:6px}
+</style>
+</head>
+<body>
+
+<div class="screen">
+  <div class="topbar">
+    <div class="dots"><i></i><i></i><i></i></div>
+    <span class="winname">prof-nader://plateforme — techno · snt · nsi</span>
+    <a href="#" class="cta-mini">▸ Se connecter</a>
+  </div>
+
+  <!-- HÉROS -->
+  <section class="hero">
+    <div>
+      <span class="eyebrow"><span class="blink"></span><span id="typed" class="mono">démarrage…</span></span>
+      <h1><span class="w1">Code.</span> <span class="w2">Construis.</span> <span class="w3">Explore.</span></h1>
+      <p class="lead">Plateforme pédagogique de <b>Technologie</b>, <b>SNT</b> &amp; <b>NSI</b> : cours, exercices interactifs et codage en ligne — <b>directement dans ton navigateur</b>.</p>
+      <div class="actions">
+        <button class="btn btn-run" onclick="document.getElementById('runBtn').click();document.querySelector('.canvasbox').scrollIntoView({block:'center'})">▶ Lancer un cours</button>
+        <a href="#fonctionnalites" class="btn btn-ghost">Découvrir</a>
+      </div>
+    </div>
+
+    <div>
+      <div class="editor" aria-label="Éditeur Python">
+        <div class="tabs"><span class="on">dessin.py</span><span>cours.md</span><span>quiz.py</span></div>
+<pre><span class="kw">from</span> turtle <span class="kw">import</span> *
+<span class="cm"># rosace : un classique de la NSI</span>
+color = [<span class="str">"#ff5da2"</span>, <span class="str">"#3dd6f5"</span>, <span class="str">"#ffb13d"</span>]
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">36</span>):
+    <span class="fn">pencolor</span>(color[i % <span class="num">3</span>])
+    <span class="fn">square</span>(<span class="num">120</span>)
+    <span class="fn">left</span>(<span class="num">10</span>)</pre>
+        <div class="runbar">
+          <button id="runBtn" type="button">▶ Exécuter</button>
+          <span class="status" id="status">prêt.</span>
+        </div>
+      </div>
+
+      <div class="canvasbox">
+        <div class="scanlines"></div>
+        <svg id="stage" viewBox="0 0 400 400" aria-label="Sortie du programme : rosace"></svg>
+        <span class="hint">› sortie de dessin.py</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CARTOUCHES -->
+  <div class="cartridges">
+    <div class="cart t1">
+      <span class="glyph gear">⚙</span>
+      <div class="tag">// matière_01</div>
+      <h3>Technologie</h3>
+      <p>Montages, micro:bit et objets connectés — tu branches, tu testes, ça marche.</p>
+    </div>
+    <div class="cart t2">
+      <span class="glyph">🌐</span>
+      <div class="tag">// matière_02</div>
+      <h3>SNT</h3>
+      <p>Web, données, réseaux sociaux et géolocalisation expliqués pour de vrai.</p>
+    </div>
+    <div class="cart t3">
+      <span class="glyph">&lt;/&gt;</span>
+      <div class="tag">// matière_03</div>
+      <h3>NSI</h3>
+      <p>Python, algorithmes et projets : du premier print() au vrai code.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FONCTIONNALITÉS -->
+<section class="section" id="fonctionnalites">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">// fonctionnalités</span>
+      <h2>Tout pour apprendre la Technologie,<br>la SNT &amp; la <em>NSI</em>.</h2>
+    </div>
+    <div class="grid">
+      <div class="feat">
+        <div class="ic c-a">▶</div>
+        <h4>Code en ligne</h4>
+        <p>Écris et exécute du Python dans ton navigateur. Rien à installer, jamais.</p>
+        <span class="xp">+ Skulpt</span>
+      </div>
+      <div class="feat">
+        <div class="ic c-b">⚡</div>
+        <h4>Branche tes montages</h4>
+        <p>Simule Arduino et micro:bit en direct, comme sur la vraie carte.</p>
+        <span class="xp">+ Wokwi</span>
+      </div>
+      <div class="feat">
+        <div class="ic c-c">◈</div>
+        <h4>Cours interactifs</h4>
+        <p>Des leçons claires avec des schémas qui bougent quand tu cliques.</p>
+        <span class="xp">+ animations</span>
+      </div>
+      <div class="feat">
+        <div class="ic c-d">✓</div>
+        <h4>Exos auto-corrigés</h4>
+        <p>Tu te trompes, tu recommences, tu progresses. Feedback immédiat.</p>
+        <span class="xp">+ correction</span>
+      </div>
+      <div class="feat">
+        <div class="ic c-e">⚔</div>
+        <h4>Duels &amp; quiz</h4>
+        <p>Défie tes potes en 1 contre 1 et grimpe dans le classement.</p>
+        <span class="xp">+ 1v1</span>
+      </div>
+      <div class="feat">
+        <div class="ic c-f">★</div>
+        <h4>Ta progression</h4>
+        <p>Gagne de l'XP, débloque des badges et passe au niveau supérieur.</p>
+        <span class="xp">+ XP &amp; badges</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="wrap">
+  © Plateforme pédagogique — Technologie · SNT · NSI · fait avec ♥ et beaucoup de print()
+</footer>
+
+<script>
+(function(){
+  /* --- effet machine à écrire sur l'eyebrow --- */
+  var phrases = ["bienvenue.py", "prof_nader@plateforme:~$", "prêt à coder ?"];
+  var el = document.getElementById('typed');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(el){
+    if(reduce){ el.textContent = phrases[0]; }
+    else {
+      var pi=0, ci=0, dir=1;
+      (function tick(){
+        var p = phrases[pi];
+        el.textContent = p.slice(0, ci);
+        ci += dir;
+        if(ci > p.length){ dir=-1; ci=p.length; setTimeout(tick, 1400); return; }
+        if(ci < 0){ dir=1; ci=0; pi=(pi+1)%phrases.length; }
+        setTimeout(tick, dir>0 ? 70 : 38);
+      })();
+    }
+  }
+
+  /* --- rosace turtle dans le SVG --- */
+  var svg = document.getElementById('stage');
+  var ns = "http://www.w3.org/2000/svg";
+  var cols = ["#ff5da2","#3dd6f5","#ffb13d"];
+  var cx=200, cy=200, side=78;
+
+  function buildRosace(){
+    // 36 carrés tournés de 10°, dessinés depuis le centre, façon turtle
+    var paths=[];
+    for(var i=0;i<36;i++){
+      var a = i*10 * Math.PI/180;
+      // un carré "avancé" depuis le centre puis tracé
+      var pts=[];
+      var px=cx, py=cy, dir=a;
+      for(var s=0;s<4;s++){
+        var nx = px + Math.cos(dir)*side;
+        var ny = py + Math.sin(dir)*side;
+        pts.push([px,py],[nx,ny]);
+        px=nx; py=ny;
+        dir += Math.PI/2;
+      }
+      var d = "M "+pts[0][0].toFixed(1)+" "+pts[0][1].toFixed(1);
+      for(var k=1;k<pts.length;k++){ d += " L "+pts[k][0].toFixed(1)+" "+pts[k][1].toFixed(1); }
+      paths.push({d:d, c:cols[i%3]});
+    }
+    return paths;
+  }
+
+  function run(){
+    var status = document.getElementById('status');
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    var data = buildRosace();
+    status.textContent = "exécution…";
+
+    data.forEach(function(o, idx){
+      var p = document.createElementNS(ns,"path");
+      p.setAttribute("d", o.d);
+      p.setAttribute("fill","none");
+      p.setAttribute("stroke", o.c);
+      p.setAttribute("stroke-width","1.4");
+      p.setAttribute("stroke-linejoin","round");
+      p.setAttribute("opacity","0.92");
+      svg.appendChild(p);
+      if(reduce) return;
+      var len = p.getTotalLength();
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+      p.style.transition = "stroke-dashoffset .5s ease-out";
+      setTimeout(function(){ p.style.strokeDashoffset = 0; }, 40*idx);
+    });
+
+    var done = reduce ? 200 : (40*36 + 500);
+    setTimeout(function(){
+      status.textContent = "✓ terminé — 36 formes tracées";
+      // petit point "stylo" turtle au centre
+      var dot=document.createElementNS(ns,"circle");
+      dot.setAttribute("cx",cx);dot.setAttribute("cy",cy);
+      dot.setAttribute("r","3.5");dot.setAttribute("fill","#f4f1ff");
+      svg.appendChild(dot);
+    }, done);
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run(); // dessin au chargement
+})();
+</script>
+</body>
+</html>

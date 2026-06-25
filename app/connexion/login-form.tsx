@@ -54,8 +54,8 @@ export function LoginForm() {
         </p>
       )}
 
-      <button type="submit" disabled={isPending} className="btn-primary mt-2">
-        {isPending ? "Connexion..." : "Se connecter"}
+      <button type="submit" disabled={isPending} className="btn-arcade-primary mt-2">
+        {isPending ? "Connexion…" : "▶ Se connecter"}
       </button>
     </form>
   );

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, Nunito } from "next/font/google";
+import { Space_Grotesk, Space_Mono, Nunito } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
@@ -8,6 +8,13 @@ import { AuthSessionProvider } from "@/components/session-provider";
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-heading",
+  display: "swap",
+});
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -59,7 +66,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${spaceGrotesk.variable} ${nunito.variable} dark`}
+      className={`${spaceGrotesk.variable} ${spaceMono.variable} ${nunito.variable} dark`}
       suppressHydrationWarning
     >
       <head>

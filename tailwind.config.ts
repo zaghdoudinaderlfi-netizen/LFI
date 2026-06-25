@@ -31,18 +31,30 @@ const config: Config = {
         accent: {
           fg: "rgb(var(--accent-fg) / <alpha-value>)",
         },
+        /* Couleurs arcade : Technologie=ambre, SNT=cyan, NSI=magenta */
+        techno: "rgb(var(--arcade-techno) / <alpha-value>)",
+        snt: "rgb(var(--arcade-snt) / <alpha-value>)",
+        nsi: "rgb(var(--arcade-nsi) / <alpha-value>)",
+        "techno-txt": "rgb(var(--techno-txt) / <alpha-value>)",
+        "snt-txt": "rgb(var(--snt-txt) / <alpha-value>)",
+        "nsi-txt": "rgb(var(--nsi-txt) / <alpha-value>)",
       },
       fontFamily: {
         heading: ["var(--font-heading)", "system-ui", "sans-serif"],
         sans: ["var(--font-body)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       boxShadow: {
         "glow-cyan": "0 0 0 1px rgb(var(--neon-cyan) / 0.25), 0 8px 30px -10px rgb(var(--neon-cyan) / 0.35)",
         "glow-violet": "0 0 0 1px rgb(var(--neon-violet) / 0.25), 0 8px 30px -10px rgb(var(--neon-violet) / 0.35)",
         "glow-soft": "0 8px 30px -12px rgb(var(--neon-blue) / 0.25)",
         card: "var(--shadow-card)",
+        "arcade-sm": "3px 3px 0 rgb(var(--arcade-shadow-clr))",
+        "arcade": "5px 5px 0 rgb(var(--arcade-shadow-clr))",
+        "arcade-lg": "7px 8px 0 rgb(var(--arcade-shadow-clr))",
       },
       keyframes: {
+        "blink": { "50%": { opacity: "0" } },
         "fade-in-up": {
           "0%": { opacity: "0", transform: "translateY(8px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
@@ -62,6 +74,7 @@ const config: Config = {
         },
       },
       animation: {
+        "blink": "blink 1s steps(2) infinite",
         "fade-in-up": "fade-in-up 0.45s ease-out both",
         "pop-in": "pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1) both",
         "glow-pulse": "glow-pulse 2.4s ease-in-out infinite",

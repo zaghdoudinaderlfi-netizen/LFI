@@ -89,8 +89,8 @@ export function InscriptionForm() {
         </p>
       )}
 
-      <button type="submit" disabled={isPending} className="btn-primary mt-2">
-        {isPending ? "Création..." : "Créer mon compte"}
+      <button type="submit" disabled={isPending} className="btn-arcade-primary mt-2">
+        {isPending ? "Création…" : "▶ Créer mon compte"}
       </button>
     </form>
   );

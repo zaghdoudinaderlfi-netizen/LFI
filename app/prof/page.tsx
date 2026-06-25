@@ -28,7 +28,6 @@ export default async function ProfPage({
 
   const session = await auth();
 
-  // Le niveau de classe correspondant à la matière sélectionnée
   const niveauFiltré = matiere ? NIVEAU_PAR_MATIERE[matiere] : undefined;
 
   const [user, aCorrigerCount, recentes, classes] = await Promise.all([
@@ -43,7 +42,6 @@ export default async function ProfPage({
     listerClasses(),
   ]);
 
-  // Filtre les classes par niveau si une matière est active
   const classesFiltrees = niveauFiltré
     ? classes.filter((c) => c.niveau === niveauFiltré)
     : classes;
@@ -52,25 +50,29 @@ export default async function ProfPage({
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
+      {/* En-tête prof */}
       <div className="flex items-center gap-4 animate-fade-in-up">
         {user && <AvatarDisplay user={user} neutre taille="lg" />}
         <div>
-          <p className="eyebrow">Bonjour</p>
+          <p className="font-mono text-xs font-bold tracking-widest" style={{ color: "rgb(var(--techno-txt))" }}>
+            // BONJOUR
+          </p>
           <h1 className="page-title">
             {user?.prenom?.trim() || user?.nom?.split(" ")[0] || ""}
           </h1>
         </div>
       </div>
 
-      {/* Sélecteur de matière */}
+      {/* Onglets matière */}
       <Suspense fallback={null}>
         <MatieresTabs matiereActive={matiere} />
       </Suspense>
 
+      {/* Actions rapides */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 animate-fade-in-up [animation-delay:60ms]">
-        <Link href="/prof/cours/nouveau" className="card-interactive flex flex-col gap-2 p-6">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-neon-blue to-neon-violet shadow-glow-soft">
-            <PlusCircle className="h-5 w-5 text-accent-fg" />
+        <Link href="/prof/cours/nouveau" className="tile-arcade">
+          <span className="icon-badge-nsi">
+            <PlusCircle className="h-5 w-5" />
           </span>
           <p className="font-semibold text-ink-primary">Créer un cours</p>
           <p className="text-sm text-ink-secondary">
@@ -80,9 +82,9 @@ export default async function ProfPage({
           </p>
         </Link>
 
-        <Link href="/prof/cours" className="card-interactive flex flex-col gap-2 p-6">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-neon-cyan to-neon-blue shadow-glow-soft">
-            <ListPlus className="h-5 w-5 text-accent-fg" />
+        <Link href="/prof/cours" className="tile-arcade">
+          <span className="icon-badge-snt">
+            <ListPlus className="h-5 w-5" />
           </span>
           <p className="font-semibold text-ink-primary">Créer un devoir</p>
           <p className="text-sm text-ink-secondary">
@@ -91,12 +93,13 @@ export default async function ProfPage({
         </Link>
       </div>
 
+      {/* Copies à corriger */}
       <Link
         href={matiere ? `/prof/devoirs?matiere=${matiere}` : "/prof/devoirs"}
-        className="card-interactive flex items-center justify-between p-6 animate-fade-in-up [animation-delay:120ms]"
+        className="card-hard card-hard-nsi flex items-center justify-between p-6 animate-fade-in-up [animation-delay:120ms]"
       >
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-space-surface2 text-neon-pink">
+          <span className="icon-badge-nsi">
             <ClipboardCheck className="h-5 w-5" />
           </span>
           <div>
@@ -108,10 +111,13 @@ export default async function ProfPage({
             </p>
           </div>
         </div>
-        <p className="font-heading text-3xl font-bold text-ink-primary">{aCorrigerCount}</p>
+        <p className="font-heading text-3xl font-bold" style={{ color: "rgb(var(--arcade-nsi))" }}>
+          {aCorrigerCount}
+        </p>
       </Link>
 
-      <section className="card animate-fade-in-up p-6 [animation-delay:180ms]">
+      {/* Derniers travaux remis */}
+      <section className="card-hard animate-fade-in-up p-6 [animation-delay:180ms]">
         <h2 className="section-title mb-4">
           Derniers travaux remis{labelMatiere ? ` — ${labelMatiere}` : ""}
         </h2>
@@ -124,7 +130,7 @@ export default async function ProfPage({
               <li key={soumission.id}>
                 <Link
                   href="/prof/devoirs"
-                  className="card-interactive flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between"
+                  className="item-arcade flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
                     <p className="font-medium text-ink-primary">{soumission.exercice.titre}</p>
@@ -135,11 +141,12 @@ export default async function ProfPage({
                   <div className="text-sm sm:text-right">
                     <p className="text-ink-muted">{soumission.createdAt.toLocaleDateString("fr-FR")}</p>
                     <p
-                      className={
-                        soumission.corrigeManuellement
-                          ? "font-medium text-emerald-400"
-                          : "font-medium text-amber-400"
-                      }
+                      className="font-medium"
+                      style={{
+                        color: soumission.corrigeManuellement
+                          ? "rgb(52 211 153)"
+                          : "rgb(var(--arcade-techno))",
+                      }}
                     >
                       {soumission.corrigeManuellement ? "Corrigé" : "À corriger"}
                     </p>
@@ -151,12 +158,14 @@ export default async function ProfPage({
         )}
       </section>
 
-      <section className="card animate-fade-in-up p-6 [animation-delay:240ms]">
+      {/* Mes classes */}
+      <section className="card-hard card-hard-techno animate-fade-in-up p-6 [animation-delay:240ms]">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="section-title">
+          <h2 className="section-title flex items-center gap-2">
+            <span className="font-mono text-sm" style={{ color: "rgb(var(--arcade-techno))" }}>⚙</span>
             Mes classes{labelMatiere ? ` — ${labelMatiere}` : ""}
           </h2>
-          <Link href="/prof/classes" className="link-muted text-sm">
+          <Link href="/prof/classes" className="text-sm font-medium hover:underline" style={{ color: "rgb(var(--techno-txt))" }}>
             Gérer
           </Link>
         </div>
@@ -166,7 +175,7 @@ export default async function ProfPage({
             {labelMatiere
               ? `Aucune classe de ${labelMatiere} (${niveauFiltré ? NIVEAU_LABELS[niveauFiltré] : ""}) pour le moment.`
               : "Aucune classe pour le moment."}{" "}
-            <Link href="/prof/classes" className="link-muted underline">
+            <Link href="/prof/classes" className="underline" style={{ color: "rgb(var(--techno-txt))" }}>
               {classesFiltrees.length === 0 && classes.length > 0 ? "Créer une classe" : "Crée ta première classe"}
             </Link>
             .
@@ -176,7 +185,7 @@ export default async function ProfPage({
             {classesFiltrees.map((classe) => (
               <li
                 key={classe.id}
-                className="flex flex-col gap-2 rounded-xl border border-space-border bg-space-surface2/60 p-4 sm:flex-row sm:items-center sm:justify-between"
+                className="item-arcade flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <p className="font-medium text-ink-primary">{classe.nom}</p>
@@ -185,7 +194,14 @@ export default async function ProfPage({
                     {classe.nombreEleves} {classe.nombreEleves > 1 ? "élèves" : "élève"}
                   </p>
                 </div>
-                <span className="rounded-lg border border-space-border bg-space-surface px-3 py-1 font-mono text-sm font-bold text-neon-cyan">
+                <span
+                  className="rounded-lg border px-3 py-1 font-mono text-sm font-bold"
+                  style={{
+                    color: "rgb(var(--snt-txt))",
+                    borderColor: "rgba(var(--arcade-snt), 0.35)",
+                    background: "rgba(var(--arcade-snt), 0.08)",
+                  }}
+                >
                   {classe.codeInscription}
                 </span>
               </li>

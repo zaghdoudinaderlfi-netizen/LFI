@@ -41,6 +41,17 @@
 
   --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.8) inset, 0 10px 30px -15px rgb(15 23 42 / 0.12);
   --skeleton-shimmer: rgba(15, 23, 42, 0.05);
+
+  /* ── Palette arcade : Technologie=ambre, SNT=cyan, NSI=magenta ── */
+  --arcade-techno: 255 177 61;
+  --arcade-snt: 61 214 245;
+  --arcade-nsi: 255 93 162;
+  /* Ombre "dure" néo-brutaliste — ton muted en thème clair */
+  --arcade-shadow-clr: 174 183 214;
+  /* Variantes texte : suffisamment sombres pour un fond blanc */
+  --techno-txt: 161 99 0;
+  --snt-txt: 0 128 152;
+  --nsi-txt: 185 14 85;
 }
 
 .dark {
@@ -66,6 +77,12 @@
 
   --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.03) inset, 0 10px 30px -15px rgb(0 0 0 / 0.6);
   --skeleton-shimmer: rgba(255, 255, 255, 0.06);
+
+  /* En thème sombre, ombre arcade profonde et couleurs texte saturées */
+  --arcade-shadow-clr: 13 9 38;
+  --techno-txt: 255 177 61;
+  --snt-txt: 61 214 245;
+  --nsi-txt: 255 93 162;
 }
 
 /* ───────────────────────────────────────────────
@@ -266,4 +283,242 @@ body::after {
   to {
     transform: translateX(100%);
   }
+}
+
+/* ───────────────────────────────────────────────
+   Page d'accueil arcade — styles spécifiques.
+   La fenêtre « screen » est toujours sombre (elle
+   représente un terminal/éditeur), indépendamment
+   du thème global clair/sombre.
+   ─────────────────────────────────────────────── */
+
+.btn-arcade {
+  transition: transform 0.12s, box-shadow 0.12s;
+  box-shadow: 5px 5px 0 #0d0926;
+}
+.btn-arcade:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #0d0926; }
+.btn-arcade:active { transform: translate(5px, 5px); box-shadow: none; }
+
+.btn-editor {
+  transition: transform 0.1s, box-shadow 0.1s;
+  box-shadow: 3px 3px 0 #0d0926;
+}
+.btn-editor:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0 #0d0926; }
+
+.cart-arcade {
+  transition: transform 0.14s, box-shadow 0.14s;
+  box-shadow: 5px 5px 0 #0d0926;
+}
+.cart-arcade:hover { transform: translate(-2px, -3px); box-shadow: 7px 9px 0 #0d0926; }
+.cart-arcade:hover .cart-glyph { opacity: 0.28 !important; transform: rotate(8deg) scale(1.05); }
+.cart-glyph { transition: opacity 0.2s, transform 0.2s; }
+
+.topbar-link { transition: border-color 0.15s, color 0.15s; }
+.topbar-link:hover { border-color: #3dd6f5 !important; color: #3dd6f5 !important; }
+
+/* ═══════════════════════════════════════════════════
+   STYLE ARCADE CLAIR — Connexion, Inscription,
+   Dashboards élève et prof.
+   ═══════════════════════════════════════════════════ */
+
+/* Fenêtre / chrome arcade (auth pages) */
+.arcade-screen {
+  border-radius: 20px;
+  border: 2px solid rgb(var(--space-border));
+  background: rgb(var(--space-surface));
+  box-shadow: 6px 6px 0 rgb(var(--arcade-shadow-clr));
+  overflow: hidden;
+}
+.arcade-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 2px solid rgb(var(--space-border));
+  background: rgb(var(--space-surface2));
+}
+.arcade-winname {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  color: rgb(var(--ink-muted));
+  letter-spacing: 0.03em;
+}
+
+/* Cartes avec ombre "dure" néo-brutaliste */
+.card-hard {
+  border-radius: 16px;
+  border: 2px solid rgb(var(--space-border));
+  background: rgb(var(--space-surface));
+  box-shadow: 4px 4px 0 rgb(var(--arcade-shadow-clr));
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+.card-hard:hover {
+  transform: translate(-2px, -3px);
+  box-shadow: 6px 7px 0 rgb(var(--arcade-shadow-clr));
+}
+/* Bandeau couleur en haut selon la matière */
+.card-hard-techno { border-top: 3px solid rgb(var(--arcade-techno)); }
+.card-hard-snt    { border-top: 3px solid rgb(var(--arcade-snt)); }
+.card-hard-nsi    { border-top: 3px solid rgb(var(--arcade-nsi)); }
+
+/* Tuiles d'action CTA (liens Créer cours / devoir) */
+.tile-arcade {
+  border-radius: 16px;
+  border: 2px solid rgb(var(--space-border));
+  background: rgb(var(--space-surface));
+  box-shadow: 3px 3px 0 rgb(var(--arcade-shadow-clr));
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px;
+}
+.tile-arcade:hover {
+  transform: translate(-1px, -2px);
+  box-shadow: 5px 6px 0 rgb(var(--arcade-shadow-clr));
+}
+
+/* Lignes de liste à l'intérieur d'une card-hard */
+.item-arcade {
+  border-radius: 12px;
+  border: 1.5px solid rgb(var(--space-border));
+  background: rgba(var(--space-surface2), 0.7);
+  transition: border-color 0.15s, background 0.15s;
+}
+.item-arcade:hover {
+  border-color: rgba(var(--arcade-snt), 0.4);
+  background: rgb(var(--space-surface));
+}
+
+/* Bouton principal arcade — effet de pression physique */
+.btn-arcade-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  padding: 11px 22px;
+  border-radius: 13px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  background: rgb(var(--arcade-nsi));
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 rgb(var(--arcade-shadow-clr));
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.btn-arcade-primary:hover:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 rgb(var(--arcade-shadow-clr));
+}
+.btn-arcade-primary:active:not(:disabled) {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+.btn-arcade-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Navigation arcade (sidebar bureau + volet mobile) */
+.nav-arcade-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1.5px solid transparent;
+  transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s;
+}
+.nav-arcade-link-active {
+  background: rgba(var(--arcade-snt), 0.10);
+  color: rgb(var(--snt-txt));
+  border-color: rgba(var(--arcade-snt), 0.28);
+  box-shadow: 2px 2px 0 rgb(var(--arcade-shadow-clr));
+}
+.dark .nav-arcade-link-active {
+  background: rgba(var(--arcade-snt), 0.14);
+  color: rgb(var(--arcade-snt));
+}
+.nav-arcade-link-inactive {
+  color: rgb(var(--ink-secondary));
+}
+.nav-arcade-link-inactive:hover {
+  background: rgb(var(--space-surface2));
+  color: rgb(var(--ink-primary));
+  border-color: rgb(var(--space-border));
+}
+
+/* Sidebar bureau — fond blanc, bordure droite épaisse */
+.arcade-sidebar-desktop {
+  background: rgb(var(--space-surface));
+  border-right: 2px solid rgb(var(--space-border));
+}
+
+/* Topbar mobile — vitre dépolicée, bordure basse épaisse */
+.arcade-nav-topbar {
+  background: rgba(var(--space-surface), 0.9);
+  border-bottom: 2px solid rgb(var(--space-border));
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/* Badges d'icône colorés par matière */
+.icon-badge-techno {
+  width: 40px; height: 40px;
+  border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(var(--arcade-techno), 0.15);
+  border: 1.5px solid rgba(var(--arcade-techno), 0.3);
+  color: rgb(var(--techno-txt));
+}
+.icon-badge-snt {
+  width: 40px; height: 40px;
+  border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(var(--arcade-snt), 0.12);
+  border: 1.5px solid rgba(var(--arcade-snt), 0.28);
+  color: rgb(var(--snt-txt));
+}
+.icon-badge-nsi {
+  width: 40px; height: 40px;
+  border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(var(--arcade-nsi), 0.12);
+  border: 1.5px solid rgba(var(--arcade-nsi), 0.28);
+  color: rgb(var(--nsi-txt));
+}
+
+/* Onglets matière (dashboard prof) */
+.tab-arcade-active-techno {
+  background: rgba(var(--arcade-techno), 0.12);
+  color: rgb(var(--techno-txt));
+  border: 1.5px solid rgba(var(--arcade-techno), 0.30);
+  box-shadow: 2px 2px 0 rgb(var(--arcade-shadow-clr));
+}
+.tab-arcade-active-snt {
+  background: rgba(var(--arcade-snt), 0.10);
+  color: rgb(var(--snt-txt));
+  border: 1.5px solid rgba(var(--arcade-snt), 0.28);
+  box-shadow: 2px 2px 0 rgb(var(--arcade-shadow-clr));
+}
+.tab-arcade-active-nsi {
+  background: rgba(var(--arcade-nsi), 0.10);
+  color: rgb(var(--nsi-txt));
+  border: 1.5px solid rgba(var(--arcade-nsi), 0.28);
+  box-shadow: 2px 2px 0 rgb(var(--arcade-shadow-clr));
+}
+.dark .tab-arcade-active-techno { color: rgb(var(--arcade-techno)); }
+.dark .tab-arcade-active-snt    { color: rgb(var(--arcade-snt)); }
+.dark .tab-arcade-active-nsi    { color: rgb(var(--arcade-nsi)); }
+.tab-arcade-inactive {
+  color: rgb(var(--ink-muted));
+  border: 1.5px solid transparent;
+}
+.tab-arcade-inactive:hover {
+  color: rgb(var(--ink-primary));
 }

@@ -119,7 +119,10 @@ export function AppShell({
   function NotificationBadge({ count }: { count: number }) {
     if (count <= 0) return null;
     return (
-      <span className="badge animate-pop-in bg-neon-pink text-accent-fg shadow-[0_0_10px_rgba(244,114,182,0.6)]">
+      <span
+        className="badge animate-pop-in text-white shadow-[0_0_8px_rgba(255,93,162,0.5)]"
+        style={{ background: "rgb(var(--arcade-nsi))" }}
+      >
         {count > 99 ? "99+" : count}
       </span>
     );
@@ -139,13 +142,12 @@ export function AppShell({
               href={item.href}
               onClick={onNavigate}
               aria-current={actif ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 ${
-                actif
-                  ? "bg-gradient-to-r from-neon-blue/15 to-neon-violet/15 text-ink-primary shadow-[inset_0_0_0_1px_rgba(34,211,238,0.25)]"
-                  : "text-ink-secondary hover:bg-space-surface2 hover:text-ink-primary"
-              }`}
+              className={`nav-arcade-link ${actif ? "nav-arcade-link-active" : "nav-arcade-link-inactive"}`}
             >
-              <Icon className={`h-5 w-5 shrink-0 ${actif ? "text-neon-cyan" : ""}`} />
+              <Icon
+                className="h-5 w-5 shrink-0"
+                style={actif ? { color: "rgb(var(--arcade-snt))" } : undefined}
+              />
               <span className="flex-1">{item.label}</span>
               <NotificationBadge count={badge} />
             </Link>
@@ -161,7 +163,7 @@ export function AppShell({
         <button
           type="button"
           onClick={() => { setUserMenuOuvert((o) => !o); setMenuOuvert(false); }}
-          className={`flex items-center gap-2 rounded-lg text-sm font-medium text-ink-primary transition-colors hover:bg-space-surface2 ${
+          className={`flex items-center gap-2 rounded-xl text-sm font-medium text-ink-primary transition-colors hover:bg-space-surface2 ${
             compact ? "p-1" : "w-full px-2 py-1.5"
           }`}
           aria-label="Menu utilisateur"
@@ -186,7 +188,10 @@ export function AppShell({
               className="fixed inset-0 z-40"
               onClick={() => setUserMenuOuvert(false)}
             />
-            <div className="absolute left-0 z-50 mt-1 w-48 rounded-xl border border-space-border bg-space-deep p-1 shadow-xl">
+            <div
+              className="absolute left-0 z-50 mt-1 w-48 rounded-xl border-2 border-space-border bg-space-surface p-1"
+              style={{ boxShadow: "3px 3px 0 rgb(var(--arcade-shadow-clr))" }}
+            >
               <Link
                 href={profilHref}
                 onClick={() => setUserMenuOuvert(false)}
@@ -213,14 +218,13 @@ export function AppShell({
 
   return (
     <div className="min-h-screen lg:flex">
-      {/* Menu latéral (écrans larges) */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-space-border lg:bg-space-surface/60 lg:backdrop-blur-xl">
-        <div className="flex h-16 items-center justify-between border-b border-space-border px-6">
+      {/* Sidebar bureau */}
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col arcade-sidebar-desktop">
+        <div className="flex h-16 items-center justify-between border-b-2 border-space-border px-6">
           <Logo />
           <ThemeToggle />
         </div>
-        {/* Menu utilisateur en haut à gauche */}
-        <div className="border-b border-space-border px-3 py-2">
+        <div className="border-b-2 border-space-border px-3 py-2">
           <UserMenu />
         </div>
         <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
@@ -229,14 +233,12 @@ export function AppShell({
       </aside>
 
       <div className="flex min-h-screen flex-1 flex-col">
-        {/* Barre supérieure (mobile / tablette) */}
-        <div className="sticky top-0 z-30 flex items-center justify-between border-b border-space-border bg-space-surface/80 px-4 py-3 backdrop-blur-xl lg:hidden">
-          {/* Gauche : avatar utilisateur + logo */}
+        {/* Barre supérieure mobile */}
+        <div className="sticky top-0 z-30 flex items-center justify-between arcade-nav-topbar px-4 py-3 lg:hidden">
           <div className="flex items-center gap-2">
             <UserMenu compact />
             <Logo />
           </div>
-          {/* Droite : notifications + menu */}
           <div className="flex items-center gap-2">
             <Link
               href={notificationsHref}
@@ -245,7 +247,10 @@ export function AppShell({
             >
               <Bell className="h-5 w-5" />
               {notificationsNonLues > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 animate-pop-in items-center justify-center rounded-full bg-neon-pink px-1 text-[10px] font-bold text-accent-fg shadow-[0_0_10px_rgba(244,114,182,0.6)]">
+                <span
+                  className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 animate-pop-in items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+                  style={{ background: "rgb(var(--arcade-nsi))" }}
+                >
                   {notificationsNonLues > 99 ? "99+" : notificationsNonLues}
                 </span>
               )}
@@ -262,14 +267,14 @@ export function AppShell({
           </div>
         </div>
 
-        {/* Menu mobile (volet) */}
+        {/* Volet mobile */}
         {menuOuvert && (
           <div className="fixed inset-0 z-40 lg:hidden">
             <div
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setMenuOuvert(false)}
             />
-            <div className="absolute left-0 top-0 flex h-full w-64 flex-col border-r border-space-border bg-space-deep p-4 shadow-2xl animate-fade-in-up">
+            <div className="absolute left-0 top-0 flex h-full w-64 flex-col border-r-2 border-space-border bg-space-surface p-4 shadow-2xl animate-fade-in-up">
               <div className="mb-4 flex items-center justify-between">
                 <Logo />
                 <div className="flex items-center gap-1">

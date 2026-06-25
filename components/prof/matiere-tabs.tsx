@@ -4,10 +4,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import type { Matiere } from "@prisma/client";
 
-const ONGLETS: { value: Matiere; label: string; couleur: string }[] = [
-  { value: "TECHNOLOGIE", label: "Technologie", couleur: "neon-blue" },
-  { value: "SNT", label: "SNT", couleur: "neon-cyan" },
-  { value: "NSI", label: "NSI", couleur: "neon-violet" },
+const ONGLETS: { value: Matiere; label: string; activeClass: string }[] = [
+  { value: "TECHNOLOGIE", label: "Technologie", activeClass: "tab-arcade-active-techno" },
+  { value: "SNT",         label: "SNT",          activeClass: "tab-arcade-active-snt" },
+  { value: "NSI",         label: "NSI",          activeClass: "tab-arcade-active-nsi" },
 ];
 
 const CLE_STORAGE = "prof-matiere-filtre";
@@ -17,7 +17,6 @@ export function MatieresTabs({ matiereActive }: { matiereActive: Matiere | null 
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Restaure le dernier onglet si aucun param n'est présent dans l'URL
     if (!searchParams.get("matiere")) {
       const saved = localStorage.getItem(CLE_STORAGE) as Matiere | null;
       if (saved && ONGLETS.some((o) => o.value === saved)) {
@@ -33,8 +32,8 @@ export function MatieresTabs({ matiereActive }: { matiereActive: Matiere | null 
   }
 
   return (
-    <div className="flex gap-1 rounded-xl border border-space-border bg-space-surface2/60 p-1 animate-fade-in-up">
-      {ONGLETS.map(({ value, label }) => {
+    <div className="flex gap-1 rounded-xl border-2 border-space-border bg-space-surface2/60 p-1 animate-fade-in-up">
+      {ONGLETS.map(({ value, label, activeClass }) => {
         const actif = matiereActive === value;
         return (
           <button
@@ -42,9 +41,7 @@ export function MatieresTabs({ matiereActive }: { matiereActive: Matiere | null 
             type="button"
             onClick={() => choisir(value)}
             className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
-              actif
-                ? "bg-space-surface shadow-sm text-ink-primary"
-                : "text-ink-muted hover:text-ink-primary"
+              actif ? activeClass : "tab-arcade-inactive"
             }`}
           >
             {label}
