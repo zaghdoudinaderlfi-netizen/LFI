@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NSI · Chapitre 1 — Exercices</title>
+<title>NSI · Chapitre 2 — Exercices (boucle for)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -18,13 +18,11 @@
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{
-  margin:0; background:
+body{margin:0; background:
     radial-gradient(1100px 600px at 80% -10%, rgba(139,92,246,.18), transparent 60%),
     radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.14), transparent 55%),
     var(--bg);
-  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;
-}
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;}
 .wrap{max-width:920px; margin:0 auto; padding:0 20px}
 header.hero{padding:48px 0 24px; border-bottom:1px solid var(--line); margin-bottom:20px}
 .kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
@@ -42,30 +40,19 @@ code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.0
 strong{color:#fff}
 .enonce{background:rgba(255,255,255,.03); border:1px solid var(--line); border-left:3px solid var(--cyan); border-radius:0 10px 10px 0; padding:12px 16px; margin:14px 0}
 .note{display:flex; gap:12px; padding:13px 16px; border-radius:12px; background:rgba(245,158,11,.07); border:1px solid rgba(245,158,11,.25); margin:14px 0}
-.note .ico{font-size:18px}
-.note p{margin:0}
-ul{margin:10px 0 10px 0; padding-left:22px}
-li{margin:4px 0}
-
-/* Cellule exécutable */
+.note .ico{font-size:18px} .note p{margin:0}
 .cell{background:var(--code); border:1px solid var(--line); border-radius:14px; margin:14px 0; overflow:hidden; box-shadow:var(--glow)}
 .cell-head{display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,.025); border-bottom:1px solid var(--line)}
 .tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:7px}
 .dot{width:9px; height:9px; border-radius:50%; background:var(--violet); box-shadow:0 0 8px var(--violet)}
-.run{font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:#06121f; cursor:pointer;
-  border:0; border-radius:8px; padding:7px 16px; background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.15s}
-.run:hover{filter:brightness(1.08); transform:translateY(-1px)}
-.run:disabled{opacity:.5; cursor:wait}
-textarea.code{width:100%; border:0; outline:0; resize:vertical; background:transparent; color:#e7f0ff;
-  font-family:var(--mono); font-size:14px; line-height:1.6; padding:14px 16px; display:block; tab-size:4}
-.out{margin:0; padding:0 16px; max-height:0; overflow:hidden; font-family:var(--mono); font-size:13.5px; color:#bfe6c9;
-  white-space:pre-wrap; border-top:1px solid transparent; transition:max-height .2s, padding .2s}
+.run{font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:#06121f; cursor:pointer; border:0; border-radius:8px; padding:7px 16px; background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.15s}
+.run:hover{filter:brightness(1.08); transform:translateY(-1px)} .run:disabled{opacity:.5; cursor:wait}
+textarea.code{width:100%; border:0; outline:0; resize:vertical; background:transparent; color:#e7f0ff; font-family:var(--mono); font-size:14px; line-height:1.6; padding:14px 16px; display:block; tab-size:4}
+.out{margin:0; padding:0 16px; max-height:0; overflow:hidden; font-family:var(--mono); font-size:13.5px; color:#bfe6c9; white-space:pre-wrap; border-top:1px solid transparent; transition:max-height .2s, padding .2s}
 .out.show{max-height:420px; overflow:auto; padding:12px 16px; border-top:1px solid var(--line); background:rgba(0,0,0,.25)}
 .out.err{color:var(--err)}
 .turtle{display:flex; justify-content:center; align-items:center; overflow:auto; min-height:180px; padding:10px; background:#fff; border-top:1px solid var(--line)}
 .turtle[hidden]{display:none}
-
-/* Correction */
 .correction{margin:14px 0}
 .reveal-btn{font-family:'Nunito'; font-weight:800; border:1px solid rgba(52,211,153,.4); background:rgba(52,211,153,.1); color:var(--ok); padding:9px 16px; border-radius:10px; cursor:pointer; transition:.15s}
 .reveal-btn:hover{background:rgba(52,211,153,.18)}
@@ -74,33 +61,31 @@ textarea.code{width:100%; border:0; outline:0; resize:vertical; background:trans
 .correction-body.show{display:block}
 .correction-body h4{font-family:'Space Grotesk',sans-serif; color:var(--ok); margin:16px 0 6px}
 pre.sol{background:var(--code); border:1px solid var(--line); border-radius:12px; padding:12px 14px; overflow:auto; font-family:var(--mono); font-size:13.5px; line-height:1.6; color:#e7f0ff; white-space:pre}
-
 footer{padding:36px 0 70px; color:var(--muted); font-size:14px}
 .mono-n{font-family:var(--mono); font-weight:700; font-size:18px; margin-top:12px}
 .mono-n span:nth-child(1){color:var(--cyan)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--violet)}
 ::selection{background:rgba(139,92,246,.4)}
-.svgbox{background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:14px; margin:14px 0}
-.svgbox text{font-family:var(--mono); fill:var(--ink); font-size:13px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="hero">
-    <span class="kicker">NSI · Première · Chapitre 1</span>
-    <h1>Exercices — <span class="accent">Arithmétique, variables, instructions</span></h1>
-    <p class="lede">Chaque exercice est <strong>exécutable</strong> : écris ton code, clique sur <em>Exécuter</em>, observe. Lis l'explication pour comprendre <strong>comment</strong> le programme fonctionne. Les corrections s'affichent lorsque ton professeur les autorise.</p>
+    <span class="kicker">NSI · Première · Chapitre 2</span>
+    <h1>Exercices — <span class="accent">la boucle for</span></h1>
+    <p class="lede">Chaque exercice est <strong>exécutable</strong> : écris ton code, clique sur <em>Exécuter</em>, observe. Les corrections s'affichent lorsque ton professeur les autorise.</p>
   </header>
 
   <!-- EX 1 -->
   <section id="ex1">
-    <h2><span class="num">EX 1</span> Priorité des opérations</h2>
-    <div class="enonce"><p>Réécris les expressions suivantes en explicitant <strong>toutes</strong> les parenthèses :</p>
-    <p><code class="inl">1 + 2 * 3 - 4</code> &nbsp;·&nbsp; <code class="inl">1 + 2 / 4 * 3</code> &nbsp;·&nbsp; <code class="inl">1 - a + a * a / 2 - a * a * a / 6 + a * a * a * a / 24</code></p></div>
-    <p class="muted">Rappel : <code class="inl">*</code> et <code class="inl">/</code> sont prioritaires sur <code class="inl">+</code> et <code class="inl">-</code>. À priorité égale, on lit <strong>de gauche à droite</strong>. Exécute pour vérifier les valeurs :</p>
+    <h2><span class="num">EX 1</span> Calculer 2ⁿ</h2>
+    <div class="enonce"><p>Demande un entier <code class="inl">n</code> à l'utilisateur, puis calcule et affiche <code class="inl">2ⁿ</code> (2 puissance n) — <strong>avec une boucle</strong>, en partant d'un accumulateur.</p></div>
+    <p class="muted">Idée : pars de <code class="inl">resultat = 1</code> et multiplie par 2 à chaque tour.</p>
     <div class="cell" data-cell>
       <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">print(1 + 2 * 3 - 4)
-print(1 + 2 / 4 * 3)</textarea>
+      <textarea class="code" spellcheck="false">n = int(input("n : "))
+resultat = 1
+# multiplie resultat par 2, n fois
+</textarea>
       <pre class="out"></pre>
     </div>
     <div class="correction" data-correction>
@@ -108,63 +93,51 @@ print(1 + 2 / 4 * 3)</textarea>
       <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
       <div class="correction-body">
         <h4>Correction</h4>
-        <pre class="sol">1 + 2 * 3 - 4      →  ( (1 + (2 * 3)) - 4 )        = 3
-1 + 2 / 4 * 3      →  ( 1 + ((2 / 4) * 3) )        = 2.5
-1 - a + a*a/2 - a*a*a/6 + a*a*a*a/24
-   →  ( ( ( (1 - a) + ((a*a)/2) ) - (((a*a)*a)/6) ) + ((((a*a)*a)*a)/24) )</pre>
-        <p class="muted">Pour la 2ᵉ : <code class="inl">/</code> et <code class="inl">*</code> ont la même priorité, on lit de gauche à droite, donc <code class="inl">2/4</code> d'abord (= 0.5), puis <code class="inl">×3</code> (= 1.5).<br>
-        La 3ᵉ est le début du développement de <code class="inl">e^(-a)</code> : chaque terme est un produit divisé, additionné/soustrait de gauche à droite.</p>
+        <pre class="sol">n = int(input("n : "))
+resultat = 1
+for _ in range(n):
+    resultat = resultat * 2
+print(f"2^{n} = {resultat}")</pre>
+        <p class="muted">L'accumulateur <code class="inl">resultat</code> part de 1 et double à chaque tour : 1 → 2 → 4 → 8… (Python sait aussi faire <code class="inl">2 ** n</code>, mais ici on s'entraîne avec la boucle.)</p>
       </div>
     </div>
   </section>
 
   <!-- EX 2 -->
   <section id="ex2">
-    <h2><span class="num">EX 2</span> Que fait cette séquence ?</h2>
-    <div class="enonce"><pre class="sol">tmp = a
-a = b
-b = tmp</pre></div>
-    <p class="muted">Teste avec des valeurs concrètes, puis observe ce qui change :</p>
+    <h2><span class="num">EX 2</span> Le produit 1 × 2 × … × 100</h2>
+    <div class="enonce"><p>Calcule et affiche <code class="inl">1 × 2 × … × 100</code> (la factorielle de 100).</p></div>
+    <p class="muted">Astuce : <code class="inl">range(1, 101)</code> donne les entiers de 1 à 100. Accumulateur initialisé à 1.</p>
     <div class="cell" data-cell>
       <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">a = 5
-b = 8
-print("Avant :  a =", a, " b =", b)
-
-tmp = a
-a = b
-b = tmp
-
-print("Après :  a =", a, " b =", b)</textarea>
+      <textarea class="code" spellcheck="false">produit = 1
+# multiplie produit par chaque i de 1 à 100
+</textarea>
       <pre class="out"></pre>
-    </div>
-    <div class="svgbox">
-      <svg viewBox="0 0 560 120" width="100%">
-        <text x="20" y="20" fill="#9aa7c2">tmp = a</text><text x="170" y="20">tmp ← 5 (on garde l'ancien a)</text>
-        <text x="20" y="55" fill="#9aa7c2">a = b</text><text x="170" y="55">a ← 8</text>
-        <text x="20" y="90" fill="#9aa7c2">b = tmp</text><text x="170" y="90">b ← 5 (l'ancien a)</text>
-      </svg>
     </div>
     <div class="correction" data-correction>
       <button class="reveal-btn">Voir la correction</button>
       <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
       <div class="correction-body">
         <h4>Correction</h4>
-        <p>Cette séquence <strong>échange (permute) les valeurs</strong> de <code class="inl">a</code> et <code class="inl">b</code>. La variable <code class="inl">tmp</code> sert de mémoire temporaire : sans elle, l'instruction <code class="inl">a = b</code> écraserait l'ancienne valeur de <code class="inl">a</code> avant qu'on puisse la donner à <code class="inl">b</code>.</p>
+        <pre class="sol">produit = 1
+for i in range(1, 101):
+    produit = produit * i
+print(produit)</pre>
+        <p class="muted">On parcourt <code class="inl">i</code> de 1 à 100 (101 exclu). Python gère les très grands entiers : le résultat a 158 chiffres !</p>
       </div>
     </div>
   </section>
 
   <!-- EX 3 -->
   <section id="ex3">
-    <h2><span class="num">EX 3</span> Aire d'un rectangle</h2>
-    <div class="enonce"><p>Écris un programme qui demande les deux côtés (entiers) d'un rectangle et affiche son aire.</p></div>
-    <p class="muted">Rappel : <code class="inl">input()</code> renvoie une <strong>chaîne</strong> ; on la convertit avec <code class="inl">int()</code>. Complète puis exécute :</p>
+    <h2><span class="num">EX 3</span> La somme 1 + 2 + … + n</h2>
+    <div class="enonce"><p>Demande un entier <code class="inl">n</code>, puis calcule et affiche <code class="inl">1 + 2 + … + n</code>.</p></div>
     <div class="cell" data-cell>
       <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">longueur = int(input("Longueur : "))
-largeur = int(input("Largeur : "))
-# calcule l'aire puis affiche-la
+      <textarea class="code" spellcheck="false">n = int(input("n : "))
+somme = 0
+# ajoute chaque i de 1 à n
 </textarea>
       <pre class="out"></pre>
     </div>
@@ -173,25 +146,27 @@ largeur = int(input("Largeur : "))
       <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
       <div class="correction-body">
         <h4>Correction</h4>
-        <pre class="sol">longueur = int(input("Longueur : "))
-largeur = int(input("Largeur : "))
-aire = longueur * largeur
-print(f"L'aire du rectangle est {aire}.")</pre>
-        <p class="muted">On convertit chaque saisie en entier, on multiplie, et on affiche avec une f-string.</p>
+        <pre class="sol">n = int(input("n : "))
+somme = 0
+for i in range(1, n + 1):
+    somme = somme + i
+print(f"1 + 2 + ... + {n} = {somme}")</pre>
+        <p class="muted">Accumulateur <code class="inl">somme</code> initialisé à 0. Vérification : pour n = 100, on obtient 5050 (formule n(n+1)/2).</p>
       </div>
     </div>
   </section>
 
   <!-- EX 4 -->
   <section id="ex4">
-    <h2><span class="num">EX 4</span> Conversion vers la base 10</h2>
-    <div class="enonce"><p>Demande une base (entre 2 et 36) et un nombre, puis affiche ce nombre en base 10.<br>
-    Indice : <code class="inl">int(chaine, base)</code> convertit une chaîne écrite dans une base donnée.</p></div>
+    <h2><span class="num">EX 4</span> Intérêts d'un livret</h2>
+    <div class="enonce"><p>Demande une somme initiale <code class="inl">s</code>, un taux annuel <code class="inl">t</code> (en %) et un nombre d'années <code class="inl">n</code>. Affiche les <strong>intérêts perçus chaque année</strong> et le <strong>montant total</strong> après n années.</p></div>
+    <p class="muted">Chaque année : intérêt = montant × t / 100, puis montant = montant + intérêt.</p>
     <div class="cell" data-cell>
       <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">base = int(input("Base (entre 2 et 36) : "))
-nombre = input("Nombre : ")
-# affiche int(nombre, base)
+      <textarea class="code" spellcheck="false">s = float(input("Somme initiale : "))
+t = float(input("Taux annuel (%) : "))
+n = int(input("Nombre d'années : "))
+# boucle sur les n années
 </textarea>
       <pre class="out"></pre>
     </div>
@@ -200,23 +175,33 @@ nombre = input("Nombre : ")
       <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
       <div class="correction-body">
         <h4>Correction</h4>
-        <pre class="sol">base = int(input("Base (entre 2 et 36) : "))
-nombre = input("Nombre : ")
-print(f"En base 10 : {int(nombre, base)}")</pre>
-        <p class="muted">Le nombre saisi reste une <strong>chaîne</strong> (ex. <code class="inl">"1010"</code>), car <code class="inl">int(chaine, base)</code> lit ses caractères selon la base. Exemple : <code class="inl">int("1010", 2)</code> donne <code class="inl">10</code>.</p>
+        <pre class="sol">s = float(input("Somme initiale : "))
+t = float(input("Taux annuel (%) : "))
+n = int(input("Nombre d'années : "))
+
+montant = s
+for annee in range(1, n + 1):
+    interet = montant * t / 100
+    montant = montant + interet
+    print(f"Année {annee} : intérêts = {interet:.2f}, total = {montant:.2f}")
+
+print(f"Montant après {n} ans : {montant:.2f}")</pre>
+        <p class="muted">C'est un accumulateur (<code class="inl">montant</code>) : chaque année repart du total précédent — ce sont les <strong>intérêts composés</strong>. Le <code class="inl">:.2f</code> arrondit à 2 décimales.</p>
       </div>
     </div>
   </section>
 
   <!-- EX 5 -->
   <section id="ex5">
-    <h2><span class="num">EX 5</span> Secondes → heures, minutes, secondes</h2>
-    <div class="enonce"><p>Demande un nombre de secondes et affiche-le sous la forme heures / minutes / secondes.</p></div>
-    <p class="muted">Clés : <code class="inl">//</code> (quotient) et <code class="inl">%</code> (reste). 1 h = 3600 s, 1 min = 60 s.</p>
+    <h2><span class="num">EX 5</span> Moyenne pondérée</h2>
+    <div class="enonce"><p>Demande un nombre de notes <code class="inl">n</code>, puis pour chaque note : la <strong>note</strong> et son <strong>coefficient</strong>. Affiche la <strong>moyenne pondérée</strong>.</p></div>
+    <p class="muted">Moyenne pondérée = (somme des note×coef) ÷ (somme des coef). Deux accumulateurs.</p>
     <div class="cell" data-cell>
       <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">total = int(input("Nombre de secondes : "))
-# heures = ... ; minutes = ... ; secondes = ...
+      <textarea class="code" spellcheck="false">n = int(input("Nombre de notes : "))
+somme_notes = 0
+somme_coefs = 0
+# pour chaque note : lire note et coef, accumuler
 </textarea>
       <pre class="out"></pre>
     </div>
@@ -225,117 +210,61 @@ print(f"En base 10 : {int(nombre, base)}")</pre>
       <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
       <div class="correction-body">
         <h4>Correction</h4>
-        <pre class="sol">total = int(input("Nombre de secondes : "))
-heures = total // 3600
-minutes = (total % 3600) // 60
-secondes = total % 60
-print(f"{heures} h {minutes} min {secondes} s")</pre>
-        <p class="muted">On retire d'abord les heures (<code class="inl">// 3600</code>), il reste <code class="inl">total % 3600</code> secondes, dont on extrait les minutes, puis le reste donne les secondes.</p>
+        <pre class="sol">n = int(input("Nombre de notes : "))
+somme_notes = 0
+somme_coefs = 0
+for i in range(n):
+    note = float(input(f"Note {i + 1} : "))
+    coef = float(input(f"Coefficient {i + 1} : "))
+    somme_notes = somme_notes + note * coef
+    somme_coefs = somme_coefs + coef
+moyenne = somme_notes / somme_coefs
+print(f"Moyenne pondérée : {moyenne:.2f}")</pre>
+        <p class="muted">On accumule séparément le total pondéré (note×coef) et le total des coefficients, puis on divise.</p>
       </div>
     </div>
   </section>
 
-  <!-- EX 6a -->
-  <section id="ex6a">
-    <h2><span class="num">EX 6a</span> turtle — un rectangle</h2>
-    <div class="enonce"><p>À l'aide du module <code class="inl">turtle</code>, dessine un <strong>rectangle</strong>.</p></div>
-    <p class="muted">Idée : avancer, tourner de 90°, répéter. Les côtés vont par paires (longueur, largeur).</p>
-    <div class="cell" data-cell data-turtle>
-      <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">from turtle import *
-
-# dessine un rectangle (ex. 200 sur 120)
+  <!-- EX 6 -->
+  <section id="ex6">
+    <h2><span class="num">EX 6</span> Former un nombre avec n chiffres</h2>
+    <div class="enonce"><p>Demande un nombre de chiffres <code class="inl">n</code>, puis <code class="inl">n</code> chiffres un par un, et reconstitue le <strong>nombre</strong> formé par ces chiffres dans l'ordre.</p></div>
+    <p class="muted">Astuce classique : à chaque chiffre, <code class="inl">nombre = nombre * 10 + chiffre</code>.</p>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">n = int(input("Combien de chiffres ? "))
+nombre = 0
+# pour chaque chiffre : nombre = nombre * 10 + chiffre
 </textarea>
       <pre class="out"></pre>
-      <div class="turtle" hidden></div>
     </div>
     <div class="correction" data-correction>
       <button class="reveal-btn">Voir la correction</button>
       <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
       <div class="correction-body">
         <h4>Correction</h4>
-        <pre class="sol">from turtle import *
-
-for i in range(2):
-    forward(200)
-    left(90)
-    forward(120)
-    left(90)</pre>
-        <p class="muted">Une boucle de 2 tours suffit : chaque tour trace un grand côté puis un petit côté.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- EX 6b -->
-  <section id="ex6b">
-    <h2><span class="num">EX 6b</span> turtle — un hexagone</h2>
-    <div class="enonce"><p>À l'aide du module <code class="inl">turtle</code>, dessine un <strong>hexagone régulier</strong> (6 côtés).</p></div>
-    <p class="muted">Astuce : pour un polygone régulier à <em>n</em> côtés, l'angle extérieur vaut <code class="inl">360 / n</code>.</p>
-    <div class="cell" data-cell data-turtle>
-      <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">from turtle import *
-
-# 6 côtés, angle de 360/6 = 60°
-</textarea>
-      <pre class="out"></pre>
-      <div class="turtle" hidden></div>
-    </div>
-    <div class="correction" data-correction>
-      <button class="reveal-btn">Voir la correction</button>
-      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
-      <div class="correction-body">
-        <h4>Correction</h4>
-        <pre class="sol">from turtle import *
-
-for i in range(6):
-    forward(80)
-    left(60)</pre>
-        <p class="muted">6 côtés identiques, on tourne de 60° entre chaque (360 / 6).</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- EX 6c -->
-  <section id="ex6c">
-    <h2><span class="num">EX 6c</span> turtle — une étoile à 6 branches</h2>
-    <div class="enonce"><p>À l'aide du module <code class="inl">turtle</code>, dessine l'<strong>astérisque / étoile à 6 branches</strong> (6 traits partant du centre).</p></div>
-    <p class="muted">Idée : avancer, revenir au centre, tourner, recommencer 6 fois.</p>
-    <div class="cell" data-cell data-turtle>
-      <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">from turtle import *
-
-# 6 branches autour du centre
-</textarea>
-      <pre class="out"></pre>
-      <div class="turtle" hidden></div>
-    </div>
-    <div class="correction" data-correction>
-      <button class="reveal-btn">Voir la correction</button>
-      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
-      <div class="correction-body">
-        <h4>Correction</h4>
-        <pre class="sol">from turtle import *
-
-for i in range(6):
-    forward(80)
-    backward(80)
-    left(60)</pre>
-        <p class="muted">À chaque tour : on trace une branche (forward), on revient au centre (backward), puis on tourne de 60°.</p>
+        <pre class="sol">n = int(input("Combien de chiffres ? "))
+nombre = 0
+for i in range(n):
+    chiffre = int(input(f"Chiffre {i + 1} : "))
+    nombre = nombre * 10 + chiffre
+print(f"Nombre formé : {nombre}")</pre>
+        <p class="muted">À chaque tour, on « décale » le nombre d'un rang vers la gauche (×10) et on ajoute le nouveau chiffre. Ex : 3 puis 7 puis 2 → 0→3→37→372.</p>
       </div>
     </div>
   </section>
 
   <!-- EX 7 -->
   <section id="ex7">
-    <h2><span class="num">EX 7</span> turtle — le drapeau français</h2>
-    <div class="enonce"><p>Dessine un <strong>drapeau français</strong> (trois bandes : bleu, blanc, rouge).<br>
-    Utiles : <code class="inl">fillcolor</code>, <code class="inl">begin_fill</code>, <code class="inl">end_fill</code>.</p></div>
-    <p class="muted">Idée : pour chaque couleur, remplir un rectangle puis se décaler vers la droite.</p>
+    <h2><span class="num">EX 7</span> turtle — polygone régulier à n côtés</h2>
+    <div class="enonce"><p>Demande un nombre de côtés <code class="inl">n</code>, puis trace avec <code class="inl">turtle</code> un <strong>polygone régulier</strong> à <code class="inl">n</code> côtés.</p></div>
+    <p class="muted">Clé : pour un polygone régulier à n côtés, l'angle extérieur vaut <code class="inl">360 / n</code>.</p>
     <div class="cell" data-cell data-turtle>
       <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
       <textarea class="code" spellcheck="false">from turtle import *
 
-# trois bandes verticales : bleu, blanc, rouge
+n = int(input("Nombre de côtés : "))
+# trace n côtés, en tournant de 360/n à chaque fois
 </textarea>
       <pre class="out"></pre>
       <div class="turtle" hidden></div>
@@ -347,33 +276,22 @@ for i in range(6):
         <h4>Correction</h4>
         <pre class="sol">from turtle import *
 
-speed(0)
-pencolor("black")
-L = 50    # largeur d'une bande
-H = 100   # hauteur du drapeau
-
-for c in ["blue", "white", "red"]:
-    fillcolor(c)
-    begin_fill()
-    forward(L); left(90)
-    forward(H); left(90)
-    forward(L); left(90)
-    forward(H); left(90)
-    end_fill()
-    penup(); forward(L); pendown()</pre>
-        <p class="muted">On parcourt les trois couleurs. Pour chacune : on remplit un rectangle (begin_fill … end_fill), puis on lève le crayon et on se décale de la largeur d'une bande vers la droite.</p>
+n = int(input("Nombre de côtés : "))
+for _ in range(n):
+    forward(100)
+    left(360 / n)</pre>
+        <p class="muted">Le même code marche pour <strong>tout</strong> n : triangle (n=3), carré (n=4), pentagone (n=5)… Plus n est grand, plus le polygone ressemble à un cercle.</p>
       </div>
     </div>
   </section>
 
   <footer>
-    <p class="muted">Astuce prof : ajoute <code class="inl">?corrige=1</code> à la fin de l'adresse de la page pour activer l'affichage des corrections. Sans ce paramètre, les corrections restent masquées pour les élèves.</p>
-    <p class="mono-n"><span>N</span><span>a</span><span>dtech</span> · NSI · Exercices Chapitre 1</p>
+    <p class="muted">Astuce prof : ajoute <code class="inl">?corrige=1</code> à la fin de l'adresse pour activer l'affichage des corrections. Sans ce paramètre, elles restent masquées.</p>
+    <p class="mono-n"><span>N</span><span>a</span><span>dtech</span> · NSI · Exercices Chapitre 2</p>
   </footer>
 </div>
 
 <script>
-/* ---------- Exécution Python (Skulpt) ---------- */
 function builtinRead(x){
   if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
     throw "File not found: '" + x + "'";
@@ -398,15 +316,12 @@ function runCell(cell){
   var btn  = cell.querySelector('.run');
   var turtleWrap = cell.querySelector('.turtle');
   out.classList.remove('err'); out.textContent = ''; out.classList.add('show');
-  if (typeof Sk === 'undefined'){
-    out.classList.add('err'); out.textContent = "Le moteur Python n'a pas pu se charger (connexion internet requise)."; return;
-  }
+  if (typeof Sk === 'undefined'){ out.classList.add('err'); out.textContent = "Le moteur Python n'a pas pu se charger (connexion internet requise)."; return; }
   var conf = {
     output: function(t){ out.textContent += t; },
     read: builtinRead,
     inputfun: function(p){ return window.prompt(p || "Entrée :") || ""; },
-    inputfunTakesPrompt: true,
-    __future__: Sk.python3
+    inputfunTakesPrompt: true, __future__: Sk.python3
   };
   Sk.configure(conf);
   if (turtleWrap){
@@ -438,27 +353,20 @@ document.querySelectorAll('[data-cell]').forEach(function(cell){
     }
   });
 });
-
-/* ---------- Corrections contrôlées par le professeur ---------- */
 (function(){
   var params = new URLSearchParams(location.search);
   var autorise = params.get('corrige') === '1';
   document.querySelectorAll('[data-correction]').forEach(function(wrap){
-    var btn  = wrap.querySelector('.reveal-btn');
+    var btn = wrap.querySelector('.reveal-btn');
     var body = wrap.querySelector('.correction-body');
     var lock = wrap.querySelector('.lock-note');
     if (autorise){
-      lock.style.display = 'none';
-      btn.style.display  = 'inline-block';
+      lock.style.display='none'; btn.style.display='inline-block';
       btn.addEventListener('click', function(){
         var open = body.classList.toggle('show');
         btn.textContent = open ? 'Masquer la correction' : 'Voir la correction';
       });
-    } else {
-      btn.style.display = 'none';
-      lock.style.display = 'flex';
-      body.classList.remove('show');
-    }
+    } else { btn.style.display='none'; lock.style.display='flex'; body.classList.remove('show'); }
   });
 })();
 </script>

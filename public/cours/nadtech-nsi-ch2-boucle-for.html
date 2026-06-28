@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSI · Chapitre 2 — La boucle for</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://skulpt.org/js/skulpt.min.js" type="text/javascript"></script>
+<script src="https://skulpt.org/js/skulpt-stdlib.js" type="text/javascript"></script>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a31; --code:#0e1526; --ink:#e9eefb; --muted:#9aa7c2;
+  --cyan:#22d3ee; --violet:#8b5cf6; --pink:#ec4899; --ok:#34d399; --err:#fb7185; --amber:#f59e0b;
+  --line:rgba(255,255,255,.09); --glow:0 0 0 1px rgba(255,255,255,.04), 0 18px 40px -20px rgba(0,0,0,.7);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:
+    radial-gradient(1100px 600px at 80% -10%, rgba(139,92,246,.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.14), transparent 55%),
+    var(--bg);
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;
+}
+.wrap{max-width:1180px; margin:0 auto; padding:0 20px; display:grid; grid-template-columns:230px 1fr; gap:36px}
+@media(max-width:880px){ .wrap{grid-template-columns:1fr; gap:0} .toc{display:none!important} }
+header.hero{padding:54px 0 26px; border-bottom:1px solid var(--line); margin-bottom:30px}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; color:var(--cyan);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(34,211,238,.06)}
+h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(28px,5vw,46px); line-height:1.08; margin:18px 0 10px}
+h1 .accent{background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.lede{color:var(--muted); max-width:62ch; font-size:18px}
+.toc{position:sticky; top:18px; align-self:start; padding-top:30px}
+.toc h4{font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
+.toc a{display:block; color:var(--muted); text-decoration:none; font-size:14px; padding:6px 10px; border-left:2px solid transparent; border-radius:0 8px 8px 0; transition:.15s}
+.toc a:hover{color:var(--ink); background:rgba(255,255,255,.03); border-left-color:var(--violet)}
+section{padding:30px 0; border-bottom:1px solid var(--line)}
+h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; margin:0 0 6px; scroll-margin-top:20px; display:flex; align-items:center; gap:12px}
+h2 .num{font-family:var(--mono); font-size:14px; color:var(--violet); border:1px solid var(--line); border-radius:8px; padding:3px 9px; background:rgba(139,92,246,.08)}
+h3{font-family:'Space Grotesk',sans-serif; font-size:18px; margin:26px 0 8px; color:#fff}
+p{margin:10px 0}
+.muted{color:var(--muted)}
+code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; color:#cfe6ff; border:1px solid var(--line)}
+strong{color:#fff}
+ul{margin:10px 0 10px 0; padding-left:22px} li{margin:4px 0}
+.note{display:flex; gap:12px; padding:14px 16px; border-radius:12px; background:rgba(34,211,238,.06); border:1px solid rgba(34,211,238,.22); margin:16px 0}
+.note.warn{background:rgba(251,113,133,.07); border-color:rgba(251,113,133,.28)}
+.note .ico{font-size:18px; line-height:1.4}
+.note p{margin:0}
+.cell{background:var(--code); border:1px solid var(--line); border-radius:14px; margin:16px 0; overflow:hidden; box-shadow:var(--glow)}
+.cell-head{display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,.025); border-bottom:1px solid var(--line)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:7px}
+.dot{width:9px; height:9px; border-radius:50%; background:var(--violet); box-shadow:0 0 8px var(--violet)}
+.run{font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:#06121f; cursor:pointer; border:0; border-radius:8px; padding:7px 16px; background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.15s}
+.run:hover{filter:brightness(1.08); transform:translateY(-1px)}
+.run:disabled{opacity:.5; cursor:wait; transform:none}
+textarea.code{width:100%; border:0; outline:0; resize:vertical; background:transparent; color:#e7f0ff; font-family:var(--mono); font-size:14px; line-height:1.6; padding:14px 16px; display:block; tab-size:4}
+.out{margin:0; padding:0 16px; max-height:0; overflow:hidden; font-family:var(--mono); font-size:13.5px; color:#bfe6c9; white-space:pre-wrap; border-top:1px solid transparent; transition:max-height .2s, padding .2s}
+.out.show{max-height:420px; overflow:auto; padding:12px 16px; border-top:1px solid var(--line); background:rgba(0,0,0,.25)}
+.out.err{color:var(--err)}
+.turtle{display:flex; justify-content:center; align-items:center; overflow:auto; min-height:180px; padding:10px; background:#fff; border-top:1px solid var(--line)}
+.turtle[hidden]{display:none}
+pre.static{background:var(--code); border:1px solid var(--line); border-radius:14px; padding:14px 16px; overflow:auto; font-family:var(--mono); font-size:13.5px; line-height:1.6; margin:16px 0; color:#e7f0ff; white-space:pre}
+pre.static .c{color:#7c8aa6} pre.static .k{color:var(--violet)} pre.static .s{color:#7ee0a6} pre.static .e{color:var(--err)}
+/* Animation boucle */
+.loopbox{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px; margin:18px 0; box-shadow:var(--glow)}
+.loopbox .bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+.btn{font-family:'Nunito'; font-weight:700; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--ink); padding:7px 14px; border-radius:9px; cursor:pointer; transition:.15s}
+.btn:hover{border-color:var(--violet); background:rgba(139,92,246,.12)}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.loop-steps{display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 12px}
+.chipi{font-family:var(--mono); font-weight:700; width:42px; height:42px; display:grid; place-items:center; border-radius:10px; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--muted); transition:.2s}
+.chipi.active{border-color:var(--cyan); background:rgba(34,211,238,.14); color:var(--cyan); transform:translateY(-3px); box-shadow:0 8px 20px -10px var(--cyan)}
+.chipi.done{border-color:var(--ok); color:var(--ok); background:rgba(52,211,153,.08)}
+.loop-state{font-family:var(--mono); font-size:14px; color:#cfe6ff; background:rgba(255,255,255,.05); padding:10px 14px; border-radius:10px; border:1px solid var(--line)}
+.loop-out{font-family:var(--mono); font-size:14px; color:#bfe6c9; margin-top:10px; min-height:22px}
+/* Quiz */
+.quiz{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin:18px 0; box-shadow:var(--glow)}
+.quiz .q{font-weight:800; margin:0 0 12px; font-family:'Space Grotesk',sans-serif}
+.quiz .q::before{content:"?"; display:inline-grid; place-items:center; width:24px; height:24px; margin-right:10px; border-radius:7px; background:linear-gradient(135deg,var(--violet),var(--pink)); color:#fff; font-family:var(--mono); font-weight:700; font-size:14px; vertical-align:middle}
+.opt{display:block; padding:11px 14px; margin:8px 0; border:1px solid var(--line); border-radius:10px; cursor:pointer; transition:.12s; font-family:var(--mono); font-size:14px}
+.opt:hover{border-color:var(--violet); background:rgba(139,92,246,.07)}
+.opt.good{border-color:var(--ok); background:rgba(52,211,153,.12)}
+.opt.bad{border-color:var(--err); background:rgba(251,113,133,.12)}
+.opt.lock{pointer-events:none; opacity:.85}
+.feedback{margin-top:10px; font-size:14px; min-height:20px; color:var(--muted)}
+.feedback.ok{color:var(--ok)} .feedback.no{color:var(--err)}
+footer{padding:40px 0 70px; color:var(--muted); font-size:14px}
+.mono-n{font-family:var(--mono); font-weight:700; font-size:18px; margin-top:14px}
+.mono-n span:nth-child(1){color:var(--cyan)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--violet)}
+.tag-list{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+::selection{background:rgba(139,92,246,.4)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="toc">
+    <h4>Sommaire</h4>
+    <a href="#intro">Pourquoi une boucle</a>
+    <a href="#simple">Boucle bornée simple</a>
+    <a href="#bloc">Répéter un bloc</a>
+    <a href="#indent">Indentation</a>
+    <a href="#indice">Indice de boucle</a>
+    <a href="#anim">Animation pas à pas</a>
+    <a href="#spirale">Exemple : spirale</a>
+    <a href="#accu">Accumulateur</a>
+    <a href="#moyenne">Application : moyenne</a>
+    <a href="#range">range(début, fin, pas)</a>
+    <a href="#imbriquees">Boucles imbriquées</a>
+    <a href="#bilan">Quiz bilan</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="kicker">NSI · Première · Chapitre 2</span>
+      <h1>La boucle <span class="accent">for</span></h1>
+      <p class="lede">Répéter, sans recopier. La boucle <code class="inl">for</code> exécute un bloc plusieurs fois. Ici, chaque exemple est <strong>modifiable</strong> et <strong>exécutable</strong> : change le code, clique sur <em>Exécuter</em>, observe.</p>
+      <div class="tag-list">
+        <span class="chip">range</span><span class="chip">indice</span><span class="chip">indentation</span><span class="chip">accumulateur</span><span class="chip">turtle</span><span class="chip">imbriquées</span>
+      </div>
+    </header>
+
+    <!-- INTRO -->
+    <section id="intro">
+      <h2><span class="num">01</span> Pourquoi une boucle ?</h2>
+      <p>Pour répéter une instruction, on pourrait la recopier… mais ce n'est pas raisonnable si le nombre de répétitions est grand, et impossible si on ne le connaît qu'à l'exécution.</p>
+      <pre class="static"><span class="k">print</span>(<span class="s">'A'</span>)
+<span class="k">print</span>(<span class="s">'A'</span>)
+<span class="k">print</span>(<span class="s">'A'</span>)   <span class="c"># fastidieux…</span></pre>
+      <p>Python propose <code class="inl">for</code> pour gérer la répétition. Chaque répétition est un <strong>tour</strong>. Le <code class="inl">_</code> fait partie de la construction (quand on n'a pas besoin du compteur). Exécute :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">for _ in range(3):
+    print('A')</textarea>
+        <pre class="out"></pre>
+      </div>
+      <div class="note"><span class="ico">💡</span><p>Le nombre entre parenthèses après <code class="inl">range</code> est le nombre de tours. L'instruction à répéter (le <strong>corps de la boucle</strong>) est écrite après le <code class="inl">:</code>, en retrait.</p></div>
+    </section>
+
+    <!-- SIMPLE -->
+    <section id="simple">
+      <h2><span class="num">02</span> Le nombre de tours</h2>
+      <p>Ce nombre peut venir d'un calcul ou d'une saisie. Essaie avec différentes valeurs :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">n = int(input("Combien de A ? "))
+for _ in range(2 * n):
+    print('A')</textarea>
+        <pre class="out"></pre>
+      </div>
+      <div class="note warn"><span class="ico">⚠️</span><p>Le nombre de tours doit être un <strong>entier</strong>. <code class="inl">range(1.5)</code> lève une <code class="inl">TypeError</code>. Un nombre <strong>négatif</strong> est accepté mais ne fait <strong>aucun tour</strong>.</p></div>
+    </section>
+
+    <!-- BLOC -->
+    <section id="bloc">
+      <h2><span class="num">03</span> Répéter tout un bloc</h2>
+      <p>Le corps de la boucle peut contenir <strong>plusieurs</strong> instructions : il suffit de les mettre en retrait (l'usage : 4 espaces). Ici, on place 3 points au hasard avec la tortue :</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+from random import randint
+
+for _ in range(3):
+    x = randint(-100, 100)
+    y = randint(-100, 100)
+    goto(x, y)</textarea>
+        <pre class="out"></pre>
+        <div class="turtle" hidden></div>
+      </div>
+      <div class="note"><span class="ico">🧩</span><p>Les 3 lignes en retrait forment le <strong>bloc</strong> répété. Une ligne <em>non</em> indentée placée après serait exécutée <strong>une seule fois</strong>, en sortie de boucle.</p></div>
+    </section>
+
+    <!-- INDENT -->
+    <section id="indent">
+      <h2><span class="num">04</span> L'indentation a un sens</h2>
+      <p>En Python, le <strong>retrait</strong> (indentation) fait partie du sens du programme. Plusieurs erreurs classiques :</p>
+      <pre class="static"><span class="k">for</span> _ <span class="k">in</span> <span class="k">range</span>(3):
+<span class="k">print</span>(<span class="s">"Fin"</span>)        <span class="c"># pas de retrait</span>
+<span class="e">IndentationError: expected an indented block</span>
+
+<span class="k">for</span> _ <span class="k">in</span> <span class="k">range</span>(3):
+    <span class="k">print</span>(<span class="s">'A'</span>)
+        <span class="k">print</span>(<span class="s">'B'</span>)   <span class="c"># retrait en trop</span>
+<span class="e">IndentationError: unexpected indent</span></pre>
+      <p class="muted">Retiens : tout le bloc répété doit avoir le <strong>même</strong> retrait. Un oubli de <code class="inl">:</code> donne lui une <code class="inl">SyntaxError</code>.</p>
+    </section>
+
+    <!-- INDICE -->
+    <section id="indice">
+      <h2><span class="num">05</span> L'indice de boucle</h2>
+      <p>En remplaçant <code class="inl">_</code> par un nom (souvent <code class="inl">i</code>), on récupère le <strong>numéro du tour</strong> en cours. On l'appelle l'<strong>indice</strong> (ou compteur) de boucle. Il commence à <strong>0</strong> :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">for i in range(10):
+    print(i)</textarea>
+        <pre class="out"></pre>
+      </div>
+    </section>
+
+    <!-- ANIM -->
+    <section id="anim">
+      <h2><span class="num">06</span> Visualiser l'exécution pas à pas</h2>
+      <p>Déroule cette boucle qui calcule la <strong>somme des carrés</strong>. À chaque tour, observe <code class="inl">i</code>, le carré <code class="inl">i*i</code> et l'accumulateur <code class="inl">somme</code> évoluer :</p>
+      <pre class="static"><span class="k">somme</span> = 0
+<span class="k">for</span> i <span class="k">in</span> <span class="k">range</span>(4):
+    carre = i * i
+    somme = somme + carre
+<span class="k">print</span>(somme)</pre>
+      <div class="loopbox" id="loop">
+        <div class="bar">
+          <button class="btn" id="loopStep">Tour suivant ▶</button>
+          <button class="btn" id="loopReset">↺ Recommencer</button>
+        </div>
+        <div class="loop-steps" id="loopChips"></div>
+        <div class="loop-state" id="loopState">i = — · carré = — · somme = 0</div>
+        <div class="loop-out" id="loopOut"></div>
+      </div>
+      <p class="muted">À la fin des 4 tours (i = 0, 1, 2, 3), la somme vaut <strong>0 + 1 + 4 + 9 = 14</strong>.</p>
+    </section>
+
+    <!-- SPIRALE -->
+    <section id="spirale">
+      <h2><span class="num">07</span> Exemple : une spirale</h2>
+      <p>L'indice <code class="inl">i</code> peut servir dans les calculs : ici, il fait grandir l'épaisseur et le rayon à chaque tour. Exécute :</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+
+nb = 5
+for i in range(2 * nb):
+    width(i)
+    circle(i * i, 180)</textarea>
+        <pre class="out"></pre>
+        <div class="turtle" hidden></div>
+      </div>
+      <div class="note"><span class="ico">🌀</span><p>Change <code class="inl">nb</code> et réexécute : plus il est grand, plus la spirale fait de tours.</p></div>
+    </section>
+
+    <!-- ACCU -->
+    <section id="accu">
+      <h2><span class="num">08</span> L'accumulateur</h2>
+      <p>Un <strong>accumulateur</strong> est une variable mise à jour à chaque tour, en repartant de sa valeur précédente. Elle doit être <strong>initialisée avant</strong> la boucle :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">a = 1
+for _ in range(4):
+    a = a + 2
+print(a)   # 1 -> 3 -> 5 -> 7 -> 9</textarea>
+        <pre class="out"></pre>
+      </div>
+      <div class="note warn"><span class="ico">⚠️</span><p>Si on oublie <code class="inl">a = 1</code> avant la boucle, Python lève <code class="inl">NameError: name 'a' is not defined</code>. Essaie de retirer la 1ʳᵉ ligne pour voir l'erreur.</p></div>
+    </section>
+
+    <!-- MOYENNE -->
+    <section id="moyenne">
+      <h2><span class="num">09</span> Application : calcul de moyenne</h2>
+      <p>On combine saisie, accumulateur et indice. À chaque tour, on lit une note et on l'ajoute à <code class="inl">somme</code> :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">nb = int(input("Nombre d'élèves : "))
+somme = 0
+for i in range(nb):
+    note = int(input(f"Note de l'élève {i + 1} : "))
+    somme = somme + note
+moyenne = somme / nb
+print(f"La moyenne est {moyenne}")</textarea>
+        <pre class="out"></pre>
+      </div>
+    </section>
+
+    <!-- RANGE -->
+    <section id="range">
+      <h2><span class="num">10</span> range(début, fin, pas)</h2>
+      <p>La forme complète : <code class="inl">range(début, fin, pas)</code>. La valeur <code class="inl">fin</code> est <strong>exclue</strong>. Le <code class="inl">pas</code> peut être négatif pour compter à l'envers. Exécute et compare :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">n = 4
+print("1 -> n :")
+for i in range(1, n + 1, 1):
+    print(i)
+
+print("pairs :")
+for i in range(0, n, 2):
+    print(i)
+
+print("à l'envers :")
+for i in range(n, 0, -1):
+    print(i)</textarea>
+        <pre class="out"></pre>
+      </div>
+    </section>
+
+    <!-- IMBRIQUEES -->
+    <section id="imbriquees">
+      <h2><span class="num">11</span> Boucles imbriquées</h2>
+      <p>Le corps d'une boucle peut contenir… une autre boucle. Pour chaque tour de la boucle externe (<code class="inl">i</code>), la boucle interne (<code class="inl">j</code>) fait tous ses tours :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">for i in range(4):
+    print("Début de tour")
+    for j in range(3):
+        print(i, j)
+    print("Fin de tour")</textarea>
+        <pre class="out"></pre>
+      </div>
+      <div class="note"><span class="ico">🔁</span><p>Compte les lignes affichées : la boucle interne tourne 3 fois pour chacun des 4 tours externes, soit <strong>12</strong> couples <code class="inl">i j</code>.</p></div>
+    </section>
+
+    <!-- QUIZ -->
+    <section id="bilan">
+      <h2><span class="num">12</span> Quiz bilan</h2>
+      <p class="muted">Cinq questions pour vérifier l'essentiel. Clique sur ta réponse.</p>
+
+      <div class="quiz" data-quiz data-answer="2">
+        <p class="q">Combien de fois s'exécute le corps de <code class="inl">for _ in range(5):</code> ?</p>
+        <div class="opt" data-i="0">4</div>
+        <div class="opt" data-i="1">6</div>
+        <div class="opt" data-i="2">5</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Quelle est la 1ʳᵉ valeur prise par <code class="inl">i</code> dans <code class="inl">for i in range(10):</code> ?</p>
+        <div class="opt" data-i="0">1</div>
+        <div class="opt" data-i="1">0</div>
+        <div class="opt" data-i="2">10</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="2">
+        <p class="q">Que se passe-t-il avec <code class="inl">for _ in range(-3):</code> ?</p>
+        <div class="opt" data-i="0">une erreur</div>
+        <div class="opt" data-i="1">3 tours</div>
+        <div class="opt" data-i="2">aucun tour</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="0">
+        <p class="q">Un accumulateur oublié (non initialisé avant la boucle) provoque…</p>
+        <div class="opt" data-i="0">une NameError</div>
+        <div class="opt" data-i="1">une TypeError</div>
+        <div class="opt" data-i="2">aucun problème</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Qu'affiche <code class="inl">for i in range(2, 6, 2): print(i)</code> ?</p>
+        <div class="opt" data-i="0">2 3 4 5</div>
+        <div class="opt" data-i="1">2 4</div>
+        <div class="opt" data-i="2">2 4 6</div>
+        <p class="feedback"></p>
+      </div>
+    </section>
+
+    <footer>
+      <p><strong>Pour aller plus loin :</strong> Python Tutor (visualiser l'exécution) · Documentation Python : l'instruction <code class="inl">for</code>.</p>
+      <p class="mono-n"><span>N</span><span>a</span><span>dtech</span> · NSI · Chapitre 2</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+/* ---------- Exécution Python (Skulpt) ---------- */
+function builtinRead(x){
+  if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+    throw "File not found: '" + x + "'";
+  return Sk.builtinFiles["files"][x];
+}
+function fitTurtle(wrap){
+  var svg = wrap.querySelector('svg');
+  if(!svg) return;
+  try{
+    var bb = svg.getBBox();
+    if(!bb || !isFinite(bb.width) || bb.width===0) return;
+    var pad = 24;
+    svg.setAttribute('viewBox', (bb.x-pad)+' '+(bb.y-pad)+' '+(bb.width+2*pad)+' '+(bb.height+2*pad));
+    svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+    svg.style.width='100%'; svg.style.maxWidth='440px'; svg.style.height='auto';
+    svg.removeAttribute('width'); svg.removeAttribute('height');
+  }catch(e){}
+}
+function runCell(cell){
+  var code = cell.querySelector('textarea.code').value;
+  var out  = cell.querySelector('.out');
+  var btn  = cell.querySelector('.run');
+  var turtleWrap = cell.querySelector('.turtle');
+  out.classList.remove('err'); out.textContent = ''; out.classList.add('show');
+  if (typeof Sk === 'undefined'){
+    out.classList.add('err'); out.textContent = "Le moteur Python n'a pas pu se charger (connexion internet requise)."; return;
+  }
+  var conf = {
+    output: function(t){ out.textContent += t; },
+    read: builtinRead,
+    inputfun: function(p){ return window.prompt(p || "Entrée :") || ""; },
+    inputfunTakesPrompt: true,
+    __future__: Sk.python3
+  };
+  Sk.configure(conf);
+  if (turtleWrap){
+    turtleWrap.hidden = false; turtleWrap.innerHTML = '';
+    if (!turtleWrap.id) turtleWrap.id = 'turtle-' + Math.random().toString(36).slice(2);
+    (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = turtleWrap.id;
+    Sk.TurtleGraphics.width = 480; Sk.TurtleGraphics.height = 440;
+  }
+  btn.disabled = true; var old = btn.textContent; btn.textContent = '…';
+  Sk.misceval.asyncToPromise(function(){
+    return Sk.importMainWithBody("<stdin>", false, code, true);
+  }).then(function(){
+    btn.disabled = false; btn.textContent = old;
+    if (!out.textContent && !turtleWrap) out.textContent = "(aucune sortie — pense à print(...) )";
+    if (turtleWrap){ fitTurtle(turtleWrap); setTimeout(function(){fitTurtle(turtleWrap);},500); setTimeout(function(){fitTurtle(turtleWrap);},1300); }
+  }, function(err){
+    btn.disabled = false; btn.textContent = old;
+    out.classList.add('err'); out.textContent += "\n" + err.toString();
+  });
+}
+document.querySelectorAll('[data-cell]').forEach(function(cell){
+  var ta = cell.querySelector('textarea.code');
+  ta.rows = Math.min(Math.max(ta.value.split('\n').length, 2), 18);
+  cell.querySelector('.run').addEventListener('click', function(){ runCell(cell); });
+  ta.addEventListener('keydown', function(e){
+    if (e.key === 'Tab'){ e.preventDefault();
+      var s=this.selectionStart, en=this.selectionEnd;
+      this.value=this.value.slice(0,s)+"    "+this.value.slice(en); this.selectionStart=this.selectionEnd=s+4;
+    }
+  });
+});
+
+/* ---------- Quiz ---------- */
+document.querySelectorAll('[data-quiz]').forEach(function(q){
+  var ans = +q.dataset.answer;
+  var fb = q.querySelector('.feedback');
+  q.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click', function(){
+      var i = +opt.dataset.i;
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.add('lock'); });
+      if (i === ans){ opt.classList.add('good'); fb.textContent="Bravo, c'est exact !"; fb.className="feedback ok"; }
+      else {
+        opt.classList.add('bad'); fb.textContent="Pas tout à fait — regarde la bonne réponse en vert."; fb.className="feedback no";
+        q.querySelector('.opt[data-i="'+ans+'"]').classList.add('good');
+      }
+    });
+  });
+});
+
+/* ---------- Animation boucle (somme des carrés) ---------- */
+(function(){
+  var chips = document.getElementById('loopChips');
+  var stateEl = document.getElementById('loopState');
+  var outEl = document.getElementById('loopOut');
+  var stepBtn = document.getElementById('loopStep');
+  var resetBtn = document.getElementById('loopReset');
+  var N = 4, i = -1, somme = 0;
+  function build(){
+    chips.innerHTML = '';
+    for (var k=0;k<N;k++){
+      var c = document.createElement('div');
+      c.className='chipi'; c.textContent='i='+k; c.dataset.k=k;
+      chips.appendChild(c);
+    }
+  }
+  function refresh(){
+    chips.querySelectorAll('.chipi').forEach(function(c){
+      var k=+c.dataset.k; c.classList.remove('active','done');
+      if(k<i) c.classList.add('done'); else if(k===i) c.classList.add('active');
+    });
+  }
+  function reset(){ i=-1; somme=0; build(); refresh(); stateEl.textContent="i = — · carré = — · somme = 0"; outEl.textContent=''; stepBtn.disabled=false; }
+  stepBtn.addEventListener('click', function(){
+    if(i>=N-1){ // dernier -> affichage final
+      outEl.textContent = "Sortie de boucle → print : " + somme;
+      stepBtn.disabled = true; return;
+    }
+    i++; var carre = i*i; somme += carre; refresh();
+    stateEl.textContent = "i = "+i+" · carré = i*i = "+carre+" · somme = "+somme;
+  });
+  resetBtn.addEventListener('click', reset);
+  reset();
+})();
+</script>
+</body>
+</html>
