@@ -79,7 +79,7 @@ textarea.code{width:100%; border:0; outline:0; resize:vertical; background:trans
   white-space:pre-wrap; border-top:1px solid transparent; transition:max-height .2s, padding .2s}
 .out.show{max-height:420px; overflow:auto; padding:12px 16px; border-top:1px solid var(--line); background:rgba(0,0,0,.25)}
 .out.err{color:var(--err)}
-.turtle{display:flex; justify-content:center; align-items:center; overflow:auto; min-height:180px; padding:10px; background:#fff; border-top:1px solid var(--line)}
+.turtle{display:flex; justify-content:center; align-items:center; overflow:auto; min-height:160px; max-height:520px; padding:10px; background:#fff; border-top:1px solid var(--line)}
 .turtle[hidden]{display:none}
 
 /* Static code (display only) */
@@ -123,9 +123,41 @@ footer a{color:var(--cyan)}
 .tag-list{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
 .chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
 ::selection{background:rgba(139,92,246,.4)}
+
+/* ---- Bouton et thème clair (jour) ---- */
+.theme-toggle{position:fixed; top:16px; right:16px; z-index:60; width:46px; height:46px; border-radius:12px;
+  border:1px solid var(--line); background:var(--bg2); color:var(--ink); font-size:20px; cursor:pointer;
+  box-shadow:0 8px 24px -12px rgba(0,0,0,.5); transition:.15s; display:grid; place-items:center}
+.theme-toggle:hover{border-color:var(--violet); transform:translateY(-1px)}
+body.light{
+  --bg:#eef1fb; --bg2:#ffffff; --ink:#1a1f36; --muted:#5b6478; --line:rgba(20,24,45,.12);
+  --glow:0 0 0 1px rgba(20,24,45,.04), 0 18px 40px -24px rgba(20,24,45,.25);
+}
+body.light h3, body.light strong, body.light .step h4, body.light .method-mini h3, body.light .hint summary{ color:#141833; }
+body.light code.inl{ background:rgba(20,24,45,.06); color:#3730a3; border-color:rgba(20,24,45,.14); }
+body.light .step-code, body.light .loop-state, body.light .bool-cell .expr,
+body.light .hint .hbody code.inl, body.light .memory .step-code{ color:#3730a3; }
+body.light .memory .step-code{ background:rgba(20,24,45,.05); }
+body.light .enonce{ background:rgba(20,24,45,.03); }
+body.light .cell-head .tag{ color:#9aa7c2; }               /* garde les cellules code lisibles (fond sombre) */
+body.light .toc a:hover{ background:rgba(20,24,45,.04); }
+body.light .theme-toggle{ box-shadow:0 8px 24px -14px rgba(20,24,45,.4); }
+
+/* ---- Fenêtre turtle dédiée ---- */
+.turtle-modal{position:fixed; inset:0; z-index:80; display:none; align-items:center; justify-content:center; background:rgba(6,10,20,.62); backdrop-filter:blur(3px); padding:20px}
+.turtle-modal.open{display:flex}
+.turtle-modal-box{background:#fff; border-radius:16px; box-shadow:0 30px 80px -20px rgba(0,0,0,.6); width:min(900px,96vw); height:min(700px,96vh); overflow:hidden; display:flex; flex-direction:column}
+.turtle-modal-bar{display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#0e1526; color:#e7f0ff}
+.turtle-modal-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px}
+.turtle-modal-close{border:0; background:rgba(255,255,255,.12); color:#e7f0ff; width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:15px; line-height:1}
+.turtle-modal-close:hover{background:rgba(255,255,255,.22)}
+.turtle-modal-area{background:#fff; padding:18px; flex:1; display:flex; align-items:center; justify-content:center; overflow:auto}
+.turtle-draw{display:block}
 </style>
 </head>
 <body>
+<button id="themeToggle" class="theme-toggle" title="Basculer jour / nuit" aria-label="Basculer jour / nuit">🌙</button>
+
 <div class="wrap">
 
   <!-- Sommaire -->
@@ -446,23 +478,50 @@ function builtinRead(x){
   return Sk.builtinFiles["files"][x];
 }
 function fitTurtle(wrap){
-  var svg = wrap.querySelector('svg');
-  if(!svg) return;
   try{
-    var bb = svg.getBBox();
-    if(!bb || !isFinite(bb.width) || bb.width===0) return;
-    var pad = 24;
-    svg.setAttribute('viewBox', (bb.x-pad)+' '+(bb.y-pad)+' '+(bb.width+2*pad)+' '+(bb.height+2*pad));
-    svg.setAttribute('preserveAspectRatio','xMidYMid meet');
-    svg.style.width='100%'; svg.style.maxWidth='440px'; svg.style.height='auto';
-    svg.removeAttribute('width'); svg.removeAttribute('height');
+    var canvases = wrap.querySelectorAll('canvas');
+    if(!canvases.length) return;
+    var W=canvases[0].width, H=canvases[0].height; if(!W||!H) return;
+    var tmp=document.createElement('canvas'); tmp.width=W; tmp.height=H;
+    var tctx=tmp.getContext('2d');
+    for(var i=0;i<canvases.length;i++){ try{ tctx.drawImage(canvases[i],0,0,W,H);}catch(e){} }
+    var d; try{ d=tctx.getImageData(0,0,W,H).data; }catch(e){ return; }
+    var minX=W,minY=H,maxX=0,maxY=0,found=false;
+    for(var y=0;y<H;y++){ for(var x=0;x<W;x++){ var p=(y*W+x)*4;
+      if(d[p+3]>12 && !(d[p]>244&&d[p+1]>244&&d[p+2]>244)){
+        if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; found=true; } } }
+    if(!found || maxX<=minX+2 || maxY<=minY+2) return;
+    var pad=14;
+    minX=Math.max(0,minX-pad); minY=Math.max(0,minY-pad); maxX=Math.min(W,maxX+pad); maxY=Math.min(H,maxY+pad);
+    var bw=maxX-minX, bh=maxY-minY;
+    var area=document.querySelector('.turtle-modal-area');
+    var maxW=area ? Math.max(area.clientWidth-36,200) : 560;
+    var maxH=area ? Math.max(area.clientHeight-36,200) : 500;
+    var k=Math.min(maxW/bw, maxH/bh, 4);
+    var container=canvases[0].parentNode;
+    if(container===wrap){
+      var inner=wrap.querySelector('.turtle-inner');
+      if(!inner){
+        inner=document.createElement('div'); inner.className='turtle-inner'; inner.style.position='relative';
+        var kids=[]; for(var c=0;c<wrap.childNodes.length;c++) kids.push(wrap.childNodes[c]);
+        for(var c2=0;c2<kids.length;c2++) inner.appendChild(kids[c2]);
+        wrap.appendChild(inner);
+      }
+      container=inner;
+    }
+    wrap.style.display='block'; wrap.style.margin='0 auto'; wrap.style.overflow='hidden';
+    wrap.style.width=Math.round(bw*k)+'px'; wrap.style.height=Math.round(bh*k)+'px';
+    container.style.transformOrigin='0 0';
+    container.style.transform='translate('+(-minX*k)+'px,'+(-minY*k)+'px) scale('+k+')';
+    wrap.style.visibility='visible';
   }catch(e){}
 }
+function openTurtleModal(){ var m=document.getElementById('turtleModal'); if(m) m.classList.add('open'); }
 function runCell(cell){
   var code = cell.querySelector('textarea.code').value;
   var out  = cell.querySelector('.out');
   var btn  = cell.querySelector('.run');
-  var turtleWrap = cell.querySelector('.turtle');
+  var turtleWrap = cell.querySelector('.turtle') ? document.getElementById('turtleModalArea') : null;
   out.classList.remove('err'); out.textContent = ''; out.classList.add('show');
   if (typeof Sk === 'undefined'){
     out.classList.add('err');
@@ -477,11 +536,14 @@ function runCell(cell){
     __future__: Sk.python3
   };
   Sk.configure(conf);
+  Sk.execLimit = 7000;
   if (turtleWrap){
+    openTurtleModal();
     turtleWrap.hidden = false; turtleWrap.innerHTML = '';
-    if (!turtleWrap.id) turtleWrap.id = 'turtle-' + Math.random().toString(36).slice(2);
-    (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = turtleWrap.id;
-    Sk.TurtleGraphics.width = 480; Sk.TurtleGraphics.height = 440;
+    turtleWrap.style.width=''; turtleWrap.style.height=''; turtleWrap.style.display=''; turtleWrap.style.overflow=''; turtleWrap.style.margin=''; turtleWrap.style.visibility='hidden';
+    (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'turtleModalArea';
+    Sk.TurtleGraphics.width = 600; Sk.TurtleGraphics.height = 560;
+    Sk.TurtleGraphics.animate = true; Sk.TurtleGraphics.delay = 20;
   }
   btn.disabled = true; var old = btn.textContent; btn.textContent = '…';
   Sk.misceval.asyncToPromise(function(){
@@ -489,10 +551,15 @@ function runCell(cell){
   }).then(function(){
     btn.disabled = false; btn.textContent = old;
     if (!out.textContent && !turtleWrap) out.textContent = "(aucune sortie — pense à print(...) )";
-    if (turtleWrap){ fitTurtle(turtleWrap); setTimeout(function(){fitTurtle(turtleWrap);},500); setTimeout(function(){fitTurtle(turtleWrap);},1300); }
+    if (turtleWrap){ setTimeout(function(){ fitTurtle(turtleWrap); turtleWrap.style.visibility='visible'; }, 60); }
   }, function(err){
     btn.disabled = false; btn.textContent = old;
-    out.classList.add('err'); out.textContent += "\n" + err.toString();
+    out.classList.add('err');
+    var msg = err.toString();
+    if (msg.indexOf('execLimit') !== -1 || msg.toLowerCase().indexOf('timeout') !== -1 || msg.indexOf('timed out') !== -1){
+      out.textContent += "\n⏱ Limite de temps dépassée (7 s) — ton programme tourne trop longtemps ou trace trop de points. Réduis la valeur et réessaie.";
+    } else { out.textContent += "\n" + msg; }
+    if (turtleWrap){ turtleWrap.style.visibility='visible'; }
   });
 }
 document.querySelectorAll('[data-cell]').forEach(function(cell){
@@ -588,6 +655,41 @@ document.querySelectorAll('[data-quiz]').forEach(function(q){
   prev.addEventListener('click', function(){ if(s>0){s--; render();} });
   reset.addEventListener('click', function(){ s=0; render(); });
   render();
+})();
+</script>
+<script>
+(function(){
+  var b=document.getElementById('themeToggle'); if(!b) return;
+  function apply(mode){
+    if(mode==='light'){ document.body.classList.add('light'); b.textContent='☀️'; }
+    else { document.body.classList.remove('light'); b.textContent='🌙'; }
+  }
+  var saved=null; try{ saved=localStorage.getItem('nadtech-theme'); }catch(e){}
+  apply(saved==='light' ? 'light' : 'dark');
+  b.addEventListener('click', function(){
+    var light=!document.body.classList.contains('light');
+    apply(light?'light':'dark');
+    try{ localStorage.setItem('nadtech-theme', light?'light':'dark'); }catch(e){}
+  });
+})();
+</script>
+<div class="turtle-modal" id="turtleModal" aria-hidden="true">
+  <div class="turtle-modal-box">
+    <div class="turtle-modal-bar">
+      <span class="turtle-modal-title">🐢 Résultat turtle</span>
+      <button class="turtle-modal-close" id="turtleModalClose" aria-label="Fermer">✕</button>
+    </div>
+    <div class="turtle-modal-area"><div id="turtleModalArea" class="turtle-draw"></div></div>
+  </div>
+</div>
+<script>
+(function(){
+  var modal=document.getElementById('turtleModal'); if(!modal) return;
+  var close=document.getElementById('turtleModalClose');
+  function hide(){ modal.classList.remove('open'); }
+  if(close) close.addEventListener('click', hide);
+  modal.addEventListener('click', function(e){ if(e.target===modal) hide(); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') hide(); });
 })();
 </script>
 </body>
