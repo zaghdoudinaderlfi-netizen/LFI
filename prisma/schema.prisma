@@ -444,12 +444,17 @@ model Logiciel {
 // ───────────────────────────────────────────────
 
 model Notification {
-  id             String   @id @default(cuid())
-  destinataire   User     @relation(fields: [destinataireId], references: [id], onDelete: Cascade)
+  id             String  @id @default(cuid())
+  destinataire   User    @relation(fields: [destinataireId], references: [id], onDelete: Cascade)
   destinataireId String
   message        String
   lien           String?
-  lu             Boolean  @default(false)
+  lu             Boolean @default(false)
+
+  // Matière d'origine (cours, devoir, correction...), pour permettre le
+  // filtrage côté prof/élève. Null si la notification n'est pas rattachée
+  // à une matière précise.
+  matiere Matiere?
 
   createdAt DateTime @default(now())
 

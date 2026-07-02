@@ -143,7 +143,7 @@ export async function deposerSoumission(
 ) {
   const exercice = await prisma.exercice.findUnique({
     where: { id: exerciceId },
-    include: { cours: { select: { titre: true } } },
+    include: { cours: { select: { titre: true, matiere: true } } },
   });
   // Dépôt de fichier : devoirs "Envoi de fichier", ou PDF-formulaire en mode
   // "Téléchargement" (l'élève dépose le PDF rempli avec son propre lecteur).
@@ -233,7 +233,8 @@ export async function deposerSoumission(
 
   await notifierProfs(
     `${eleve ? formaterNomComplet(eleve) : "Un élève"} a déposé « ${exercice.titre} » (${exercice.cours.titre})`,
-    `/prof/devoirs/${exerciceId}`
+    `/prof/devoirs/${exerciceId}`,
+    exercice.cours.matiere
   );
 
   return soumission;
@@ -249,7 +250,7 @@ export async function deposerSoumissionFormulaire(
 ) {
   const exercice = await prisma.exercice.findUnique({
     where: { id: exerciceId },
-    include: { cours: { select: { titre: true } } },
+    include: { cours: { select: { titre: true, matiere: true } } },
   });
   if (!exercice || exercice.type !== TypeExercice.DEVOIR_PDF_FORMULAIRE) {
     throw new SoumissionError("Devoir introuvable.");
@@ -344,7 +345,8 @@ export async function deposerSoumissionFormulaire(
 
   await notifierProfs(
     `${eleve ? formaterNomComplet(eleve) : "Un élève"} a déposé « ${exercice.titre} » (${exercice.cours.titre})`,
-    `/prof/devoirs/${exerciceId}`
+    `/prof/devoirs/${exerciceId}`,
+    exercice.cours.matiere
   );
 
   return soumission;
@@ -368,7 +370,7 @@ export async function soumettreExerciceCode(
 ) {
   const exercice = await prisma.exercice.findUnique({
     where: { id: exerciceId },
-    include: { cours: { select: { titre: true } } },
+    include: { cours: { select: { titre: true, matiere: true } } },
   });
   if (!exercice || !estTypeExerciceCode(exercice.type)) {
     throw new SoumissionError("Exercice introuvable.");
@@ -441,7 +443,8 @@ export async function soumettreExerciceCode(
   const eleve = await prisma.user.findUnique({ where: { id: eleveId }, select: { nom: true, prenom: true } });
   await notifierProfs(
     `${eleve ? formaterNomComplet(eleve) : "Un élève"} a soumis « ${exercice.titre} » (${exercice.cours.titre})`,
-    `/prof/devoirs/${exerciceId}`
+    `/prof/devoirs/${exerciceId}`,
+    exercice.cours.matiere
   );
 
   return { soumission, reussiAuto: reussiAuto ?? null };

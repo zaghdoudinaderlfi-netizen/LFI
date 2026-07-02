@@ -1,4 +1,4 @@
-import { Niveau } from "@prisma/client";
+import { Matiere, Niveau } from "@prisma/client";
 import { prisma } from "./prisma";
 
 export async function compterNotificationsNonLues(userId: string) {
@@ -7,9 +7,9 @@ export async function compterNotificationsNonLues(userId: string) {
   });
 }
 
-export async function listerNotifications(userId: string) {
+export async function listerNotifications(userId: string, matiere?: Matiere) {
   return prisma.notification.findMany({
-    where: { destinataireId: userId },
+    where: { destinataireId: userId, ...(matiere ? { matiere } : {}) },
     orderBy: { createdAt: "desc" },
     take: 50,
   });
@@ -32,7 +32,8 @@ export async function marquerToutesNotificationsLues(userId: string) {
 export async function notifierElevesDuNiveau(
   niveau: Niveau,
   message: string,
-  lien?: string
+  lien?: string,
+  matiere?: Matiere
 ) {
   const eleves = await prisma.user.findMany({
     where: { role: "ELEVE", classe: { niveau } },
@@ -46,11 +47,12 @@ export async function notifierElevesDuNiveau(
       destinataireId: eleve.id,
       message,
       lien,
+      matiere,
     })),
   });
 }
 
-export async function notifierProfs(message: string, lien?: string) {
+export async function notifierProfs(message: string, lien?: string, matiere?: Matiere) {
   const profs = await prisma.user.findMany({
     where: { role: "PROF" },
     select: { id: true },
@@ -63,6 +65,7 @@ export async function notifierProfs(message: string, lien?: string) {
       destinataireId: prof.id,
       message,
       lien,
+      matiere,
     })),
   });
 }

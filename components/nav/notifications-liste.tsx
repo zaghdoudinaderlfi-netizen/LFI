@@ -1,19 +1,22 @@
-import type { Notification } from "@prisma/client";
+import type { Matiere, Notification } from "@prisma/client";
 import { CheckCheck } from "lucide-react";
+import { MATIERE_LABELS } from "@/lib/cours";
 
 export function NotificationsListe({
   notifications,
   ouvrirAction,
   toutMarquerLuAction,
+  matiereActive = null,
 }: {
   notifications: Notification[];
   ouvrirAction: (formData: FormData) => Promise<void>;
   toutMarquerLuAction: () => Promise<void>;
+  matiereActive?: Matiere | null;
 }) {
   const nonLues = notifications.filter((notif) => !notif.lu).length;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+    <>
       <div className="flex items-center justify-between gap-4 animate-fade-in-up">
         <h1 className="page-title">Notifications</h1>
         {nonLues > 0 && (
@@ -28,7 +31,11 @@ export function NotificationsListe({
 
       {notifications.length === 0 ? (
         <div className="card animate-fade-in-up p-6 text-center">
-          <p className="text-ink-secondary">Aucune notification pour le moment.</p>
+          <p className="text-ink-secondary">
+            {matiereActive
+              ? `Aucune notification en ${MATIERE_LABELS[matiereActive]} pour le moment.`
+              : "Aucune notification pour le moment."}
+          </p>
         </div>
       ) : (
         <ul className="flex flex-col gap-2 animate-fade-in-up [animation-delay:60ms]">
@@ -50,6 +57,11 @@ export function NotificationsListe({
                         aria-hidden="true"
                       />
                     )}
+                    {notif.matiere && (
+                      <span className="badge shrink-0 bg-space-surface2 px-2 text-ink-muted ring-1 ring-space-border">
+                        {MATIERE_LABELS[notif.matiere]}
+                      </span>
+                    )}
                     <span className="text-sm text-ink-primary">{notif.message}</span>
                   </span>
                   <span className="text-xs text-ink-muted sm:shrink-0">
@@ -64,6 +76,6 @@ export function NotificationsListe({
           ))}
         </ul>
       )}
-    </div>
+    </>
   );
 }

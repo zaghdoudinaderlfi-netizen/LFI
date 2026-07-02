@@ -215,7 +215,8 @@ export async function creerCours(data: CoursInfoInput, contenuFichier: ContenuFi
     await notifierElevesDuNiveau(
       cours.niveau,
       `Nouveau cours publié : « ${cours.titre} »`,
-      `/eleve/cours/${cours.slug}`
+      `/eleve/cours/${cours.slug}`,
+      cours.matiere
     );
   }
 
@@ -262,7 +263,8 @@ export async function modifierCours(id: string, data: CoursInfoInput) {
     await notifierElevesDuNiveau(
       misAJour.niveau,
       `Nouveau cours publié : « ${misAJour.titre} »`,
-      `/eleve/cours/${misAJour.slug}`
+      `/eleve/cours/${misAJour.slug}`,
+      misAJour.matiere
     );
   }
 

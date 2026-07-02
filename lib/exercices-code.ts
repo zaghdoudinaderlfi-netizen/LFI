@@ -64,7 +64,8 @@ export async function creerExerciceCode(coursId: string, data: ExerciceCodeInput
     await notifierElevesDuNiveau(
       cours.niveau,
       `Nouvel exercice de code : « ${exercice.titre} » (${cours.titre})`,
-      `/eleve/cours/${cours.slug}`
+      `/eleve/cours/${cours.slug}`,
+      cours.matiere
     );
   }
 

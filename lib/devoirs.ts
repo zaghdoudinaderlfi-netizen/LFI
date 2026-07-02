@@ -73,7 +73,8 @@ export async function creerDevoir(coursId: string, data: DevoirInput) {
     await notifierElevesDuNiveau(
       cours.niveau,
       `Nouveau devoir : « ${devoir.titre} » (${cours.titre})`,
-      `/eleve/cours/${cours.slug}`
+      `/eleve/cours/${cours.slug}`,
+      cours.matiere
     );
   }
 
