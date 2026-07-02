@@ -493,7 +493,13 @@ body::after {
   color: rgb(var(--nsi-txt));
 }
 
-/* Onglets matière (dashboard prof) */
+/* Onglets matière (dashboard prof, listes de cours, notifications) */
+.tab-arcade-active-toutes {
+  background: rgba(var(--neon-cyan), 0.12);
+  color: rgb(var(--neon-cyan));
+  border: 1.5px solid rgba(var(--neon-cyan), 0.30);
+  box-shadow: 2px 2px 0 rgb(var(--arcade-shadow-clr));
+}
 .tab-arcade-active-techno {
   background: rgba(var(--arcade-techno), 0.12);
   color: rgb(var(--techno-txt));

@@ -6,17 +6,11 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { compterSoumissionsACorriger, listerSoumissionsRecentes } from "@/lib/soumissions";
 import { listerClasses, NIVEAU_LABELS } from "@/lib/classes";
-import { NIVEAU_PAR_MATIERE } from "@/lib/classes-constants";
+import { NIVEAU_PAR_MATIERE, estMatiereValide } from "@/lib/classes-constants";
 import { MATIERE_LABELS } from "@/lib/cours";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 import { AvatarDisplay } from "@/components/avatar/avatar-display";
-import { MatieresTabs } from "@/components/prof/matiere-tabs";
-
-const MATIERES_VALIDES = new Set<string>(["TECHNOLOGIE", "SNT", "NSI"]);
-
-function estMatiereValide(m: string | null | undefined): m is Matiere {
-  return !!m && MATIERES_VALIDES.has(m);
-}
+import { MatiereTabs } from "@/components/matiere-tabs";
 
 export default async function ProfPage({
   searchParams,
@@ -65,7 +59,7 @@ export default async function ProfPage({
 
       {/* Onglets matière */}
       <Suspense fallback={null}>
-        <MatieresTabs matiereActive={matiere} />
+        <MatiereTabs matiereActive={matiere} basePath="/prof" storageKey="prof-matiere-filtre" />
       </Suspense>
 
       {/* Actions rapides */}

@@ -168,6 +168,12 @@ model Cours {
   // Image de couverture (chemin dans le bucket public images-cours-lfi)
   imageCouvertureChemin String?
 
+  // Numéro de chapitre (optionnel) — permet de regrouper les cours par chapitre.
+  chapitre Int?
+
+  // Quand false, le cours n'apparaît pas côté élève (même s'il est publié).
+  visibleEleves Boolean @default(true)
+
   // Quand true, le lien élève inclut ?corrige=1 (corrections affichées dans la page HTML)
   correctionVisible Boolean @default(false)
 

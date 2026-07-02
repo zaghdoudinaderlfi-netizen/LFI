@@ -1,4 +1,4 @@
-import type { Niveau } from "@prisma/client";
+import type { Matiere, Niveau } from "@prisma/client";
 
 // Constantes pures liées aux classes, sans dépendance à Prisma/Supabase.
 // Ce module peut être importé aussi bien par des composants serveur que client.
@@ -16,3 +16,9 @@ export const NIVEAU_PAR_MATIERE: Record<string, Niveau> = {
   SNT: "SECONDE",
   NSI: "PREMIERE",
 };
+
+export const MATIERES_VALIDES = new Set<string>(["TECHNOLOGIE", "SNT", "NSI"]);
+
+export function estMatiereValide(m: string | null | undefined): m is Matiere {
+  return !!m && MATIERES_VALIDES.has(m);
+}

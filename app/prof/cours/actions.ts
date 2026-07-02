@@ -11,6 +11,7 @@ import {
   modifierCours,
   remplacerContenuCours,
   supprimerCours,
+  basculerVisibiliteEleves,
 } from "@/lib/cours";
 import { DocxError } from "@/lib/docx";
 import { TAILLE_MAX_OCTETS, extensionDe } from "@/lib/fichiers";
@@ -20,6 +21,11 @@ function lireInfosFormulaire(formData: FormData) {
   const niveau = formData.get("niveau");
   const matiere = formData.get("matiere");
   const publie = formData.get("publie") === "on";
+  const chapitreRaw = formData.get("chapitre");
+  const chapitre =
+    chapitreRaw && typeof chapitreRaw === "string" && chapitreRaw.trim() !== ""
+      ? (parseInt(chapitreRaw, 10) || null)
+      : null;
 
   if (typeof titre !== "string" || typeof niveau !== "string" || typeof matiere !== "string") {
     return null;
@@ -33,6 +39,7 @@ function lireInfosFormulaire(formData: FormData) {
     niveau: niveau as Niveau,
     matiere: matiere as Matiere,
     publie,
+    chapitre,
   };
 }
 
@@ -164,6 +171,25 @@ export async function remplacerContenuAction(
   revalidatePath(`/prof/cours/${id}/apercu`);
 
   return "Contenu remplacé.";
+}
+
+export async function basculerVisibiliteElevesAction(formData: FormData): Promise<void> {
+  const session = await auth();
+  if (session?.user?.role !== "PROF") return;
+
+  const id = formData.get("coursId");
+  const visible = formData.get("visible") === "true";
+  if (typeof id !== "string") return;
+
+  try {
+    await basculerVisibiliteEleves(id, visible);
+  } catch (error) {
+    if (error instanceof CoursError) return;
+    throw error;
+  }
+
+  revalidatePath("/prof/cours");
+  revalidatePath("/eleve/cours");
 }
 
 export async function supprimerCoursAction(formData: FormData): Promise<void> {

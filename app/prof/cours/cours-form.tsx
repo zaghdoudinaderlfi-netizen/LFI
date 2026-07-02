@@ -10,6 +10,7 @@ type CoursFormValues = {
   niveau: Niveau;
   matiere: Matiere;
   publie: boolean;
+  chapitre?: number | null;
 };
 
 export function CoursForm({
@@ -65,6 +66,22 @@ export function CoursForm({
           defaultValue={cours?.titre}
           placeholder="ex. Les réseaux informatiques"
           className="input"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="chapitre" className="field-label">
+          Chapitre <span className="text-ink-muted font-normal">(numéro, optionnel)</span>
+        </label>
+        <input
+          id="chapitre"
+          name="chapitre"
+          type="number"
+          min={1}
+          step={1}
+          defaultValue={cours?.chapitre ?? ""}
+          placeholder="ex. 1"
+          className="input w-28"
         />
       </div>
 

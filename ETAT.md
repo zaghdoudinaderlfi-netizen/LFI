@@ -179,3 +179,65 @@ exact `NOM_PRENOM` est requis, il faut modifier `slugifier()` ou la logique de
 | 5 | Suppression cours avec confirmation | ✅ Fait |
 | 6 | Affichage cours amélioré | ✅ Fait |
 | 7 | Nommage PDF `nom_prenom` | ✅ Fait (slugifié minuscule) |
+
+---
+
+# ÉTAT DES LIEUX — Nadtech (1 juillet 2026)
+
+## Pages de cours interactives NSI (Skulpt, turtle, thème, indices, niveaux)
+
+### Contexte
+
+`public/cours/nadtech-nsi-ch1-exercices.html` était en conflit `UU` suite à un
+`git stash pop` (marqueurs `Updated upstream` / `Stashed changes`, pas un
+merge classique — pas de `MERGE_HEAD`). Le commit `b00cbff` ("Add files via
+upload", envoyé depuis l'interface web GitHub) avait réintroduit une ancienne
+implémentation du rendu turtle (SVG `getBBox`) par-dessus le stash qui
+contenait la version canvas plus aboutie.
+
+### Résolution du conflit
+
+**Statut : ✅ FAIT**
+
+Les 4 blocs de conflit ont été résolus en gardant systématiquement le côté
+`Stashed changes`, confirmé par comparaison avec les fichiers frères
+(`nadtech-nsi-ch1-arithmetique-variables.html`, `-ch2-boucle-for.html`,
+`-ch2-exercices.html`, `-ch3-exercices.html`) qui utilisaient déjà tous ce
+même pattern (autofit par scan de pixels sur `<canvas>`, cible
+`#turtleModalArea`, `600×560`, `animate:true/delay:20`). Le côté `Updated
+upstream` (SVG, `480×440`, sans animation) était la version obsolète.
+
+- Fichier résolu, sans marqueur restant, indexé (`git add`)
+- Stash `stash@{0}` (celui à l'origine du conflit) supprimé — son contenu est
+  désormais entièrement intégré dans l'arbre de travail
+- Le second stash (`stash@{1}`, sans rapport — WIP "chapitre visible aux
+  élèves" : `app/prof/cours/visibilite-toggle.tsx`,
+  `prisma/migrations/20260628121404_add_chapitre_visible_eleves/`, etc.)
+  **laissé intact**, non touché
+
+### Vérification des 5 chantiers demandés
+
+**Statut : ✅ FAIT — cohérent sur les 5 pages, mais pas encore commité**
+
+Vérifié (avant de recommencer quoi que ce soit) sur les 5 fichiers
+`nadtech-nsi-ch1-arithmetique-variables.html`, `-ch1-exercices.html`,
+`-ch2-boucle-for.html`, `-ch2-exercices.html`, `-ch3-exercices.html` :
+
+| Chantier | Statut | Détail |
+|---|---|---|
+| Sécurité Skulpt | ✅ Fait | `Sk.execLimit = 7000` + message convivial en cas de dépassement + sortie via `textContent` (pas d'injection HTML). Code identique octet pour octet dans les 5 fichiers. |
+| Fenêtre turtle | ✅ Fait | Modal dédiée `#turtleModal` avec zoom/recentrage automatique (scan de pixels sur canvas). Identique dans les 5 fichiers. |
+| Thème jour/nuit | ✅ Fait | Bouton `#themeToggle`, persistance `localStorage`, classe `body.light`. Identique dans les 5 fichiers. |
+| Indices | ✅ Fait (pages d'exercices) | Système complet sur les 3 pages d'exercices (ch1/ch2/ch3). Sur les 2 pages de cours, seul un mini-hint de narration existe (widget pas-à-pas des variables) — normal, ce n'est pas une page d'exercices. |
+| Niveaux | ✅ Fait (pages d'exercices) | Filtre facile/inter/avancé avec badges (`data-niveau`, `#nivEmpty`) sur les 3 pages d'exercices. Absent des 2 pages de cours — cohérent, pas de série d'exercices à filtrer là-bas. |
+
+Contrôles effectués : aucun marqueur de conflit résiduel dans
+`public/cours/*.html`, JS syntaxiquement valide sur les 5 fichiers
+(`node --check`), les 5 pages répondent en `200` sur le serveur de dev.
+
+**Ce qui reste à faire :** committer. À ce jour, `ch1-arithmetique-variables.html`,
+`ch2-boucle-for.html`, `ch2-exercices.html` sont modifiés mais non indexés ;
+`ch3-exercices.html` n'est pas encore suivi par git ; `ch1-exercices.html` est
+indexé (conflit résolu). La suppression de `nsi-ch1.html` (ancien fichier
+remplacé par les pages `nadtech-nsi-ch1-*`) est également en attente, hors
+périmètre de ces 5 chantiers.

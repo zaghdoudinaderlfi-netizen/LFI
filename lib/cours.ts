@@ -86,7 +86,39 @@ type CoursInfoInput = {
   niveau: Niveau;
   matiere: Matiere;
   publie: boolean;
+  chapitre?: number | null;
 };
+
+// Ordre canonique d'affichage des matières (onglets, tri).
+export const ORDRE_MATIERES: Matiere[] = ["TECHNOLOGIE", "SNT", "NSI"];
+
+/** Matières distinctes présentes dans une liste de cours, dans l'ordre canonique. */
+export function matieresPresentes(cours: { matiere: Matiere }[]): Matiere[] {
+  const presentes = new Set(cours.map((c) => c.matiere));
+  return ORDRE_MATIERES.filter((m) => presentes.has(m));
+}
+
+/**
+ * Regroupe des cours par numéro de chapitre. Les cours sans chapitre (`null`)
+ * sont placés dans un groupe à part, toujours affiché en dernier.
+ */
+export function regrouperParChapitre<T extends { chapitre: number | null }>(
+  cours: T[]
+): Map<number | null, T[]> {
+  const parChapitre = new Map<number | null, T[]>();
+  for (const c of cours) {
+    const ch = c.chapitre ?? null;
+    if (!parChapitre.has(ch)) parChapitre.set(ch, []);
+    parChapitre.get(ch)!.push(c);
+  }
+  const chapitresTries = [...parChapitre.keys()].sort((a, b) => {
+    if (a === null && b === null) return 0;
+    if (a === null) return 1;
+    if (b === null) return -1;
+    return a - b;
+  });
+  return new Map(chapitresTries.map((ch) => [ch, parChapitre.get(ch)!]));
+}
 
 export type ContenuFichier =
   | { type: "DOCX"; buffer: Buffer }
@@ -174,6 +206,7 @@ export async function creerCours(data: CoursInfoInput, contenuFichier: ContenuFi
       niveau: data.niveau,
       matiere: data.matiere,
       publie: data.publie,
+      chapitre: data.chapitre ?? null,
       ...champsContenu,
     },
   });
@@ -221,6 +254,7 @@ export async function modifierCours(id: string, data: CoursInfoInput) {
       niveau: data.niveau,
       matiere: data.matiere,
       publie: data.publie,
+      chapitre: data.chapitre ?? null,
     },
   });
 
@@ -266,7 +300,13 @@ export async function remplacerContenuCours(id: string, contenuFichier: ContenuF
 
 export async function listerCoursProf() {
   return prisma.cours.findMany({
-    orderBy: [{ niveau: "asc" }, { matiere: "asc" }, { ordre: "asc" }, { createdAt: "desc" }],
+    orderBy: [
+      { niveau: "asc" },
+      { matiere: "asc" },
+      { chapitre: "asc" },
+      { ordre: "asc" },
+      { createdAt: "desc" },
+    ],
   });
 }
 
@@ -276,22 +316,29 @@ export async function obtenirCoursParId(id: string) {
 
 export async function listerCoursPublies(niveau: Niveau) {
   return prisma.cours.findMany({
-    where: { niveau, publie: true },
-    orderBy: [{ matiere: "asc" }, { ordre: "asc" }, { createdAt: "asc" }],
+    where: { niveau, publie: true, visibleEleves: true },
+    orderBy: [{ matiere: "asc" }, { chapitre: "asc" }, { ordre: "asc" }, { createdAt: "asc" }],
   });
 }
 
 export async function obtenirCoursPublieParSlug(slug: string, niveau: Niveau) {
   return prisma.cours.findFirst({
-    where: { slug, niveau, publie: true },
+    where: { slug, niveau, publie: true, visibleEleves: true },
   });
 }
 
 export async function listerDerniersCoursPublies(niveau: Niveau, limit = 5) {
   return prisma.cours.findMany({
-    where: { niveau, publie: true },
+    where: { niveau, publie: true, visibleEleves: true },
     orderBy: { updatedAt: "desc" },
     take: limit,
+  });
+}
+
+export async function basculerVisibiliteEleves(id: string, visible: boolean) {
+  return prisma.cours.update({
+    where: { id },
+    data: { visibleEleves: visible },
   });
 }
 
