@@ -49,12 +49,6 @@ enum ModeRemiseFormulaire {
   TELECHARGEMENT
 }
 
-enum TypeQuestion {
-  CHOIX_UNIQUE
-  CHOIX_MULTIPLE
-  VRAI_FAUX
-}
-
 enum TypeContenuCours {
   HTML
   PDF
@@ -68,12 +62,6 @@ enum TypeBloc {
   ACTIVITE
   LIEN
   EDITEUR_PYTHON
-}
-
-enum StatutPartie {
-  EN_ATTENTE
-  EN_COURS
-  TERMINEE
 }
 
 // ───────────────────────────────────────────────
@@ -99,13 +87,12 @@ model User {
   classe   Classe? @relation(fields: [classeId], references: [id])
   classeId String?
 
-  soumissions      Soumission[]
-  groupesMembre    MembreGroupe[]
-  participations   ParticipantPartie[]
-  partiesHebergees PartieQuiz[]        @relation("HotePartie")
-  quizCrees        Quiz[]              @relation("AuteurQuiz")
-  notifications    Notification[]
-  tokensReinit     TokenReinitMdp[]
+  soumissions    Soumission[]
+  groupesMembre  MembreGroupe[]
+  quizCrees      Quiz[]           @relation("AuteurQuiz")
+  tentativesQuiz TentativeQuiz[]
+  notifications  Notification[]
+  tokensReinit   TokenReinitMdp[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -133,8 +120,7 @@ model Classe {
   codeInscription String @unique
   anneeScolaire   String
 
-  eleves  User[]
-  parties PartieQuiz[]
+  eleves User[]
 
   createdAt DateTime @default(now())
 }
@@ -319,100 +305,91 @@ model Progression {
 //  QUIZ LUDIQUES
 // ───────────────────────────────────────────────
 
+// Quiz ludique en mode SOLO façon Kahoot : chaque élève joue quand il veut
+// (pas de session en direct, pas de code PIN, pas d'hôte).
 model Quiz {
-  id          String   @id @default(cuid())
-  titre       String
-  description String?
-  niveau      Niveau?
-  matiere     Matiere?
-  publie      Boolean  @default(false)
+  id      String  @id @default(cuid())
+  titre   String
+  niveau  Niveau
+  matiere Matiere
+
+  // Numéro de chapitre (optionnel) — regroupe les quiz comme les cours.
+  chapitre Int?
+
+  // Quand false, le quiz n'apparaît pas côté élève.
+  visibleEleves Boolean @default(false)
 
   auteur   User   @relation("AuteurQuiz", fields: [auteurId], references: [id])
   auteurId String
 
-  questions QuestionQuiz[]
-  parties   PartieQuiz[]
+  questions  QuestionQuiz[]
+  tentatives TentativeQuiz[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+// Question à 4 choix fixes (A/B/C/D), une seule bonne réponse.
 model QuestionQuiz {
-  id             String       @id @default(cuid())
-  quiz           Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  quizId         String
-  enonce         String       @db.Text
-  type           TypeQuestion @default(CHOIX_UNIQUE)
-  imageUrl       String?
-  tempsLimiteSec Int          @default(20)
-  points         Int          @default(1000)
-  ordre          Int          @default(0)
+  id     String @id @default(cuid())
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quizId String
 
-  choix    ChoixQuiz[]
-  reponses ReponseQuiz[]
+  enonce String @db.Text
+  choixA String
+  choixB String
+  choixC String
+  choixD String
+
+  // Index de la bonne réponse : 0 = A, 1 = B, 2 = C, 3 = D.
+  bonneReponse Int
+
+  tempsLimiteSec Int @default(20)
+  ordre          Int @default(0)
+
+  reponses ReponseTentative[]
+
+  @@index([quizId])
 }
 
-model ChoixQuiz {
-  id         String       @id @default(cuid())
-  question   QuestionQuiz @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  questionId String
-  texte      String
-  estCorrect Boolean      @default(false)
-  ordre      Int          @default(0)
+// Une tentative = une partie jouée en solo par un élève sur un quiz.
+// L'élève peut rejouer ; on garde toutes les tentatives et on calcule le
+// meilleur score à la volée pour le classement (pas de dénormalisation).
+model TentativeQuiz {
+  id     String @id @default(cuid())
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quizId String
 
-  reponses ReponseQuiz[]
+  eleve   User   @relation(fields: [eleveId], references: [id], onDelete: Cascade)
+  eleveId String
+
+  score          Int @default(0)
+  bonnesReponses Int @default(0)
+
+  reponses ReponseTentative[]
+
+  createdAt DateTime @default(now())
+
+  @@index([quizId])
+  @@index([eleveId])
 }
 
-model PartieQuiz {
-  id      String       @id @default(cuid())
-  quiz    Quiz         @relation(fields: [quizId], references: [id])
-  quizId  String
-  codePin String       @unique
-  statut  StatutPartie @default(EN_ATTENTE)
+model ReponseTentative {
+  id          String        @id @default(cuid())
+  tentative   TentativeQuiz @relation(fields: [tentativeId], references: [id], onDelete: Cascade)
+  tentativeId String
+  question    QuestionQuiz  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId  String
 
-  hote   User   @relation("HotePartie", fields: [hoteId], references: [id])
-  hoteId String
-
-  classe   Classe? @relation(fields: [classeId], references: [id])
-  classeId String?
-
-  participants ParticipantPartie[]
-
-  createdAt DateTime  @default(now())
-  termineeA DateTime?
-}
-
-model ParticipantPartie {
-  id       String     @id @default(cuid())
-  partie   PartieQuiz @relation(fields: [partieId], references: [id], onDelete: Cascade)
-  partieId String
-
-  eleve   User?   @relation(fields: [eleveId], references: [id])
-  eleveId String?
-  pseudo  String
-
-  score Int  @default(0)
-  rang  Int?
-
-  reponses ReponseQuiz[]
-
-  @@index([partieId])
-}
-
-model ReponseQuiz {
-  id            String            @id @default(cuid())
-  participant   ParticipantPartie @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  participantId String
-  question      QuestionQuiz      @relation(fields: [questionId], references: [id])
-  questionId    String
-  choix         ChoixQuiz?        @relation(fields: [choixId], references: [id])
-  choixId       String?
-
+  // Index choisi par l'élève (0-3), null si le temps est écoulé sans réponse.
+  reponseDonnee Int?
   correct       Boolean @default(false)
   tempsMs       Int
   pointsObtenus Int     @default(0)
 
-  @@index([participantId])
+  // Empêche de répondre deux fois à la même question dans une tentative.
+  @@unique([tentativeId, questionId])
+  @@index([tentativeId])
 }
 
 // ───────────────────────────────────────────────
