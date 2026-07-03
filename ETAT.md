@@ -241,3 +241,212 @@ Contrôles effectués : aucun marqueur de conflit résiduel dans
 indexé (conflit résolu). La suppression de `nsi-ch1.html` (ancien fichier
 remplacé par les pages `nadtech-nsi-ch1-*`) est également en attente, hors
 périmètre de ces 5 chantiers.
+
+---
+
+# ÉTAT DES LIEUX — Nadtech (2 juillet 2026, ~21h18) — diagnostic serveur dev / preview 404
+
+Toutes les commandes ci-dessous ont été réellement exécutées dans cette session ; les sorties sont copiées telles quelles, rien n'est inventé.
+
+## 1. Serveur & ports
+
+### `lsof -i :3000` / `lsof -i :3001`
+
+```
+$ lsof -i :3000
+(aucune sortie)
+$ lsof -i :3001
+(aucune sortie)
+```
+
+`lsof` ne renvoie rien pour ces ports dans cet environnement (sandbox/namespace du conteneur — il n'a probablement pas les droits pour lire les sockets d'autres process). Bascule sur `ss -ltnp`, qui lui fonctionne :
+
+```
+$ ss -ltnp | grep -E ":3000|:3001"
+LISTEN 0 511 *:3000 *:*  users:(("next-server (v1",pid=50516,fd=22))
+LISTEN 0 511 *:3001 *:*  users:(("next-server (v1",pid=54452,fd=24))
+```
+
+**→ Deux serveurs Next.js tournaient en parallèle**, un sur 3000, un sur 3001.
+
+### `ps aux | grep -E "node|next"` (process node/next uniquement, bruit VS Code retiré)
+
+```
+codespa+ 50464  sh -c next dev            (démarré 21:13, pas de tty — lancé par Claude en tâche de fond)
+codespa+ 50465  node .../next dev
+codespa+ 50516  next-server (v15.5.19)     → écoute sur :3000
+codespa+ 54424  sh -c next dev            (démarré 21:16, tty pts/2)
+codespa+ 54425  node .../next dev
+codespa+ 54452  next-server (v15.5.19)     → écoute sur :3001
+```
+
+**Cause racine identifiée en remontant l'arbre des process** (`ps -o pid,ppid,cmd`) : le serveur sur le port 3001 (pid 54452) remonte à un `npm run dev` (pid 54407) lancé depuis **un terminal intégré VS Code** (`pts/2`, sous le shell bash de l'IDE, pid 43989) — donc lancé manuellement dans un terminal de l'éditeur, pas par Claude. Au même moment, le `npm run dev` lancé par Claude en tâche de fond (sans tty, pid 50451→50516) tenait déjà le port 3000. Le second process a donc vu le port pris et basculé tout seul sur 3001.
+
+**Il y avait bien deux `npm run dev` actifs en simultané : un en tâche de fond (port 3000) et un dans un terminal VS Code (port 3001).** Selon lequel des deux le port-forwarding de Codespaces expose à un instant donné (et selon lequel est en train de recompiler), la preview peut pointer sur le mauvais port ou tomber en 404 pendant un redémarrage.
+
+### Le serveur dev tourne-t-il ? Sur quel port ? Sortie de démarrage (20 premières lignes)
+
+Oui — celui lancé en tâche de fond (pid 50451) tourne sur le **port 3000**, sans avertissement "port in use" :
+
+```
+> lfi@1.0.0 predev
+> rm -rf .next
+
+
+> lfi@1.0.0 dev
+> next dev
+
+   ▲ Next.js 15.5.19
+   - Local:        http://localhost:3000
+   - Network:      http://10.0.1.84:3000
+   - Environments: .env
+   - Experiments (use with caution):
+     · serverActions
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+```
+
+## 2. Erreurs éventuelles
+
+- **Aucune erreur de compilation** dans les logs du serveur pid 50451 (`✓ Ready in 4.1s`, rien d'autre après).
+- `curl -I http://localhost:3000/` : premier essai juste après redémarrage → **404** (probablement capté pendant la compilation à la volée de la page `/`, ou pendant que l'autre serveur du terminal VS Code démarrait en même temps). En relançant 3 fois juste après : **200 / 200 / 200**, stable. Le contenu HTML renvoyé est bien la landing page (`<title>Nadtech — Plateforme pédagogique</title>`).
+- `curl -I http://localhost:3001/` : **200 OK** (l'autre serveur, sur le port de repli, répond aussi correctement en local une fois stabilisé).
+- `curl -I http://localhost:3000/connexion` : **200 OK**.
+- `curl -I http://localhost:3001/connexion` : **200 OK**.
+
+**Conclusion :** en local (`localhost`), les deux serveurs répondent correctement une fois stabilisés. Le 404 côté navigateur vient donc très probablement du **port-forwarding Codespaces / de l'URL de preview qui ne correspond pas au bon port**, pas d'une erreur de compilation Next.js.
+
+## 3. Git
+
+### `git status`
+
+```
+Sur la branche main
+Votre branche est à jour avec 'origin/main'.
+
+Modifications qui ne seront pas validées :
+	modified:   app/eleve/notifications/page.tsx
+	modified:   app/eleve/quiz/page.tsx
+	modified:   app/prof/notifications/page.tsx
+	modified:   app/prof/quiz/page.tsx
+	modified:   components/nav/notifications-liste.tsx
+	modified:   lib/cours.ts
+	modified:   lib/devoirs.ts
+	modified:   lib/exercices-code.ts
+	modified:   lib/notifications.ts
+	modified:   lib/soumissions.ts
+	modified:   prisma/schema.prisma
+	modified:   public/sw.js
+
+Fichiers non suivis :
+	app/eleve/quiz/[id]/
+	app/prof/quiz/[id]/
+	app/prof/quiz/actions.ts
+	app/prof/quiz/nouveau/
+	app/prof/quiz/quiz-form.tsx
+	app/prof/quiz/visibilite-toggle.tsx
+	lib/quiz.ts
+	prisma/migrations/20260702003125_add_matiere_notifications/
+	prisma/migrations/20260702004402_quiz_solo_ludique/
+	prisma/migrations/20260702010000_reponse_tentative_unique/
+```
+
+Note : `public/sw.js` est apparu modifié suite à un `next build` exécuté pendant cette session (fichier généré par next-pwa) — pas une modif manuelle.
+
+### `git log --oneline -5`
+
+```
+717922a Regroupe les cours par chapitre et ajoute la visibilite eleves par cours
+a38a84a Cours interactifs NSI : securite Skulpt, fenetre turtle, theme jour/nuit, indices progressifs, niveaux de difficulte
+b00cbff Add files via upload
+56bdd7f Refactorise la landing page et améliore les pages d'authentification
+1722cd4 Ajoute interrupteur corrections visibles sur les pages interactives
+```
+
+### `git stash list`
+
+```
+stash@{0}: WIP on main: 56bdd7f Refactorise la landing page et améliore les pages d'authentification
+```
+
+Un stash en attente, non touché dans le cadre de ce diagnostic.
+
+## 4. Chantiers en cours
+
+### QUIZ (étapes 1-4)
+
+Vérifié directement sur le système de fichiers :
+
+- **Étapes 1-2 — création quiz + questions (prof)** : ✅ fait — `app/prof/quiz/page.tsx` (liste), `app/prof/quiz/nouveau/` (création), `app/prof/quiz/quiz-form.tsx`, `app/prof/quiz/[id]/page.tsx` (édition + questions), `question-form.tsx`, `import-questions-form.tsx` (import CSV), `questions-actions.ts`, `visibilite-toggle.tsx`. `lib/quiz.ts` a `creerQuiz`, `modifierQuiz`, `ajouterQuestion`, `parserQuestionsCSV`, `importerQuestions`.
+- **Étape 3 — côté élève, mode solo type Kahoot** : ✅ fait — `app/eleve/quiz/page.tsx` (liste), `app/eleve/quiz/[id]/page.tsx` + `quiz-jeu.tsx` (14 Ko, jeu complet) + `actions.ts`. `lib/quiz.ts` a `demarrerTentative`, `repondre` (anti-triche : `bonneReponse` n'est jamais envoyée au client avant réponse, vérifiée côté serveur), `classementQuiz`.
+- **Étape 4 — résultats côté prof** : ✅ fait dans cette session — `app/prof/quiz/[id]/resultats/page.tsx` (tableau par élève : meilleur score + nb de parties ; par question : taux de réussite avec barre colorée). `lib/quiz.ts` a `resultatsQuizParEleve` (ligne 444) et `statsQuestionsQuiz` (ligne 478). Liens ajoutés depuis `/prof/quiz` et `/prof/quiz/[id]`.
+
+**Aucune de ces étapes n'est commitée** — tout est encore dans les fichiers modifiés/non suivis listés en section 3.
+
+### Cours / notifications par matière
+
+D'après le diff de session (`git diff --stat`) :
+
+```
+app/eleve/notifications/page.tsx       | 36 +++++++++++++++++++++++++++-------
+app/prof/notifications/page.tsx        | 36 +++++++++++++++++++++++++++-------
+components/nav/notifications-liste.tsx | 20 +++++++++++++++----
+lib/cours.ts                           |  6 ++++--
+lib/notifications.ts                   | 13 +++++++-----
+```
+
+Ce chantier touche le filtrage/regroupement des notifications par matière, en lien probable avec la migration `20260702003125_add_matiere_notifications`. Le diff est en cours (non commité) — pas relu en détail dans le cadre de ce diagnostic, seule la présence de modifications est confirmée ici.
+
+### Migrations Prisma
+
+```
+$ npx prisma migrate status
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "postgres", schema "public" at "aws-1-eu-central-1.pooler.supabase.com:5432"
+
+23 migrations found in prisma/migrations
+
+Database schema is up to date!
+```
+
+**Aucune migration en attente** — les 3 dossiers de migration non suivis par git (`add_matiere_notifications`, `quiz_solo_ludique`, `reponse_tentative_unique`) sont déjà appliqués en base.
+
+## 5. Config critique
+
+### `next.config.ts` — section `serverActions`
+
+```ts
+experimental: {
+  serverActions: {
+    allowedOrigins: [
+      "localhost:3000",
+      "*.app.github.dev",
+      "*.preview.app.github.dev",
+      "*.githubpreview.dev",
+      ...originesCodespace(),
+    ],
+    bodySizeLimit: "10mb",
+  },
+},
+```
+
+Note : `localhost:3000` est en dur, `localhost:3001` n'y figure pas. Si le serveur qui répond réellement à la preview est celui sur le port 3001, les Server Actions échoueraient côté navigateur même si la page se charge — cohérent avec le symptôme "port occupé → bascule 3001".
+
+### `.env` — `AUTH_TRUST_HOST`
+
+```
+$ grep "^AUTH_TRUST_HOST" .env
+AUTH_TRUST_HOST=true
+```
+
+Présent, valeur `true`.
+
+## Résumé / recommandation
+
+Le "processus fantôme" n'est pas un zombie orphelin : **c'est un second `npm run dev` lancé dans un terminal intégré VS Code (pts/2)**, en plus de celui lancé en tâche de fond par Claude. Les deux tournent simultanément, l'un sur 3000, l'autre sur 3001. Tant que les deux coexistent, celui qui démarre en second retombera toujours sur 3001, et la preview Codespaces (qui cible le port 3000) peut se retrouver à taper sur le mauvais serveur pendant les phases de redémarrage → 404.
+
+**Action recommandée avant de relancer :** fermer ce terminal VS Code (`Ctrl+C` dedans), pour qu'il ne reste qu'un seul serveur actif sur le port 3000. Non fait automatiquement dans ce diagnostic pour ne pas couper un terminal potentiellement utilisé activement — à confirmer.
