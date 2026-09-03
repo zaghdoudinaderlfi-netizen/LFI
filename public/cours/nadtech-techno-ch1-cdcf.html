@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technologie · Chapitre 1 — Analyse fonctionnelle & CDCF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a31; --code:#0e1526; --ink:#e9eefb; --muted:#9aa7c2;
+  --amber:#f59e0b; --amber2:#fbbf24; --cyan:#22d3ee; --violet:#8b5cf6; --pink:#ec4899; --ok:#34d399; --err:#fb7185;
+  --line:rgba(255,255,255,.09); --glow:0 0 0 1px rgba(255,255,255,.04), 0 18px 40px -20px rgba(0,0,0,.7);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; background:
+    radial-gradient(1100px 600px at 80% -10%, rgba(245,158,11,.16), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.10), transparent 55%),
+    var(--bg);
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;}
+.wrap{max-width:1180px; margin:0 auto; padding:0 20px; display:grid; grid-template-columns:230px 1fr; gap:36px}
+@media(max-width:880px){ .wrap{grid-template-columns:1fr; gap:0} .toc{display:none!important} }
+header.hero{padding:54px 0 26px; border-bottom:1px solid var(--line); margin-bottom:30px}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; color:var(--amber);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(245,158,11,.08)}
+h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(28px,5vw,46px); line-height:1.08; margin:18px 0 10px}
+h1 .accent{background:linear-gradient(90deg,var(--amber),var(--amber2),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.lede{color:var(--muted); max-width:62ch; font-size:18px}
+.toc{position:sticky; top:18px; align-self:start; padding-top:30px}
+.toc h4{font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
+.toc a{display:block; color:var(--muted); text-decoration:none; font-size:14px; padding:6px 10px; border-left:2px solid transparent; border-radius:0 8px 8px 0; transition:.15s}
+.toc a:hover{color:var(--ink); background:rgba(255,255,255,.03); border-left-color:var(--amber)}
+section{padding:30px 0; border-bottom:1px solid var(--line)}
+h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; margin:0 0 6px; scroll-margin-top:20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+h2 .num{font-family:var(--mono); font-size:14px; color:var(--amber); border:1px solid var(--line); border-radius:8px; padding:3px 9px; background:rgba(245,158,11,.08)}
+h3{font-family:'Space Grotesk',sans-serif; font-size:18px; margin:22px 0 8px; color:#fff}
+p{margin:10px 0}
+.muted{color:var(--muted)}
+code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; color:#ffe3b0; border:1px solid var(--line)}
+strong{color:#fff}
+ul{margin:10px 0; padding-left:22px} li{margin:4px 0}
+.note{display:flex; gap:12px; padding:14px 16px; border-radius:12px; background:rgba(245,158,11,.07); border:1px solid rgba(245,158,11,.25); margin:16px 0}
+.note.warn{background:rgba(251,113,133,.07); border-color:rgba(251,113,133,.28)}
+.note .ico{font-size:18px; line-height:1.4} .note p{margin:0}
+.fiche{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px; margin:16px 0; box-shadow:var(--glow)}
+.fiche .role{display:inline-block; font-weight:800; color:#06121f; background:linear-gradient(90deg,var(--amber),var(--amber2)); border-radius:999px; padding:5px 14px; font-size:14px; margin-bottom:10px}
+.diagsvg{width:100%; height:auto; display:block; background:#fff; border-radius:12px; margin:12px 0}
+.steps{counter-reset:s; margin:12px 0}
+.steps div{position:relative; padding:6px 0 6px 40px; color:var(--muted); font-size:15px}
+.steps div::before{counter-increment:s; content:counter(s); position:absolute; left:0; top:6px; width:26px; height:26px; border-radius:8px;
+  display:grid; place-items:center; font-family:var(--mono); font-weight:700; font-size:13px; color:#06121f; background:linear-gradient(135deg,var(--amber),var(--amber2))}
+.animbar{display:flex; gap:10px; flex-wrap:wrap; margin:10px 0}
+.btn{font-family:'Nunito'; font-weight:800; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--ink); padding:9px 16px; border-radius:10px; cursor:pointer; transition:.15s; font-size:14px}
+.btn:hover{border-color:var(--amber); background:rgba(245,158,11,.12)}
+.btn.on{background:linear-gradient(90deg,var(--amber),var(--amber2)); color:#06121f; border-color:transparent}
+.anim-msg{font-family:var(--mono); font-size:13.5px; color:#ffe3b0; background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.28); padding:8px 14px; border-radius:10px; min-height:20px; margin-top:8px}
+/* histoire du besoin */
+.histoire{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:16px 0}
+@media(max-width:720px){ .histoire{grid-template-columns:repeat(2,1fr)} }
+.hcard{background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:14px; text-align:center; box-shadow:var(--glow)}
+.hcard .emo{font-size:34px}
+.hcard h5{font-family:'Space Grotesk',sans-serif; margin:8px 0 4px; color:#fff; font-size:15px}
+.hcard p{font-size:13px; color:var(--muted); margin:0}
+.harrow{display:none}
+/* bete a cornes */
+.bcstep{opacity:0; transition:opacity .6s}
+.bcstep.show{opacity:1}
+/* pieuvre */
+.plink{stroke:#333; stroke-width:1.6; fill:none; transition:.2s}
+.plabel{font:700 11px 'Nunito',sans-serif; fill:#7a4a00}
+.pieuvre-sel .plink{opacity:.18}
+.pieuvre-sel .plink.hl{opacity:1; stroke:#b45309; stroke-width:3.4}
+.pieuvre-sel .plabel{opacity:.25}
+.pieuvre-sel .plabel.hl{opacity:1; fill:#b45309}
+.fnbar{display:flex; gap:8px; flex-wrap:wrap; margin:10px 0}
+.fnbtn{font-family:var(--mono); font-weight:700; font-size:13px; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--ink); padding:7px 13px; border-radius:9px; cursor:pointer; transition:.15s}
+.fnbtn:hover{border-color:var(--amber)}
+.fnbtn.on{background:linear-gradient(90deg,var(--amber),var(--amber2)); color:#06121f; border-color:transparent}
+.fnbtn.fp{border-color:rgba(52,211,153,.5)}
+/* contraintes cards */
+.cgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:16px 0}
+.ccard{background:var(--bg2); border:1px solid var(--line); border-top:3px solid var(--amber); border-radius:14px; padding:14px; cursor:pointer; transition:.15s; box-shadow:var(--glow)}
+.ccard:hover{transform:translateY(-3px)}
+.ccard h5{font-family:'Space Grotesk',sans-serif; margin:2px 0 4px; color:#fff; font-size:15px}
+.ccard .liste{display:none; margin-top:10px; padding-top:8px; border-top:1px dashed var(--line); font-size:13.5px; color:var(--muted)}
+.ccard.open .liste{display:block}
+.ccard .hint-open{font-size:12px; color:var(--amber); margin-top:6px}
+/* tableaux */
+table.car{width:100%; border-collapse:collapse; margin:12px 0; font-size:14px}
+table.car th{font-family:'Space Grotesk',sans-serif; text-align:left; padding:9px 12px; background:rgba(245,158,11,.1); border:1px solid var(--line); color:#fff}
+table.car td{padding:8px 12px; border:1px solid var(--line); color:var(--muted)}
+table.car td:first-child{color:#ffe3b0; font-family:var(--mono); font-size:13px}
+/* etapes cdcf */
+.etn rect{transition:.25s}
+.etn.on rect{fill:rgba(245,158,11,.3) !important; stroke:#b45309 !important; stroke-width:2.5 !important}
+.etn.done rect{fill:rgba(52,211,153,.22) !important; stroke:#0f766e !important}
+/* jeu / quiz */
+.jeu{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin:18px 0; box-shadow:var(--glow)}
+.jeu .q{font-weight:800; margin:0 0 12px; font-family:'Space Grotesk',sans-serif}
+.jeu .q::before{content:"🎯"; margin-right:10px}
+.opt{display:block; padding:11px 14px; margin:8px 0; border:1px solid var(--line); border-radius:10px; cursor:pointer; transition:.12s; font-size:14.5px}
+.opt:hover{border-color:var(--amber); background:rgba(245,158,11,.07)}
+.opt.good{border-color:var(--ok); background:rgba(52,211,153,.12)}
+.opt.bad{border-color:var(--err); background:rgba(251,113,133,.12)}
+.opt.lock{pointer-events:none; opacity:.85}
+.feedback{margin-top:10px; font-size:14px; min-height:20px; color:var(--muted)}
+.feedback.ok{color:var(--ok)} .feedback.no{color:var(--err)}
+footer{padding:40px 0 70px; color:var(--muted); font-size:14px}
+.mono-n{font-family:var(--mono); font-weight:700; font-size:18px; margin-top:14px}
+.mono-n span:nth-child(1){color:var(--amber)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--cyan)}
+.tag-list{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+::selection{background:rgba(245,158,11,.35)}
+.theme-toggle{position:fixed; top:16px; right:16px; z-index:60; width:46px; height:46px; border-radius:12px;
+  border:1px solid var(--line); background:var(--bg2); color:var(--ink); font-size:20px; cursor:pointer;
+  box-shadow:0 8px 24px -12px rgba(0,0,0,.5); transition:.15s; display:grid; place-items:center}
+.theme-toggle:hover{border-color:var(--amber); transform:translateY(-1px)}
+body.light{
+  --bg:#f6f1e7; --bg2:#ffffff; --ink:#241d0f; --muted:#6d6250; --line:rgba(40,30,10,.14);
+  --glow:0 0 0 1px rgba(40,30,10,.04), 0 18px 40px -24px rgba(40,30,10,.22);
+}
+body.light h3, body.light strong, body.light .jeu .q, body.light .hcard h5, body.light .ccard h5{color:#241d0f}
+body.light code.inl{background:rgba(40,30,10,.06); color:#92600a; border-color:rgba(40,30,10,.15)}
+body.light .theme-toggle{box-shadow:0 8px 24px -14px rgba(40,30,10,.35)}
+</style>
+</head>
+<body>
+<button id="themeToggle" class="theme-toggle" title="Basculer jour / nuit" aria-label="Basculer jour / nuit">🌙</button>
+<div class="wrap">
+  <nav class="toc">
+    <h4>Sommaire</h4>
+    <a href="#besoin">Histoire d'un besoin</a>
+    <a href="#cdc">Le cahier des charges</a>
+    <a href="#bete">La bête à cornes (animé)</a>
+    <a href="#pieuvre">La pieuvre (interactif)</a>
+    <a href="#formuler">Formuler une fonction</a>
+    <a href="#contraintes">Les 5 contraintes</a>
+    <a href="#caracteriser">Qualifier & quantifier</a>
+    <a href="#rediger">Rédiger le CDCF (animé)</a>
+    <a href="#fast">Le diagramme FAST</a>
+    <a href="#jeu">Jeu : FP ou FC ?</a>
+    <a href="#bilan">Quiz bilan</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="kicker">Technologie · 3ème · Chapitre 1</span>
+      <h1>Du besoin au <span class="accent">cahier des charges</span></h1>
+      <p class="lede">Avant de fabriquer un objet, il faut savoir <strong>à quoi il sert</strong> et <strong>ce qu'on attend de lui</strong>. C'est l'<strong>analyse fonctionnelle</strong> : elle part du besoin du client et aboutit au <strong>cahier des charges fonctionnel (CdCF)</strong>. Support d'étude : la <strong>trottinette électrique</strong> 🛴 et la <strong>lampe de bureau</strong> 💡.</p>
+      <div class="tag-list">
+        <span class="chip">besoin</span><span class="chip">bête à cornes</span><span class="chip">pieuvre</span><span class="chip">fonctions de service</span><span class="chip">contraintes</span><span class="chip">CdCF</span><span class="chip">FAST</span>
+      </div>
+    </header>
+
+    <!-- 01 BESOIN -->
+    <section id="besoin">
+      <h2><span class="num">01</span> Un produit, c'est l'histoire d'un besoin</h2>
+      <p>Tout objet technique naît d'un <strong>besoin</strong>. Le chemin est toujours le même :</p>
+      <div class="histoire">
+        <div class="hcard"><div class="emo">💭</div><h5>Je rêve…</h5><p>« Ce serait bien de ne plus marcher jusqu'au collège ! »</p></div>
+        <div class="hcard"><div class="emo">🙋</div><h5>J'ai envie… j'ai besoin !</h5><p>Le besoin se précise : se déplacer facilement, sans effort.</p></div>
+        <div class="hcard"><div class="emo">🏭</div><h5>On conçoit, on fabrique</h5><p>L'entreprise étudie le besoin et produit une solution.</p></div>
+        <div class="hcard"><div class="emo">🛴</div><h5>Le produit existe !</h5><p>La trottinette électrique répond au besoin du client.</p></div>
+      </div>
+      <div class="note"><span class="ico">🔎</span><p><strong>Analyse fonctionnelle EXTERNE :</strong> c'est une analyse qui <strong>part du besoin</strong> pour définir les fonctions attendues d'un produit. À ce stade, <strong>le produit n'existe pas encore</strong> — aucune solution n'est envisagée. On se place du <strong>point de vue du client</strong>.</p></div>
+    </section>
+
+    <!-- 02 CDC -->
+    <section id="cdc">
+      <h2><span class="num">02</span> Le cahier des charges, c'est quoi ?</h2>
+      <div class="fiche">
+        <span class="role">Un document écrit, la « commande » du projet</span>
+        <p>Le <strong>cahier des charges</strong> est un <strong>document écrit</strong>, utilisé lors de <strong>l'étude d'un projet</strong>. Il a pour but de définir clairement :</p>
+        <ul>
+          <li>le <strong>besoin</strong> auquel devra répondre la réalisation du projet ;</li>
+          <li>les <strong>contraintes</strong> qu'il devra respecter.</li>
+        </ul>
+        <p>C'est <strong>à partir de ce document</strong> que les concepteurs devront proposer des <strong>solutions techniques</strong>.</p>
+      </div>
+      <div class="note"><span class="ico">🧠</span><p>Retiens : <strong>pas de bon produit sans bon cahier des charges !</strong> Si le besoin est mal défini, la solution sera mauvaise — même parfaitement fabriquée.</p></div>
+    </section>
+
+    <!-- 03 BETE A CORNES -->
+    <section id="bete">
+      <h2><span class="num">03</span> Énoncer le besoin : la bête à cornes — <em>animé !</em></h2>
+      <p>Pour analyser le besoin d'un produit, on se pose <strong>trois questions</strong> :</p>
+      <ul>
+        <li>🔵 <strong>À qui le produit rend-il service ?</strong> → au client / à l'usager</li>
+        <li>🟢 <strong>Sur quoi le produit agit-il ?</strong> → sur la <strong>matière d'œuvre</strong></li>
+        <li>🔴 <strong>Dans quel but le produit existe-t-il ?</strong> → pour satisfaire le <strong>besoin</strong></li>
+      </ul>
+      <p>Ces trois questions se dessinent dans un graphique appelé <strong>« bête à cornes »</strong> (outil de la méthode <strong>APTE</strong> : APplication aux Techniques d'Entreprise). Choisis un exemple, puis <strong>construis-la étape par étape</strong> :</p>
+      <div class="fiche">
+        <div class="animbar">
+          <button class="btn bcex on" data-ex="trot">🛴 Trottinette électrique</button>
+          <button class="btn bcex" data-ex="lampe">💡 Lampe de bureau</button>
+          <button class="btn" id="bcGo">▶ Construire</button>
+          <button class="btn" id="bcReset">↺</button>
+        </div>
+        <svg class="diagsvg" viewBox="0 0 720 380" xmlns="http://www.w3.org/2000/svg">
+          <style>.bce{fill:#fff;stroke:#333;stroke-width:1.6}.bct{font:700 13px 'Nunito',sans-serif;fill:#111}.bcq{font:700 13px 'Nunito',sans-serif;fill:#7a4a00}.bcs{font:12px 'Nunito',sans-serif;fill:#333}.bcl{stroke:#333;stroke-width:1.6;fill:none}.bca{stroke:#333;stroke-width:1.6;fill:none;marker-end:url(#bar)}</style>
+          <defs><marker id="bar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#333"/></marker></defs>
+          <g id="bc1" class="bcstep">
+            <text x="170" y="40" text-anchor="middle" class="bcq">À qui rend-il service ?</text>
+            <ellipse cx="170" cy="95" rx="120" ry="40" class="bce"/>
+            <text id="bcUsager" x="170" y="100" text-anchor="middle" class="bct">L'utilisateur</text>
+          </g>
+          <g id="bc2" class="bcstep">
+            <text x="550" y="40" text-anchor="middle" class="bcq">Sur quoi agit-il ?</text>
+            <ellipse cx="550" cy="95" rx="120" ry="40" class="bce"/>
+            <text id="bcMo1" x="550" y="90" text-anchor="middle" class="bct">Ses déplacements</text>
+            <text id="bcMo2" x="550" y="107" text-anchor="middle" class="bcs">(la matière d'œuvre)</text>
+          </g>
+          <g id="bc3" class="bcstep">
+            <ellipse cx="360" cy="205" rx="115" ry="42" class="bce"/>
+            <text id="bcProd" x="360" y="211" text-anchor="middle" class="bct">Trottinette électrique</text>
+            <path d="M225,125 C260,160 290,178 310,186" class="bcl"/>
+            <path d="M495,125 C460,160 430,178 410,186" class="bcl"/>
+          </g>
+          <g id="bc4" class="bcstep">
+            <text x="360" y="285" text-anchor="middle" class="bcq">Dans quel but ?</text>
+            <path d="M360,247 L360,300" class="bca"/>
+            <rect x="130" y="304" width="460" height="52" class="bce"/>
+            <text x="360" y="325" text-anchor="middle" class="bct">Fonction d'usage du produit (le besoin)</text>
+            <text id="bcBut" x="360" y="344" text-anchor="middle" class="bcs">Permettre à l'utilisateur de se déplacer facilement, sans effort</text>
+          </g>
+        </svg>
+        <div class="anim-msg" id="bcMsg">Choisis un exemple et clique sur ▶ Construire.</div>
+      </div>
+    </section>
+
+    <!-- 04 PIEUVRE -->
+    <section id="pieuvre">
+      <h2><span class="num">04</span> Le diagramme pieuvre (les interacteurs) — <em>interactif !</em></h2>
+      <div class="fiche">
+        <span class="role">Le produit en situation, entouré de son milieu extérieur</span>
+        <p>On étudie le produit <strong>en situation d'utilisation</strong>, entouré des <strong>Éléments du Milieu Extérieur (EME)</strong>. Le produit est un « générateur de services », d'où le nom de <strong>fonctions de service</strong>. Il y en a deux sortes :</p>
+        <ul>
+          <li><strong style="color:#4ade80">Fonction principale (FP)</strong> : relie <strong>deux EME</strong> par l'intermédiaire du produit. Elle <strong>satisfait le besoin</strong>, elle assure la prestation.</li>
+          <li><strong style="color:#fbbf24">Fonction contrainte (FC)</strong> : relie <strong>un EME</strong> et le produit. Elle caractérise l'<strong>adaptation</strong> du produit à son environnement.</li>
+        </ul>
+        <p><strong>Clique sur une fonction</strong> pour voir quel lien elle représente sur la pieuvre de la lampe de bureau :</p>
+        <div class="fnbar">
+          <button class="fnbtn fp" data-fn="FP1">FP1</button>
+          <button class="fnbtn" data-fn="FC1">FC1</button>
+          <button class="fnbtn" data-fn="FC2">FC2</button>
+          <button class="fnbtn" data-fn="FC3">FC3</button>
+          <button class="fnbtn" data-fn="FC4">FC4</button>
+          <button class="fnbtn" data-fn="FC5">FC5</button>
+          <button class="fnbtn" id="fnReset">Tout voir</button>
+        </div>
+        <svg class="diagsvg" id="pieuvreSvg" viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg">
+          <style>.pv{fill:#fff;stroke:#333;stroke-width:1.6}.pvc{fill:#dbeafe;stroke:#333;stroke-width:2}.pvt{font:700 13px 'Nunito',sans-serif;fill:#111}.pvs{font:11.5px 'Nunito',sans-serif;fill:#333}</style>
+          <text x="20" y="24" class="pvt" font-size="13">Diagramme pieuvre de la lampe de bureau</text>
+          <!-- liens (dessines sous les bulles) -->
+          <path id="lFP1" class="plink" d="M300,90 C300,140 320,160 340,168 M400,170 C480,150 530,120 560,100"/>
+          <path id="lFC1" class="plink" d="M290,105 C300,140 315,158 335,170"/>
+          <path id="lFC2" class="plink" d="M450,200 C520,205 570,210 610,215"/>
+          <path id="lFC3" class="plink" d="M400,235 C430,275 460,300 480,318"/>
+          <path id="lFC4" class="plink" d="M310,230 C270,270 230,295 200,312"/>
+          <path id="lFC5" class="plink" d="M270,195 C210,190 160,185 120,180"/>
+          <text id="tFP1" class="plabel" x="452" y="140">FP1</text>
+          <text id="tFC1" class="plabel" x="300" y="150">FC1</text>
+          <text id="tFC2" class="plabel" x="520" y="200">FC2</text>
+          <text id="tFC3" class="plabel" x="443" y="285">FC3</text>
+          <text id="tFC4" class="plabel" x="245" y="285">FC4</text>
+          <text id="tFC5" class="plabel" x="185" y="178">FC5</text>
+          <!-- produit -->
+          <ellipse cx="360" cy="200" rx="95" ry="38" class="pvc"/>
+          <text x="360" y="196" text-anchor="middle" class="pvt">LAMPE DE</text>
+          <text x="360" y="213" text-anchor="middle" class="pvt">BUREAU</text>
+          <!-- EME -->
+          <ellipse cx="290" cy="72" rx="82" ry="30" class="pv"/><text x="290" y="78" text-anchor="middle" class="pvt">Utilisateur</text>
+          <ellipse cx="592" cy="80" rx="80" ry="32" class="pv"/><text x="592" y="76" text-anchor="middle" class="pvt">Plan de</text><text x="592" y="92" text-anchor="middle" class="pvt">travail</text>
+          <ellipse cx="648" cy="222" rx="55" ry="28" class="pv"/><text x="648" y="228" text-anchor="middle" class="pvt">Œil</text>
+          <ellipse cx="510" cy="335" rx="78" ry="28" class="pv"/><text x="510" y="341" text-anchor="middle" class="pvt">Ergonomie</text>
+          <ellipse cx="175" cy="330" rx="85" ry="28" class="pv"/><text x="175" y="336" text-anchor="middle" class="pvt">Concurrence</text>
+          <ellipse cx="88" cy="172" rx="65" ry="28" class="pv"/><text x="88" y="178" text-anchor="middle" class="pvt">Énergie</text>
+        </svg>
+        <div class="anim-msg" id="fnMsg">FP = trait qui TRAVERSE le produit entre 2 EME · FC = trait entre 1 EME et le produit.</div>
+      </div>
+    </section>
+
+    <!-- 05 FORMULER -->
+    <section id="formuler">
+      <h2><span class="num">05</span> Formuler une fonction de service</h2>
+      <div class="fiche">
+        <span class="role">Verbe à l'infinitif + éléments du milieu extérieur</span>
+        <p>La formulation des fonctions de service est <strong>normalisée</strong> :</p>
+        <ul>
+          <li>un <strong>verbe</strong> ou un groupe verbal pour caractériser <strong>l'action</strong> ;</li>
+          <li>des <strong>compléments</strong> représentant les <strong>éléments du milieu extérieur</strong> concernés.</li>
+        </ul>
+        <h3>Les fonctions de la lampe de bureau (celles de la pieuvre !)</h3>
+        <table class="car">
+          <tr><th></th><th>Fonction de service</th></tr>
+          <tr><td>FP1</td><td><strong>PERMETTRE</strong> à l'utilisateur d'éclairer le plan de travail.</td></tr>
+          <tr><td>FC1</td><td><strong>NE PAS ÉBLOUIR</strong> l'utilisateur.</td></tr>
+          <tr><td>FC2</td><td><strong>PLAIRE</strong> à l'œil (au sens esthétique).</td></tr>
+          <tr><td>FC3</td><td><strong>ÊTRE</strong> de prise en main facile.</td></tr>
+          <tr><td>FC4</td><td><strong>ÊTRE</strong> compétitif (prix).</td></tr>
+          <tr><td>FC5</td><td><strong>ÊTRE ALIMENTÉ</strong> en énergie.</td></tr>
+        </table>
+        <div class="note"><span class="ico">✍️</span><p>Remarque le <strong>verbe en premier</strong>, toujours à l'infinitif : Permettre, Plaire, Être… C'est la règle !</p></div>
+      </div>
+    </section>
+
+    <!-- 06 CONTRAINTES -->
+    <section id="contraintes">
+      <h2><span class="num">06</span> Les 5 familles de contraintes</h2>
+      <p>L'environnement du produit impose des <strong>contraintes</strong>, classées en <strong>5 catégories</strong>. <strong>Clique sur chaque carte</strong> :</p>
+      <div class="cgrid">
+        <div class="ccard" data-cc><h5>⚙️ 1. Fonctionnement</h5><div class="liste">✔ consommation d'énergie<br>✔ facilité de mise en œuvre<br>✔ maintenance</div><p class="hint-open">👆 Clique pour voir</p></div>
+        <div class="ccard" data-cc><h5>🌦️ 2. Milieu extérieur</h5><div class="liste">✔ résistance aux éléments (eau, froid…)<br>✔ résistance aux autres objets</div><p class="hint-open">👆 Clique pour voir</p></div>
+        <div class="ccard" data-cc><h5>💰 3. Économiques</h5><div class="liste">✔ coût de fabrication<br>✔ coût de commercialisation<br>✔ coût d'utilisation</div><p class="hint-open">👆 Clique pour voir</p></div>
+        <div class="ccard" data-cc><h5>🦺 4. Sécurité</h5><div class="liste">✔ utilisation sans danger</div><p class="hint-open">👆 Clique pour voir</p></div>
+        <div class="ccard" data-cc><h5>🌱 5. Environnementales</h5><div class="liste">✔ respect du développement durable (matériaux, durée de vie, recyclage…)</div><p class="hint-open">👆 Clique pour voir</p></div>
+      </div>
+    </section>
+
+    <!-- 07 CARACTERISER -->
+    <section id="caracteriser">
+      <h2><span class="num">07</span> Caractériser les fonctions : qualifier & quantifier</h2>
+      <div class="fiche">
+        <span class="role">Un critère + une valeur = un objectif mesurable</span>
+        <p>Pour chaque fonction, on précise le niveau de satisfaction attendu du client :</p>
+        <ul>
+          <li><strong>Qualifier</strong> : identifier le phénomène physique sur lequel le produit agit → on définit un <strong>critère d'appréciation</strong> (une grandeur physique).</li>
+          <li><strong>Quantifier</strong> : donner le <strong>seuil de satisfaction</strong> du client → une <strong>valeur (niveau)</strong>.</li>
+        </ul>
+        <h3>🛴 Exemple : la trottinette électrique</h3>
+        <table class="car">
+          <tr><th>Critère d'appréciation (qualifier)</th><th>Valeur / Niveau (quantifier)</th></tr>
+          <tr><td>Distance en autonomie</td><td>50 km minimum</td></tr>
+          <tr><td>Durée de vie</td><td>5 ans minimum</td></tr>
+          <tr><td>Vitesse</td><td>De 0 à 20 km/h</td></tr>
+        </table>
+        <h3>💡 Exemple : la lampe de bureau (tableau de caractérisation)</h3>
+        <table class="car">
+          <tr><th></th><th>Fonction</th><th>Critères d'appréciation</th><th>Niveaux d'appréciation</th></tr>
+          <tr><td>FP1</td><td>PERMETTRE à l'utilisateur d'éclairer le plan de travail</td><td>Surface éclairée · Intensité lumineuse</td><td>1 m² minimum · 60 lux minimum</td></tr>
+          <tr><td>FC1</td><td>NE PAS ÉBLOUIR l'utilisateur</td><td>Lumière dans les yeux</td><td>Absence impérative</td></tr>
+          <tr><td>FC2</td><td>PLAIRE à l'œil</td><td>Forme · Couleur · Matériaux</td><td>Soignée · 2 maximum · 3 maximum</td></tr>
+          <tr><td>FC3</td><td>ÊTRE de prise en main facile</td><td>Encombrement · Orientation</td><td>400×100×200 mm maximum · Suivant deux axes</td></tr>
+          <tr><td>FC4</td><td>ÊTRE compétitif (prix)</td><td>Prix de vente</td><td>15 euros maximum</td></tr>
+          <tr><td>FC5</td><td>ÊTRE ALIMENTÉ en énergie</td><td>Tension · Puissance électrique</td><td>230 Volts · 20 W maximum</td></tr>
+        </table>
+        <div class="note"><span class="ico">🧪</span><p>Astuce pour ne pas confondre : le <strong>critère</strong> est ce qu'on <strong>mesure</strong> (la vitesse), le <strong>niveau</strong> est le <strong>chiffre à atteindre</strong> (20 km/h). Un critère sans valeur, ça ne sert à rien !</p></div>
+      </div>
+    </section>
+
+    <!-- 08 REDIGER CDCF -->
+    <section id="rediger">
+      <h2><span class="num">08</span> Rédiger le CdCF : la méthode complète — <em>animé !</em></h2>
+      <div class="fiche">
+        <span class="role">4 étapes, toujours dans le même ordre</span>
+        <p>Clique sur ▶ pour dérouler la méthode qui mène au <strong>cahier des charges fonctionnel</strong> :</p>
+        <div class="animbar">
+          <button class="btn" id="etGo">▶ Dérouler la méthode</button>
+          <button class="btn" id="etReset">↺</button>
+        </div>
+        <svg class="diagsvg" viewBox="0 0 760 150" xmlns="http://www.w3.org/2000/svg">
+          <style>.eb2{fill:#fff;stroke:#333;stroke-width:1.6}.et2{font:700 12px 'Nunito',sans-serif;fill:#111}.es2{font:10.5px 'Nunito',sans-serif;fill:#444}.ea2{stroke:#333;stroke-width:1.6;fill:none;marker-end:url(#ear)}</style>
+          <defs><marker id="ear" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#333"/></marker></defs>
+          <g id="et1" class="etn"><rect x="20" y="40" width="160" height="66" rx="10" class="eb2"/><text x="100" y="66" text-anchor="middle" class="et2">1. Énoncer le besoin</text><text x="100" y="86" text-anchor="middle" class="es2">bête à cornes</text></g>
+          <line x1="180" y1="73" x2="205" y2="73" class="ea2"/>
+          <g id="et2" class="etn"><rect x="207" y="40" width="160" height="66" rx="10" class="eb2"/><text x="287" y="66" text-anchor="middle" class="et2">2. Trouver les EME</text><text x="287" y="86" text-anchor="middle" class="es2">diagramme pieuvre</text></g>
+          <line x1="367" y1="73" x2="392" y2="73" class="ea2"/>
+          <g id="et3" class="etn"><rect x="394" y="40" width="160" height="66" rx="10" class="eb2"/><text x="474" y="60" text-anchor="middle" class="et2">3. Lister les fonctions</text><text x="474" y="78" text-anchor="middle" class="es2">FP et FC, formulées</text><text x="474" y="94" text-anchor="middle" class="es2">verbe + compléments</text></g>
+          <line x1="554" y1="73" x2="579" y2="73" class="ea2"/>
+          <g id="et4" class="etn"><rect x="581" y="40" width="160" height="66" rx="10" class="eb2"/><text x="661" y="60" text-anchor="middle" class="et2">4. Rédiger le CdCF</text><text x="661" y="78" text-anchor="middle" class="es2">tableau : fonctions,</text><text x="661" y="94" text-anchor="middle" class="es2">critères, niveaux</text></g>
+        </svg>
+        <div class="anim-msg" id="etMsg">La méthode part toujours du besoin… et finit toujours par le document écrit.</div>
+      </div>
+    </section>
+
+    <!-- 09 FAST -->
+    <section id="fast">
+      <h2><span class="num">09</span> Et après ? Le diagramme FAST</h2>
+      <div class="fiche">
+        <span class="role">De la fonction de service à la solution technique</span>
+        <p>Chaque fonction de service est obtenue à l'aide de <strong>fonctions techniques (FT)</strong>, qui font appel à des <strong>solutions techniques (ST)</strong>. L'outil graphique s'appelle le <strong>FAST</strong> (<em>Function Analysis System Technic</em>). Exemple avec la trottinette :</p>
+        <svg class="diagsvg" viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg">
+          <style>.fb{fill:#fff;stroke:#333;stroke-width:1.5}.ft{font:700 11.5px 'Nunito',sans-serif;fill:#111}.fs{font:10.5px 'Nunito',sans-serif;fill:#444}.fa{stroke:#333;stroke-width:1.4;fill:none;marker-end:url(#far)}</style>
+          <defs><marker id="far" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#333"/></marker></defs>
+          <text x="130" y="28" text-anchor="middle" class="ft">Fonction d'usage</text>
+          <text x="390" y="28" text-anchor="middle" class="ft">Fonctions techniques</text>
+          <text x="640" y="28" text-anchor="middle" class="ft">Solutions techniques</text>
+          <rect x="30" y="95" width="200" height="66" rx="10" class="fb"/>
+          <text x="130" y="120" text-anchor="middle" class="ft">Se déplacer</text><text x="130" y="138" text-anchor="middle" class="ft">sans effort</text>
+          <rect x="300" y="44" width="180" height="44" rx="8" class="fb"/><text x="390" y="70" text-anchor="middle" class="fs">FT1 : Propulser la trottinette</text>
+          <rect x="300" y="106" width="180" height="44" rx="8" class="fb"/><text x="390" y="132" text-anchor="middle" class="fs">FT2 : Stocker l'énergie</text>
+          <rect x="300" y="168" width="180" height="44" rx="8" class="fb"/><text x="390" y="194" text-anchor="middle" class="fs">FT3 : Diriger la trottinette</text>
+          <rect x="550" y="44" width="180" height="44" rx="8" class="fb"/><text x="640" y="70" text-anchor="middle" class="fs">Moteur électrique</text>
+          <rect x="550" y="106" width="180" height="44" rx="8" class="fb"/><text x="640" y="132" text-anchor="middle" class="fs">Batterie</text>
+          <rect x="550" y="168" width="180" height="44" rx="8" class="fb"/><text x="640" y="194" text-anchor="middle" class="fs">Guidon orientable</text>
+          <line x1="230" y1="115" x2="300" y2="70" class="fa"/>
+          <line x1="230" y1="128" x2="300" y2="128" class="fa"/>
+          <line x1="230" y1="141" x2="300" y2="186" class="fa"/>
+          <line x1="480" y1="66" x2="550" y2="66" class="fa"/>
+          <line x1="480" y1="128" x2="550" y2="128" class="fa"/>
+          <line x1="480" y1="190" x2="550" y2="190" class="fa"/>
+        </svg>
+        <div class="steps">
+          <div>À gauche : la <strong>fonction d'usage</strong> (ce que veut le client).</div>
+          <div>Au milieu : les <strong>fonctions techniques</strong> qui contribuent à la réaliser.</div>
+          <div>À droite : les <strong>solutions techniques</strong> choisies par les concepteurs.</div>
+        </div>
+        <div class="note"><span class="ico">🔗</span><p>Tu vois le lien avec le chapitre SysML ? Le CdCF donne <strong>le diagramme des exigences</strong>, et la pieuvre prépare <strong>le diagramme de contexte</strong> et <strong>les cas d'utilisation</strong> !</p></div>
+      </div>
+    </section>
+
+    <!-- 10 JEU -->
+    <section id="jeu">
+      <h2><span class="num">10</span> Le jeu : FP ou FC ? 🎯</h2>
+      <p>Fonction <strong>principale</strong> (elle relie deux EME à travers le produit, elle satisfait le besoin) ou fonction <strong>contrainte</strong> (elle adapte le produit à un seul EME) ?</p>
+
+      <div class="jeu" data-quiz data-answer="0">
+        <p class="q">Lampe : « PERMETTRE à l'utilisateur d'éclairer le plan de travail »</p>
+        <div class="opt" data-i="0">Fonction principale (FP)</div>
+        <div class="opt" data-i="1">Fonction contrainte (FC)</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">Lampe : « NE PAS ÉBLOUIR l'utilisateur »</p>
+        <div class="opt" data-i="0">Fonction principale (FP)</div>
+        <div class="opt" data-i="1">Fonction contrainte (FC)</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">Lampe : « ÊTRE ALIMENTÉ en énergie »</p>
+        <div class="opt" data-i="0">Fonction principale (FP)</div>
+        <div class="opt" data-i="1">Fonction contrainte (FC)</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="0">
+        <p class="q">Trottinette : « PERMETTRE à l'utilisateur de se déplacer sur la route »</p>
+        <div class="opt" data-i="0">Fonction principale (FP)</div>
+        <div class="opt" data-i="1">Fonction contrainte (FC)</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">Trottinette : « ÊTRE compétitif face à la concurrence (prix) »</p>
+        <div class="opt" data-i="0">Fonction principale (FP)</div>
+        <div class="opt" data-i="1">Fonction contrainte (FC)</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">Trottinette : « RÉSISTER à la pluie »</p>
+        <div class="opt" data-i="0">Fonction principale (FP)</div>
+        <div class="opt" data-i="1">Fonction contrainte (FC)</div>
+        <p class="feedback"></p>
+      </div>
+    </section>
+
+    <!-- 11 QUIZ BILAN -->
+    <section id="bilan">
+      <h2><span class="num">11</span> Quiz bilan</h2>
+      <p class="muted">Vérifie l'essentiel. Clique sur ta réponse.</p>
+
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">Le cahier des charges est…</p>
+        <div class="opt" data-i="0">un plan de fabrication détaillé</div>
+        <div class="opt" data-i="1">un document écrit qui définit le besoin et les contraintes</div>
+        <div class="opt" data-i="2">la notice d'utilisation du produit</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="2">
+        <p class="q">« Sur quoi le produit agit-il ? » — la réponse s'appelle…</p>
+        <div class="opt" data-i="0">le client</div>
+        <div class="opt" data-i="1">la fonction technique</div>
+        <div class="opt" data-i="2">la matière d'œuvre</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="0">
+        <p class="q">L'outil graphique pour ÉNONCER le besoin, c'est…</p>
+        <div class="opt" data-i="0">la bête à cornes</div>
+        <div class="opt" data-i="1">le diagramme pieuvre</div>
+        <div class="opt" data-i="2">le FAST</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">Une fonction principale (FP) relie…</p>
+        <div class="opt" data-i="0">un seul EME au produit</div>
+        <div class="opt" data-i="1">deux EME par l'intermédiaire du produit</div>
+        <div class="opt" data-i="2">deux produits entre eux</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">« 50 km minimum », c'est…</p>
+        <div class="opt" data-i="0">un critère d'appréciation</div>
+        <div class="opt" data-i="1">une valeur (un niveau)</div>
+        <div class="opt" data-i="2">une fonction technique</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="2">
+        <p class="q">Combien de familles de contraintes avons-nous vues ?</p>
+        <div class="opt" data-i="0">3</div>
+        <div class="opt" data-i="1">4</div>
+        <div class="opt" data-i="2">5</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="0">
+        <p class="q">Une fonction de service se formule avec…</p>
+        <div class="opt" data-i="0">un verbe à l'infinitif + des compléments (les EME)</div>
+        <div class="opt" data-i="1">un nom + un adjectif</div>
+        <div class="opt" data-i="2">un dessin technique</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="2">
+        <p class="q">Le diagramme FAST relie…</p>
+        <div class="opt" data-i="0">le client aux concepteurs</div>
+        <div class="opt" data-i="1">les EME entre eux</div>
+        <div class="opt" data-i="2">fonction d'usage → fonctions techniques → solutions techniques</div>
+        <p class="feedback"></p>
+      </div>
+    </section>
+
+    <footer>
+      <p><strong>À retenir :</strong> besoin (bête à cornes) → milieu extérieur (pieuvre) → fonctions FP/FC formulées → critères + niveaux → le <strong>CdCF</strong> est prêt ! Ensuite, les concepteurs cherchent des solutions (FAST).</p>
+      <p class="mono-n"><span>N</span><span>a</span><span>dtech</span> · Technologie · Chapitre 1</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+/* Quiz */
+document.querySelectorAll('[data-quiz]').forEach(function(q){
+  var ans = +q.dataset.answer;
+  var fb = q.querySelector('.feedback');
+  q.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click', function(){
+      var i = +opt.dataset.i;
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.add('lock'); });
+      if (i === ans){ opt.classList.add('good'); fb.textContent="Bravo, c'est exact ! 🎉"; fb.className="feedback ok"; }
+      else { opt.classList.add('bad'); fb.textContent="Pas tout à fait — la bonne réponse est en vert."; fb.className="feedback no";
+        q.querySelector('.opt[data-i="'+ans+'"]').classList.add('good'); }
+    });
+  });
+});
+
+/* Cartes contraintes */
+document.querySelectorAll('[data-cc]').forEach(function(c){
+  c.addEventListener('click', function(){ c.classList.toggle('open');
+    var h=c.querySelector('.hint-open'); if(h) h.textContent = c.classList.contains('open') ? '👆 Clique pour refermer' : '👆 Clique pour voir';
+  });
+});
+
+/* Bete a cornes animee */
+(function(){
+  var data={
+    trot:{usager:"L'utilisateur", mo:"Ses déplacements", prod:"Trottinette électrique", but:"Permettre à l'utilisateur de se déplacer facilement, sans effort"},
+    lampe:{usager:"L'utilisateur", mo:"Le plan de travail", prod:"Lampe de bureau", but:"Permettre à l'utilisateur d'éclairer le plan de travail"}
+  };
+  var cur='trot', timer=null;
+  var msg=document.getElementById('bcMsg');
+  var steps=['bc1','bc2','bc3','bc4'];
+  var textes=[
+    "Question 1 : À QUI le produit rend-il service ? → à l'usager / au client.",
+    "Question 2 : SUR QUOI agit-il ? → sur la matière d'œuvre.",
+    "Au centre : le NOM du produit, relié aux deux cornes.",
+    "Question 3 : DANS QUEL BUT ? → la fonction d'usage : c'est LE BESOIN !"
+  ];
+  function applyEx(){
+    var d=data[cur];
+    document.getElementById('bcUsager').textContent=d.usager;
+    document.getElementById('bcMo1').textContent=d.mo;
+    document.getElementById('bcProd').textContent=d.prod;
+    document.getElementById('bcBut').textContent=d.but;
+  }
+  function reset(){ if(timer) clearInterval(timer);
+    steps.forEach(function(id){ document.getElementById(id).classList.remove('show'); });
+    msg.textContent="Choisis un exemple et clique sur ▶ Construire.";
+  }
+  document.querySelectorAll('.bcex').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.bcex').forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on'); cur=b.dataset.ex; applyEx(); reset();
+    });
+  });
+  document.getElementById('bcGo').addEventListener('click', function(){
+    reset(); var k=0;
+    timer=setInterval(function(){
+      if(k>=steps.length){ clearInterval(timer); msg.textContent="Bête à cornes complète ✅ — le besoin est énoncé !"; return; }
+      document.getElementById(steps[k]).classList.add('show');
+      msg.textContent=textes[k]; k++;
+    }, 1300);
+  });
+  document.getElementById('bcReset').addEventListener('click', reset);
+  applyEx();
+})();
+
+/* Pieuvre interactive */
+(function(){
+  var svg=document.getElementById('pieuvreSvg');
+  var msg=document.getElementById('fnMsg');
+  var defs={
+    FP1:"FP1 (fonction PRINCIPALE) : PERMETTRE à l'utilisateur d'éclairer le plan de travail — elle relie 2 EME (Utilisateur ↔ Plan de travail) À TRAVERS la lampe.",
+    FC1:"FC1 (contrainte) : NE PAS ÉBLOUIR l'utilisateur — entre l'EME Utilisateur et la lampe.",
+    FC2:"FC2 (contrainte) : PLAIRE à l'œil (esthétique) — entre l'EME Œil et la lampe.",
+    FC3:"FC3 (contrainte) : ÊTRE de prise en main facile — entre l'EME Ergonomie et la lampe.",
+    FC4:"FC4 (contrainte) : ÊTRE compétitif (prix) — entre l'EME Concurrence et la lampe.",
+    FC5:"FC5 (contrainte) : ÊTRE ALIMENTÉ en énergie — entre l'EME Énergie et la lampe."
+  };
+  function clearSel(){
+    svg.classList.remove('pieuvre-sel');
+    svg.querySelectorAll('.plink, .plabel').forEach(function(e){ e.classList.remove('hl'); });
+    document.querySelectorAll('.fnbtn').forEach(function(b){ b.classList.remove('on'); });
+  }
+  document.querySelectorAll('.fnbtn[data-fn]').forEach(function(b){
+    b.addEventListener('click', function(){
+      clearSel(); b.classList.add('on');
+      svg.classList.add('pieuvre-sel');
+      var fn=b.dataset.fn;
+      var l=document.getElementById('l'+fn), t=document.getElementById('t'+fn);
+      if(l) l.classList.add('hl'); if(t) t.classList.add('hl');
+      msg.textContent=defs[fn];
+    });
+  });
+  document.getElementById('fnReset').addEventListener('click', function(){
+    clearSel(); msg.textContent="FP = trait qui TRAVERSE le produit entre 2 EME · FC = trait entre 1 EME et le produit.";
+  });
+})();
+
+/* Etapes CDCF */
+(function(){
+  var msg=document.getElementById('etMsg');
+  var timer=null;
+  var ids=['et1','et2','et3','et4'];
+  var textes=[
+    "1. On énonce le BESOIN avec la bête à cornes.",
+    "2. On place le produit dans son milieu : le diagramme PIEUVRE et ses EME.",
+    "3. On LISTE les fonctions de service (FP et FC), bien formulées.",
+    "4. On RÉDIGE le CdCF : le tableau fonctions / critères / niveaux. Le document est prêt pour les concepteurs !"
+  ];
+  function reset(){ if(timer) clearInterval(timer);
+    ids.forEach(function(id){ document.getElementById(id).classList.remove('on','done'); });
+    msg.textContent="La méthode part toujours du besoin… et finit toujours par le document écrit.";
+  }
+  document.getElementById('etGo').addEventListener('click', function(){
+    reset(); var k=0;
+    timer=setInterval(function(){
+      if(k>0){ var p=document.getElementById(ids[k-1]); p.classList.remove('on'); p.classList.add('done'); }
+      if(k>=ids.length){ clearInterval(timer); return; }
+      document.getElementById(ids[k]).classList.add('on');
+      msg.textContent=textes[k]; k++;
+    }, 1400);
+  });
+  document.getElementById('etReset').addEventListener('click', reset);
+})();
+
+/* Theme jour/nuit */
+(function(){
+  var b=document.getElementById('themeToggle'); if(!b) return;
+  function apply(m){ if(m==='light'){document.body.classList.add('light'); b.textContent='☀️';} else {document.body.classList.remove('light'); b.textContent='🌙';} }
+  var saved=null; try{ saved=localStorage.getItem('nadtech-theme'); }catch(e){}
+  apply(saved==='light'?'light':'dark');
+  b.addEventListener('click', function(){
+    var l=!document.body.classList.contains('light');
+    apply(l?'light':'dark');
+    try{ localStorage.setItem('nadtech-theme', l?'light':'dark'); }catch(e){}
+  });
+})();
+</script>
+</body>
+</html>

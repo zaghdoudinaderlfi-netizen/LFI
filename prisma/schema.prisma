@@ -366,6 +366,12 @@ model TentativeQuiz {
   score          Int @default(0)
   bonnesReponses Int @default(0)
 
+  // Série de bonnes réponses consécutives : compteur courant (remis à 0 sur
+  // erreur/temps écoulé) et record atteint pendant la partie (pour les stats
+  // prof et pour déverrouiller définitivement les power-ups de l'étape B).
+  serieActuelle Int @default(0)
+  serieMax      Int @default(0)
+
   reponses ReponseTentative[]
 
   createdAt DateTime @default(now())
@@ -386,6 +392,10 @@ model ReponseTentative {
   correct       Boolean @default(false)
   tempsMs       Int
   pointsObtenus Int     @default(0)
+
+  // Multiplicateur de série appliqué à cette réponse (1, 1.2, 1.5 ou 2),
+  // gardé pour audit/stats — le calcul fait foi côté serveur dans repondre().
+  multiplicateurSerie Float @default(1)
 
   // Empêche de répondre deux fois à la même question dans une tentative.
   @@unique([tentativeId, questionId])

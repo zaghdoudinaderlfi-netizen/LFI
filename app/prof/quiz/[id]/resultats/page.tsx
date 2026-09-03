@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BarChart3, Trophy } from "lucide-react";
+import { ArrowLeft, BarChart3, Flame, Trophy } from "lucide-react";
 import { obtenirQuizParId, resultatsQuizParEleve, statsQuestionsQuiz } from "@/lib/quiz";
 import { MATIERE_LABELS } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
@@ -76,6 +76,12 @@ export default async function ResultatsQuizPage({
                   <span className="text-xs text-ink-secondary sm:text-sm">
                     {r.nbParties} partie{r.nbParties > 1 ? "s" : ""}
                   </span>
+                  {r.meilleureSerie >= 3 && (
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-400">
+                      <Flame className="h-3.5 w-3.5" />
+                      {r.meilleureSerie}
+                    </span>
+                  )}
                   <span className="badge bg-neon-violet/10 px-3 font-bold text-neon-violet ring-1 ring-neon-violet/30">
                     {r.meilleurScore} pts
                   </span>

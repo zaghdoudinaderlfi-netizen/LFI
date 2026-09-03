@@ -361,6 +361,15 @@ function calculerPoints(tempsMs: number, tempsLimiteMs: number): number {
   return POINTS_BASE + Math.round(POINTS_BONUS_MAX * ratioRestant);
 }
 
+// Multiplicateur de série : compte la bonne réponse en cours, donc une série
+// de 3 (dont celle qui vient d'être validée) profite déjà du bonus x1.2.
+export function multiplicateurSerie(serie: number): number {
+  if (serie >= 8) return 2;
+  if (serie >= 5) return 1.5;
+  if (serie >= 3) return 1.2;
+  return 1;
+}
+
 export async function demarrerTentative(quizId: string, eleveId: string, niveauEleve: Niveau) {
   const quiz = await obtenirQuizVisibleEleve(quizId, niveauEleve);
   if (!quiz) {
@@ -438,6 +447,7 @@ export type ResultatEleve = {
   nom: string;
   meilleurScore: number;
   nbParties: number;
+  meilleureSerie: number;
 };
 
 /** Meilleur score et nombre de parties jouées, par élève. */
@@ -453,12 +463,14 @@ export async function resultatsQuizParEleve(quizId: string): Promise<ResultatEle
     if (existant) {
       existant.nbParties += 1;
       existant.meilleurScore = Math.max(existant.meilleurScore, t.score);
+      existant.meilleureSerie = Math.max(existant.meilleureSerie, t.serieMax);
     } else {
       parEleve.set(t.eleveId, {
         eleveId: t.eleveId,
         nom: formaterNomComplet(t.eleve),
         meilleurScore: t.score,
         nbParties: 1,
+        meilleureSerie: t.serieMax,
       });
     }
   }
@@ -501,6 +513,9 @@ export type ResultatReponse = {
   pointsObtenus: number;
   scoreTotal: number;
   bonnesReponsesTotal: number;
+  serieActuelle: number;
+  serieMax: number;
+  multiplicateur: number;
   questionSuivante: QuestionPourEleve | null;
   terminee: boolean;
   classement?: ClassementQuiz;
@@ -538,7 +553,14 @@ export async function repondre(
   const tempsClampe = Math.min(Math.max(Math.round(tempsMs), 0), tempsLimiteMs);
 
   const correct = reponseDonnee !== null && reponseDonnee === question.bonneReponse;
-  const pointsObtenus = correct ? calculerPoints(tempsClampe, tempsLimiteMs) : 0;
+
+  // La série compte la réponse en cours : une mauvaise réponse (ou un temps
+  // écoulé) la remet à zéro immédiatement, une bonne réponse l'incrémente
+  // avant de déterminer le multiplicateur applicable à CETTE réponse.
+  const nouvelleSerie = correct ? tentative.serieActuelle + 1 : 0;
+  const multiplicateur = correct ? multiplicateurSerie(nouvelleSerie) : 1;
+  const nouveauSerieMax = Math.max(tentative.serieMax, nouvelleSerie);
+  const pointsObtenus = correct ? Math.round(calculerPoints(tempsClampe, tempsLimiteMs) * multiplicateur) : 0;
 
   const [, tentativeMaj] = await prisma.$transaction([
     prisma.reponseTentative.create({
@@ -549,6 +571,7 @@ export async function repondre(
         correct,
         tempsMs: tempsClampe,
         pointsObtenus,
+        multiplicateurSerie: multiplicateur,
       },
     }),
     prisma.tentativeQuiz.update({
@@ -556,6 +579,8 @@ export async function repondre(
       data: {
         score: { increment: pointsObtenus },
         bonnesReponses: { increment: correct ? 1 : 0 },
+        serieActuelle: nouvelleSerie,
+        serieMax: nouveauSerieMax,
       },
     }),
   ]);
@@ -582,6 +607,9 @@ export async function repondre(
     pointsObtenus,
     scoreTotal: tentativeMaj.score,
     bonnesReponsesTotal: tentativeMaj.bonnesReponses,
+    serieActuelle: tentativeMaj.serieActuelle,
+    serieMax: tentativeMaj.serieMax,
+    multiplicateur,
     questionSuivante,
     terminee,
     classement: terminee ? await classementQuiz(tentative.quizId, eleveId) : undefined,

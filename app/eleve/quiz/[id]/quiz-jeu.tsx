@@ -7,6 +7,7 @@ import {
   Circle,
   Crown,
   Diamond,
+  Flame,
   Gamepad2,
   Medal,
   Square,
@@ -51,10 +52,14 @@ export function QuizJeu({
   const [dernierResultat, setDernierResultat] = useState<ResultatReponse | null>(null);
   const [scoreCourant, setScoreCourant] = useState(0);
   const [bonnesReponses, setBonnesReponses] = useState(0);
+  const [serie, setSerie] = useState(0);
+  const [multiplicateur, setMultiplicateur] = useState(1);
+  const [serieVientDeCasser, setSerieVientDeCasser] = useState(false);
 
   const debutQuestionRef = useRef<number>(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const enTraitementRef = useRef(false);
+  const serieRef = useRef(0);
 
   const nettoyerTimeout = useCallback(() => {
     if (timeoutRef.current) {
@@ -78,6 +83,10 @@ export function QuizJeu({
     setQuestion(res.question);
     setScoreCourant(0);
     setBonnesReponses(0);
+    setSerie(0);
+    setMultiplicateur(1);
+    setSerieVientDeCasser(false);
+    serieRef.current = 0;
     lancerQuestion();
   }
 
@@ -85,6 +94,7 @@ export function QuizJeu({
     setReponseChoisie(null);
     enTraitementRef.current = false;
     debutQuestionRef.current = Date.now();
+    setSerieVientDeCasser(false);
     setEtat("question");
   }
 
@@ -120,6 +130,10 @@ export function QuizJeu({
     setDernierResultat(res.resultat);
     setScoreCourant(res.resultat.scoreTotal);
     setBonnesReponses(res.resultat.bonnesReponsesTotal);
+    setMultiplicateur(res.resultat.multiplicateur);
+    setSerieVientDeCasser(serieRef.current > 0 && res.resultat.serieActuelle === 0);
+    setSerie(res.resultat.serieActuelle);
+    serieRef.current = res.resultat.serieActuelle;
     setEtat("feedback");
 
     setTimeout(() => {
@@ -189,6 +203,9 @@ export function QuizJeu({
           etat={etat}
           reponseChoisie={reponseChoisie}
           resultat={etat === "feedback" ? dernierResultat : null}
+          serie={serie}
+          multiplicateur={multiplicateur}
+          serieVientDeCasser={serieVientDeCasser}
           onRepondre={envoyerReponse}
         />
       )}
@@ -199,6 +216,7 @@ export function QuizJeu({
           score={scoreCourant}
           bonnesReponses={bonnesReponses}
           totalQuestions={nbQuestions}
+          serieMax={dernierResultat.serieMax}
           classement={dernierResultat.classement ?? null}
           onRejouer={demarrer}
         />
@@ -212,12 +230,18 @@ function EcranQuestion({
   etat,
   reponseChoisie,
   resultat,
+  serie,
+  multiplicateur,
+  serieVientDeCasser,
   onRepondre,
 }: {
   question: QuestionPourEleve;
   etat: "question" | "feedback";
   reponseChoisie: number | null;
   resultat: ResultatReponse | null;
+  serie: number;
+  multiplicateur: number;
+  serieVientDeCasser: boolean;
   onRepondre: (index: number) => void;
 }) {
   const choixTextes = [question.choixA, question.choixB, question.choixC, question.choixD];
@@ -236,6 +260,25 @@ function EcranQuestion({
           Question {question.index} / {question.total}
         </span>
         <span className="w-9" />
+      </div>
+
+      <div className="mt-2 flex justify-center">
+        <AnimatePresence mode="wait">
+          {serieVientDeCasser ? (
+            <motion.span
+              key="cassee"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="rounded-full bg-space-surface2/60 px-3 py-1 text-xs text-ink-muted"
+            >
+              Série remise à zéro
+            </motion.span>
+          ) : serie > 0 ? (
+            <SerieBadge key="serie" serie={serie} multiplicateur={multiplicateur} />
+          ) : null}
+        </AnimatePresence>
       </div>
 
       {/* Barre de temps */}
@@ -300,7 +343,10 @@ function EcranQuestion({
             }`}
           >
             {resultat.correct ? (
-              <span>Bonne réponse ! +{resultat.pointsObtenus} points</span>
+              <span>
+                Bonne réponse ! +{resultat.pointsObtenus} points
+                {resultat.multiplicateur > 1 ? ` (série ×${resultat.multiplicateur})` : ""}
+              </span>
             ) : (
               <span>
                 {reponseChoisie === null ? "Temps écoulé !" : "Mauvaise réponse."} La bonne réponse était{" "}
@@ -314,11 +360,49 @@ function EcranQuestion({
   );
 }
 
+// Palier visuel de la série : plus le multiplicateur monte, plus l'effet
+// (couleur, nombre de flammes, vitesse de pulsation) s'intensifie.
+function SerieBadge({ serie, multiplicateur }: { serie: number; multiplicateur: number }) {
+  const palier = serie >= 8 ? 3 : serie >= 5 ? 2 : serie >= 3 ? 1 : 0;
+  const couleurs = [
+    "bg-space-surface2/70 text-ink-secondary ring-1 ring-space-border",
+    "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30",
+    "bg-orange-500/20 text-orange-300 ring-1 ring-orange-500/40",
+    "bg-red-500/20 text-red-300 ring-1 ring-red-500/50 shadow-glow-soft",
+  ][palier];
+  const echelle = [1, 1.05, 1.1, 1.16][palier];
+  const duree = [0, 0.9, 0.7, 0.5][palier];
+
+  return (
+    <motion.span
+      initial={{ scale: 0.85, opacity: 0 }}
+      animate={
+        palier === 0
+          ? { scale: 1, opacity: 1 }
+          : { scale: [1, echelle, 1], opacity: 1 }
+      }
+      transition={
+        palier === 0
+          ? { duration: 0.2 }
+          : { duration: duree, repeat: Infinity, ease: "easeInOut" }
+      }
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold ${couleurs}`}
+    >
+      Série : {serie}
+      {Array.from({ length: palier }).map((_, i) => (
+        <Flame key={i} className="h-4 w-4 fill-current" />
+      ))}
+      {multiplicateur > 1 && <span className="text-xs font-semibold opacity-80">×{multiplicateur}</span>}
+    </motion.span>
+  );
+}
+
 function EcranResultats({
   titre,
   score,
   bonnesReponses,
   totalQuestions,
+  serieMax,
   classement,
   onRejouer,
 }: {
@@ -326,6 +410,7 @@ function EcranResultats({
   score: number;
   bonnesReponses: number;
   totalQuestions: number;
+  serieMax: number;
   classement: import("@/lib/quiz").ClassementQuiz | null;
   onRejouer: () => void;
 }) {
@@ -356,6 +441,15 @@ function EcranResultats({
             </span>
             <span className="text-xs uppercase tracking-widest text-ink-muted">Bonnes réponses</span>
           </div>
+          {serieMax >= 3 && (
+            <div className="card flex flex-col items-center gap-1 px-8 py-5">
+              <span className="flex items-center gap-1 text-3xl font-black text-amber-400">
+                {serieMax}
+                <Flame className="h-6 w-6 fill-current" />
+              </span>
+              <span className="text-xs uppercase tracking-widest text-ink-muted">Meilleure série</span>
+            </div>
+          )}
         </div>
 
         {top3.length > 0 && (

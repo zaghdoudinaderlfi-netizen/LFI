@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSI · Chapitre 4 — Fonctions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Moteur Python dans le navigateur -->
+<script src="https://skulpt.org/js/skulpt.min.js" type="text/javascript"></script>
+<script src="https://skulpt.org/js/skulpt-stdlib.js" type="text/javascript"></script>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a31; --code:#0e1526; --ink:#e9eefb; --muted:#9aa7c2;
+  --cyan:#22d3ee; --violet:#8b5cf6; --pink:#ec4899; --ok:#34d399; --err:#fb7185;
+  --line:rgba(255,255,255,.09); --glow:0 0 0 1px rgba(255,255,255,.04), 0 18px 40px -20px rgba(0,0,0,.7);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:
+    radial-gradient(1100px 600px at 80% -10%, rgba(139,92,246,.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.14), transparent 55%),
+    var(--bg);
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;
+}
+.wrap{max-width:1180px; margin:0 auto; padding:0 20px; display:grid; grid-template-columns:230px 1fr; gap:36px}
+@media(max-width:880px){ .wrap{grid-template-columns:1fr; gap:0} .toc{display:none!important} }
+
+header.hero{padding:54px 0 26px; border-bottom:1px solid var(--line); margin-bottom:30px}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; color:var(--cyan);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(34,211,238,.06)}
+.mono-n{font-family:var(--mono); font-weight:700}
+.mono-n span:nth-child(1){color:var(--cyan)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--violet)}
+h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(28px,5vw,46px); line-height:1.08; margin:18px 0 10px}
+h1 .accent{background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.lede{color:var(--muted); max-width:62ch; font-size:18px}
+
+.toc{position:sticky; top:18px; align-self:start; padding-top:30px}
+.toc h4{font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
+.toc a{display:block; color:var(--muted); text-decoration:none; font-size:13.5px; padding:5px 10px; border-left:2px solid transparent; border-radius:0 8px 8px 0; transition:.15s}
+.toc a:hover{color:var(--ink); background:rgba(255,255,255,.03); border-left-color:var(--violet)}
+
+section{padding:30px 0; border-bottom:1px solid var(--line)}
+h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; margin:0 0 6px; scroll-margin-top:20px;
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+h2 .num{font-family:var(--mono); font-size:14px; color:var(--violet); border:1px solid var(--line); border-radius:8px; padding:3px 9px; background:rgba(139,92,246,.08)}
+h3{font-family:'Space Grotesk',sans-serif; font-size:18px; margin:26px 0 8px; color:#fff}
+p{margin:10px 0}
+.muted{color:var(--muted)}
+code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; color:#cfe6ff; border:1px solid var(--line)}
+strong{color:#fff}
+ul{margin:10px 0; padding-left:22px} li{margin:4px 0}
+a.link{color:var(--cyan)}
+
+.note{display:flex; gap:12px; padding:14px 16px; border-radius:12px; background:rgba(34,211,238,.06); border:1px solid rgba(34,211,238,.22); margin:16px 0}
+.note.warn{background:rgba(251,113,133,.07); border-color:rgba(251,113,133,.28)}
+.note .ico{font-size:18px; line-height:1.4}
+.note p{margin:0}
+
+.cell{background:var(--code); border:1px solid var(--line); border-radius:14px; margin:16px 0; overflow:hidden; box-shadow:var(--glow)}
+.cell-head{display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,.025); border-bottom:1px solid var(--line)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:7px}
+.dot{width:9px; height:9px; border-radius:50%; background:var(--violet); box-shadow:0 0 8px var(--violet)}
+.run{font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:#06121f; cursor:pointer;
+  border:0; border-radius:8px; padding:7px 16px; background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.15s}
+.run:hover{filter:brightness(1.08); transform:translateY(-1px)}
+.run:disabled{opacity:.5; cursor:wait; transform:none}
+textarea.code{width:100%; border:0; outline:0; resize:vertical; background:transparent; color:#e7f0ff;
+  font-family:var(--mono); font-size:14px; line-height:1.6; padding:14px 16px; display:block; tab-size:4}
+.out{margin:0; padding:0 16px; max-height:0; overflow:hidden; font-family:var(--mono); font-size:13.5px; color:#bfe6c9;
+  white-space:pre-wrap; border-top:1px solid transparent; transition:max-height .2s, padding .2s}
+.out.show{max-height:420px; overflow:auto; padding:12px 16px; border-top:1px solid var(--line); background:rgba(0,0,0,.25)}
+.out.err{color:var(--err)}
+.turtle{display:flex; justify-content:center; padding:10px; background:#fff; border-top:1px solid var(--line)}
+.turtle[hidden]{display:none}
+
+pre.static{background:var(--code); border:1px solid var(--line); border-radius:14px; padding:14px 16px; overflow:auto;
+  font-family:var(--mono); font-size:13.5px; line-height:1.6; margin:16px 0; color:#e7f0ff}
+pre.static .c{color:#7c8aa6} pre.static .k{color:var(--violet)} pre.static .s{color:#7ee0a6} pre.static .e{color:var(--err)}
+
+/* Pile d'appels (animation) */
+.pile{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px; margin:18px 0; box-shadow:var(--glow)}
+.pile .bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+.pile .step-code{font-family:var(--mono); font-size:13.5px; color:#cfe6ff; background:rgba(255,255,255,.05); padding:6px 12px; border-radius:8px; border:1px solid var(--line); flex:1; min-width:180px}
+.btn{font-family:'Nunito'; font-weight:700; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--ink); padding:7px 14px; border-radius:9px; cursor:pointer; transition:.15s}
+.btn:hover{border-color:var(--violet); background:rgba(139,92,246,.12)}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.frames{display:flex; flex-direction:column-reverse; gap:10px; min-height:120px}
+.frame{border-radius:12px; padding:10px 14px; border:1.5px solid var(--line); background:rgba(255,255,255,.03); opacity:0; transform:translateY(6px); transition:.35s; font-family:var(--mono); font-size:13.5px}
+.frame.show{opacity:1; transform:translateY(0)}
+.frame.global{border-color:rgba(34,211,238,.4); background:rgba(34,211,238,.06)}
+.frame.fn{border-color:rgba(139,92,246,.5); background:rgba(139,92,246,.08)}
+.frame.callee{border-color:rgba(236,72,153,.55); background:rgba(236,72,153,.09)}
+.frame .fname{color:var(--cyan); font-weight:700; margin-bottom:4px}
+.frame.fn .fname{color:var(--violet)}
+.frame.callee .fname{color:var(--pink)}
+.frame .vars{display:flex; gap:14px; flex-wrap:wrap}
+.frame .v{background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:7px; padding:2px 9px}
+.frame .v b{color:var(--ok)}
+.pile-msg{margin-top:6px; font-size:14px; color:var(--muted)}
+
+.quiz{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin:18px 0; box-shadow:var(--glow)}
+.quiz .q{font-weight:800; margin:0 0 12px; font-family:'Space Grotesk',sans-serif}
+.quiz .q::before{content:"?"; display:inline-grid; place-items:center; width:24px; height:24px; margin-right:10px; border-radius:7px;
+  background:linear-gradient(135deg,var(--violet),var(--pink)); color:#fff; font-family:var(--mono); font-weight:700; font-size:14px; vertical-align:middle}
+.opt{display:block; padding:11px 14px; margin:8px 0; border:1px solid var(--line); border-radius:10px; cursor:pointer; transition:.12s; font-family:var(--mono); font-size:14px}
+.opt:hover{border-color:var(--violet); background:rgba(139,92,246,.07)}
+.opt.good{border-color:var(--ok); background:rgba(52,211,153,.12)}
+.opt.bad{border-color:var(--err); background:rgba(251,113,133,.12)}
+.opt.lock{pointer-events:none; opacity:.85}
+.feedback{margin-top:10px; font-size:14px; min-height:20px; color:var(--muted)}
+.feedback.ok{color:var(--ok)} .feedback.no{color:var(--err)}
+
+footer{padding:40px 0 70px; color:var(--muted); font-size:14px}
+footer a{color:var(--cyan)}
+.tag-list{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+::selection{background:rgba(139,92,246,.4)}
+
+.theme-toggle{position:fixed; top:16px; right:16px; z-index:60; width:46px; height:46px; border-radius:12px;
+  border:1px solid var(--line); background:var(--bg2); color:var(--ink); font-size:20px; cursor:pointer;
+  box-shadow:0 8px 24px -12px rgba(0,0,0,.5); transition:.15s; display:grid; place-items:center}
+.theme-toggle:hover{border-color:var(--violet); transform:translateY(-1px)}
+body.light{
+  --bg:#f3f1ea; --bg2:#ffffff; --ink:#221f2b; --muted:#5f5b6e; --line:rgba(30,20,10,.14);
+  --code:#f6f4ef;
+  --glow:0 0 0 1px rgba(30,20,10,.04), 0 18px 40px -24px rgba(30,20,10,.22);
+}
+body.light h3, body.light strong, body.light .quiz .q{color:#221f2b}
+body.light code.inl{background:rgba(30,20,10,.06); color:#7c3aed; border-color:rgba(30,20,10,.15)}
+body.light textarea.code{color:#221f2b}
+body.light pre.static{color:#221f2b}
+body.light .theme-toggle{box-shadow:0 8px 24px -14px rgba(30,20,10,.35)}
+</style>
+</head>
+<body>
+<button id="themeToggle" class="theme-toggle" title="Basculer jour / nuit" aria-label="Basculer jour / nuit">🌙</button>
+<div class="wrap">
+
+  <nav class="toc">
+    <h4>Sommaire</h4>
+    <a href="#intro">Qu'est-ce qu'une fonction ?</a>
+    <a href="#definir">Définir une fonction</a>
+    <a href="#appeler">Appeler une fonction</a>
+    <a href="#erreurs-indent">Erreurs d'indentation</a>
+    <a href="#parametre">Fonction avec paramètre</a>
+    <a href="#formel">Formel & effectif</a>
+    <a href="#plusieurs">Plusieurs paramètres</a>
+    <a href="#predefinies">Fonctions prédéfinies</a>
+    <a href="#erreurs-appel">Erreurs à l'appel</a>
+    <a href="#retour">Renvoyer un résultat</a>
+    <a href="#decomposer">Décomposer un problème</a>
+    <a href="#procedures">Fonctions & procédures</a>
+    <a href="#nuplet">Renvoyer plusieurs résultats</a>
+    <a href="#locales">Variables locales</a>
+    <a href="#pile">La pile d'appels (animé)</a>
+    <a href="#globales">Variables globales</a>
+    <a href="#anticipee">Sortie anticipée</a>
+    <a href="#bilan">Quiz bilan</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="kicker">NSI · Première · Chapitre 4</span>
+      <h1>Les <span class="accent">fonctions</span><br>en Python</h1>
+      <p class="lede">Une fonction, c'est un <strong>morceau de code réutilisable</strong>. Écris-la une fois, appelle-la partout. Ici, chaque exemple est <strong>modifiable</strong> et <strong>exécutable</strong> — change le code, clique sur <em>Exécuter</em>, observe.</p>
+      <div class="tag-list">
+        <span class="chip">def</span><span class="chip">paramètres</span><span class="chip">return</span><span class="chip">portée</span><span class="chip">pile d'appels</span><span class="chip">n-uplets</span>
+      </div>
+    </header>
+
+    <!-- 01 INTRO -->
+    <section id="intro">
+      <h2><span class="num">01</span> Qu'est-ce qu'une fonction ?</h2>
+      <p>Une <strong>fonction</strong> correspond à un <strong>fragment de code réutilisable</strong> réalisant une tâche donnée, pouvant dépendre d'un certain nombre de <strong>paramètres</strong>.</p>
+      <div class="note"><span class="ico">💡</span><p>Au lieu de recopier 10 fois les mêmes lignes, on les écrit <strong>une fois</strong> dans une fonction, puis on l'appelle autant de fois que nécessaire. C'est le principe de la <strong>factorisation</strong> du code.</p></div>
+    </section>
+
+    <!-- 02 DEFINIR -->
+    <section id="definir">
+      <h2><span class="num">02</span> Définir une fonction</h2>
+      <p>Une fonction associe une <strong>séquence d'instructions</strong> à un <strong>nom</strong>. Par exemple :</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+
+def angle_droit():
+    forward(100)
+    left(90)
+    forward(100)
+
+angle_droit()</textarea>
+        <pre class="out"></pre>
+        <div class="turtle" hidden></div>
+      </div>
+      <ul>
+        <li>La définition commence par le mot-clé <code class="inl">def</code>, suivi du <strong>nom</strong> de la fonction, d'une paire de <strong>parenthèses</strong>, puis du symbole <code class="inl">:</code>.</li>
+        <li>La fonction est constituée d'un <strong>bloc d'instructions</strong>, qu'on appelle le <strong>corps</strong> de la fonction (repéré par l'indentation).</li>
+      </ul>
+    </section>
+
+    <!-- 03 APPELER -->
+    <section id="appeler">
+      <h2><span class="num">03</span> Appeler une fonction</h2>
+      <p>Pour exécuter les instructions d'une fonction, on l'<strong>appelle</strong> par son nom suivi de parenthèses : <code class="inl">angle_droit()</code>. On a ainsi ajouté une <strong>nouvelle instruction</strong> au langage — on peut la réutiliser comme n'importe quelle autre :</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+
+def angle_droit():
+    forward(100)
+    left(90)
+    forward(100)
+
+for _ in range(10):
+    angle_droit()
+    right(90)</textarea>
+        <pre class="out"></pre>
+        <div class="turtle" hidden></div>
+      </div>
+      <div class="note"><span class="ico">✨</span><p>Dix appels à <code class="inl">angle_droit()</code>, une seule définition : c'est tout l'intérêt d'une fonction !</p></div>
+    </section>
+
+    <!-- 04 ERREURS INDENTATION -->
+    <section id="erreurs-indent">
+      <h2><span class="num">04</span> Erreurs d'indentation</h2>
+      <p>L'<strong>indentation</strong> définit le bloc d'instructions qui forme le corps de la fonction. Un retrait incohérent provoque une erreur <strong>immédiate</strong> :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def angle_droit():
+    forward(100)
+    left(90)
+      forward(100)</textarea>
+        <pre class="out"></pre>
+      </div>
+      <p class="muted">Ce décalage produit <code class="inl">IndentationError: unexpected indent</code>.</p>
+      <p>Par ailleurs, la ligne <strong>non indentée</strong> qui suit sort du corps de la fonction — elle appartient au programme principal :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def angle_droit():
+    forward(100)
+    left(90)
+forward(100)
+print("Le corps de la fonction ne contient que 2 lignes !")</textarea>
+        <pre class="out"></pre>
+      </div>
+      <div class="note warn"><span class="ico">⚠️</span><p>Ici, <code class="inl">def angle_droit()</code> définit une fonction dont le corps contient <strong>deux</strong> instructions, puis <code class="inl">forward(100)</code> s'exécute <strong>immédiatement</strong> dans le programme principal (il n'est plus dans la fonction).</p></div>
+    </section>
+
+    <!-- 05 PARAMETRE -->
+    <section id="parametre">
+      <h2><span class="num">05</span> Fonction avec paramètre</h2>
+      <p>On peut ajouter un <strong>paramètre</strong> lors de la définition d'une fonction. Il est désigné par un nom, ajouté entre les parenthèses, puis utilisé dans le corps :</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+
+def angle_droit(largeur):
+    forward(largeur)
+    left(90)
+    forward(largeur)
+
+angle_droit(20)</textarea>
+        <pre class="out"></pre>
+        <div class="turtle" hidden></div>
+      </div>
+      <p>Le paramètre désigne une valeur <strong>qui n'est pas connue à l'avance</strong> et qui pourra être <strong>différente à chaque appel</strong>. On peut ainsi dessiner un escalier dont les marches grandissent :</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+
+def angle_droit(largeur):
+    forward(largeur)
+    left(90)
+    forward(largeur)
+
+for i in range(10):
+    angle_droit(10 * i)
+    right(90)</textarea>
+        <pre class="out"></pre>
+        <div class="turtle" hidden></div>
+      </div>
+    </section>
+
+    <!-- 06 FORMEL EFFECTIF -->
+    <section id="formel">
+      <h2><span class="num">06</span> Paramètre formel et paramètre effectif</h2>
+      <ul>
+        <li>Le nom utilisé <strong>dans la définition</strong> de la fonction s'appelle un <strong>paramètre formel</strong> (ou simplement <strong>paramètre</strong>).</li>
+        <li>La valeur concrète associée au paramètre formel <strong>au moment de l'appel</strong> s'appelle un <strong>paramètre effectif</strong> (ou simplement <strong>argument</strong>).</li>
+      </ul>
+      <div class="note"><span class="ico">🧠</span><p>Dans <code class="inl">def angle_droit(largeur):</code>, <code class="inl">largeur</code> est le paramètre <strong>formel</strong>. Dans <code class="inl">angle_droit(20)</code>, <code class="inl">20</code> est le paramètre <strong>effectif</strong> (l'argument).</p></div>
+    </section>
+
+    <!-- 07 PLUSIEURS PARAMETRES -->
+    <section id="plusieurs">
+      <h2><span class="num">07</span> Fonction à plusieurs paramètres</h2>
+      <p>On peut utiliser <strong>plusieurs paramètres</strong>, séparés par des virgules — dans la définition comme à l'appel :</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+
+def carre(x, y, n):
+    up()
+    goto(x, y)
+    down()
+    for _ in range(4):
+        left(90)
+        forward(n)
+
+carre(50, -50, 100)</textarea>
+        <pre class="out"></pre>
+        <div class="turtle" hidden></div>
+      </div>
+      <p class="muted">On appelle la fonction en séparant les valeurs des arguments par des virgules : <code class="inl">carre(50, -50, 100)</code>.</p>
+    </section>
+
+    <!-- 08 PREDEFINIES -->
+    <section id="predefinies">
+      <h2><span class="num">08</span> Fonctions prédéfinies</h2>
+      <p>Nous avons déjà rencontré un certain nombre de <strong>fonctions natives</strong> en Python : <code class="inl">print()</code>, <code class="inl">range()</code>, <code class="inl">goto()</code>… Elles fonctionnent exactement comme les fonctions qu'on définit soi-même.</p>
+    </section>
+
+    <!-- 09 ERREURS APPEL -->
+    <section id="erreurs-appel">
+      <h2><span class="num">09</span> Erreurs à l'appel</h2>
+      <p><strong>L'ordre</strong> des arguments compte ! <code class="inl">carre(50, 50, 100)</code> ne produit <strong>pas le même résultat</strong> que <code class="inl">carre(50, 100, 50)</code> — vérifie-le :</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+
+def carre(x, y, n):
+    up()
+    goto(x, y)
+    down()
+    for _ in range(4):
+        left(90)
+        forward(n)
+
+carre(50, 100, 50)   # essaie aussi carre(50, 50, 100) !</textarea>
+        <pre class="out"></pre>
+        <div class="turtle" hidden></div>
+      </div>
+      <p>Autre piège : les <strong>paramètres d'une fonction n'existent qu'à l'intérieur</strong> de son corps. Essaie d'accéder à <code class="inl">x</code> après l'appel :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def carre(x, y, n):
+    pass
+
+carre(50, 50, 100)
+print(x)</textarea>
+        <pre class="out"></pre>
+      </div>
+      <p class="muted">→ <code class="inl">NameError: name 'x' is not defined</code>.</p>
+    </section>
+
+    <!-- 10 RETOUR -->
+    <section id="retour">
+      <h2><span class="num">10</span> Renvoyer un résultat : return</h2>
+      <p>Le mot-clé <code class="inl">return</code> indique le <strong>résultat</strong> de la fonction. Il est suivi d'une expression dont la valeur est <strong>renvoyée</strong> comme résultat :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def f(x):
+    return 3 * x + 4
+
+print(f(5))
+print(f(5) + 6 * f(7))</textarea>
+        <pre class="out"></pre>
+      </div>
+      <div class="note"><span class="ico">💡</span><p>Un appel de fonction avec <code class="inl">return</code> est une <strong>expression</strong> : on peut l'utiliser directement dans un calcul, comme <code class="inl">f(5) + 6 * f(7)</code>.</p></div>
+    </section>
+
+    <!-- 11 DECOMPOSER -->
+    <section id="decomposer">
+      <h2><span class="num">11</span> Décomposer un problème avec des fonctions</h2>
+      <p>Les fonctions permettent de découper un problème en <strong>sous-problèmes plus simples</strong>. Exemple : la somme de tous les multiples de 3 ou 5 inférieurs à 1000 (3 + 6 + 9 + … + 999, soit 3 × (1+2+…+333)) :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def somme(n):
+    return n * (n + 1) // 2
+
+def multiples(i):
+    return i * somme(999 // i)
+
+resultat = multiples(3) + multiples(5) - multiples(15)
+print(resultat)</textarea>
+        <pre class="out"></pre>
+      </div>
+      <p>Cet exemple illustre deux intérêts fondamentaux des fonctions :</p>
+      <ul>
+        <li><strong>L'isolation</strong> d'un concept bien identifié (ici, la somme des n premiers entiers) — on n'hésite pas à donner un nom explicite, même un peu long.</li>
+        <li><strong>La factorisation</strong>, pour éviter de répéter plusieurs fois les mêmes opérations.</li>
+      </ul>
+    </section>
+
+    <!-- 12 PROCEDURES -->
+    <section id="procedures">
+      <h2><span class="num">12</span> Fonctions et procédures</h2>
+      <p>Une fonction qui <strong>ne renvoie pas de résultat</strong> est appelée une <strong>procédure</strong>.</p>
+      <ul>
+        <li>Une <strong>procédure</strong> réalise une action (affichage, écriture…). Un appel de procédure constitue une <strong>instruction</strong>.</li>
+        <li>Une <strong>fonction</strong> calcule et met à disposition une valeur. Un appel de fonction constitue une <strong>expression</strong> — sa valeur est celle renvoyée par <code class="inl">return</code>.</li>
+      </ul>
+      <p>En Python, une fonction renvoie <strong>toujours</strong> une valeur. En l'absence de <code class="inl">return</code>, la valeur spéciale <code class="inl">None</code> est renvoyée implicitement :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def salut():
+    print("Bonjour !")
+
+resultat = salut()
+print(resultat)</textarea>
+        <pre class="out"></pre>
+      </div>
+      <div class="note warn"><span class="ico">⚠️</span><p>Piège classique : ne pas utiliser <code class="inl">print</code> au lieu de <code class="inl">return</code> au terme d'une fonction censée <strong>produire un résultat</strong> !</p></div>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def suivant(x):
+    print(x + 1)   # erreur de conception : il fallait "return x + 1"
+
+print(2 + suivant(3))</textarea>
+        <pre class="out"></pre>
+      </div>
+      <p class="muted">→ <code class="inl">TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'</code> : <code class="inl">suivant(3)</code> affiche <code class="inl">4</code> mais renvoie <code class="inl">None</code>, qu'on ne peut pas additionner.</p>
+    </section>
+
+    <!-- 13 NUPLET -->
+    <section id="nuplet">
+      <h2><span class="num">13</span> Renvoyer plusieurs résultats</h2>
+      <p>Pour renvoyer plusieurs résultats, on utilise un <strong>n-uplet</strong> (<em>tuple</em>) : plusieurs valeurs entre parenthèses, séparées par des virgules.</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def foo(x):
+    return (x * 10, x // 10)
+
+a, b = foo(42)
+print(a)
+print(b)</textarea>
+        <pre class="out"></pre>
+      </div>
+      <p class="muted">Dans la syntaxe Python, les parenthèses autour d'un n-uplet sont optionnelles : <code class="inl">return x * 10, x // 10</code> fonctionne aussi.</p>
+    </section>
+
+    <!-- 14 LOCALES -->
+    <section id="locales">
+      <h2><span class="num">14</span> Variables locales</h2>
+      <p>Le corps d'une fonction peut introduire des variables pour ses calculs intermédiaires. Ces <strong>variables locales</strong>, définies à l'intérieur d'une fonction, <strong>disparaissent</strong> à la fin de son exécution :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def fact(n):
+    f = 1
+    for i in range(2, n + 1):
+        f = f * i
+    return f
+
+print(fact(4))
+print(f)   # f n'existe pas ici !</textarea>
+        <pre class="out"></pre>
+      </div>
+      <p class="muted">→ <code class="inl">NameError: name 'f' is not defined</code> : la variable locale <code class="inl">f</code> n'existe pas à l'extérieur de <code class="inl">fact</code>.</p>
+      <p>Si une variable <code class="inl">f</code> est déjà définie <strong>avant</strong> l'appel, elle <strong>conserve sa valeur</strong> après : la variable locale la <strong>masque</strong> seulement pendant l'exécution de la fonction.</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">f = 42
+
+def fact(n):
+    f = 1
+    for i in range(2, n + 1):
+        f = f * i
+    return f
+
+print(fact(4))   # 24 : la variable LOCALE f
+print(f)          # 42 : la variable GLOBALE f, inchangée</textarea>
+        <pre class="out"></pre>
+      </div>
+      <div class="note"><span class="ico">🧠</span><p>Pendant l'exécution de <code class="inl">fact(4)</code>, il existe <strong>deux variables</strong> qui s'appellent <code class="inl">f</code> : celle de l'extérieur et celle, locale, de la fonction. Seule la locale est accessible pendant l'exécution — elle <strong>masque</strong> l'autre.</p></div>
+    </section>
+
+    <!-- 15 PILE D'APPELS ANIMEE -->
+    <section id="pile">
+      <h2><span class="num">15</span> La pile d'appels — <em>déroule l'exécution pas à pas</em></h2>
+      <p>Représentons l'exécution de ce programme, qui appelle <code class="inl">mult</code> depuis <code class="inl">fact</code> :</p>
+      <pre class="static"><span class="k">def</span> mult(a, b):
+    <span class="k">return</span> a * b
+
+<span class="k">def</span> fact(n):
+    f = 1
+    <span class="k">for</span> i <span class="k">in</span> range(2, n + 1):
+        f = mult(f, i)
+    <span class="k">return</span> f
+
+fact(4)</pre>
+      <p>Chaque appel de fonction crée un <strong>nouveau cadre (frame)</strong> avec ses propres variables locales, empilé au-dessus des précédents. Quand la fonction se termine, son cadre est <strong>dépilé</strong> et sa valeur de retour remonte. Clique sur « Suivant » :</p>
+      <div class="pile" id="pile">
+        <div class="bar">
+          <span class="step-code" id="pileCode">— prêt —</span>
+          <button class="btn" id="pilePrev" disabled>◀ Précédent</button>
+          <button class="btn" id="pileNext">Suivant ▶</button>
+          <button class="btn" id="pileReset">↺</button>
+        </div>
+        <div class="frames" id="frames"></div>
+        <p class="pile-msg" id="pileMsg">Clique sur « Suivant » pour dérouler l'appel de fact(4).</p>
+      </div>
+    </section>
+
+    <!-- 16 GLOBALES -->
+    <section id="globales">
+      <h2><span class="num">16</span> Variables globales</h2>
+      <p>Par opposition aux variables locales, les variables définies <strong>hors de toute fonction</strong> sont appelées <strong>variables globales</strong>. Une fonction peut y accéder :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">v = 42
+
+def double():
+    return 2 * v
+
+print(double())</textarea>
+        <pre class="out"></pre>
+      </div>
+      <p>Lorsqu'une fonction accède à une variable globale, elle accède à sa <strong>valeur courante</strong> :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">v = 42
+
+def double():
+    return 2 * v
+
+v = v + 1
+print(double())   # 86, pas 84 !</textarea>
+        <pre class="out"></pre>
+      </div>
+      <div class="note warn"><span class="ico">⚠️</span><p>On recommande de <strong>ne pas</strong> définir de fonctions dont le résultat dépend d'une variable globale qui peut changer — le comportement devient difficile à prévoir. En revanche, utiliser des variables globales pour des <strong>constantes</strong> est tout à fait légitime.</p></div>
+    </section>
+
+    <!-- 17 ANTICIPEE -->
+    <section id="anticipee">
+      <h2><span class="num">17</span> Sortie anticipée</h2>
+      <p><code class="inl">return</code> permet de renvoyer un résultat mais aussi d'<strong>interrompre immédiatement</strong> l'exécution de la fonction — utile quand le résultat est déjà connu :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def est_premier(n):
+    if n <= 1:
+        return False
+    for d in range(2, n):
+        if n % d == 0:
+            return False
+    return True
+
+for x in range(1, 15):
+    print(x, est_premier(x))</textarea>
+        <pre class="out"></pre>
+      </div>
+      <ul>
+        <li>Le <code class="inl">return</code> dans la boucle interrompt la fonction dès qu'un diviseur est trouvé — inutile de continuer.</li>
+        <li>Le <code class="inl">return</code> en début de fonction écarte un cas particulier connu d'avance (<code class="inl">n &lt;= 1</code>).</li>
+      </ul>
+      <div class="note"><span class="ico">🛠️</span><p>Certains IDE comme <strong>Thonny</strong> proposent un <strong>mode débogage</strong> : une exécution pas à pas qui affiche les variables locales à chaque étape — parfait pour observer une pile d'appels en vrai !</p></div>
+    </section>
+
+    <!-- QUIZ -->
+    <section id="bilan">
+      <h2><span class="num">18</span> Quiz bilan</h2>
+      <p class="muted">Sept questions pour vérifier l'essentiel. Clique sur ta réponse.</p>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Que met-on juste après le nom d'une fonction dans sa définition ?</p>
+        <div class="opt" data-i="0">des crochets []</div>
+        <div class="opt" data-i="1">des parenthèses ()</div>
+        <div class="opt" data-i="2">des accolades {}</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="2">
+        <p class="q">Comment appelle-t-on <code class="inl">largeur</code> dans <code class="inl">def f(largeur):</code> ?</p>
+        <div class="opt" data-i="0">un argument</div>
+        <div class="opt" data-i="1">une variable globale</div>
+        <div class="opt" data-i="2">un paramètre formel</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="0">
+        <p class="q">Une fonction sans <code class="inl">return</code> renvoie…</p>
+        <div class="opt" data-i="0">None</div>
+        <div class="opt" data-i="1">0</div>
+        <div class="opt" data-i="2">une erreur systématique</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Une variable locale définie dans une fonction…</p>
+        <div class="opt" data-i="0">existe pour tout le programme</div>
+        <div class="opt" data-i="1">disparaît à la fin de l'exécution de la fonction</div>
+        <div class="opt" data-i="2">remplace définitivement la variable globale de même nom</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="2">
+        <p class="q">Pour renvoyer plusieurs valeurs, on utilise…</p>
+        <div class="opt" data-i="0">plusieurs <code class="inl">return</code> à la suite</div>
+        <div class="opt" data-i="1">une boucle <code class="inl">for</code></div>
+        <div class="opt" data-i="2">un n-uplet</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Une fonction qui ne renvoie rien mais affiche du texte est appelée…</p>
+        <div class="opt" data-i="0">une exception</div>
+        <div class="opt" data-i="1">une procédure</div>
+        <div class="opt" data-i="2">un paramètre</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="0">
+        <p class="q"><code class="inl">return</code> dans une boucle permet…</p>
+        <div class="opt" data-i="0">d'interrompre la fonction dès que le résultat est connu</div>
+        <div class="opt" data-i="1">de relancer la boucle depuis le début</div>
+        <div class="opt" data-i="2">de créer une nouvelle fonction</div>
+        <p class="feedback"></p>
+      </div>
+    </section>
+
+    <footer>
+      <p><strong>Pour aller plus loin :</strong> Python Tutor (visualiser l'exécution pas à pas) · documentation officielle Python sur les fonctions.</p>
+      <p class="mono-n" style="font-size:18px; margin-top:14px"><span>N</span><span>a</span><span>dtech</span> · NSI · Chapitre 4</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+/* ---------- Exécution Python (Skulpt) ---------- */
+function builtinRead(x){
+  if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+    throw "File not found: '" + x + "'";
+  return Sk.builtinFiles["files"][x];
+}
+function runCell(cell){
+  var code = cell.querySelector('textarea.code').value;
+  var out  = cell.querySelector('.out');
+  var btn  = cell.querySelector('.run');
+  var turtleWrap = cell.querySelector('.turtle');
+  out.classList.remove('err'); out.textContent = ''; out.classList.add('show');
+  if (typeof Sk === 'undefined'){
+    out.classList.add('err');
+    out.textContent = "Le moteur Python n'a pas pu se charger (connexion internet requise).";
+    return;
+  }
+  var conf = {
+    output: function(t){ out.textContent += t; },
+    read: builtinRead,
+    inputfun: function(p){ return window.prompt(p || "Entrée :") || ""; },
+    inputfunTakesPrompt: true,
+    __future__: Sk.python3
+  };
+  Sk.configure(conf);
+  if (turtleWrap){
+    turtleWrap.hidden = false; turtleWrap.innerHTML = '';
+    if (!turtleWrap.id) turtleWrap.id = 'turtle-' + Math.random().toString(36).slice(2);
+    (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = turtleWrap.id;
+    Sk.TurtleGraphics.width = 320; Sk.TurtleGraphics.height = 280;
+  }
+  btn.disabled = true; var old = btn.textContent; btn.textContent = '…';
+  Sk.misceval.asyncToPromise(function(){
+    return Sk.importMainWithBody("<stdin>", false, code, true);
+  }).then(function(){
+    btn.disabled = false; btn.textContent = old;
+    if (!out.textContent && !turtleWrap) out.textContent = "(aucune sortie — pense à print(...) )";
+  }, function(err){
+    btn.disabled = false; btn.textContent = old;
+    out.classList.add('err'); out.textContent += "\n" + err.toString();
+  });
+}
+document.querySelectorAll('[data-cell]').forEach(function(cell){
+  var ta = cell.querySelector('textarea.code');
+  ta.rows = Math.min(Math.max(ta.value.split('\n').length, 2), 18);
+  cell.querySelector('.run').addEventListener('click', function(){ runCell(cell); });
+  ta.addEventListener('keydown', function(e){
+    if (e.key === 'Tab'){ e.preventDefault();
+      var s=this.selectionStart, en=this.selectionEnd;
+      this.value=this.value.slice(0,s)+"    "+this.value.slice(en); this.selectionStart=this.selectionEnd=s+4;
+    }
+  });
+});
+
+/* ---------- Quiz ---------- */
+document.querySelectorAll('[data-quiz]').forEach(function(q){
+  var ans = +q.dataset.answer;
+  var fb = q.querySelector('.feedback');
+  q.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click', function(){
+      var i = +opt.dataset.i;
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.add('lock'); });
+      if (i === ans){ opt.classList.add('good'); fb.textContent="Bravo, c'est exact !"; fb.className="feedback ok"; }
+      else {
+        opt.classList.add('bad'); fb.textContent="Pas tout à fait — regarde la bonne réponse en vert."; fb.className="feedback no";
+        q.querySelector('.opt[data-i="'+ans+'"]').classList.add('good');
+      }
+    });
+  });
+});
+
+/* ---------- Pile d'appels animée ---------- */
+(function(){
+  var codeEl = document.getElementById('pileCode');
+  var msgEl = document.getElementById('pileMsg');
+  var framesEl = document.getElementById('frames');
+  var prev = document.getElementById('pilePrev'), next = document.getElementById('pileNext'), reset = document.getElementById('pileReset');
+
+  // chaque étape décrit l'état complet de la pile (liste de frames) à afficher
+  function fr(name, cls, vars){ return {name:name, cls:cls, vars:vars}; }
+
+  var steps = [
+    {code:"— prêt —", msg:"Clique sur « Suivant » pour dérouler l'appel de fact(4).", frames:[]},
+    {code:"appel fact(4)", msg:"Un nouveau cadre 'fact' est empilé, avec n = 4.", frames:[
+      fr("fact(4)","fn",[["n",4]])
+    ]},
+    {code:"f = 1", msg:"La variable locale f est créée dans le cadre fact.", frames:[
+      fr("fact(4)","fn",[["n",4],["f",1]])
+    ]},
+    {code:"i = 2", msg:"La boucle for commence : i = 2.", frames:[
+      fr("fact(4)","fn",[["n",4],["f",1],["i",2]])
+    ]},
+    {code:"appel mult(1, 2)", msg:"Un nouveau cadre 'mult' est empilé PAR-DESSUS fact.", frames:[
+      fr("fact(4)","fn",[["n",4],["f",1],["i",2]]),
+      fr("mult(1, 2)","callee",[["a",1],["b",2]])
+    ]},
+    {code:"mult renvoie 2", msg:"mult se termine : son cadre est DÉPILÉ, la valeur 2 remonte.", frames:[
+      fr("fact(4)","fn",[["n",4],["f",1],["i",2],["→ mult",2]])
+    ]},
+    {code:"f = mult(f, i)  →  f = 2", msg:"f est mis à jour avec le résultat de mult.", frames:[
+      fr("fact(4)","fn",[["n",4],["f",2],["i",2]])
+    ]},
+    {code:"i = 3", msg:"Tour suivant de la boucle : i = 3.", frames:[
+      fr("fact(4)","fn",[["n",4],["f",2],["i",3]])
+    ]},
+    {code:"appel mult(2, 3)", msg:"Nouveau cadre 'mult' empilé.", frames:[
+      fr("fact(4)","fn",[["n",4],["f",2],["i",3]]),
+      fr("mult(2, 3)","callee",[["a",2],["b",3]])
+    ]},
+    {code:"mult renvoie 6", msg:"Cadre 'mult' dépilé, valeur 6 remontée.", frames:[
+      fr("fact(4)","fn",[["n",4],["f",2],["i",3],["→ mult",6]])
+    ]},
+    {code:"f = 6", msg:"f est mis à jour.", frames:[
+      fr("fact(4)","fn",[["n",4],["f",6],["i",3]])
+    ]},
+    {code:"i = 4", msg:"Dernier tour de boucle : i = 4.", frames:[
+      fr("fact(4)","fn",[["n",4],["f",6],["i",4]])
+    ]},
+    {code:"appel mult(6, 4)", msg:"Nouveau cadre 'mult' empilé.", frames:[
+      fr("fact(4)","fn",[["n",4],["f",6],["i",4]]),
+      fr("mult(6, 4)","callee",[["a",6],["b",4]])
+    ]},
+    {code:"mult renvoie 24", msg:"Cadre 'mult' dépilé, valeur 24 remontée.", frames:[
+      fr("fact(4)","fn",[["n",4],["f",6],["i",4],["→ mult",24]])
+    ]},
+    {code:"f = 24, fin de boucle", msg:"f = 24 ; la boucle est terminée (i a atteint n).", frames:[
+      fr("fact(4)","fn",[["n",4],["f",24],["i",4]])
+    ]},
+    {code:"fact renvoie 24", msg:"Le cadre 'fact' est dépilé à son tour : le résultat 24 remonte au programme principal.", frames:[
+      fr("Global","global",[["→ fact(4)",24]])
+    ]},
+    {code:"print(fact(4))  →  24", msg:"Terminé ! La pile est vide, 24 est affiché.", frames:[]}
+  ];
+  var s = 0;
+  function render(){
+    var st = steps[s];
+    codeEl.textContent = st.code; msgEl.textContent = st.msg;
+    framesEl.innerHTML = '';
+    st.frames.forEach(function(f){
+      var d = document.createElement('div');
+      d.className = 'frame ' + f.cls;
+      var vhtml = f.vars.map(function(v){ return '<span class="v">'+v[0]+' = <b>'+v[1]+'</b></span>'; }).join('');
+      d.innerHTML = '<div class="fname">'+f.name+'</div><div class="vars">'+vhtml+'</div>';
+      framesEl.appendChild(d);
+      setTimeout(function(){ d.classList.add('show'); }, 20);
+    });
+    prev.disabled = (s===0); next.disabled = (s===steps.length-1);
+  }
+  next.addEventListener('click', function(){ if(s<steps.length-1){s++; render();} });
+  prev.addEventListener('click', function(){ if(s>0){s--; render();} });
+  reset.addEventListener('click', function(){ s=0; render(); });
+  render();
+})();
+
+/* ---------- Thème jour/nuit ---------- */
+(function(){
+  var b=document.getElementById('themeToggle'); if(!b) return;
+  function apply(m){ if(m==='light'){document.body.classList.add('light'); b.textContent='☀️';} else {document.body.classList.remove('light'); b.textContent='🌙';} }
+  var saved=null; try{ saved=localStorage.getItem('nadtech-theme'); }catch(e){}
+  apply(saved==='light'?'light':'dark');
+  b.addEventListener('click', function(){
+    var l=!document.body.classList.contains('light');
+    apply(l?'light':'dark');
+    try{ localStorage.setItem('nadtech-theme', l?'light':'dark'); }catch(e){}
+  });
+})();
+</script>
+</body>
+</html>
