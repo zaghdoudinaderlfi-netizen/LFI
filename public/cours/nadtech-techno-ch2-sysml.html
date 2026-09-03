@@ -37,7 +37,6 @@ h1 .accent{background:linear-gradient(90deg,var(--amber),var(--amber2),var(--pin
 section{padding:30px 0; border-bottom:1px solid var(--line)}
 h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; margin:0 0 6px; scroll-margin-top:20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap}
 h2 .num{font-family:var(--mono); font-size:14px; color:var(--amber); border:1px solid var(--line); border-radius:8px; padding:3px 9px; background:rgba(245,158,11,.08)}
-h3{font-family:'Space Grotesk',sans-serif; font-size:18px; margin:26px 0 8px; color:#fff}
 p{margin:10px 0}
 .muted{color:var(--muted)}
 code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; color:#ffe3b0; border:1px solid var(--line)}
@@ -46,7 +45,6 @@ ul{margin:10px 0; padding-left:22px} li{margin:4px 0}
 .note{display:flex; gap:12px; padding:14px 16px; border-radius:12px; background:rgba(245,158,11,.07); border:1px solid rgba(245,158,11,.25); margin:16px 0}
 .note.warn{background:rgba(251,113,133,.07); border-color:rgba(251,113,133,.28)}
 .note .ico{font-size:18px; line-height:1.4} .note p{margin:0}
-/* Cartes familles */
 .familles{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:18px 0}
 @media(max-width:720px){ .familles{grid-template-columns:1fr} }
 .fam{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:16px; cursor:pointer; transition:.15s; box-shadow:var(--glow)}
@@ -58,7 +56,6 @@ ul{margin:10px 0; padding-left:22px} li{margin:4px 0}
 .fam.open .liste{display:block}
 .fam .liste span{display:block; padding:5px 8px; margin:4px 0; border-radius:8px; background:rgba(255,255,255,.04); font-family:var(--mono); font-size:12.5px}
 .fam .hint-open{font-size:12px; color:var(--amber); margin-top:8px}
-/* Fiche diagramme */
 .fiche{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px; margin:16px 0; box-shadow:var(--glow)}
 .fiche .role{display:inline-block; font-weight:800; color:#06121f; background:linear-gradient(90deg,var(--amber),var(--amber2)); border-radius:999px; padding:5px 14px; font-size:14px; margin-bottom:10px}
 .diagsvg{width:100%; height:auto; display:block; background:#fff; border-radius:12px; margin:12px 0}
@@ -66,17 +63,23 @@ ul{margin:10px 0; padding-left:22px} li{margin:4px 0}
 .steps div{position:relative; padding:6px 0 6px 40px; color:var(--muted); font-size:15px}
 .steps div::before{counter-increment:s; content:counter(s); position:absolute; left:0; top:6px; width:26px; height:26px; border-radius:8px;
   display:grid; place-items:center; font-family:var(--mono); font-weight:700; font-size:13px; color:#06121f; background:linear-gradient(135deg,var(--amber),var(--amber2))}
-/* Animation store */
-.storebox{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px; margin:18px 0; box-shadow:var(--glow)}
-.storebox .bar{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+.animbar{display:flex; gap:10px; flex-wrap:wrap; margin:10px 0}
 .btn{font-family:'Nunito'; font-weight:800; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--ink); padding:9px 16px; border-radius:10px; cursor:pointer; transition:.15s; font-size:14px}
 .btn:hover{border-color:var(--amber); background:rgba(245,158,11,.12)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.anim-msg{font-family:var(--mono); font-size:13.5px; color:#ffe3b0; background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.28); padding:8px 14px; border-radius:10px; min-height:20px; margin-top:8px}
+.storebox{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px; margin:18px 0; box-shadow:var(--glow)}
 .storesvg{width:100%; max-width:640px; margin:0 auto; display:block; background:#fff; border-radius:12px}
-.state-lbl{font-family:var(--mono); font-size:14px; color:#ffe3b0; background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3); padding:8px 14px; border-radius:10px; display:inline-block; margin-top:10px}
 #toile{transition:height .9s ease}
-.etat-bulle{transition:.3s}
 .etat-bulle.on rect{fill:rgba(245,158,11,.25); stroke:#f59e0b; stroke-width:3}
-/* Jeu quel diagramme */
+/* animations sequence */
+.seq-msg{opacity:.14; transition:opacity .4s}
+.seq-msg.on{opacity:1}
+.seq-msg.cur line, .seq-msg.cur path{stroke:#b45309 !important; stroke-width:2.6 !important}
+/* activité highlight */
+.actn rect, .actn polygon, .actn circle{transition:.25s}
+.actn.on rect, .actn.on polygon{fill:rgba(245,158,11,.3) !important; stroke:#b45309 !important; stroke-width:2.5 !important}
+.actn.done rect, .actn.done polygon{fill:rgba(52,211,153,.22) !important; stroke:#0f766e !important}
 .jeu{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin:18px 0; box-shadow:var(--glow)}
 .jeu .q{font-weight:800; margin:0 0 12px; font-family:'Space Grotesk',sans-serif}
 .jeu .q::before{content:"🎯"; margin-right:10px}
@@ -93,7 +96,6 @@ footer{padding:40px 0 70px; color:var(--muted); font-size:14px}
 .tag-list{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
 .chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
 ::selection{background:rgba(245,158,11,.35)}
-/* Thème clair */
 .theme-toggle{position:fixed; top:16px; right:16px; z-index:60; width:46px; height:46px; border-radius:12px;
   border:1px solid var(--line); background:var(--bg2); color:var(--ink); font-size:20px; cursor:pointer;
   box-shadow:0 8px 24px -12px rgba(0,0,0,.5); transition:.15s; display:grid; place-items:center}
@@ -118,11 +120,11 @@ body.light .theme-toggle{box-shadow:0 8px 24px -14px rgba(40,30,10,.35)}
     <a href="#exigences">Exigences</a>
     <a href="#contexte">Contexte</a>
     <a href="#cas">Cas d'utilisation</a>
-    <a href="#sequence">Séquence</a>
+    <a href="#sequence">Séquence (animé)</a>
     <a href="#blocs">Définition de blocs</a>
-    <a href="#internes">Blocs internes</a>
-    <a href="#etats">États (animé !)</a>
-    <a href="#activite">Activité</a>
+    <a href="#internes">Blocs internes (animé)</a>
+    <a href="#etats">États (animé)</a>
+    <a href="#activite">Activité (animé)</a>
     <a href="#jeu">Jeu : quel diagramme ?</a>
     <a href="#bilan">Quiz bilan</a>
   </nav>
@@ -131,41 +133,39 @@ body.light .theme-toggle{box-shadow:0 8px 24px -14px rgba(40,30,10,.35)}
     <header class="hero">
       <span class="kicker">Technologie · 3ème · Chapitre 2</span>
       <h1>Le <span class="accent">SysML</span> : dessiner les objets techniques</h1>
-      <p class="lede">Comment décrire un objet technique (un store, un vélo électrique, un robot…) pour que <strong>tout le monde le comprenne pareil</strong> ? Avec des schémas normalisés : les <strong>diagrammes SysML</strong>. Dans cette page, tu vas les découvrir, les manipuler et les animer.</p>
+      <p class="lede">Comment décrire un objet technique (un store, un vélo électrique, un robot…) pour que <strong>tout le monde le comprenne pareil</strong> ? Avec des schémas normalisés : les <strong>diagrammes SysML</strong>. Découvre-les, manipule-les, anime-les !</p>
       <div class="tag-list">
-        <span class="chip">SysML</span><span class="chip">diagrammes</span><span class="chip">exigences</span><span class="chip">acteurs</span><span class="chip">états</span><span class="chip">store automatisé</span>
+        <span class="chip">SysML</span><span class="chip">diagrammes</span><span class="chip">exigences</span><span class="chip">acteurs</span><span class="chip">flux</span><span class="chip">états</span><span class="chip">store automatisé</span>
       </div>
     </header>
 
-    <!-- QUOI -->
+    <!-- 01 QUOI -->
     <section id="quoi">
       <h2><span class="num">01</span> Le SysML, c'est quoi ?</h2>
-      <p><strong>SysML</strong> = <strong>Sys</strong>tems <strong>M</strong>odeling <strong>L</strong>anguage, en français : <em>langage de modélisation de systèmes</em>.</p>
+      <p><strong>SysML</strong> = <strong>Sys</strong>tems <strong>M</strong>odeling <strong>L</strong>anguage, en français : <em>Langage de Modélisation de Systèmes</em>.</p>
       <p>C'est un <strong>outil</strong> qui permet de <strong>représenter des objets techniques</strong> sous forme de schémas appelés <strong>diagrammes</strong>. Chaque diagramme répond à une question précise sur l'objet.</p>
-      <div class="note"><span class="ico">🌍</span><p>Pourquoi un langage commun ? Parce qu'un ingénieur en France, au Japon ou au Brésil doit pouvoir lire le <strong>même schéma</strong> et comprendre la <strong>même chose</strong>. C'est comme les panneaux de signalisation : pareils pour tous !</p></div>
+      <div class="note"><span class="ico">🌍</span><p>Pourquoi un langage commun ? Pour qu'un ingénieur en France, au Japon ou au Brésil lise le <strong>même schéma</strong> et comprenne la <strong>même chose</strong> — comme les panneaux de signalisation !</p></div>
     </section>
 
-    <!-- FAMILLES -->
+    <!-- 02 FAMILLES -->
     <section id="familles">
       <h2><span class="num">02</span> Les 3 familles de diagrammes</h2>
-      <p>Les diagrammes SysML se rangent en <strong>3 familles</strong>, selon la question qu'ils posent. <strong>Clique sur chaque carte</strong> pour découvrir les diagrammes qu'elle contient :</p>
+      <p><strong>Clique sur chaque carte</strong> pour découvrir ses diagrammes :</p>
       <div class="familles">
         <div class="fam f1" data-fam>
           <h4>📝 Fonctionnels</h4>
           <p class="q">« Que doit FAIRE le système ? »</p>
-          <div class="liste">
-            <span>Diagramme des exigences</span>
-          </div>
+          <div class="liste"><span>Diagramme des exigences</span></div>
           <p class="hint-open">👆 Clique pour voir</p>
         </div>
         <div class="fam f2" data-fam>
           <h4>⚙️ Comportementaux</h4>
           <p class="q">« Comment le système SE COMPORTE-t-il ? »</p>
           <div class="liste">
-            <span>Diagramme des cas d'utilisation</span>
+            <span>Diagramme d'activité</span>
             <span>Diagramme de séquence</span>
             <span>Diagramme d'états</span>
-            <span>Diagramme d'activité</span>
+            <span>Diagramme des cas d'utilisation</span>
           </div>
           <p class="hint-open">👆 Clique pour voir</p>
         </div>
@@ -173,286 +173,431 @@ body.light .theme-toggle{box-shadow:0 8px 24px -14px rgba(40,30,10,.35)}
           <h4>🔩 Structurels</h4>
           <p class="q">« Comment le système EST-IL CONSTRUIT ? »</p>
           <div class="liste">
-            <span>Diagramme de définition de blocs</span>
-            <span>Diagramme de contexte</span>
+            <span>Diagramme de définition de blocs / de contexte</span>
             <span>Diagramme des blocs internes</span>
           </div>
           <p class="hint-open">👆 Clique pour voir</p>
         </div>
       </div>
-      <div class="note"><span class="ico">🧠</span><p>Retiens les 3 questions : <strong>que doit-il faire ?</strong> (fonctionnel) · <strong>comment se comporte-t-il ?</strong> (comportemental) · <strong>comment est-il construit ?</strong> (structurel). C'est la clé pour choisir le bon diagramme !</p></div>
+      <div class="note"><span class="ico">🧠</span><p>Retiens les 3 questions : <strong>que doit-il faire ?</strong> · <strong>comment se comporte-t-il ?</strong> · <strong>comment est-il construit ?</strong> C'est la clé pour choisir le bon diagramme !</p></div>
     </section>
 
-    <!-- STORE -->
+    <!-- 03 STORE -->
     <section id="store">
       <h2><span class="num">03</span> Notre exemple fil rouge : le store automatisé</h2>
-      <p>Pour tout le chapitre, on étudie un <strong>store automatisé</strong> : une toile motorisée qui protège une terrasse du soleil. Sa mission : <em>« Protéger automatiquement la terrasse des rayons du soleil »</em>.</p>
+      <p>Tout le chapitre étudie un <strong>store automatisé</strong>. Sa mission : <em>« Protéger automatiquement la terrasse des rayons du soleil »</em>.</p>
       <ul>
-        <li>☀️ Quand il y a beaucoup de soleil → le store <strong>se déplie</strong> tout seul.</li>
-        <li>💨 Quand le vent souffle fort → le store <strong>se replie</strong> pour protéger la toile.</li>
+        <li>☀️ Beaucoup de soleil → le store <strong>déroule la toile</strong> tout seul.</li>
+        <li>💨 Vent trop fort → le store <strong>enroule la toile</strong> pour la protéger.</li>
         <li>🎛️ On peut aussi le commander <strong>manuellement</strong>.</li>
       </ul>
-      <p class="muted">Chaque diagramme va décrire ce même store, mais sous un angle différent — comme des photos du même objet prises de différents côtés.</p>
+      <p class="muted">Chaque diagramme décrit ce même store, mais sous un angle différent — comme des photos du même objet prises de différents côtés.</p>
     </section>
 
-    <!-- EXIGENCES -->
+    <!-- 04 EXIGENCES -->
     <section id="exigences">
-      <h2><span class="num">04</span> Le diagramme des exigences</h2>
+      <h2><span class="num">04</span> Le diagramme des exigences <span class="muted" style="font-size:14px">(Requirement Diagram)</span></h2>
       <div class="fiche">
         <span class="role">Il répond à : « Que DOIT faire l'objet ? »</span>
-        <p>C'est le <strong>cahier des charges fonctionnel</strong> : la liste des <strong>exigences</strong> (« le système doit… »).</p>
-        <svg class="diagsvg" viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
-          <style>.bx{fill:#fff;stroke:#333;stroke-width:1.5}.tt{font:700 13px 'Nunito',sans-serif;fill:#222}.tx{font:12px 'Nunito',sans-serif;fill:#333}.lg{stroke:#333;stroke-width:1.2;fill:none}</style>
-          <rect x="180" y="16" width="360" height="52" class="bx"/>
-          <text x="360" y="36" text-anchor="middle" class="tt">Store automatisé</text>
-          <text x="360" y="54" text-anchor="middle" class="tx">« Protéger automatiquement la terrasse du soleil »</text>
-          <line x1="250" y1="68" x2="120" y2="120" class="lg"/><line x1="330" y1="68" x2="300" y2="120" class="lg"/>
-          <line x1="410" y1="68" x2="470" y2="120" class="lg"/><line x1="490" y1="68" x2="630" y2="120" class="lg"/>
-          <rect x="40" y="120" width="160" height="72" class="bx"/><text x="120" y="140" text-anchor="middle" class="tt">Mesure du soleil</text>
-          <text x="120" y="158" text-anchor="middle" class="tx">Doit dérouler la toile</text><text x="120" y="174" text-anchor="middle" class="tx">si forte luminosité</text>
-          <rect x="220" y="120" width="160" height="72" class="bx"/><text x="300" y="140" text-anchor="middle" class="tt">Mesure du vent</text>
-          <text x="300" y="158" text-anchor="middle" class="tx">Doit enrouler la toile</text><text x="300" y="174" text-anchor="middle" class="tx">si vent trop fort</text>
-          <rect x="400" y="120" width="150" height="72" class="bx"/><text x="475" y="140" text-anchor="middle" class="tt">Commande</text>
-          <text x="475" y="158" text-anchor="middle" class="tx">Doit pouvoir être</text><text x="475" y="174" text-anchor="middle" class="tx">commandé à la main</text>
-          <rect x="565" y="120" width="130" height="72" class="bx"/><text x="630" y="140" text-anchor="middle" class="tt">Énergie</text>
-          <text x="630" y="158" text-anchor="middle" class="tx">Doit être alimenté</text><text x="630" y="174" text-anchor="middle" class="tx">en énergie</text>
-          <line x1="120" y1="192" x2="120" y2="232" class="lg" stroke-dasharray="5 4"/>
-          <rect x="40" y="232" width="160" height="52" class="bx"/><text x="120" y="252" text-anchor="middle" class="tt">Luminosité</text>
-          <text x="120" y="270" text-anchor="middle" class="tx">Seuil réglable</text>
+        <p>C'est le <strong>cahier des charges fonctionnel</strong> du système (« Le système doit… »). Ce sont les <strong>exigences</strong> du CdCF.</p>
+        <svg class="diagsvg" viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg">
+          <style>.exb{fill:#fff;stroke:#333;stroke-width:1.4}.ext{font:700 12.5px 'Nunito',sans-serif;fill:#111}.exs{font:11.5px 'Nunito',sans-serif;fill:#333}.exl{stroke:#333;stroke-width:1.1;fill:none}.oti{stroke:#333;stroke-width:1.1;fill:#fff}</style>
+          <text x="20" y="24" class="ext" font-size="13">Diagramme des exigences du store automatisé</text>
+          <rect x="170" y="36" width="420" height="46" class="exb"/>
+          <text x="380" y="54" text-anchor="middle" class="ext">Store automatisé</text>
+          <text x="380" y="72" text-anchor="middle" class="exs">« Protéger automatiquement la terrasse des rayons du soleil »</text>
+          <!-- connecteurs otimes -->
+          <line x1="240" y1="98" x2="115" y2="150" class="exl"/><circle cx="240" cy="93" r="7" class="oti"/><line x1="235" y1="88" x2="245" y2="98" class="exl"/><line x1="245" y1="88" x2="235" y2="98" class="exl"/>
+          <line x1="335" y1="98" x2="295" y2="150" class="exl"/><circle cx="335" cy="93" r="7" class="oti"/><line x1="330" y1="88" x2="340" y2="98" class="exl"/><line x1="340" y1="88" x2="330" y2="98" class="exl"/>
+          <line x1="430" y1="98" x2="475" y2="150" class="exl"/><circle cx="430" cy="93" r="7" class="oti"/><line x1="425" y1="88" x2="435" y2="98" class="exl"/><line x1="435" y1="88" x2="425" y2="98" class="exl"/>
+          <line x1="525" y1="98" x2="648" y2="150" class="exl"/><circle cx="525" cy="93" r="7" class="oti"/><line x1="520" y1="88" x2="530" y2="98" class="exl"/><line x1="530" y1="88" x2="520" y2="98" class="exl"/>
+          <!-- exigences -->
+          <rect x="30" y="150" width="170" height="86" class="exb"/><text x="115" y="169" text-anchor="middle" class="ext">Mesure du soleil</text>
+          <text x="115" y="188" text-anchor="middle" class="exs">Doit dérouler la toile au</text><text x="115" y="203" text-anchor="middle" class="exs">delà d'un certain niveau</text><text x="115" y="218" text-anchor="middle" class="exs">de luminosité</text>
+          <rect x="215" y="150" width="165" height="86" class="exb"/><text x="297" y="169" text-anchor="middle" class="ext">Mesure du vent</text>
+          <text x="297" y="188" text-anchor="middle" class="exs">Doit enrouler la toile au</text><text x="297" y="203" text-anchor="middle" class="exs">delà d'une certaine</text><text x="297" y="218" text-anchor="middle" class="exs">vitesse de vent</text>
+          <rect x="395" y="150" width="160" height="86" class="exb"/><text x="475" y="169" text-anchor="middle" class="ext">Commande du système</text>
+          <text x="475" y="192" text-anchor="middle" class="exs">Doit pouvoir être</text><text x="475" y="207" text-anchor="middle" class="exs">commandé manuellement</text>
+          <rect x="570" y="150" width="160" height="86" class="exb"/><text x="650" y="169" text-anchor="middle" class="ext">Alimentation en énergie</text>
+          <text x="650" y="196" text-anchor="middle" class="exs">Doit être alimenté</text><text x="650" y="211" text-anchor="middle" class="exs">en énergie</text>
+          <!-- sous-exigences -->
+          <line x1="115" y1="236" x2="115" y2="272" class="exl" stroke-dasharray="5 4"/><polygon points="115,238 110,248 120,248" fill="#333"/>
+          <rect x="30" y="272" width="170" height="56" class="exb"/><text x="115" y="291" text-anchor="middle" class="ext">Luminosité</text>
+          <text x="115" y="309" text-anchor="middle" class="exs">Le seuil de luminosité</text><text x="115" y="322" text-anchor="middle" class="exs">doit être réglable</text>
+          <line x1="297" y1="236" x2="297" y2="272" class="exl" stroke-dasharray="5 4"/><polygon points="297,238 292,248 302,248" fill="#333"/>
+          <rect x="215" y="272" width="165" height="56" class="exb"/><text x="297" y="291" text-anchor="middle" class="ext">Vitesse du vent</text>
+          <text x="297" y="309" text-anchor="middle" class="exs">Le seuil de vent doit</text><text x="297" y="322" text-anchor="middle" class="exs">être réglable</text>
         </svg>
         <div class="steps">
-          <div>En haut : le <strong>nom</strong> de l'objet et sa <strong>mission principale</strong>.</div>
-          <div>En dessous : on découpe la mission en <strong>exigences unitaires</strong> (une par boîte).</div>
-          <div>On peut préciser des <strong>valeurs, réglages, détails</strong> sous chaque exigence.</div>
+          <div>Dans le premier rectangle : le <strong>nom</strong> et l'exigence du système (<strong>mission principale</strong>).</div>
+          <div>On décompose la mission en <strong>exigences unitaires</strong> (une par boîte, reliées par ⊗).</div>
+          <div>Pour chaque exigence, on peut ajouter des <strong>précisions, valeurs, données</strong> (flèches pointillées).</div>
         </div>
+        <div class="note"><span class="ico">🔗</span><p>Ces éléments seront <strong>réutilisés</strong> dans le diagramme des cas d'utilisation !</p></div>
       </div>
     </section>
 
-    <!-- CONTEXTE -->
+    <!-- 05 CONTEXTE -->
     <section id="contexte">
-      <h2><span class="num">05</span> Le diagramme de contexte</h2>
+      <h2><span class="num">05</span> Le diagramme de contexte <span class="muted" style="font-size:14px">(Context Diagram)</span></h2>
       <div class="fiche">
-        <span class="role">Il répond à : « Avec QUI/QUOI l'objet interagit-il ? »</span>
-        <p>Il recense les <strong>acteurs extérieurs</strong> qui interagissent avec l'objet : l'objet au <strong>centre</strong>, les acteurs autour.</p>
-        <svg class="diagsvg" viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg">
-          <style>.bx2{fill:#fff;stroke:#333;stroke-width:1.5}.tt2{font:700 13px 'Nunito',sans-serif;fill:#222}.lg2{stroke:#333;stroke-width:1.2}.pe{stroke:#333;stroke-width:1.5;fill:none}</style>
-          <rect x="280" y="115" width="160" height="46" class="bx2"/><text x="360" y="143" text-anchor="middle" class="tt2">Store automatisé</text>
-          <rect x="80" y="30" width="110" height="44" class="bx2"/><text x="135" y="57" text-anchor="middle" class="tt2">Terrasse</text>
-          <rect x="530" y="30" width="110" height="44" class="bx2"/><text x="585" y="57" text-anchor="middle" class="tt2">Soleil</text>
-          <rect x="560" y="180" width="100" height="44" class="bx2"/><text x="610" y="207" text-anchor="middle" class="tt2">Vent</text>
-          <rect x="330" y="215" width="110" height="44" class="bx2"/><text x="385" y="242" text-anchor="middle" class="tt2">Énergie</text>
-          <g class="pe"><circle cx="120" cy="180" r="11"/><line x1="120" y1="191" x2="120" y2="220"/><line x1="102" y1="202" x2="138" y2="202"/><line x1="120" y1="220" x2="106" y2="244"/><line x1="120" y1="220" x2="134" y2="244"/></g>
-          <text x="120" y="264" text-anchor="middle" class="tt2">Utilisateur</text>
-          <line x1="190" y1="60" x2="300" y2="118" class="lg2"/><line x1="530" y1="60" x2="420" y2="118" class="lg2"/>
-          <line x1="560" y1="196" x2="440" y2="150" class="lg2"/><line x1="385" y1="215" x2="370" y2="161" class="lg2"/>
-          <line x1="140" y1="185" x2="280" y2="150" class="lg2"/>
+        <span class="role">Il répond à : « QUI/QUOI interagit avec l'objet ? »</span>
+        <p>Il recense les <strong>éléments extérieurs (acteurs)</strong> qui interagissent avec l'objet : l'objet au <strong>centre</strong>, les acteurs autour.</p>
+        <svg class="diagsvg" viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg">
+          <style>.cxb{fill:#fff;stroke:#333;stroke-width:1.4}.cxt{font:700 12.5px 'Nunito',sans-serif;fill:#111}.cxs{font:11px 'Nunito',sans-serif;fill:#333}.cxl{stroke:#333;stroke-width:1.1}.pe{stroke:#333;stroke-width:1.4;fill:none}</style>
+          <text x="20" y="24" class="cxt" font-size="13">Diagramme de contexte du store automatisé</text>
+          <!-- objet centre -->
+          <rect x="300" y="150" width="170" height="42" class="cxb"/><text x="385" y="176" text-anchor="middle" class="cxt">Store automatisé</text>
+          <!-- Terrasse / Soleil en haut (boites avec bonhomme) -->
+          <g><rect x="220" y="45" width="105" height="52" class="cxb"/><g class="pe"><circle cx="272" cy="58" r="5"/><line x1="272" y1="63" x2="272" y2="74"/><line x1="264" y1="67" x2="280" y2="67"/><line x1="272" y1="74" x2="266" y2="83"/><line x1="272" y1="74" x2="278" y2="83"/></g><text x="272" y="93" text-anchor="middle" class="cxs">Terrasse</text></g>
+          <g><rect x="430" y="45" width="105" height="52" class="cxb"/><g class="pe"><circle cx="482" cy="58" r="5"/><line x1="482" y1="63" x2="482" y2="74"/><line x1="474" y1="67" x2="490" y2="67"/><line x1="482" y1="74" x2="476" y2="83"/><line x1="482" y1="74" x2="488" y2="83"/></g><text x="482" y="93" text-anchor="middle" class="cxs">Soleil</text></g>
+          <!-- Vent à droite -->
+          <g><rect x="600" y="150" width="95" height="52" class="cxb"/><g class="pe"><circle cx="647" cy="163" r="5"/><line x1="647" y1="168" x2="647" y2="179"/><line x1="639" y1="172" x2="655" y2="172"/><line x1="647" y1="179" x2="641" y2="188" /><line x1="647" y1="179" x2="653" y2="188"/></g><text x="647" y="197" text-anchor="middle" class="cxs">Vent</text></g>
+          <!-- Energie en bas -->
+          <g><rect x="360" y="240" width="100" height="52" class="cxb"/><g class="pe"><circle cx="410" cy="253" r="5"/><line x1="410" y1="258" x2="410" y2="269"/><line x1="402" y1="262" x2="418" y2="262"/><line x1="410" y1="269" x2="404" y2="278"/><line x1="410" y1="269" x2="416" y2="278"/></g><text x="410" y="287" text-anchor="middle" class="cxs">Énergie</text></g>
+          <!-- Utilisateur à gauche + decomposition -->
+          <g class="pe"><circle cx="150" cy="150" r="9"/><line x1="150" y1="159" x2="150" y2="184"/><line x1="135" y1="169" x2="165" y2="169"/><line x1="150" y1="184" x2="139" y2="203"/><line x1="150" y1="184" x2="161" y2="203"/></g>
+          <text x="150" y="220" text-anchor="middle" class="cxt" font-size="12">Utilisateur</text>
+          <g class="pe"><circle cx="90" cy="250" r="7"/><line x1="90" y1="257" x2="90" y2="275"/><line x1="79" y1="264" x2="101" y2="264"/><line x1="90" y1="275" x2="82" y2="290"/><line x1="90" y1="275" x2="98" y2="290"/></g>
+          <text x="90" y="306" text-anchor="middle" class="cxs">Utilisateur dans</text><text x="90" y="319" text-anchor="middle" class="cxs">le logement</text>
+          <g class="pe"><circle cx="205" cy="250" r="7"/><line x1="205" y1="257" x2="205" y2="275"/><line x1="194" y1="264" x2="216" y2="264"/><line x1="205" y1="275" x2="197" y2="290"/><line x1="205" y1="275" x2="213" y2="290"/></g>
+          <text x="205" y="306" text-anchor="middle" class="cxs">Utilisateur parti</text><text x="205" y="319" text-anchor="middle" class="cxs">à l'extérieur</text>
+          <!-- fleches heritage -->
+          <line x1="100" y1="243" x2="138" y2="212" class="cxl"/><polygon points="141,209 128,214 136,222" fill="#fff" stroke="#333"/>
+          <line x1="196" y1="243" x2="163" y2="212" class="cxl"/><polygon points="160,209 173,214 165,222" fill="#fff" stroke="#333"/>
+          <!-- liens -->
+          <line x1="285" y1="97" x2="335" y2="150" class="cxl"/>
+          <line x1="470" y1="97" x2="430" y2="150" class="cxl"/>
+          <line x1="600" y1="172" x2="470" y2="172" class="cxl"/>
+          <line x1="410" y1="240" x2="395" y2="192" class="cxl"/>
+          <line x1="166" y1="165" x2="300" y2="170" class="cxl"/>
+          <!-- toile barree -->
+          <rect x="560" y="245" width="85" height="48" class="cxb"/><text x="602" y="273" text-anchor="middle" class="cxs">Toile</text>
+          <line x1="552" y1="238" x2="653" y2="300" stroke="#d11" stroke-width="6"/><line x1="653" y1="238" x2="552" y2="300" stroke="#d11" stroke-width="6"/>
         </svg>
         <div class="steps">
-          <div>Au <strong>centre</strong> : l'objet étudié.</div>
-          <div>Autour : les <strong>acteurs</strong> (humains ou non) qui agissent sur lui ou subissent son action.</div>
+          <div>Au <strong>centre</strong> : l'objet.</div>
+          <div>Autour : les <strong>acteurs</strong> qui interagissent avec lui. Un acteur peut être <strong>décomposé</strong> en sous-acteurs (ex. utilisateur dans le logement / parti à l'extérieur).</div>
         </div>
-        <div class="note warn"><span class="ico">⚠️</span><p><strong>Piège classique :</strong> on ne place JAMAIS comme acteur un élément qui fait partie de l'objet ! La toile, les capteurs, le moteur… sont DANS le store → interdits ici.</p></div>
+        <div class="note warn"><span class="ico">⚠️</span><p><strong>Piège :</strong> il ne faut PAS placer comme acteur des éléments qui appartiennent au système ! Exemple ici : la <strong>toile</strong>, les capteurs… sont DANS le store → interdits (d'où la croix rouge).</p></div>
       </div>
     </section>
 
-    <!-- CAS D'UTILISATION -->
+    <!-- 06 CAS D'UTILISATION -->
     <section id="cas">
-      <h2><span class="num">06</span> Le diagramme des cas d'utilisation</h2>
+      <h2><span class="num">06</span> Le diagramme des cas d'utilisation <span class="muted" style="font-size:14px">(Use Case Diagram)</span></h2>
       <div class="fiche">
-        <span class="role">Il répond à : « Quels SERVICES l'objet rend-il ? »</span>
-        <p>Il exprime <strong>ce que fait l'objet pour les acteurs</strong> (sans dire comment). Les services s'écrivent dans des <strong>ovales</strong>, avec un <strong>verbe à l'infinitif</strong>.</p>
-        <svg class="diagsvg" viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
-          <style>.bx3{fill:none;stroke:#333;stroke-width:1.5}.ov{fill:#fff;stroke:#333;stroke-width:1.5}.tt3{font:700 12px 'Nunito',sans-serif;fill:#222}.tx3{font:11.5px 'Nunito',sans-serif;fill:#333}.lg3{stroke:#333;stroke-width:1.2}.pe3{stroke:#333;stroke-width:1.5;fill:none}</style>
-          <rect x="180" y="16" width="380" height="228" class="bx3"/>
-          <text x="370" y="36" text-anchor="middle" class="tt3">Store automatisé</text>
-          <ellipse cx="370" cy="72" rx="150" ry="24" class="ov"/><text x="370" y="70" text-anchor="middle" class="tx3">Protéger automatiquement la</text><text x="370" y="83" text-anchor="middle" class="tx3">terrasse des rayons du soleil</text>
-          <ellipse cx="370" cy="132" rx="120" ry="20" class="ov"/><text x="370" y="137" text-anchor="middle" class="tx3">Être commandé manuellement</text>
-          <ellipse cx="370" cy="190" rx="130" ry="20" class="ov"/><text x="370" y="195" text-anchor="middle" class="tx3">Protéger la toile d'un vent violent</text>
-          <g class="pe3"><circle cx="80" cy="105" r="10"/><line x1="80" y1="115" x2="80" y2="142"/><line x1="64" y1="125" x2="96" y2="125"/><line x1="80" y1="142" x2="68" y2="164"/><line x1="80" y1="142" x2="92" y2="164"/></g>
-          <text x="80" y="184" text-anchor="middle" class="tt3">Utilisateur</text>
-          <rect x="610" y="52" width="86" height="36" class="ov"/><text x="653" y="74" text-anchor="middle" class="tt3">Soleil</text>
-          <rect x="610" y="112" width="86" height="36" class="ov"/><text x="653" y="134" text-anchor="middle" class="tt3">Terrasse</text>
-          <rect x="610" y="172" width="86" height="36" class="ov"/><text x="653" y="194" text-anchor="middle" class="tt3">Vent</text>
-          <line x1="96" y1="128" x2="250" y2="134" class="lg3"/>
-          <line x1="520" y1="70" x2="610" y2="70" class="lg3"/><line x1="518" y1="78" x2="610" y2="124" class="lg3"/>
-          <line x1="500" y1="190" x2="610" y2="190" class="lg3"/>
+        <span class="role">Il répond à : « Quels SERVICES l'objet rend-il aux acteurs ? »</span>
+        <p>Il décrit <strong>ce que fait l'objet</strong> (et non ce que fait l'utilisateur), <strong>sans dire comment</strong> il le fait.</p>
+        <svg class="diagsvg" viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg">
+          <style>.ub{fill:none;stroke:#333;stroke-width:1.5}.uo{fill:#fff;stroke:#333;stroke-width:1.4}.ut{font:700 12px 'Nunito',sans-serif;fill:#111}.us{font:11px 'Nunito',sans-serif;fill:#333}.ul{stroke:#333;stroke-width:1.1}.pe2{stroke:#333;stroke-width:1.4;fill:none}</style>
+          <text x="20" y="24" class="ut" font-size="13">Diagramme des cas d'utilisation du store automatisé</text>
+          <rect x="190" y="36" width="390" height="282" class="ub"/>
+          <text x="385" y="54" text-anchor="middle" class="ut">Store automatisé</text>
+          <ellipse cx="385" cy="92" rx="160" ry="26" class="uo"/>
+          <text x="385" y="88" text-anchor="middle" class="us">Protéger automatiquement la</text><text x="385" y="101" text-anchor="middle" class="us">terrasse des rayons du soleil</text>
+          <ellipse cx="385" cy="158" rx="125" ry="21" class="uo"/><text x="385" y="163" text-anchor="middle" class="us">Être commandé manuellement</text>
+          <ellipse cx="385" cy="222" rx="125" ry="21" class="uo"/><text x="385" y="218" text-anchor="middle" class="us">S'alimenter d'une source</text><text x="385" y="231" text-anchor="middle" class="us">d'énergie</text>
+          <ellipse cx="385" cy="285" rx="135" ry="21" class="uo"/><text x="385" y="281" text-anchor="middle" class="us">Protéger la toile d'un vent</text><text x="385" y="294" text-anchor="middle" class="us">trop violent</text>
+          <!-- utilisateur -->
+          <g class="pe2"><circle cx="85" cy="130" r="10"/><line x1="85" y1="140" x2="85" y2="168"/><line x1="68" y1="150" x2="102" y2="150"/><line x1="85" y1="168" x2="72" y2="190"/><line x1="85" y1="168" x2="98" y2="190"/></g>
+          <text x="85" y="210" text-anchor="middle" class="ut">Utilisateur</text>
+          <!-- acteurs droite -->
+          <g><rect x="630" y="60" width="100" height="52" class="uo"/><g class="pe2"><circle cx="680" cy="73" r="5"/><line x1="680" y1="78" x2="680" y2="89"/><line x1="672" y1="82" x2="688" y2="82"/><line x1="680" y1="89" x2="674" y2="98"/><line x1="680" y1="89" x2="686" y2="98"/></g><text x="680" y="108" text-anchor="middle" class="us">Soleil</text></g>
+          <g><rect x="630" y="125" width="100" height="52" class="uo"/><g class="pe2"><circle cx="680" cy="138" r="5"/><line x1="680" y1="143" x2="680" y2="154"/><line x1="672" y1="147" x2="688" y2="147"/><line x1="680" y1="154" x2="674" y2="163"/><line x1="680" y1="154" x2="686" y2="163"/></g><text x="680" y="173" text-anchor="middle" class="us">Terrasse</text></g>
+          <g><rect x="630" y="190" width="100" height="52" class="uo"/><g class="pe2"><circle cx="680" cy="203" r="5"/><line x1="680" y1="208" x2="680" y2="219"/><line x1="672" y1="212" x2="688" y2="212"/><line x1="680" y1="219" x2="674" y2="228"/><line x1="680" y1="219" x2="686" y2="228"/></g><text x="680" y="238" text-anchor="middle" class="us">Énergie</text></g>
+          <g><rect x="630" y="255" width="100" height="52" class="uo"/><g class="pe2"><circle cx="680" cy="268" r="5"/><line x1="680" y1="273" x2="680" y2="284"/><line x1="672" y1="277" x2="688" y2="277"/><line x1="680" y1="284" x2="674" y2="293"/><line x1="680" y1="284" x2="686" y2="293"/></g><text x="680" y="303" text-anchor="middle" class="us">Vent</text></g>
+          <!-- liens -->
+          <line x1="102" y1="152" x2="260" y2="158" class="ul"/>
+          <line x1="545" y1="86" x2="630" y2="82" class="ul"/>
+          <line x1="543" y1="99" x2="630" y2="145" class="ul"/>
+          <line x1="510" y1="222" x2="630" y2="216" class="ul"/>
+          <line x1="520" y1="285" x2="630" y2="281" class="ul"/>
         </svg>
         <div class="steps">
-          <div>Un grand rectangle = la <strong>frontière</strong> de l'objet.</div>
-          <div>À gauche les <strong>acteurs humains</strong>, à droite les <strong>acteurs non humains</strong> (les mêmes que le contexte !).</div>
-          <div>Dans les ovales : les <strong>services rendus</strong> (verbe à l'infinitif), reliés aux acteurs concernés.</div>
+          <div>Un grand rectangle indique la <strong>frontière de l'objet</strong>.</div>
+          <div>À gauche : les <strong>acteurs humains</strong>. À droite : les <strong>acteurs non humains</strong> (les mêmes que le contexte !).</div>
+          <div>Dans les <strong>ovales</strong> : les actions réalisables par le système (<strong>verbe à l'infinitif</strong> + compléments), reliées aux acteurs concernés.</div>
         </div>
+        <div class="note"><span class="ico">💡</span><p>On y retrouve la mission principale et les exigences déjà identifiées — on précise <em>comment sont assurées les missions</em>.</p></div>
       </div>
     </section>
 
-    <!-- SEQUENCE -->
+    <!-- 07 SEQUENCE ANIMEE -->
     <section id="sequence">
-      <h2><span class="num">07</span> Le diagramme de séquence</h2>
+      <h2><span class="num">07</span> Le diagramme de séquence <span class="muted" style="font-size:14px">(Sequence Diagram)</span> — <em>animé !</em></h2>
       <div class="fiche">
-        <span class="role">Il répond à : « Dans quel ORDRE se passent les échanges ? »</span>
-        <p>Il montre les <strong>interactions dans l'ordre chronologique</strong>. On le lit <strong>de haut en bas</strong>, comme une bande dessinée du temps qui passe.</p>
-        <svg class="diagsvg" viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
-          <style>.bx4{fill:#fff;stroke:#333;stroke-width:1.5}.tt4{font:700 12px 'Nunito',sans-serif;fill:#222}.tx4{font:11px 'Nunito',sans-serif;fill:#333}.vie{stroke:#333;stroke-width:3}.fl{stroke:#b45309;stroke-width:1.6;marker-end:url(#arh)}</style>
-          <defs><marker id="arh" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/></marker></defs>
-          <rect x="60" y="14" width="100" height="30" class="bx4"/><text x="110" y="34" text-anchor="middle" class="tt4">Utilisateur</text>
-          <rect x="240" y="14" width="90" height="30" class="bx4"/><text x="285" y="34" text-anchor="middle" class="tt4">Store</text>
-          <rect x="410" y="14" width="90" height="30" class="bx4"/><text x="455" y="34" text-anchor="middle" class="tt4">Soleil</text>
-          <rect x="570" y="14" width="100" height="30" class="bx4"/><text x="620" y="34" text-anchor="middle" class="tt4">Terrasse</text>
-          <line x1="110" y1="44" x2="110" y2="245" class="vie"/><line x1="285" y1="44" x2="285" y2="245" class="vie"/>
-          <line x1="455" y1="44" x2="455" y2="245" class="vie"/><line x1="620" y1="44" x2="620" y2="245" class="vie"/>
-          <line x1="110" y1="75" x2="282" y2="75" class="fl"/><text x="195" y="68" text-anchor="middle" class="tx4">Activation</text>
-          <line x1="452" y1="115" x2="290" y2="115" class="fl"/><text x="372" y="108" text-anchor="middle" class="tx4">Luminosité</text>
-          <line x1="288" y1="150" x2="616" y2="150" class="fl"/><text x="450" y="143" text-anchor="middle" class="tx4">Sortie de la toile → ombre</text>
-          <line x1="288" y1="200" x2="114" y2="200" class="fl"/><text x="200" y="193" text-anchor="middle" class="tx4">Communiquer état</text>
+        <span class="role">Il répond à : « Dans quel ORDRE se font les échanges ? »</span>
+        <p>Il présente les <strong>interactions entre les acteurs et l'objet</strong> selon un <strong>ordre chronologique</strong>. On le lit <strong>de haut en bas</strong>. Clique sur <strong>▶ Dérouler la séquence</strong> pour voir les échanges apparaître dans l'ordre :</p>
+        <div class="animbar">
+          <button class="btn" id="seqGo">▶ Dérouler la séquence</button>
+          <button class="btn" id="seqReset">↺ Recommencer</button>
+        </div>
+        <svg class="diagsvg" viewBox="0 0 780 370" xmlns="http://www.w3.org/2000/svg">
+          <style>.sqb{fill:#fff;stroke:#333;stroke-width:1.5}.sqt{font:700 12.5px 'Nunito',sans-serif;fill:#111}.sqs{font:11px 'Nunito',sans-serif;fill:#333}.vie{stroke:#333;stroke-width:3.4}.msg line, .msg path{stroke:#333;stroke-width:1.6;fill:none;marker-end:url(#sar)}</style>
+          <defs><marker id="sar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#333"/></marker></defs>
+          <text x="20" y="24" class="sqt" font-size="13">Diagramme de séquence du store automatisé</text>
+          <rect x="40" y="36" width="100" height="30" class="sqb"/><text x="90" y="56" text-anchor="middle" class="sqt">Utilisateur</text>
+          <rect x="205" y="36" width="90" height="30" class="sqb"/><text x="250" y="56" text-anchor="middle" class="sqt">Store</text>
+          <rect x="365" y="36" width="90" height="30" class="sqb"/><text x="410" y="56" text-anchor="middle" class="sqt">Soleil</text>
+          <rect x="520" y="36" width="90" height="30" class="sqb"/><text x="565" y="56" text-anchor="middle" class="sqt">Vent</text>
+          <rect x="665" y="36" width="100" height="30" class="sqb"/><text x="715" y="56" text-anchor="middle" class="sqt">Terrasse</text>
+          <line x1="90" y1="66" x2="90" y2="355" class="vie"/><line x1="250" y1="66" x2="250" y2="355" class="vie"/>
+          <line x1="410" y1="66" x2="410" y2="355" class="vie"/><line x1="565" y1="66" x2="565" y2="355" class="vie"/><line x1="715" y1="66" x2="715" y2="355" class="vie"/>
+          <g class="msg seq-msg" id="sm1"><line x1="93" y1="95" x2="245" y2="95"/><text x="168" y="88" text-anchor="middle" class="sqs">Activation</text></g>
+          <g class="msg seq-msg" id="sm2"><path d="M253,115 C295,115 295,140 256,140"/><text x="320" y="130" text-anchor="middle" class="sqs">(le store travaille)</text></g>
+          <g class="msg seq-msg" id="sm3"><line x1="247" y1="165" x2="95" y2="165"/><text x="170" y="158" text-anchor="middle" class="sqs">Communiquer état</text></g>
+          <g class="msg seq-msg" id="sm4"><line x1="407" y1="195" x2="255" y2="195"/><text x="330" y="188" text-anchor="middle" class="sqs">Luminosité</text></g>
+          <g class="msg seq-msg" id="sm5"><line x1="253" y1="225" x2="710" y2="225"/><text x="480" y="218" text-anchor="middle" class="sqs">Sortie de la toile</text></g>
+          <g class="msg seq-msg" id="sm6"><line x1="562" y1="260" x2="255" y2="260"/><text x="410" y="253" text-anchor="middle" class="sqs">Vent fort</text></g>
+          <g class="msg seq-msg" id="sm7"><line x1="253" y1="292" x2="710" y2="292"/><text x="480" y="285" text-anchor="middle" class="sqs">Rentrée de la toile</text></g>
+          <g class="msg seq-msg" id="sm8"><line x1="247" y1="328" x2="95" y2="328"/><text x="170" y="321" text-anchor="middle" class="sqs">Protection solaire autonome</text></g>
         </svg>
+        <div class="anim-msg" id="seqMsg">Clique sur ▶ pour voir les échanges apparaître dans l'ordre chronologique.</div>
         <div class="steps">
-          <div>En haut : <strong>tous les acteurs</strong> + l'objet, chacun avec sa <strong>ligne de vie</strong> verticale.</div>
-          <div>Des <strong>flèches horizontales</strong> retracent chaque échange, dans l'ordre, de haut en bas.</div>
+          <div>En haut : <strong>tous les acteurs</strong> (on commence par l'objet étudié ; acteur principal à sa gauche, secondaires à droite). Chacun a sa <strong>ligne de vie</strong> verticale.</div>
+          <div>Les <strong>flèches</strong> retracent chaque échange (information, énergie, matière) dans l'ordre, de haut en bas.</div>
         </div>
       </div>
     </section>
 
-    <!-- BLOCS -->
+    <!-- 08 DEFINITION DE BLOCS -->
     <section id="blocs">
-      <h2><span class="num">08</span> Le diagramme de définition de blocs</h2>
+      <h2><span class="num">08</span> Le diagramme de définition de blocs <span class="muted" style="font-size:14px">(Block Definition Diagram)</span></h2>
       <div class="fiche">
         <span class="role">Il répond à : « De QUOI l'objet est-il composé ? »</span>
-        <p>C'est <strong>l'inventaire</strong> de tous les <strong>blocs</strong> (et sous-blocs) qui composent l'objet — sans expliquer comment ils interagissent.</p>
-        <svg class="diagsvg" viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
-          <style>.bx5{fill:#fff;stroke:#333;stroke-width:1.5}.tt5{font:700 12px 'Nunito',sans-serif;fill:#222}.lg5{stroke:#333;stroke-width:1.2}</style>
-          <rect x="230" y="14" width="260" height="36" class="bx5"/><text x="360" y="37" text-anchor="middle" class="tt5">Store automatisé</text>
-          <line x1="120" y1="100" x2="360" y2="50" class="lg5"/><line x1="290" y1="100" x2="360" y2="50" class="lg5"/>
-          <line x1="450" y1="100" x2="360" y2="50" class="lg5"/><line x1="610" y1="100" x2="360" y2="50" class="lg5"/>
-          <rect x="55" y="100" width="130" height="34" class="bx5"/><text x="120" y="122" text-anchor="middle" class="tt5">Alimentation</text>
-          <rect x="225" y="100" width="130" height="34" class="bx5"/><text x="290" y="122" text-anchor="middle" class="tt5">Capteurs</text>
-          <rect x="390" y="100" width="120" height="34" class="bx5"/><text x="450" y="122" text-anchor="middle" class="tt5">Mécanique</text>
-          <rect x="545" y="100" width="130" height="34" class="bx5"/><text x="610" y="122" text-anchor="middle" class="tt5">Motorisation</text>
-          <line x1="230" y1="185" x2="290" y2="134" class="lg5"/><line x1="350" y1="185" x2="290" y2="134" class="lg5"/>
-          <rect x="170" y="185" width="120" height="32" class="bx5"/><text x="230" y="206" text-anchor="middle" class="tt5">Capteur lumière</text>
-          <rect x="300" y="185" width="110" height="32" class="bx5"/><text x="355" y="206" text-anchor="middle" class="tt5">Capteur vent</text>
-          <line x1="420" y1="185" x2="450" y2="134" class="lg5"/><line x1="530" y1="185" x2="450" y2="134" class="lg5"/>
-          <rect x="425" y="185" width="80" height="32" class="bx5"/><text x="465" y="206" text-anchor="middle" class="tt5">Rouleau</text>
-          <rect x="515" y="185" width="70" height="32" class="bx5"/><text x="550" y="206" text-anchor="middle" class="tt5">Toile</text>
+        <p>Il permet simplement de <strong>lister tous les blocs et sous-blocs</strong> qui constituent l'objet — <strong>sans</strong> expliquer comment ils interagissent.</p>
+        <svg class="diagsvg" viewBox="0 0 840 330" xmlns="http://www.w3.org/2000/svg">
+          <style>.bb{fill:#fff;stroke:#333;stroke-width:1.4}.bt2{font:700 11.5px 'Nunito',sans-serif;fill:#111}.bs2{font:10.5px 'Nunito',sans-serif;fill:#333}.bl{stroke:#333;stroke-width:1.1;fill:none}</style>
+          <defs><marker id="dia" markerWidth="12" markerHeight="8" refX="2" refY="4" orient="auto"><path d="M2,4 L7,1 L12,4 L7,7 Z" fill="#111"/></marker></defs>
+          <text x="20" y="24" class="bt2" font-size="13">Diagramme de définition de blocs du store automatisé</text>
+          <rect x="270" y="38" width="300" height="36" class="bb"/><text x="420" y="61" text-anchor="middle" class="bt2">Store automatisé</text>
+          <line x1="85" y1="130" x2="290" y2="74" class="bl" marker-start="url(#dia)"/>
+          <line x1="195" y1="130" x2="340" y2="74" class="bl" marker-start="url(#dia)"/>
+          <line x1="310" y1="130" x2="395" y2="74" class="bl" marker-start="url(#dia)"/>
+          <line x1="420" y1="130" x2="420" y2="74" class="bl" marker-start="url(#dia)"/>
+          <line x1="530" y1="130" x2="450" y2="74" class="bl" marker-start="url(#dia)"/>
+          <line x1="650" y1="130" x2="505" y2="74" class="bl" marker-start="url(#dia)"/>
+          <line x1="765" y1="130" x2="550" y2="74" class="bl" marker-start="url(#dia)"/>
+          <rect x="30" y="130" width="110" height="34" class="bb"/><text x="85" y="152" text-anchor="middle" class="bt2">Alimentation</text>
+          <rect x="155" y="130" width="80" height="34" class="bb"/><text x="195" y="152" text-anchor="middle" class="bt2">Voyant</text>
+          <rect x="250" y="130" width="120" height="34" class="bb"/><text x="310" y="146" text-anchor="middle" class="bt2">Carte de</text><text x="310" y="159" text-anchor="middle" class="bt2">commande</text>
+          <rect x="380" y="130" width="90" height="34" class="bb"/><text x="425" y="152" text-anchor="middle" class="bt2">Capteurs</text>
+          <rect x="480" y="130" width="110" height="34" class="bb"/><text x="535" y="146" text-anchor="middle" class="bt2">Circuit de</text><text x="535" y="159" text-anchor="middle" class="bt2">puissance</text>
+          <rect x="605" y="130" width="100" height="34" class="bb"/><text x="655" y="152" text-anchor="middle" class="bt2">Mécanique</text>
+          <rect x="718" y="130" width="105" height="34" class="bb"/><text x="770" y="152" text-anchor="middle" class="bt2">Motorisation</text>
+          <!-- sous-blocs capteurs -->
+          <line x1="105" y1="225" x2="410" y2="164" class="bl" marker-start="url(#dia)"/>
+          <line x1="235" y1="225" x2="422" y2="164" class="bl" marker-start="url(#dia)"/>
+          <line x1="350" y1="225" x2="435" y2="164" class="bl" marker-start="url(#dia)"/>
+          <rect x="40" y="225" width="130" height="42" class="bb"/><text x="105" y="242" text-anchor="middle" class="bs2">Boutons de</text><text x="105" y="256" text-anchor="middle" class="bs2">commande</text>
+          <rect x="180" y="225" width="115" height="42" class="bb"/><text x="237" y="242" text-anchor="middle" class="bs2">Capteur de</text><text x="237" y="256" text-anchor="middle" class="bs2">luminosité</text>
+          <rect x="305" y="225" width="95" height="42" class="bb"/><text x="352" y="242" text-anchor="middle" class="bs2">Capteur</text><text x="352" y="256" text-anchor="middle" class="bs2">de vent</text>
+          <!-- sous-blocs mecanique -->
+          <line x1="470" y1="225" x2="640" y2="164" class="bl" marker-start="url(#dia)"/>
+          <line x1="560" y1="225" x2="653" y2="164" class="bl" marker-start="url(#dia)"/>
+          <line x1="640" y1="225" x2="665" y2="164" class="bl" marker-start="url(#dia)"/>
+          <rect x="425" y="225" width="90" height="34" class="bb"/><text x="470" y="247" text-anchor="middle" class="bs2">Châssis</text>
+          <rect x="522" y="225" width="80" height="34" class="bb"/><text x="562" y="247" text-anchor="middle" class="bs2">Rouleau</text>
+          <rect x="610" y="225" width="65" height="34" class="bb"/><text x="642" y="247" text-anchor="middle" class="bs2">Toile</text>
+          <!-- sous-blocs motorisation -->
+          <line x1="720" y1="225" x2="760" y2="164" class="bl" marker-start="url(#dia)"/>
+          <line x1="795" y1="225" x2="778" y2="164" class="bl" marker-start="url(#dia)"/>
+          <rect x="685" y="225" width="70" height="34" class="bb"/><text x="720" y="247" text-anchor="middle" class="bs2">Moteur</text>
+          <rect x="762" y="225" width="70" height="42" class="bb"/><text x="797" y="242" text-anchor="middle" class="bs2">Moto-</text><text x="797" y="256" text-anchor="middle" class="bs2">réducteur</text>
         </svg>
         <div class="steps">
-          <div>En haut : <strong>l'objet</strong>.</div>
-          <div>En dessous : ses <strong>blocs</strong>, puis les <strong>sous-blocs</strong>.</div>
+          <div>Au centre en haut : <strong>l'objet</strong>.</div>
+          <div>En dessous : chaque <strong>bloc</strong>, et éventuellement des <strong>« sous-blocs »</strong> (le losange ♦ marque la composition).</div>
         </div>
-        <div class="note"><span class="ico">💡</span><p>Ici on <strong>liste</strong> seulement — pas de flèches d'échange entre blocs ! Pour ça, il y a le diagramme suivant.</p></div>
+        <div class="note warn"><span class="ico">⚠️</span><p>Dans ce diagramme, il n'est <strong>pas nécessaire</strong> d'expliquer comment les blocs interagissent : pas besoin d'indiquer que les capteurs sont reliés à la carte de commande ! C'est juste un <strong>inventaire</strong>.</p></div>
       </div>
     </section>
 
-    <!-- INTERNES -->
+    <!-- 09 BLOCS INTERNES ANIME -->
     <section id="internes">
-      <h2><span class="num">09</span> Le diagramme des blocs internes</h2>
+      <h2><span class="num">09</span> Le diagramme des blocs internes <span class="muted" style="font-size:14px">(Internal Block Diagram)</span> — <em>animé !</em></h2>
       <div class="fiche">
-        <span class="role">Il répond à : « Comment ÇA CIRCULE dans l'objet ? »</span>
-        <p>Il montre comment <strong>l'information</strong>, <strong>l'énergie</strong> et la <strong>matière</strong> circulent entre les blocs. C'est lui qui remplace la chaîne d'énergie et d'information !</p>
-        <svg class="diagsvg" viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg">
-          <style>.bx6{fill:#fff;stroke:#333;stroke-width:1.5}.tt6{font:700 11.5px 'Nunito',sans-serif;fill:#222}.fi{stroke:#15803d;stroke-width:2;marker-end:url(#ai)}.fe{stroke:#b91c1c;stroke-width:2;marker-end:url(#ae)}.lb{font:10.5px 'Nunito',sans-serif}</style>
-          <defs>
-            <marker id="ai" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#15803d"/></marker>
-            <marker id="ae" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b91c1c"/></marker>
-          </defs>
-          <rect x="30" y="18" width="660" height="196" fill="none" stroke="#333" stroke-width="2"/>
-          <text x="360" y="38" text-anchor="middle" class="tt6">Store automatisé</text>
-          <rect x="60" y="60" width="120" height="36" class="bx6"/><text x="120" y="83" text-anchor="middle" class="tt6">Capteur lumière</text>
-          <rect x="60" y="150" width="120" height="36" class="bx6"/><text x="120" y="173" text-anchor="middle" class="tt6">Alimentation</text>
-          <rect x="255" y="95" width="130" height="46" class="bx6"/><text x="320" y="123" text-anchor="middle" class="tt6">Carte de commande</text>
-          <rect x="450" y="95" width="90" height="46" class="bx6"/><text x="495" y="123" text-anchor="middle" class="tt6">Moteur</text>
-          <rect x="590" y="95" width="70" height="46" class="bx6"/><text x="625" y="123" text-anchor="middle" class="tt6">Toile</text>
-          <line x1="180" y1="80" x2="252" y2="108" class="fi"/><text x="212" y="82" class="lb" fill="#15803d">info</text>
-          <line x1="180" y1="164" x2="252" y2="132" class="fe"/><text x="200" y="162" class="lb" fill="#b91c1c">énergie</text>
-          <line x1="385" y1="118" x2="447" y2="118" class="fi"/><text x="402" y="110" class="lb" fill="#15803d">consigne</text>
-          <line x1="540" y1="118" x2="587" y2="118" class="fe"/><text x="546" y="110" class="lb" fill="#b91c1c">énergie</text>
-          <text x="60" y="232" class="lb" fill="#15803d">— vert : information</text>
-          <text x="230" y="232" class="lb" fill="#b91c1c">— rouge : énergie</text>
-        </svg>
-        <div class="steps">
-          <div>Un grand rectangle <strong>délimite l'objet</strong> ; les acteurs restent dehors.</div>
-          <div>Dedans : les blocs, reliés par des <strong>flèches de flux</strong> (couleurs = type de flux).</div>
+        <span class="role">Il répond à : « Comment l'information, l'énergie et la matière CIRCULENT-elles ? »</span>
+        <p>Il définit comment <strong style="color:#4ade80">l'information</strong> et <strong style="color:#fb7185">l'énergie</strong> circulent à travers l'objet. Il <strong>remplace la chaîne d'énergie et d'information</strong>. Clique sur les boutons pour <strong>suivre chaque flux</strong> :</p>
+        <div class="animbar">
+          <button class="btn" id="fluxInfo">🟢 Suivre le flux d'INFORMATION</button>
+          <button class="btn" id="fluxEnergie">🔴 Suivre le flux d'ÉNERGIE</button>
         </div>
+        <svg class="diagsvg" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+          <style>
+            .ib{fill:#fff;stroke:#333;stroke-width:1.4}.it{font:700 11px 'Nunito',sans-serif;fill:#111}.is{font:10px 'Nunito',sans-serif}
+            .fi{stroke:#15803d;stroke-width:1.8;fill:none;marker-end:url(#ari)}.fe{stroke:#b91c1c;stroke-width:1.8;fill:none;marker-end:url(#are)}
+            .pe4{stroke:#333;stroke-width:1.4;fill:none}
+          </style>
+          <defs>
+            <marker id="ari" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#15803d"/></marker>
+            <marker id="are" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b91c1c"/></marker>
+          </defs>
+          <text x="20" y="22" class="it" font-size="13">Diagramme des blocs internes du store automatisé</text>
+          <!-- cadre objet -->
+          <rect x="128" y="34" width="545" height="392" fill="none" stroke="#333" stroke-width="2"/>
+          <text x="400" y="52" text-anchor="middle" class="it" font-size="12.5">Store automatisé</text>
+          <!-- acteurs exterieurs -->
+          <g class="pe4"><circle cx="62" cy="110" r="9"/><line x1="62" y1="119" x2="62" y2="142"/><line x1="48" y1="128" x2="76" y2="128"/><line x1="62" y1="142" x2="52" y2="160"/><line x1="62" y1="142" x2="72" y2="160"/></g>
+          <text x="62" y="176" text-anchor="middle" class="it">Utilisateur</text>
+          <g><rect x="20" y="200" width="86" height="46" class="ib"/><text x="63" y="219" text-anchor="middle" class="it">Vent</text><text x="63" y="236" text-anchor="middle" class="is" fill="#333">🧍</text></g>
+          <g><rect x="20" y="272" width="86" height="46" class="ib"/><text x="63" y="291" text-anchor="middle" class="it">Soleil</text><text x="63" y="308" text-anchor="middle" class="is" fill="#333">🧍</text></g>
+          <g><rect x="20" y="358" width="86" height="46" class="ib"/><text x="63" y="377" text-anchor="middle" class="it">Énergie</text><text x="63" y="394" text-anchor="middle" class="is" fill="#333">🧍</text></g>
+          <g><rect x="700" y="152" width="86" height="52" class="ib"/><text x="743" y="172" text-anchor="middle" class="it">Terrasse</text><text x="743" y="192" text-anchor="middle" class="is" fill="#333">🧍</text></g>
+          <!-- blocs internes -->
+          <rect x="152" y="82" width="88" height="30" class="ib"/><text x="196" y="101" text-anchor="middle" class="it">Voyant</text>
+          <rect x="152" y="142" width="140" height="30" class="ib"/><text x="222" y="161" text-anchor="middle" class="it">Boutons de commande</text>
+          <rect x="152" y="202" width="118" height="30" class="ib"/><text x="211" y="221" text-anchor="middle" class="it">Capteur de vent</text>
+          <rect x="152" y="268" width="148" height="30" class="ib"/><text x="226" y="287" text-anchor="middle" class="it">Capteur de luminosité</text>
+          <rect x="152" y="356" width="108" height="30" class="ib"/><text x="206" y="375" text-anchor="middle" class="it">Alimentation</text>
+          <rect x="372" y="120" width="118" height="142" class="ib"/><text x="431" y="185" text-anchor="middle" class="it">Carte de</text><text x="431" y="200" text-anchor="middle" class="it">commande</text>
+          <rect x="360" y="362" width="140" height="34" class="ib"/><text x="430" y="383" text-anchor="middle" class="it">Circuit de puissance</text>
+          <rect x="560" y="362" width="78" height="30" class="ib"/><text x="599" y="381" text-anchor="middle" class="it">Moteur</text>
+          <rect x="548" y="302" width="104" height="30" class="ib"/><text x="600" y="321" text-anchor="middle" class="it">Moto-réducteur</text>
+          <rect x="558" y="242" width="84" height="30" class="ib"/><text x="600" y="261" text-anchor="middle" class="it">Rouleau</text>
+          <rect x="562" y="182" width="66" height="30" class="ib"/><text x="595" y="201" text-anchor="middle" class="it">Toile</text>
+          <!-- FLUX INFORMATION (vert) -->
+          <line x1="152" y1="97" x2="78" y2="112" class="fi"/><text x="106" y="92" class="is" fill="#15803d">Lumière</text>
+          <line x1="372" y1="130" x2="240" y2="99" class="fi"/><text x="300" y="105" class="is" fill="#15803d">I/O</text>
+          <line x1="80" y1="150" x2="152" y2="156" class="fi"/><text x="96" y="144" class="is" fill="#15803d">Consigne</text>
+          <line x1="292" y1="157" x2="372" y2="162" class="fi"/><text x="316" y="151" class="is" fill="#15803d">I/O</text>
+          <line x1="106" y1="219" x2="152" y2="218" class="fi"/><text x="112" y="211" class="is" fill="#15803d">Vitesse</text>
+          <line x1="270" y1="217" x2="372" y2="200" class="fi"/><text x="308" y="203" class="is" fill="#15803d">Analog</text>
+          <line x1="106" y1="290" x2="152" y2="284" class="fi"/><text x="106" y="279" class="is" fill="#15803d">Luminosité</text>
+          <line x1="300" y1="283" x2="372" y2="238" class="fi"/><text x="326" y="266" class="is" fill="#15803d">Analog</text>
+          <line x1="431" y1="262" x2="431" y2="360" class="fi"/><text x="438" y="315" class="is" fill="#15803d">I/O</text>
+          <!-- FLUX ENERGIE (rouge) -->
+          <line x1="106" y1="380" x2="152" y2="372" class="fe"/><text x="108" y="366" class="is" fill="#b91c1c">EE 230V</text>
+          <line x1="245" y1="356" x2="380" y2="262" class="fe"/><text x="290" y="308" class="is" fill="#b91c1c">5V</text>
+          <line x1="260" y1="376" x2="360" y2="379" class="fe"/><text x="284" y="370" class="is" fill="#b91c1c">EE 24V</text>
+          <line x1="500" y1="379" x2="558" y2="378" class="fe"/><text x="508" y="371" class="is" fill="#b91c1c">EE Consigne</text>
+          <line x1="599" y1="362" x2="600" y2="334" class="fe"/><text x="608" y="352" class="is" fill="#b91c1c">EM</text>
+          <line x1="600" y1="302" x2="600" y2="274" class="fe"/><text x="608" y="292" class="is" fill="#b91c1c">EM</text>
+          <line x1="600" y1="242" x2="597" y2="214" class="fe"/><text x="608" y="232" class="is" fill="#b91c1c">EM</text>
+          <line x1="628" y1="192" x2="698" y2="180" class="fe"/><text x="636" y="177" class="is" fill="#b91c1c">EM · Ombre</text>
+          <!-- legende -->
+          <text x="140" y="446" class="is" fill="#15803d" font-weight="700">Analog : signal analogique · I/O : signal numérique</text>
+          <text x="140" y="464" class="is" fill="#b91c1c" font-weight="700">EE : énergie électrique · EM : énergie mécanique</text>
+          <!-- chemins d'animation invisibles -->
+          <path id="pInfo" d="M63,290 L226,283 L372,238 L431,250 L431,375" fill="none" stroke="none"/>
+          <path id="pEner" d="M63,380 L206,371 L360,379 L500,379 L599,377 L600,317 L600,257 L596,197 L700,178" fill="none" stroke="none"/>
+          <circle id="dotInfo" r="7" fill="#15803d" opacity="0">
+            <animateMotion id="animInfo" dur="4.5s" begin="indefinite" fill="freeze"><mpath xlink:href="#pInfo" href="#pInfo"/></animateMotion>
+          </circle>
+          <circle id="dotEner" r="7" fill="#b91c1c" opacity="0">
+            <animateMotion id="animEner" dur="6s" begin="indefinite" fill="freeze"><mpath xlink:href="#pEner" href="#pEner"/></animateMotion>
+          </circle>
+        </svg>
+        <div class="anim-msg" id="fluxMsg">Choisis un flux à suivre : le point voyage de bloc en bloc, comme dans le vrai store !</div>
+        <div class="steps">
+          <div>Un grand rectangle <strong>délimite l'objet</strong> ; à l'extérieur, les <strong>acteurs</strong> (définis dans le diagramme de contexte).</div>
+          <div>À l'intérieur : les <strong>blocs</strong> (définis dans le diagramme de définition des blocs).</div>
+          <div>Des <strong>flèches</strong> représentent les flux d'information, d'énergie et de matière — avec un <strong>code couleur</strong> et des précisions (Analog, I/O, EE, EM…).</div>
+        </div>
+        <div class="note"><span class="ico">💡</span><p>Le <strong>châssis</strong> n'est pas représenté : il n'échange <strong>aucun flux</strong> dans l'objet ! Et ce diagramme <strong>remplace la chaîne d'énergie et d'information</strong> que tu connaissais.</p></div>
       </div>
     </section>
 
-    <!-- ETATS (ANIME) -->
+    <!-- 10 ETATS ANIME -->
     <section id="etats">
-      <h2><span class="num">10</span> Le diagramme d'états — <em>à toi de jouer !</em></h2>
+      <h2><span class="num">10</span> Le diagramme d'états <span class="muted" style="font-size:14px">(States Machine Diagram)</span> — <em>à toi de jouer !</em></h2>
       <div class="fiche">
         <span class="role">Il répond à : « Dans quels ÉTATS l'objet peut-il être ? »</span>
-        <p>Notre store a <strong>deux états</strong> : replié ou déplié. Les <strong>événements</strong> (flèches) font passer de l'un à l'autre. <strong>Appuie sur les boutons météo</strong> et regarde le store ET le diagramme réagir en même temps :</p>
+        <p>Notre store a <strong>deux états</strong> : replié ou déplié. Les <strong>événements</strong> (flèches) font passer de l'un à l'autre. <strong>Appuie sur les boutons météo</strong> et regarde le store ET le diagramme réagir :</p>
       </div>
       <div class="storebox">
-        <div class="bar">
+        <div class="animbar">
           <button class="btn" id="btnSoleil">☀️ Luminosité importante</button>
           <button class="btn" id="btnVent">💨 Vent fort</button>
         </div>
         <svg class="storesvg" viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg">
-          <style>.mur{fill:#e8e0d0;stroke:#999}.tt7{font:700 13px 'Nunito',sans-serif;fill:#222}.tx7{font:12px 'Nunito',sans-serif;fill:#444}.eb rect{fill:#fff;stroke:#666;stroke-width:2;rx:12}.evt{stroke:#b45309;stroke-width:1.8;fill:none;marker-end:url(#af)}</style>
+          <style>.mur{fill:#e8e0d0;stroke:#999}.tt7{font:700 13px 'Nunito',sans-serif;fill:#222}.tx7{font:12px 'Nunito',sans-serif;fill:#444}.eb rect{fill:#fff;stroke:#666;stroke-width:2}.evt{stroke:#b45309;stroke-width:1.8;fill:none;marker-end:url(#af)}</style>
           <defs><marker id="af" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/></marker></defs>
-          <!-- maison + store -->
-          <rect x="20" y="30" width="30" height="240" class="mur"/>
-          <rect x="50" y="30" width="14" height="24" fill="#8a6d3b"/>
-          <rect id="toile" x="50" y="54" width="200" height="8" fill="#f59e0b" stroke="#b45309"/>
+          <text x="20" y="24" class="tt7" font-size="12.5">Diagramme d'états du store automatisé</text>
+          <rect x="20" y="40" width="30" height="230" class="mur"/>
+          <rect x="50" y="40" width="14" height="24" fill="#8a6d3b"/>
+          <rect id="toile" x="50" y="64" width="200" height="8" fill="#f59e0b" stroke="#b45309"/>
           <line x1="50" y1="270" x2="300" y2="270" stroke="#999" stroke-width="3"/>
-          <text x="160" y="292" text-anchor="middle" class="tx7">la terrasse</text>
-          <circle id="soleilIco" cx="270" cy="40" r="16" fill="#fbbf24" opacity="0.35"/>
-          <text id="ventIco" x="280" y="120" font-size="22" opacity="0.2">💨</text>
-          <!-- diagramme d'etats -->
-          <circle cx="470" cy="40" r="8" fill="#222"/>
-          <line x1="470" y1="48" x2="470" y2="78" class="evt"/>
-          <g id="etatReplie" class="eb etat-bulle on"><rect x="400" y="80" width="140" height="42"/><text x="470" y="106" text-anchor="middle" class="tt7">Store replié</text></g>
-          <g id="etatDeplie" class="eb etat-bulle"><rect x="400" y="200" width="140" height="42"/><text x="470" y="226" text-anchor="middle" class="tt7">Store déplié</text></g>
-          <path d="M520,122 C560,150 560,175 520,200" class="evt"/>
-          <text x="588" y="165" text-anchor="middle" class="tx7">Luminosité</text><text x="588" y="180" text-anchor="middle" class="tx7">importante</text>
-          <path d="M420,200 C380,175 380,150 420,122" class="evt"/>
-          <text x="352" y="165" text-anchor="middle" class="tx7">Vent</text><text x="352" y="180" text-anchor="middle" class="tx7">fort</text>
+          <text x="160" y="291" text-anchor="middle" class="tx7">la terrasse</text>
+          <circle id="soleilIco" cx="270" cy="48" r="15" fill="#fbbf24" opacity="0.35"/>
+          <text id="ventIco" x="278" y="130" font-size="22" opacity="0.2">💨</text>
+          <circle cx="470" cy="52" r="8" fill="#222"/>
+          <line x1="470" y1="60" x2="470" y2="88" class="evt"/>
+          <g id="etatReplie" class="eb etat-bulle on"><rect x="400" y="90" width="140" height="42" rx="14"/><text x="470" y="116" text-anchor="middle" class="tt7">Store replié</text></g>
+          <g id="etatDeplie" class="eb etat-bulle"><rect x="400" y="205" width="140" height="42" rx="14"/><text x="470" y="231" text-anchor="middle" class="tt7">Store déplié</text></g>
+          <path d="M520,132 C558,158 558,180 520,205" class="evt"/>
+          <text x="588" y="168" text-anchor="middle" class="tx7">Luminosité</text><text x="588" y="183" text-anchor="middle" class="tx7">importante</text>
+          <path d="M420,205 C382,180 382,158 420,132" class="evt"/>
+          <text x="354" y="168" text-anchor="middle" class="tx7">Vent</text><text x="354" y="183" text-anchor="middle" class="tx7">fort</text>
         </svg>
-        <div class="state-lbl" id="etatLbl">État actuel : Store replié — appuie sur ☀️ pour le déplier !</div>
+        <div class="anim-msg" id="etatLbl">État actuel : Store replié — appuie sur ☀️ pour le déplier !</div>
       </div>
       <div class="steps">
-        <div>Le <strong>point noir</strong> = l'état initial (au départ).</div>
-        <div>Chaque <strong>boîte arrondie</strong> = un état observable de l'objet.</div>
-        <div>Les <strong>flèches</strong> = les événements qui font changer d'état.</div>
+        <div>Le <strong>point noir</strong> = l'état initial de l'objet ; on indique en dessous l'état de départ.</div>
+        <div>On indique les autres <strong>états observables</strong> (boîtes arrondies).</div>
+        <div>Les <strong>flèches</strong> précisent les <strong>événements</strong> qui conduisent aux changements d'états.</div>
       </div>
+      <div class="note"><span class="ico">💡</span><p>S'il existe un <strong>état final</strong>, on le représente par ◉. Et si ces diagrammes ne suffisent pas à comprendre le fonctionnement, ils sont <strong>directement transposables en algorithme</strong> !</p></div>
     </section>
 
-    <!-- ACTIVITE -->
+    <!-- 11 ACTIVITE ANIMEE -->
     <section id="activite">
-      <h2><span class="num">11</span> Le diagramme d'activité</h2>
+      <h2><span class="num">11</span> Le diagramme d'activité <span class="muted" style="font-size:14px">(Activity Diagram)</span> — <em>animé !</em></h2>
       <div class="fiche">
-        <span class="role">Il répond à : « Quelles DÉCISIONS l'objet prend-il ? »</span>
-        <p>Il détaille le <strong>comportement</strong> : les actions (rectangles) et les décisions (losanges). C'est l'ancêtre direct de <strong>l'algorithme</strong> — tu retrouveras ça en programmation !</p>
-        <svg class="diagsvg" viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
-          <style>.bx8{fill:#fff;stroke:#333;stroke-width:1.5}.los{fill:#fff;stroke:#333;stroke-width:1.5}.tt8{font:700 12px 'Nunito',sans-serif;fill:#222}.tx8{font:11px 'Nunito',sans-serif;fill:#444}.fl8{stroke:#333;stroke-width:1.4;fill:none;marker-end:url(#ag)}</style>
-          <defs><marker id="ag" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#333"/></marker></defs>
-          <circle cx="360" cy="24" r="8" fill="#222"/>
-          <line x1="360" y1="32" x2="360" y2="56" class="fl8"/>
-          <rect x="270" y="58" width="180" height="34" class="bx8"/><text x="360" y="80" text-anchor="middle" class="tt8">Mesurer la luminosité</text>
-          <line x1="360" y1="92" x2="360" y2="116" class="fl8"/>
-          <polygon points="360,118 390,140 360,162 330,140" class="los"/>
-          <text x="415" y="132" class="tx8">Lum &lt; seuil → on attend</text>
-          <path d="M390,140 C520,140 520,75 452,75" class="fl8"/>
-          <text x="288" y="178" class="tx8">Lum &gt; seuil</text>
-          <line x1="360" y1="162" x2="360" y2="192" class="fl8"/>
-          <rect x="262" y="194" width="196" height="34" class="bx8"/><text x="360" y="216" text-anchor="middle" class="tt8">Mesurer la vitesse du vent</text>
-          <line x1="360" y1="228" x2="360" y2="252" class="fl8"/>
-          <polygon points="360,254 390,272 360,290 330,272" class="los"/>
-          <text x="404" y="266" class="tx8">Vent faible → Ouvrir le store</text>
-          <text x="404" y="284" class="tx8">Vent fort → Fermer le store</text>
+        <span class="role">Il répond à : « Quelles ACTIONS selon quelles DÉCISIONS ? »</span>
+        <p>Il présente le <strong>comportement de l'objet</strong> : les actions (rectangles) choisies en fonction de décisions (losanges). Il remplace les <strong>algorigrammes</strong>. <strong>Choisis une météo</strong> et suis le chemin que prend le store :</p>
+        <div class="animbar">
+          <button class="btn actbtn" data-sc="1">☀️ Soleil fort, vent faible</button>
+          <button class="btn actbtn" data-sc="2">☀️💨 Soleil fort, vent fort</button>
+          <button class="btn actbtn" data-sc="3">🌥️ Peu de soleil</button>
+          <button class="btn" id="actReset">↺</button>
+        </div>
+        <svg class="diagsvg" viewBox="0 0 760 450" xmlns="http://www.w3.org/2000/svg">
+          <style>.ab{fill:#fff;stroke:#333;stroke-width:1.5}.at{font:700 12px 'Nunito',sans-serif;fill:#111}.as{font:11px 'Nunito',sans-serif;fill:#444}.al{stroke:#333;stroke-width:1.4;fill:none;marker-end:url(#aar)}</style>
+          <defs><marker id="aar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#333"/></marker></defs>
+          <text x="20" y="24" class="at" font-size="13">Diagramme d'activité du store automatisé</text>
+          <g id="aStart" class="actn"><circle cx="380" cy="46" r="8" fill="#222"/></g>
+          <line x1="380" y1="54" x2="380" y2="72" class="al"/>
+          <g id="aLum" class="actn"><rect x="290" y="74" width="180" height="32" class="ab"/><text x="380" y="95" text-anchor="middle" class="at">Mesurer la luminosité</text></g>
+          <line x1="380" y1="106" x2="380" y2="128" class="al"/>
+          <g id="dLum" class="actn"><polygon points="380,130 410,150 380,170 350,150" class="ab"/></g>
+          <path id="loopLum" d="M410,150 C540,150 540,90 472,90" class="al"/><text x="502" y="132" class="as">Lum &lt; S</text>
+          <text x="300" y="186" class="as">Lum &gt; S</text>
+          <line x1="380" y1="170" x2="380" y2="196" class="al"/>
+          <g id="aVent" class="actn"><rect x="278" y="198" width="204" height="32" class="ab"/><text x="380" y="219" text-anchor="middle" class="at">Mesurer la vitesse du vent</text></g>
+          <line x1="380" y1="230" x2="380" y2="252" class="al"/>
+          <g id="dVent" class="actn"><polygon points="380,254 410,274 380,294 350,274" class="ab"/></g>
+          <text x="255" y="268" class="as">Vent &lt; V</text>
+          <text x="428" y="268" class="as">Vent &gt; V</text>
+          <path d="M350,274 C300,274 260,290 240,312" class="al"/>
+          <path d="M410,274 C460,274 500,290 520,312" class="al"/>
+          <g id="aPos1" class="actn"><rect x="150" y="314" width="180" height="32" class="ab"/><text x="240" y="335" text-anchor="middle" class="at">Détecter la position du store</text></g>
+          <g id="aPos2" class="actn"><rect x="430" y="314" width="180" height="32" class="ab"/><text x="520" y="335" text-anchor="middle" class="at">Détecter la position du store</text></g>
+          <line x1="240" y1="346" x2="240" y2="368" class="al"/>
+          <line x1="520" y1="346" x2="520" y2="368" class="al"/>
+          <g id="dPos1" class="actn"><polygon points="240,370 266,388 240,406 214,388" class="ab"/></g>
+          <g id="dPos2" class="actn"><polygon points="520,370 546,388 520,406 494,388" class="ab"/></g>
+          <text x="130" y="382" class="as">Store fermé</text><text x="278" y="382" class="as">Store ouvert →</text>
+          <text x="410" y="382" class="as">← Store ouvert</text><text x="556" y="382" class="as">Store fermé</text>
+          <line x1="214" y1="388" x2="150" y2="410" class="al"/>
+          <line x1="546" y1="388" x2="610" y2="410" class="al"/>
+          <g id="aOuvrir" class="actn"><rect x="60" y="412" width="120" height="32" class="ab"/><text x="120" y="433" text-anchor="middle" class="at">Ouvrir store</text></g>
+          <g id="aFermer" class="actn"><rect x="580" y="412" width="120" height="32" class="ab"/><text x="640" y="433" text-anchor="middle" class="at">Fermer store</text></g>
         </svg>
+        <div class="anim-msg" id="actMsg">Choisis une météo pour voir le chemin des décisions.</div>
         <div class="steps">
-          <div><strong>Rectangles</strong> = actions à faire.</div>
-          <div><strong>Losanges</strong> = décisions (les chemins se séparent selon la condition).</div>
-          <div>Des <strong>flèches</strong> relient le tout, depuis le point de départ.</div>
+          <div>Le <strong>point noir</strong> = le départ.</div>
+          <div>Les <strong>actions</strong> sont dans des rectangles, les <strong>nœuds de décision</strong> dans des losanges.</div>
+          <div>Les <strong>flèches</strong> relient les éléments selon le comportement de l'objet.</div>
         </div>
       </div>
     </section>
 
-    <!-- JEU -->
+    <!-- 12 JEU -->
     <section id="jeu">
       <h2><span class="num">12</span> Le jeu : quel diagramme choisir ? 🎯</h2>
-      <p>Un ingénieur te pose une question sur un objet. À toi de choisir le <strong>bon diagramme</strong> ! (Réfléchis à la question que pose chaque diagramme.)</p>
+      <p>Un ingénieur te pose une question sur un objet. À toi de choisir le <strong>bon diagramme</strong> !</p>
 
       <div class="jeu" data-quiz data-answer="1">
         <p class="q">« Je veux la liste de toutes les pièces qui composent la trottinette électrique. »</p>
@@ -501,9 +646,25 @@ body.light .theme-toggle{box-shadow:0 8px 24px -14px rgba(40,30,10,.35)}
         <div class="opt" data-i="2">Diagramme de séquence</div>
         <p class="feedback"></p>
       </div>
+
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">« Je veux montrer les décisions que prend l'arrosage automatique (s'il pleut, s'il fait sec…). »</p>
+        <div class="opt" data-i="0">Diagramme de contexte</div>
+        <div class="opt" data-i="1">Diagramme d'activité</div>
+        <div class="opt" data-i="2">Diagramme de définition de blocs</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="2">
+        <p class="q">« Je veux montrer les services que la borne de recharge rend au conducteur et à la voiture. »</p>
+        <div class="opt" data-i="0">Diagramme d'états</div>
+        <div class="opt" data-i="1">Diagramme des blocs internes</div>
+        <div class="opt" data-i="2">Diagramme des cas d'utilisation</div>
+        <p class="feedback"></p>
+      </div>
     </section>
 
-    <!-- QUIZ BILAN -->
+    <!-- 13 QUIZ BILAN -->
     <section id="bilan">
       <h2><span class="num">13</span> Quiz bilan</h2>
       <p class="muted">Vérifie l'essentiel. Clique sur ta réponse.</p>
@@ -525,10 +686,10 @@ body.light .theme-toggle{box-shadow:0 8px 24px -14px rgba(40,30,10,.35)}
       </div>
 
       <div class="jeu" data-quiz data-answer="0">
-        <p class="q">La famille « comportementaux » répond à la question…</p>
-        <div class="opt" data-i="0">Comment le système se comporte-t-il ?</div>
-        <div class="opt" data-i="1">Comment le système est-il construit ?</div>
-        <div class="opt" data-i="2">Combien coûte le système ?</div>
+        <p class="q">Le diagramme des blocs internes remplace…</p>
+        <div class="opt" data-i="0">la chaîne d'énergie et d'information</div>
+        <div class="opt" data-i="1">le cahier des charges</div>
+        <div class="opt" data-i="2">la notice de montage</div>
         <p class="feedback"></p>
       </div>
 
@@ -545,6 +706,22 @@ body.light .theme-toggle{box-shadow:0 8px 24px -14px rgba(40,30,10,.35)}
         <div class="opt" data-i="0">les acteurs</div>
         <div class="opt" data-i="1">les actions</div>
         <div class="opt" data-i="2">les décisions (nœuds)</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="0">
+        <p class="q">Que signifie « EM » sur un flux du diagramme des blocs internes ?</p>
+        <div class="opt" data-i="0">Énergie mécanique</div>
+        <div class="opt" data-i="1">Électro-magnétique</div>
+        <div class="opt" data-i="2">État de la machine</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">Dans le diagramme de séquence, on lit les échanges…</p>
+        <div class="opt" data-i="0">de droite à gauche</div>
+        <div class="opt" data-i="1">de haut en bas (ordre chronologique)</div>
+        <div class="opt" data-i="2">dans n'importe quel ordre</div>
         <p class="feedback"></p>
       </div>
     </section>
@@ -579,7 +756,58 @@ document.querySelectorAll('[data-quiz]').forEach(function(q){
   });
 });
 
-/* Animation store + diagramme d'états */
+/* Sequence animee */
+(function(){
+  var ids=['sm1','sm2','sm3','sm4','sm5','sm6','sm7','sm8'];
+  var textes=[
+    "1. L'utilisateur ACTIVE le store.",
+    "2. Le store travaille (boucle interne).",
+    "3. Le store COMMUNIQUE son état à l'utilisateur.",
+    "4. Le soleil envoie sa LUMINOSITÉ au store (capteur).",
+    "5. Le store fait SORTIR la toile → la terrasse est à l'ombre.",
+    "6. Le VENT FORT est détecté par le store.",
+    "7. Le store fait RENTRER la toile pour la protéger.",
+    "8. Bilan : une protection solaire AUTONOME pour l'utilisateur !"
+  ];
+  var msg=document.getElementById('seqMsg');
+  var go=document.getElementById('seqGo'), rs=document.getElementById('seqReset');
+  var timer=null;
+  function reset(){ if(timer) clearInterval(timer);
+    ids.forEach(function(id){ var e=document.getElementById(id); e.classList.remove('on','cur'); });
+    msg.textContent="Clique sur ▶ pour voir les échanges apparaître dans l'ordre chronologique."; go.disabled=false;
+  }
+  go.addEventListener('click', function(){
+    reset(); go.disabled=true; var k=0;
+    timer=setInterval(function(){
+      if(k>0) document.getElementById(ids[k-1]).classList.remove('cur');
+      if(k>=ids.length){ clearInterval(timer); go.disabled=false; msg.textContent="Séquence terminée ✅ — relis-la de haut en bas : c'est l'ordre chronologique !"; return; }
+      var e=document.getElementById(ids[k]); e.classList.add('on','cur');
+      msg.textContent=textes[k]; k++;
+    }, 1100);
+  });
+  rs.addEventListener('click', reset);
+})();
+
+/* Flux blocs internes */
+(function(){
+  var msg=document.getElementById('fluxMsg');
+  var di=document.getElementById('dotInfo'), de=document.getElementById('dotEner');
+  var ai=document.getElementById('animInfo'), ae=document.getElementById('animEner');
+  document.getElementById('fluxInfo').addEventListener('click', function(){
+    de.setAttribute('opacity','0'); di.setAttribute('opacity','1');
+    msg.textContent="🟢 INFORMATION : Soleil → Capteur de luminosité (Luminosité) → Carte de commande (Analog) → Circuit de puissance (I/O).";
+    try{ ai.beginElement(); }catch(e){}
+    setTimeout(function(){ di.setAttribute('opacity','0'); }, 4800);
+  });
+  document.getElementById('fluxEnergie').addEventListener('click', function(){
+    di.setAttribute('opacity','0'); de.setAttribute('opacity','1');
+    msg.textContent="🔴 ÉNERGIE : Énergie (EE 230V) → Alimentation → Circuit de puissance (EE 24V) → Moteur → Moto-réducteur (EM) → Rouleau (EM) → Toile (EM) → Ombre sur la Terrasse !";
+    try{ ae.beginElement(); }catch(e){}
+    setTimeout(function(){ de.setAttribute('opacity','0'); }, 6300);
+  });
+})();
+
+/* Etats store */
 (function(){
   var toile=document.getElementById('toile');
   var lbl=document.getElementById('etatLbl');
@@ -595,18 +823,49 @@ document.querySelectorAll('[data-quiz]').forEach(function(q){
   }
   document.getElementById('btnSoleil').addEventListener('click', function(){
     sIco.setAttribute('opacity','1'); vIco.setAttribute('opacity','0.2');
-    if(!deplie){ deplie=true; render(); } else { lbl.textContent="Le store est déjà déplié — le soleil ne change rien ! (même état)"; }
+    if(!deplie){ deplie=true; render(); } else { lbl.textContent="Le store est déjà déplié — l'événement ne change rien (même état) !"; }
     setTimeout(function(){ sIco.setAttribute('opacity','0.35'); }, 1200);
   });
   document.getElementById('btnVent').addEventListener('click', function(){
     vIco.setAttribute('opacity','1'); sIco.setAttribute('opacity','0.35');
-    if(deplie){ deplie=false; render(); } else { lbl.textContent="Le store est déjà replié — le vent ne change rien ! (même état)"; }
+    if(deplie){ deplie=false; render(); } else { lbl.textContent="Le store est déjà replié — l'événement ne change rien (même état) !"; }
     setTimeout(function(){ vIco.setAttribute('opacity','0.2'); }, 1200);
   });
   render();
 })();
 
-/* Thème jour/nuit */
+/* Activite scenarios */
+(function(){
+  var msg=document.getElementById('actMsg');
+  var timer=null;
+  var all=['aStart','aLum','dLum','aVent','dVent','aPos1','dPos1','aOuvrir','aPos2','dPos2','aFermer'];
+  function clearAll(){ if(timer) clearInterval(timer);
+    all.forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.remove('on','done'); });
+  }
+  var scenarios={
+    "1":{seq:['aStart','aLum','dLum','aVent','dVent','aPos1','dPos1','aOuvrir'],
+      textes:["Départ !","On mesure la luminosité…","Lum > S : il y a beaucoup de soleil → on continue.","On mesure la vitesse du vent…","Vent < V : le vent est faible → branche de gauche.","On détecte la position du store…","Le store est fermé…","→ OUVRIR le store ! ☀️ La terrasse sera à l'ombre."]},
+    "2":{seq:['aStart','aLum','dLum','aVent','dVent','aPos2','dPos2','aFermer'],
+      textes:["Départ !","On mesure la luminosité…","Lum > S : beaucoup de soleil → on continue.","On mesure la vitesse du vent…","Vent > V : le vent est trop fort → branche de droite.","On détecte la position du store…","Le store est ouvert…","→ FERMER le store pour protéger la toile ! 💨"]},
+    "3":{seq:['aStart','aLum','dLum'],
+      textes:["Départ !","On mesure la luminosité…","Lum < S : pas assez de soleil → on boucle et on re-mesure (le store attend)."]}
+  };
+  document.querySelectorAll('.actbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      clearAll();
+      var sc=scenarios[b.dataset.sc]; var k=0;
+      timer=setInterval(function(){
+        if(k>0){ var prev=document.getElementById(sc.seq[k-1]); prev.classList.remove('on'); prev.classList.add('done'); }
+        if(k>=sc.seq.length){ clearInterval(timer); return; }
+        document.getElementById(sc.seq[k]).classList.add('on');
+        msg.textContent=sc.textes[k]; k++;
+      }, 950);
+    });
+  });
+  document.getElementById('actReset').addEventListener('click', function(){ clearAll(); msg.textContent="Choisis une météo pour voir le chemin des décisions."; });
+})();
+
+/* Theme jour/nuit */
 (function(){
   var b=document.getElementById('themeToggle'); if(!b) return;
   function apply(m){ if(m==='light'){document.body.classList.add('light'); b.textContent='☀️';} else {document.body.classList.remove('light'); b.textContent='🌙';} }
