@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "predev": "rm -rf .next",
+    "postinstall": "prisma generate",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -73,5 +74,11 @@
     "remark-rehype": "^11.1.2",
     "server-only": "^0.0.1",
     "unified": "^11.0.5"
+  },
+  "allowScripts": {
+    "@prisma/engines@7.8.0": true,
+    "esbuild@0.28.0": true,
+    "sharp@0.34.5": true,
+    "prisma@7.8.0": true
   }
 }
