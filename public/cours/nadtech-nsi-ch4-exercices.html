@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSI · Ch.4 — Fonctions · Séries d'exercices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://skulpt.org/js/skulpt.min.js" type="text/javascript"></script>
+<script src="https://skulpt.org/js/skulpt-stdlib.js" type="text/javascript"></script>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a31; --code:#0e1526; --ink:#e9eefb; --muted:#9aa7c2;
+  --cyan:#22d3ee; --violet:#8b5cf6; --pink:#ec4899; --ok:#34d399; --err:#fb7185; --warn:#fbbf24;
+  --line:rgba(255,255,255,.09);
+  --glow:0 0 0 1px rgba(255,255,255,.04), 0 18px 40px -20px rgba(0,0,0,.7);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:
+    radial-gradient(1100px 600px at 80% -10%, rgba(139,92,246,.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.14), transparent 55%),
+    var(--bg);
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;
+}
+.wrap{max-width:1180px; margin:0 auto; padding:0 20px; display:grid; grid-template-columns:220px 1fr; gap:36px}
+@media(max-width:880px){.wrap{grid-template-columns:1fr; gap:0} .toc{display:none!important}}
+
+/* ── HEADER ── */
+header.hero{padding:54px 0 26px; border-bottom:1px solid var(--line); margin-bottom:30px}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; color:var(--cyan);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(34,211,238,.06)}
+h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(26px,5vw,44px); line-height:1.1; margin:18px 0 10px}
+h1 .accent{background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.lede{color:var(--muted); max-width:60ch; font-size:17px}
+
+/* ── TOC ── */
+.toc{position:sticky; top:18px; align-self:start; padding-top:30px}
+.toc h4{font-family:'Space Grotesk',sans-serif; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 10px}
+.toc a{display:block; color:var(--muted); text-decoration:none; font-size:13px; padding:4px 10px; border-left:2px solid transparent; border-radius:0 8px 8px 0; transition:.15s}
+.toc a:hover{color:var(--ink); background:rgba(255,255,255,.03); border-left-color:var(--violet)}
+.toc .toc-sep{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--violet); margin:12px 0 3px 10px}
+
+/* ── SECTION HEADER ── */
+section{padding:24px 0 36px; border-bottom:1px solid var(--line)}
+h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:24px; margin:0 0 6px; scroll-margin-top:20px;
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+h2 .num{font-family:var(--mono); font-size:13px; color:var(--violet); border:1px solid var(--line); border-radius:8px; padding:3px 9px; background:rgba(139,92,246,.08)}
+.section-desc{color:var(--muted); margin:8px 0 22px; font-size:15px; line-height:1.7}
+code.inl{font-family:var(--mono); font-size:.88em; background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; color:#cfe6ff; border:1px solid var(--line)}
+strong{color:#fff}
+p{margin:10px 0}
+
+/* ── EXERCISE CARD ── */
+.exo{background:var(--bg2); border:1px solid var(--line); border-radius:16px; margin:18px 0; overflow:hidden; box-shadow:var(--glow)}
+.exo-bar{display:flex; align-items:center; gap:12px; padding:13px 18px; border-bottom:1px solid var(--line); background:rgba(255,255,255,.018); flex-wrap:wrap}
+.exo-num{font-family:var(--mono); font-size:12px; font-weight:700; color:#06121f; padding:4px 10px; border-radius:8px;
+  background:linear-gradient(135deg,var(--violet),var(--pink)); white-space:nowrap}
+.exo-title{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; flex:1; min-width:160px}
+.badge{font-family:var(--mono); font-size:11px; padding:3px 10px; border-radius:999px; white-space:nowrap}
+.badge.easy{background:rgba(52,211,153,.12); color:var(--ok); border:1px solid rgba(52,211,153,.28)}
+.badge.medium{background:rgba(251,191,36,.12); color:var(--warn); border:1px solid rgba(251,191,36,.28)}
+.badge.hard{background:rgba(251,113,133,.12); color:var(--err); border:1px solid rgba(251,113,133,.28)}
+.exo-body{padding:16px 18px 4px}
+.enonce{margin:0 0 14px; font-size:15px; line-height:1.7; color:var(--ink)}
+
+/* ── HINTS ── */
+.hint-box{margin-bottom:14px}
+.hint-toggle{font-family:'Nunito',sans-serif; font-weight:700; font-size:13px; padding:7px 14px; border-radius:9px;
+  border:1px solid rgba(251,191,36,.35); background:rgba(251,191,36,.07); color:var(--warn); cursor:pointer; transition:.15s}
+.hint-toggle:hover{background:rgba(251,191,36,.15)}
+.hint-steps{margin-top:10px; display:flex; flex-direction:column; gap:7px}
+.hint-step{font-size:14px; padding:10px 14px; border-radius:10px; background:rgba(251,191,36,.05);
+  border-left:3px solid var(--warn); display:none; color:var(--ink); line-height:1.6}
+.hint-step.vis{display:block; animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* ── CODE CELL ── */
+.cell{background:var(--code); border:1px solid var(--line); border-radius:14px; margin:0 18px 16px; overflow:hidden}
+.cell-head{display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,.025); border-bottom:1px solid var(--line)}
+.tag-label{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:7px}
+.dot{width:9px; height:9px; border-radius:50%; background:var(--violet); box-shadow:0 0 8px var(--violet)}
+.dot.g{background:var(--ok); box-shadow:0 0 8px var(--ok)}
+.run-btn{font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:#06121f; cursor:pointer;
+  border:0; border-radius:8px; padding:7px 16px; background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.15s}
+.run-btn:hover{filter:brightness(1.08); transform:translateY(-1px)}
+.run-btn:disabled{opacity:.5; cursor:wait; transform:none}
+textarea.code{width:100%; border:0; outline:0; resize:vertical; background:transparent; color:#e7f0ff;
+  font-family:var(--mono); font-size:13.5px; line-height:1.6; padding:14px 16px; display:block; tab-size:4; min-height:60px}
+.out{margin:0; padding:0 16px; max-height:0; overflow:hidden; font-family:var(--mono); font-size:13px; color:#bfe6c9;
+  white-space:pre-wrap; border-top:1px solid transparent; transition:max-height .25s, padding .25s}
+.out.show{max-height:440px; overflow:auto; padding:12px 16px; border-top:1px solid var(--line); background:rgba(0,0,0,.25)}
+.out.err{color:var(--err)}
+.turtle-canvas{display:flex; justify-content:center; padding:10px; background:#fff; border-top:1px solid var(--line)}
+.turtle-canvas[hidden]{display:none}
+
+/* ── CORRECTION ── */
+.correction{display:none; border-top:2px dashed rgba(52,211,153,.25); margin:0 18px 18px; padding:20px 0 0}
+.correction.vis{display:block; animation:fadeIn .4s}
+.corr-header{display:flex; align-items:center; gap:10px; margin-bottom:14px}
+.corr-badge{font-family:var(--mono); font-size:12px; padding:4px 12px; border-radius:999px;
+  background:rgba(52,211,153,.15); color:var(--ok); border:1px solid rgba(52,211,153,.3)}
+.corr-title{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:var(--ok)}
+.corr-text{font-size:14px; color:var(--muted); margin:0 0 14px; line-height:1.7}
+.correction .cell{margin:0 0 14px}
+
+/* ── GRAPHICAL ELEMENTS ── */
+/* Trace table */
+.trace{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:13px; margin:14px 0; border-radius:10px; overflow:hidden}
+.trace th{background:rgba(139,92,246,.18); color:var(--violet); padding:8px 14px; text-align:center; border:1px solid var(--line)}
+.trace td{padding:7px 14px; text-align:center; border:1px solid var(--line); color:var(--muted)}
+.trace tr:nth-child(even) td{background:rgba(255,255,255,.025)}
+.trace .v{color:var(--cyan); font-weight:700}
+.trace .vok{color:var(--ok); font-weight:700}
+.trace .init td{color:var(--muted); font-style:italic}
+
+/* String index display */
+.strdiag{font-family:var(--mono); margin:14px 0; overflow-x:auto}
+.strdiag-row{display:flex; gap:0}
+.strbox{width:40px; min-width:40px; height:40px; border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:15px; color:var(--cyan); background:rgba(34,211,238,.06)}
+.strbox.vowel{background:rgba(52,211,153,.12); border-color:rgba(52,211,153,.4); color:var(--ok)}
+.strbox.hi{background:rgba(139,92,246,.15); border-color:var(--violet); color:var(--violet)}
+.stridx{width:40px; min-width:40px; text-align:center; font-size:11px; color:var(--muted); padding-top:3px}
+.stridxn{width:40px; min-width:40px; text-align:center; font-size:11px; color:var(--pink); padding-top:2px}
+.strdiag-label{font-size:12px; color:var(--muted); margin-bottom:4px}
+
+/* Function flow */
+.funcflow{display:flex; align-items:center; justify-content:center; gap:12px; margin:16px 0; flex-wrap:wrap}
+.ff-arg{background:rgba(34,211,238,.08); border:1px solid rgba(34,211,238,.35); border-radius:10px; padding:10px 16px; font-family:var(--mono); font-size:14px; color:var(--cyan)}
+.ff-box{background:rgba(139,92,246,.12); border:1px solid rgba(139,92,246,.45); border-radius:12px; padding:12px 20px; text-align:center}
+.ff-box .fn{font-family:var(--mono); font-weight:700; color:var(--violet); font-size:15px}
+.ff-box .fndesc{font-size:12px; color:var(--muted); margin-top:4px}
+.ff-arrow{font-size:22px; color:var(--muted)}
+.ff-ret{background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.35); border-radius:10px; padding:10px 16px; font-family:var(--mono); font-size:14px; color:var(--ok)}
+
+/* Staircase pattern */
+.stair-display{font-family:var(--mono); font-size:15px; line-height:1.9; padding:14px 18px;
+  background:rgba(0,0,0,.3); border-radius:10px; border:1px solid var(--line); margin:14px 0; color:var(--cyan); white-space:pre}
+.stair-new{color:var(--ok)}
+
+/* Expected output block */
+.exp-out{background:rgba(0,0,0,.3); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+  font-family:var(--mono); font-size:13px; color:#bfe6c9; white-space:pre; margin:14px 0; overflow-x:auto}
+
+/* Turtle SVG preview */
+.turtle-svg-wrap{display:flex; justify-content:center; margin:14px 0}
+.turtle-svg-wrap svg{background:#fff; border-radius:10px; border:1px solid var(--line)}
+
+/* Callout */
+.note{display:flex; gap:10px; padding:12px 14px; border-radius:10px;
+  background:rgba(34,211,238,.05); border:1px solid rgba(34,211,238,.2); margin:10px 0}
+.note.warn{background:rgba(251,191,36,.05); border-color:rgba(251,191,36,.25)}
+.note .ico{font-size:16px; line-height:1.5}
+.note p{margin:0; font-size:14px; color:var(--muted)}
+
+/* ── TEACHER MODE ── */
+#profBanner{display:none; position:sticky; top:0; z-index:200;
+  background:rgba(52,211,153,.14); border-bottom:1px solid rgba(52,211,153,.4);
+  padding:10px 20px; text-align:center; font-family:'Space Grotesk',sans-serif; font-size:13px; color:var(--ok); letter-spacing:.04em}
+#profBanner.show{display:block}
+#lockBtn{
+  position:fixed; bottom:24px; right:24px; z-index:999;
+  width:50px; height:50px; border-radius:50%; border:1px solid var(--line);
+  background:var(--bg2); cursor:pointer; font-size:21px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--glow); transition:.2s; color:var(--muted);
+}
+#lockBtn:hover{border-color:var(--violet); background:rgba(139,92,246,.15); transform:scale(1.08)}
+#lockBtn.on{border-color:var(--ok); background:rgba(52,211,153,.12); box-shadow:0 0 0 3px rgba(52,211,153,.2); color:var(--ok)}
+
+/* ── FOOTER ── */
+footer{padding:40px 0 80px; color:var(--muted); font-size:14px}
+.tag-list{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+.mono-n{font-family:var(--mono); font-weight:700}
+.mono-n span:nth-child(1){color:var(--cyan)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--violet)}
+::selection{background:rgba(139,92,246,.4)}
+
+/* ── THEME TOGGLE (mode jour/nuit) ── */
+.theme-toggle{position:fixed; top:16px; right:16px; z-index:960; width:46px; height:46px; border-radius:12px;
+  border:1px solid var(--line); background:var(--bg2); color:var(--ink); font-size:20px; cursor:pointer;
+  box-shadow:0 8px 24px -12px rgba(0,0,0,.5); transition:.15s; display:grid; place-items:center}
+.theme-toggle:hover{border-color:var(--violet); transform:translateY(-1px)}
+
+body.light{
+  --bg:#f3f1ea; --bg2:#ffffff; --ink:#221f2b; --muted:#5f5b6e; --line:rgba(30,20,10,.14);
+  --code:#f6f4ef;
+  --glow:0 0 0 1px rgba(30,20,10,.04), 0 18px 40px -24px rgba(30,20,10,.22);
+}
+body.light strong, body.light .exo-title, body.light h2{color:#221f2b}
+body.light code.inl{background:rgba(30,20,10,.06); color:#7c3aed; border-color:rgba(30,20,10,.15)}
+body.light textarea.code{color:#221f2b}
+body.light .theme-toggle{box-shadow:0 8px 24px -14px rgba(30,20,10,.35)}
+/* Corrections de contraste ciblées : le cyan clair devient illisible sur fond blanc */
+body.light .strbox{color:#0e7490}
+body.light .strbox.vowel{color:#059669}
+body.light .strbox.hi{color:#7c3aed}
+body.light .trace .v{color:#0e7490}
+body.light .trace .vok{color:#059669}
+body.light .trace th{color:#6d28d9}
+body.light .ff-box .fn{color:#6d28d9}
+body.light #profBanner{color:#065f46}
+</style>
+</head>
+<body>
+
+<!-- ═══ THEME TOGGLE ═══ -->
+<button id="themeToggle" class="theme-toggle" title="Basculer jour / nuit" aria-label="Basculer jour / nuit">🌙</button>
+
+<!-- ═══ TEACHER BANNER ═══ -->
+<div id="profBanner">🎓 Mode Enseignant actif — Les corrections sont visibles</div>
+
+<div class="wrap">
+
+<!-- ═══ TOC ═══ -->
+<nav class="toc">
+  <h4>Sommaire</h4>
+  <div class="toc-sep">Série 1</div>
+  <a href="#s1e1">E1 · bonjour(nom)</a>
+  <a href="#s1e2">E2 · somme_entiers</a>
+  <a href="#s1e3">E3 · compte_voyelles</a>
+  <a href="#s1e4">E4 · carre_turtle</a>
+  <a href="#s1e5">E5 · triangle_turtle</a>
+  <a href="#s1e6">E6 · rosace_turtle</a>
+  <a href="#s1e7">E7 · pair / impair</a>
+  <a href="#s1e8">E8 · mot_inversé</a>
+  <div class="toc-sep">Série 2</div>
+  <a href="#s2e1">E1 · palindrome</a>
+  <a href="#s2e2">E2 · majuscules</a>
+  <a href="#s2e3">E3 · voyelles (2)</a>
+  <a href="#s2e4">E4 · inversé (boucle)</a>
+  <a href="#s2e5">E5 · mot_caché</a>
+  <a href="#s2e6">E6 · escalier</a>
+  <a href="#s2e7">E7 · spirale colorée</a>
+  <a href="#s2e8">E8 · lettres miroir</a>
+  <a href="#s2e9">E9 · formes combinées</a>
+  <div class="toc-sep">Avancée</div>
+  <a href="#ae1">E1 · palindrome normalisé</a>
+  <a href="#ae2">E2 · escalier inversé</a>
+  <a href="#ae3">E3 · spirale simple</a>
+  <a href="#ae4">E4 · mot miroir turtle</a>
+  <a href="#ae5">E5 · dessin répétitif</a>
+  <a href="#ae6">E6 · caché articulé</a>
+  <a href="#ae7">E7 · spirale colorée+</a>
+  <a href="#ae8">E8 · mini labyrinthe</a>
+  <a href="#ae9">E9 · mot zigzag</a>
+</nav>
+
+<main>
+<header class="hero">
+  <span class="kicker">NSI · Première · Chapitre 4</span>
+  <h1>Fonctions<br><span class="accent">Séries d'exercices</span></h1>
+  <p class="lede">26 exercices progressifs : <strong>Série 1</strong> (intermédiaire) · <strong>Série 2</strong> (avancé) · <strong>Avancée</strong> (très avancé). Chaque exercice contient des indices progressifs et une cellule Python exécutable.</p>
+  <div class="tag-list">
+    <span class="chip">def / return</span>
+    <span class="chip">boucles</span>
+    <span class="chip">chaînes</span>
+    <span class="chip">turtle</span>
+    <span class="chip">f-strings</span>
+    <span class="chip">modulo</span>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════
+     SÉRIE 1 — INTERMÉDIAIRE
+════════════════════════════════════════════════ -->
+<section id="serie1">
+  <h2><span class="num">S1</span> Série 1 — Niveau intermédiaire</h2>
+  <p class="section-desc">8 exercices pour pratiquer les bases : fonctions simples, boucles, f-strings, et premiers pas avec Turtle.</p>
+
+  <!-- E1 -->
+  <article class="exo" id="s1e1">
+    <div class="exo-bar">
+      <span class="exo-num">S1·E1</span>
+      <span class="exo-title">La fonction <code class="inl">bonjour(nom)</code></span>
+      <span class="badge easy">Débutant</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction <code class="inl">bonjour</code> qui prend un <strong>nom</strong> en paramètre et affiche : <code class="inl">Bonjour {nom}</code></p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Définis la fonction avec <code class="inl">def bonjour(nom):</code> — le paramètre <code class="inl">nom</code> reçoit la valeur passée lors de l'appel.</div>
+          <div class="hint-step">2️⃣ Utilise <code class="inl">print()</code> à l'intérieur pour afficher du texte. Une fonction qui affiche <strong>n'a pas besoin de <code class="inl">return</code></strong>.</div>
+          <div class="hint-step">3️⃣ Un <strong>f-string</strong> s'écrit <code class="inl">f"Bonjour {nom}"</code> — les accolades insèrent la valeur de la variable.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def bonjour(nom):
+    # Affiche "Bonjour " suivi du nom
+    # Utilise print() et un f-string
+    pass
+
+# Tests — décommente et exécute
+bonjour("Alice")
+bonjour("M. Zaghdoudi")</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span><span class="corr-title">bonjour(nom)</span></div>
+      <div class="funcflow">
+        <div class="ff-arg">"Alice"</div>
+        <div class="ff-arrow">→</div>
+        <div class="ff-box"><div class="fn">bonjour(nom)</div><div class="fndesc">print(f"Bonjour {nom}")</div></div>
+        <div class="ff-arrow">→</div>
+        <div class="ff-ret">Bonjour Alice</div>
+      </div>
+      <p class="corr-text">La valeur passée à l'appel (<code class="inl">"Alice"</code>) est assignée au paramètre <code class="inl">nom</code> à l'intérieur de la fonction. Le f-string l'insère dans la chaîne.</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def bonjour(nom):
+    print(f"Bonjour {nom}")
+
+bonjour("Alice")
+bonjour("M. Zaghdoudi")
+bonjour("LFI Sousse")</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+
+  <!-- E2 -->
+  <article class="exo" id="s1e2">
+    <div class="exo-bar">
+      <span class="exo-num">S1·E2</span>
+      <span class="exo-title">Somme des entiers : <code class="inl">somme_entiers(n)</code></span>
+      <span class="badge easy">Débutant</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction <code class="inl">somme_entiers</code> qui prend un entier <strong>n</strong> et <strong>renvoie</strong> la somme des entiers de 1 à n.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Utilise un <strong>accumulateur</strong> : une variable <code class="inl">total = 0</code> initialisée avant la boucle, qui grossit à chaque étape.</div>
+          <div class="hint-step">2️⃣ <code class="inl">for i in range(1, n + 1):</code> parcourt les entiers 1, 2, 3, …, n. <code class="inl">range(1, n+1)</code> va jusqu'à n inclus.</div>
+          <div class="hint-step">3️⃣ Dans la boucle : <code class="inl">total += i</code> (équivalent à <code class="inl">total = total + i</code>). À la fin de la fonction, <code class="inl">return total</code>.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def somme_entiers(n):
+    # 1. Crée une variable total = 0
+
+    # 2. Boucle for i in range(1, n + 1):
+
+    # 3.   À chaque tour : total += i
+
+    # 4. return total
+    pass
+
+# Tests
+print(somme_entiers(5))    # attendu : 15
+print(somme_entiers(10))   # attendu : 55
+print(somme_entiers(100))  # attendu : 5050</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span><span class="corr-title">somme_entiers(n)</span></div>
+      <p class="corr-text">Table de trace pour <code class="inl">somme_entiers(5)</code> — on voit l'accumulateur grandir à chaque tour :</p>
+      <table class="trace">
+        <tr><th>i</th><th>total avant</th><th>total += i</th><th>total après</th></tr>
+        <tr class="init"><td>—</td><td>—</td><td>initialisation</td><td class="v">0</td></tr>
+        <tr><td class="v">1</td><td>0</td><td>0 + 1</td><td class="v">1</td></tr>
+        <tr><td class="v">2</td><td>1</td><td>1 + 2</td><td class="v">3</td></tr>
+        <tr><td class="v">3</td><td>3</td><td>3 + 3</td><td class="v">6</td></tr>
+        <tr><td class="v">4</td><td>6</td><td>6 + 4</td><td class="v">10</td></tr>
+        <tr><td class="v">5</td><td>10</td><td>10 + 5</td><td class="vok">15 ✓</td></tr>
+      </table>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def somme_entiers(n):
+    total = 0                    # accumulateur
+    for i in range(1, n + 1):   # i : 1, 2, ..., n
+        total += i               # s'ajoute à chaque tour
+    return total                 # on renvoie le résultat
+
+print(somme_entiers(5))    # 15
+print(somme_entiers(10))   # 55
+print(somme_entiers(100))  # 5050</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+
+  <!-- E3 -->
+  <article class="exo" id="s1e3">
+    <div class="exo-bar">
+      <span class="exo-num">S1·E3</span>
+      <span class="exo-title">Compter les voyelles : <code class="inl">compte_voyelles(phrase)</code></span>
+      <span class="badge easy">Débutant</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction <code class="inl">compte_voyelles</code> qui prend une <strong>phrase</strong> et renvoie le nombre de voyelles qu'elle contient.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Déclare une chaîne de référence : <code class="inl">voyelles = "aeiouyAEIOUY"</code> (minuscules et majuscules).</div>
+          <div class="hint-step">2️⃣ Parcours chaque lettre avec <code class="inl">for lettre in phrase:</code> — Python itère caractère par caractère sur une chaîne.</div>
+          <div class="hint-step">3️⃣ Teste <code class="inl">if lettre in voyelles:</code> et incrémente un compteur. Retourne le compteur à la fin.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def compte_voyelles(phrase):
+    voyelles = "aeiouyAEIOUY"
+    # 1. Initialise un compteur à 0
+
+    # 2. for lettre in phrase:
+    #        if lettre in voyelles:
+    #            compteur += 1
+
+    # 3. return compteur
+    pass
+
+print(compte_voyelles("Bonjour"))     # attendu : 3
+print(compte_voyelles("Python NSI"))  # attendu : 3
+print(compte_voyelles("AAEIOU"))      # attendu : 6</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span><span class="corr-title">compte_voyelles</span></div>
+      <p class="corr-text">Scan de <code class="inl">"Bonjour"</code> lettre par lettre — les voyelles (en vert) sont comptées :</p>
+      <div class="strdiag">
+        <div class="strdiag-label">Mot : "Bonjour" — voyelles repérées</div>
+        <div class="strdiag-row">
+          <div class="strbox">B</div><div class="strbox vowel">o</div><div class="strbox">n</div>
+          <div class="strbox">j</div><div class="strbox vowel">o</div><div class="strbox vowel">u</div><div class="strbox">r</div>
+        </div>
+        <div class="strdiag-row">
+          <div class="stridx">0</div><div class="stridx">1✓</div><div class="stridx">2</div>
+          <div class="stridx">3</div><div class="stridx">4✓</div><div class="stridx">5✓</div><div class="stridx">6</div>
+        </div>
+      </div>
+      <p class="corr-text">Résultat : 3 voyelles (indices 1, 4, 5)</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def compte_voyelles(phrase):
+    voyelles = "aeiouyAEIOUY"
+    compteur = 0
+    for lettre in phrase:          # parcours chaque caractère
+        if lettre in voyelles:     # est-ce une voyelle ?
+            compteur += 1          # oui → on incrémente
+    return compteur
+
+print(compte_voyelles("Bonjour"))     # 3
+print(compte_voyelles("Python NSI"))  # 3
+print(compte_voyelles("AAEIOU"))      # 6</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+
+  <!-- E4 -->
+  <article class="exo" id="s1e4">
+    <div class="exo-bar">
+      <span class="exo-num">S1·E4</span>
+      <span class="exo-title">Carré avec Turtle : <code class="inl">carre_turtle(n)</code></span>
+      <span class="badge easy">Débutant</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction <code class="inl">carre_turtle</code> qui dessine un carré de côté <strong>n</strong> avec le module Turtle.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Un carré a <strong>4 côtés égaux</strong>. Utilise une boucle <code class="inl">for i in range(4):</code>.</div>
+          <div class="hint-step">2️⃣ À chaque côté : <code class="inl">forward(n)</code> pour avancer de n pixels, puis tourner à angle droit.</div>
+          <div class="hint-step">3️⃣ <code class="inl">right(90)</code> tourne à droite de 90°. Après 4 répétitions, la tortue revient au point de départ.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell data-turtle>
+      <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Python · Turtle</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">from turtle import *
+
+def carre_turtle(n):
+    for i in range(4):
+        # forward(?) avance d'un côté
+        # right(?) tourne à angle droit
+        pass
+
+carre_turtle(100)</textarea>
+      <pre class="out"></pre>
+      <div class="turtle-canvas" hidden></div>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span><span class="corr-title">carre_turtle(n)</span></div>
+      <div class="turtle-svg-wrap">
+        <svg width="200" height="200" viewBox="-110 -110 220 220">
+          <rect x="-80" y="-80" width="160" height="160" fill="none" stroke="#8b5cf6" stroke-width="3"/>
+          <text x="-80" y="-90" font-family="monospace" font-size="12" fill="#9aa7c2">forward(n)</text>
+          <text x="85" y="0" font-family="monospace" font-size="12" fill="#9aa7c2">right(90)</text>
+          <circle cx="-80" cy="-80" r="5" fill="#22d3ee"/>
+          <text x="-105" y="-75" font-family="monospace" font-size="11" fill="#22d3ee">départ</text>
+        </svg>
+      </div>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+
+def carre_turtle(n):
+    for i in range(4):     # 4 côtés
+        forward(n)         # avance de n pixels
+        right(90)          # tourne à droite de 90°
+
+carre_turtle(100)</textarea>
+        <pre class="out"></pre>
+        <div class="turtle-canvas" hidden></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- E5 -->
+  <article class="exo" id="s1e5">
+    <div class="exo-bar">
+      <span class="exo-num">S1·E5</span>
+      <span class="exo-title">Triangle équilatéral : <code class="inl">triangle_turtle(n)</code></span>
+      <span class="badge easy">Débutant</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction <code class="inl">triangle_turtle</code> qui dessine un triangle équilatéral de côté <strong>n</strong> avec Turtle.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Un triangle équilatéral a <strong>3 côtés égaux</strong>. Boucle <code class="inl">for i in range(3):</code>.</div>
+          <div class="hint-step">2️⃣ La somme des <strong>angles extérieurs</strong> d'un polygone vaut toujours 360°. Pour un triangle : 360 ÷ 3 = <strong>120°</strong>.</div>
+          <div class="hint-step">3️⃣ <code class="inl">forward(n)</code> puis <code class="inl">left(120)</code> — répété 3 fois boucle le tracé.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell data-turtle>
+      <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Python · Turtle</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">from turtle import *
+
+def triangle_turtle(n):
+    for i in range(3):
+        forward(n)
+        # angle = 360 / 3 = ?
+        pass
+
+triangle_turtle(120)</textarea>
+      <pre class="out"></pre>
+      <div class="turtle-canvas" hidden></div>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span><span class="corr-title">triangle_turtle(n)</span></div>
+      <div class="turtle-svg-wrap">
+        <svg width="200" height="180" viewBox="-10 -20 240 200">
+          <polygon points="100,10 190,160 10,160" fill="none" stroke="#8b5cf6" stroke-width="3"/>
+          <text x="90" y="0" font-family="monospace" font-size="11" fill="#9aa7c2">n px</text>
+          <text x="100" y="185" font-family="monospace" font-size="11" fill="#34d399" text-anchor="middle">left(120)</text>
+        </svg>
+      </div>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+
+def triangle_turtle(n):
+    for i in range(3):     # 3 côtés
+        forward(n)         # avance d'un côté
+        left(120)          # tourne de 120° (= 360/3)
+
+triangle_turtle(120)</textarea>
+        <pre class="out"></pre>
+        <div class="turtle-canvas" hidden></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- E6 -->
+  <article class="exo" id="s1e6">
+    <div class="exo-bar">
+      <span class="exo-num">S1·E6</span>
+      <span class="exo-title">Rosace de 6 pétales : <code class="inl">rosace_turtle()</code></span>
+      <span class="badge medium">Intermédiaire</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction <code class="inl">rosace_turtle</code> qui dessine une rosace de 6 pétales avec Turtle.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Une rosace de 6 pétales = 6 cercles, chacun tourné de 60° par rapport au précédent (6 × 60° = 360°).</div>
+          <div class="hint-step">2️⃣ <code class="inl">circle(r)</code> dessine un cercle complet. Après chaque cercle, tourne de 60° pour positionner le suivant.</div>
+          <div class="hint-step">3️⃣ Structure : <code class="inl">for i in range(6): circle(60); left(60)</code> — la tortue fait le tour complet en 6 étapes.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell data-turtle>
+      <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Python · Turtle</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">from turtle import *
+
+def rosace_turtle():
+    # 6 pétales = 6 cercles tournés de 60° chacun
+    for i in range(6):
+        circle(60)
+        # Ajoute le bon angle ici
+        pass
+
+rosace_turtle()</textarea>
+      <pre class="out"></pre>
+      <div class="turtle-canvas" hidden></div>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span><span class="corr-title">rosace_turtle()</span></div>
+      <div class="turtle-svg-wrap">
+        <svg width="200" height="200" viewBox="-100 -100 200 200">
+          <ellipse cx="50" cy="0" rx="50" ry="20" fill="none" stroke="#8b5cf6" stroke-width="2" opacity=".7" transform="rotate(0)"/>
+          <ellipse cx="50" cy="0" rx="50" ry="20" fill="none" stroke="#8b5cf6" stroke-width="2" opacity=".7" transform="rotate(60)"/>
+          <ellipse cx="50" cy="0" rx="50" ry="20" fill="none" stroke="#8b5cf6" stroke-width="2" opacity=".7" transform="rotate(120)"/>
+          <ellipse cx="50" cy="0" rx="50" ry="20" fill="none" stroke="#8b5cf6" stroke-width="2" opacity=".7" transform="rotate(180)"/>
+          <ellipse cx="50" cy="0" rx="50" ry="20" fill="none" stroke="#8b5cf6" stroke-width="2" opacity=".7" transform="rotate(240)"/>
+          <ellipse cx="50" cy="0" rx="50" ry="20" fill="none" stroke="#8b5cf6" stroke-width="2" opacity=".7" transform="rotate(300)"/>
+          <text x="0" y="90" font-family="monospace" font-size="11" fill="#9aa7c2" text-anchor="middle">6 × circle(60) + left(60)</text>
+        </svg>
+      </div>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+
+def rosace_turtle():
+    for i in range(6):   # 6 pétales
+        circle(60)       # dessine un cercle complet
+        left(60)         # tourne de 60° (= 360/6)
+
+rosace_turtle()</textarea>
+        <pre class="out"></pre>
+        <div class="turtle-canvas" hidden></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- E7 -->
+  <article class="exo" id="s1e7">
+    <div class="exo-bar">
+      <span class="exo-num">S1·E7</span>
+      <span class="exo-title">Pair ou impair : <code class="inl">affiche_pair_impair(n)</code></span>
+      <span class="badge easy">Débutant</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction qui affiche si chaque entier de <strong>1 à n</strong> est pair ou impair.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ L'opérateur <code class="inl">%</code> donne le <strong>reste</strong> de la division. Si <code class="inl">n % 2 == 0</code>, n est pair ; sinon il est impair.</div>
+          <div class="hint-step">2️⃣ Boucle : <code class="inl">for i in range(1, n + 1):</code> puis teste avec <code class="inl">if i % 2 == 0:</code>.</div>
+          <div class="hint-step">3️⃣ Utilise <code class="inl">else:</code> pour le cas impair. Affiche avec un f-string : <code class="inl">print(f"{i} est pair")</code>.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def affiche_pair_impair(n):
+    for i in range(1, n + 1):
+        # if i % 2 == 0: → pair
+        # else: → impair
+        pass
+
+affiche_pair_impair(8)</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span><span class="corr-title">affiche_pair_impair</span></div>
+      <table class="trace">
+        <tr><th>i</th><th>i % 2</th><th>résultat</th></tr>
+        <tr><td class="v">1</td><td>1</td><td>impair</td></tr>
+        <tr><td class="v">2</td><td class="vok">0</td><td class="vok">pair</td></tr>
+        <tr><td class="v">3</td><td>1</td><td>impair</td></tr>
+        <tr><td class="v">4</td><td class="vok">0</td><td class="vok">pair</td></tr>
+        <tr><td class="v">5</td><td>1</td><td>impair</td></tr>
+      </table>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def affiche_pair_impair(n):
+    for i in range(1, n + 1):
+        if i % 2 == 0:             # reste = 0 → pair
+            print(f"{i} est pair")
+        else:                      # reste = 1 → impair
+            print(f"{i} est impair")
+
+affiche_pair_impair(8)</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+
+  <!-- E8 -->
+  <article class="exo" id="s1e8">
+    <div class="exo-bar">
+      <span class="exo-num">S1·E8</span>
+      <span class="exo-title">Mot inversé : <code class="inl">mot_inverse(chaine)</code></span>
+      <span class="badge medium">Intermédiaire</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction <code class="inl">mot_inverse</code> qui renvoie la chaîne passée en paramètre, mais lue à l'envers.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ En Python, on peut accéder à chaque caractère par son <strong>index</strong> : <code class="inl">chaine[0]</code> = premier, <code class="inl">chaine[-1]</code> = dernier.</div>
+          <div class="hint-step">2️⃣ La notation de <strong>slicing</strong> <code class="inl">chaine[::-1]</code> inverse une chaîne : le pas <code class="inl">-1</code> lit de droite à gauche.</div>
+          <div class="hint-step">3️⃣ Retourne simplement <code class="inl">return chaine[::-1]</code>. La chaîne originale n'est pas modifiée.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def mot_inverse(chaine):
+    # Indice : chaine[::-1]
+    pass
+
+print(mot_inverse("Python"))   # nohtyP
+print(mot_inverse("NSI"))      # ISN
+print(mot_inverse("radar"))    # radar</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span><span class="corr-title">mot_inverse</span></div>
+      <p class="corr-text">Le slicing <code class="inl">[::-1]</code> lit la chaîne depuis la fin, avec un pas de -1 :</p>
+      <div class="strdiag">
+        <div class="strdiag-label">"Python" → indices positifs et négatifs</div>
+        <div class="strdiag-row">
+          <div class="strbox">P</div><div class="strbox">y</div><div class="strbox">t</div>
+          <div class="strbox">h</div><div class="strbox">o</div><div class="strbox">n</div>
+        </div>
+        <div class="strdiag-row">
+          <div class="stridx">0</div><div class="stridx">1</div><div class="stridx">2</div>
+          <div class="stridx">3</div><div class="stridx">4</div><div class="stridx">5</div>
+        </div>
+        <div class="strdiag-row">
+          <div class="stridxn">-6</div><div class="stridxn">-5</div><div class="stridxn">-4</div>
+          <div class="stridxn">-3</div><div class="stridxn">-2</div><div class="stridxn">-1</div>
+        </div>
+      </div>
+      <p class="corr-text"><code class="inl">[::-1]</code> commence à la fin (index -1 = 'n') et recule jusqu'au début → <strong>"nohtyP"</strong></p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def mot_inverse(chaine):
+    return chaine[::-1]   # slicing inversé
+
+print(mot_inverse("Python"))   # nohtyP
+print(mot_inverse("NSI"))      # ISN
+print(mot_inverse("radar"))    # radar (palindrome !)</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     SÉRIE 2 — AVANCÉ
+════════════════════════════════════════════════ -->
+<section id="serie2">
+  <h2><span class="num">S2</span> Série 2 — Avancé <small style="font-size:14px;font-weight:400;color:var(--muted)">(sans listes ni math)</small></h2>
+  <p class="section-desc">9 exercices pour approfondir la manipulation de chaînes et les fonctions Turtle, sans recourir aux listes ou au module math.</p>
+
+  <!-- S2-E1 -->
+  <article class="exo" id="s2e1">
+    <div class="exo-bar">
+      <span class="exo-num">S2·E1</span>
+      <span class="exo-title">Détecteur de palindrome</span>
+      <span class="badge medium">Intermédiaire</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction qui prend un mot et renvoie <code class="inl">True</code> si c'est un palindrome, <code class="inl">False</code> sinon. Un palindrome se lit pareil dans les deux sens (<code class="inl">"radar"</code>, <code class="inl">"kayak"</code>).</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Un palindrome satisfait : <code class="inl">mot == mot inversé</code>.</div>
+          <div class="hint-step">2️⃣ Pour inverser : <code class="inl">mot[::-1]</code> (vu en S1-E8).</div>
+          <div class="hint-step">3️⃣ <code class="inl">return mot == mot[::-1]</code> renvoie directement le booléen — pas besoin de <code class="inl">if/else</code>.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def palindrome(mot):
+    # Comparer mot avec son inverse
+    pass
+
+print(palindrome("radar"))   # True
+print(palindrome("kayak"))   # True
+print(palindrome("python"))  # False
+print(palindrome("A"))       # True</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span><span class="corr-title">palindrome</span></div>
+      <div class="funcflow">
+        <div class="ff-arg">"radar"</div>
+        <div class="ff-arrow">→</div>
+        <div class="ff-box"><div class="fn">palindrome(mot)</div><div class="fndesc">mot == mot[::-1]<br>"radar" == "radar" ✓</div></div>
+        <div class="ff-arrow">→</div>
+        <div class="ff-ret">True</div>
+      </div>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def palindrome(mot):
+    return mot == mot[::-1]   # comparaison directe
+
+print(palindrome("radar"))   # True
+print(palindrome("kayak"))   # True
+print(palindrome("python"))  # False</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+
+  <!-- S2-E2 -->
+  <article class="exo" id="s2e2">
+    <div class="exo-bar">
+      <span class="exo-num">S2·E2</span>
+      <span class="exo-title">Conversion en majuscules</span>
+      <span class="badge easy">Débutant</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction qui prend un mot et le renvoie entièrement en majuscules.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Python a une méthode intégrée pour les chaînes : <code class="inl">.upper()</code>.</div>
+          <div class="hint-step">2️⃣ Elle s'appelle sur la chaîne : <code class="inl">"python".upper()</code> renvoie <code class="inl">"PYTHON"</code>.</div>
+          <div class="hint-step">3️⃣ Retourne <code class="inl">mot.upper()</code> — ou tente la version manuelle avec <code class="inl">ord()</code> / <code class="inl">chr()</code> pour aller plus loin.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def en_majuscules(mot):
+    # Méthode intégrée ou boucle avec ord()/chr()
+    pass
+
+print(en_majuscules("python"))  # PYTHON
+print(en_majuscules("nsi"))     # NSI</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span><span class="corr-title">en_majuscules — deux approches</span></div>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false"># Approche simple
+def en_majuscules(mot):
+    return mot.upper()
+
+print(en_majuscules("python"))  # PYTHON
+
+# ── Bonus : version manuelle (sans .upper()) ──
+def en_majuscules_manuel(mot):
+    resultat = ""
+    for c in mot:
+        if 'a' <= c <= 'z':           # si minuscule
+            resultat += chr(ord(c) - 32)  # décalage ASCII
+        else:
+            resultat += c
+    return resultat
+
+print(en_majuscules_manuel("nsi 2025"))  # NSI 2025</textarea>
+        <pre class="out"></pre>
+      </div>
+      <p class="corr-text">La version bonus utilise les codes ASCII : <code class="inl">ord('a')</code> = 97, <code class="inl">ord('A')</code> = 65, différence = 32.</p>
+    </div>
+  </article>
+
+  <!-- S2-E3 -->
+  <article class="exo" id="s2e3">
+    <div class="exo-bar">
+      <span class="exo-num">S2·E3</span>
+      <span class="exo-title">Voyelles — version boucle explicite</span>
+      <span class="badge easy">Débutant</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction qui compte les voyelles dans un mot ou une phrase. <strong>Cette fois</strong>, détaille chaque étape avec une boucle explicite et des commentaires clairs.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Même logique qu'en S1-E3 : chaîne de voyelles + compteur + boucle.</div>
+          <div class="hint-step">2️⃣ Pense aux accents français : ajoute <code class="inl">"éèêëàâùûüîïôç"</code> à ta chaîne de voyelles.</div>
+          <div class="hint-step">3️⃣ Pense à tester des cas limites : phrase vide <code class="inl">""</code>, phrase sans voyelles <code class="inl">"rythm"</code>.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def compte_voyelles(phrase):
+    voyelles = "aeiouyAEIOUY"   # ajoute les accents si tu veux
+    compteur = 0
+    for lettre in phrase:
+        # complète ici
+        pass
+    return compteur
+
+print(compte_voyelles("Bonjour tout le monde"))  # 8
+print(compte_voyelles("rythm"))                  # 0
+print(compte_voyelles(""))                        # 0</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def compte_voyelles(phrase):
+    voyelles = "aeiouyAEIOUYéèêëàâùûüîïôç"
+    compteur = 0
+    for lettre in phrase:
+        if lettre in voyelles:
+            compteur += 1
+    return compteur
+
+print(compte_voyelles("Bonjour tout le monde"))  # 8
+print(compte_voyelles("rythm"))                  # 0
+print(compte_voyelles("NSI 2025"))               # 1</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+
+  <!-- S2-E4 -->
+  <article class="exo" id="s2e4">
+    <div class="exo-bar">
+      <span class="exo-num">S2·E4</span>
+      <span class="exo-title">Mot inversé — version boucle</span>
+      <span class="badge medium">Intermédiaire</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction qui renvoie le mot inversé. <strong>Sans utiliser <code class="inl">[::-1]</code></strong> — construis le résultat caractère par caractère avec une boucle.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Crée une chaîne vide <code class="inl">resultat = ""</code> et construis-la de la droite vers la gauche.</div>
+          <div class="hint-step">2️⃣ <code class="inl">for i in range(len(mot)-1, -1, -1):</code> parcourt les indices du dernier au premier (pas de -1).</div>
+          <div class="hint-step">3️⃣ À chaque tour : <code class="inl">resultat += mot[i]</code>. Retourne <code class="inl">resultat</code>.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def mot_inverse_boucle(mot):
+    resultat = ""
+    # for i in range(len(mot)-1, -1, -1):
+    #     resultat += mot[i]
+    pass
+
+print(mot_inverse_boucle("Python"))  # nohtyP
+print(mot_inverse_boucle("NSI"))     # ISN</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <table class="trace">
+        <tr><th>i</th><th>mot[i]</th><th>resultat</th></tr>
+        <tr><td class="v">5</td><td>"n"</td><td class="v">"n"</td></tr>
+        <tr><td class="v">4</td><td>"o"</td><td class="v">"no"</td></tr>
+        <tr><td class="v">3</td><td>"h"</td><td class="v">"noh"</td></tr>
+        <tr><td class="v">2</td><td>"t"</td><td class="v">"noht"</td></tr>
+        <tr><td class="v">1</td><td>"y"</td><td class="v">"nohty"</td></tr>
+        <tr><td class="v">0</td><td>"P"</td><td class="vok">"nohtyP" ✓</td></tr>
+      </table>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def mot_inverse_boucle(mot):
+    resultat = ""
+    for i in range(len(mot) - 1, -1, -1):  # du dernier au premier
+        resultat += mot[i]
+    return resultat
+
+print(mot_inverse_boucle("Python"))  # nohtyP
+print(mot_inverse_boucle("NSI"))     # ISN</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+
+  <!-- S2-E5 -->
+  <article class="exo" id="s2e5">
+    <div class="exo-bar">
+      <span class="exo-num">S2·E5</span>
+      <span class="exo-title">Mot caché avec <code class="inl">*</code></span>
+      <span class="badge medium">Intermédiaire</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction qui prend un mot et remplace les lettres d'<strong>indice pair</strong> par <code class="inl">*</code>, créant un mot « caché ».</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Parcours avec l'index : <code class="inl">for i in range(len(mot)):</code> pour avoir accès à la fois à l'index et au caractère <code class="inl">mot[i]</code>.</div>
+          <div class="hint-step">2️⃣ Teste si l'index est pair : <code class="inl">if i % 2 == 0:</code> → ajoute <code class="inl">"*"</code>, sinon → ajoute <code class="inl">mot[i]</code>.</div>
+          <div class="hint-step">3️⃣ Construit une chaîne résultat et retourne-la.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def mot_cache(mot):
+    resultat = ""
+    for i in range(len(mot)):
+        if i % 2 == 0:
+            resultat += "*"    # indice pair → étoile
+        else:
+            pass               # indice impair → lettre originale
+    return resultat
+
+print(mot_cache("Python"))  # *y*h*n
+print(mot_cache("Bonjour")) # *o*j*u*</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <div class="strdiag">
+        <div class="strdiag-label">"Python" — indices pairs remplacés par *</div>
+        <div class="strdiag-row">
+          <div class="strbox hi">P</div><div class="strbox">y</div><div class="strbox hi">t</div>
+          <div class="strbox">h</div><div class="strbox hi">o</div><div class="strbox">n</div>
+        </div>
+        <div class="strdiag-row">
+          <div class="stridx">0✱</div><div class="stridx">1</div><div class="stridx">2✱</div>
+          <div class="stridx">3</div><div class="stridx">4✱</div><div class="stridx">5</div>
+        </div>
+        <div class="strdiag-row">
+          <div class="strbox hi">*</div><div class="strbox">y</div><div class="strbox hi">*</div>
+          <div class="strbox">h</div><div class="strbox hi">*</div><div class="strbox">n</div>
+        </div>
+      </div>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def mot_cache(mot):
+    resultat = ""
+    for i in range(len(mot)):
+        if i % 2 == 0:
+            resultat += "*"     # indice pair → *
+        else:
+            resultat += mot[i]  # indice impair → lettre
+    return resultat
+
+print(mot_cache("Python"))  # *y*h*n
+print(mot_cache("Bonjour")) # *o*j*u*</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+
+  <!-- S2-E6 -->
+  <article class="exo" id="s2e6">
+    <div class="exo-bar">
+      <span class="exo-num">S2·E6</span>
+      <span class="exo-title">Mot en escalier</span>
+      <span class="badge medium">Intermédiaire</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction qui affiche un mot en forme d'escalier, une lettre de plus à chaque ligne.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ À la ligne i, on affiche les <strong>i premiers caractères</strong> du mot : <code class="inl">mot[:i]</code>.</div>
+          <div class="hint-step">2️⃣ <code class="inl">for i in range(1, len(mot)+1):</code> fait varier i de 1 (premier caractère) à n (mot entier).</div>
+          <div class="hint-step">3️⃣ <code class="inl">print(mot[:i])</code> dans la boucle suffit. Pas de variable intermédiaire nécessaire.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def escalier(mot):
+    for i in range(1, len(mot) + 1):
+        print(mot[:i])   # les i premiers caractères
+
+escalier("Python")</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <div class="stair-display">P
+Py
+Pyt
+Pyth
+Pytho
+Python</div>
+      <table class="trace">
+        <tr><th>i</th><th>mot[:i]</th></tr>
+        <tr><td class="v">1</td><td>"P"</td></tr>
+        <tr><td class="v">2</td><td>"Py"</td></tr>
+        <tr><td class="v">3</td><td>"Pyt"</td></tr>
+        <tr><td class="v">4</td><td>"Pyth"</td></tr>
+        <tr><td class="v">5</td><td>"Pytho"</td></tr>
+        <tr><td class="v">6</td><td class="vok">"Python"</td></tr>
+      </table>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def escalier(mot):
+    for i in range(1, len(mot) + 1):
+        print(mot[:i])   # tranche des i premiers caractères
+
+escalier("Python")</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+
+  <!-- S2-E7 -->
+  <article class="exo" id="s2e7">
+    <div class="exo-bar">
+      <span class="exo-num">S2·E7</span>
+      <span class="exo-title">Spirale colorée Turtle</span>
+      <span class="badge medium">Intermédiaire</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction Turtle qui dessine une spirale où la couleur change à chaque segment.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Pour faire une spirale : augmente la longueur du segment à chaque tour (<code class="inl">longueur += 5</code>).</div>
+          <div class="hint-step">2️⃣ Un angle de <strong>91°</strong> (légèrement plus que 90°) fait dériver la trajectoire et crée l'effet spirale.</div>
+          <div class="hint-step">3️⃣ Pour changer la couleur : définis une liste de couleurs et utilise <code class="inl">pencolor(couleurs[i % len(couleurs)])</code>.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell data-turtle>
+      <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Python · Turtle</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">from turtle import *
+
+def spirale_coloree():
+    couleurs = ["red", "orange", "yellow", "green", "blue", "purple"]
+    longueur = 5
+    speed(10)
+    for i in range(60):
+        pencolor(couleurs[i % len(couleurs)])
+        forward(longueur)
+        right(91)
+        longueur += 4
+
+spirale_coloree()</textarea>
+      <pre class="out"></pre>
+      <div class="turtle-canvas" hidden></div>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <p class="corr-text">La spirale fonctionne car l'angle de 91° fait que chaque nouveau segment est légèrement décalé — la figure ne se referme jamais exactement. La longueur croissante l'éloigne du centre.</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+
+def spirale_coloree():
+    couleurs = ["red", "orange", "yellow", "green", "blue", "purple"]
+    longueur = 5
+    speed(10)
+    for i in range(60):
+        pencolor(couleurs[i % 6])  # cycle de 6 couleurs
+        forward(longueur)          # avance
+        right(91)                  # 91° ≠ 90° → spirale
+        longueur += 4              # segment plus long
+
+spirale_coloree()</textarea>
+        <pre class="out"></pre>
+        <div class="turtle-canvas" hidden></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- S2-E8 -->
+  <article class="exo" id="s2e8">
+    <div class="exo-bar">
+      <span class="exo-num">S2·E8</span>
+      <span class="exo-title">Mot en miroir horizontal (Turtle)</span>
+      <span class="badge hard">Avancé</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction Turtle qui dessine un mot puis son miroir horizontal (mot lu à l'envers) en dessous.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ <code class="inl">write(texte, font=(...))</code> affiche du texte à la position courante de la tortue.</div>
+          <div class="hint-step">2️⃣ Utilise <code class="inl">penup(); goto(x, y); pendown()</code> pour te repositionner sans tracer.</div>
+          <div class="hint-step">3️⃣ Le miroir horizontal = le mot lu à l'envers. Affiche <code class="inl">mot[::-1]</code> en dessous.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell data-turtle>
+      <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Python · Turtle</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">from turtle import *
+
+def lettres_miroir(mot):
+    penup()
+    goto(-80, 30)
+    pendown()
+    write(mot, font=("Arial", 24, "bold"))
+
+    penup()
+    goto(-80, -60)
+    pendown()
+    write(mot[::-1], font=("Arial", 24, "bold"))
+
+lettres_miroir("NSI")</textarea>
+      <pre class="out"></pre>
+      <div class="turtle-canvas" hidden></div>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <p class="corr-text"><code class="inl">write()</code> écrit à la position courante. <code class="inl">goto(x, y)</code> déplace la tortue. <code class="inl">mot[::-1]</code> inverse le mot pour créer l'effet miroir.</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+
+def lettres_miroir(mot):
+    penup(); goto(-80, 30); pendown()
+    write(mot, font=("Arial", 28, "bold"))          # mot original
+
+    penup(); goto(-80, -70); pendown()
+    write(mot[::-1], font=("Arial", 28, "bold"))    # miroir
+
+lettres_miroir("Python")</textarea>
+        <pre class="out"></pre>
+        <div class="turtle-canvas" hidden></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- S2-E9 -->
+  <article class="exo" id="s2e9">
+    <div class="exo-bar">
+      <span class="exo-num">S2·E9</span>
+      <span class="exo-title">Formes combinées (Turtle)</span>
+      <span class="badge hard">Avancé</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction Turtle qui combine un triangle, un carré et un cercle pour créer un motif artistique.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Crée des sous-fonctions : <code class="inl">def triangle(n)</code>, <code class="inl">def carre(n)</code>. Appelle-les depuis <code class="inl">formes_combinees()</code>.</div>
+          <div class="hint-step">2️⃣ Entre les formes, utilise <code class="inl">penup(); goto(x, y); pendown()</code> pour te repositionner.</div>
+          <div class="hint-step">3️⃣ <code class="inl">circle(r)</code> dessine un cercle. Joue sur les positions et les couleurs pour un résultat artistique.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell data-turtle>
+      <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Python · Turtle</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">from turtle import *
+
+def triangle(n):
+    for i in range(3):
+        forward(n); left(120)
+
+def carre(n):
+    for i in range(4):
+        forward(n); right(90)
+
+def formes_combinees():
+    # Triangle à gauche
+    color("purple")
+    triangle(80)
+    # Carré au centre
+    penup(); goto(100, 0); pendown()
+    color("blue")
+    carre(70)
+    # Cercle à droite
+    penup(); goto(230, 0); pendown()
+    color("red")
+    circle(40)
+
+formes_combinees()</textarea>
+      <pre class="out"></pre>
+      <div class="turtle-canvas" hidden></div>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <p class="corr-text">Les fonctions imbriquées permettent de réutiliser le code pour chaque forme. <code class="inl">color()</code> change la couleur du crayon.</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Correction — motif artistique</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+speed(5)
+
+def triangle(n, c):
+    pencolor(c)
+    for i in range(3): forward(n); left(120)
+
+def carre(n, c):
+    pencolor(c)
+    for i in range(4): forward(n); right(90)
+
+def formes_combinees():
+    triangle(90, "purple")
+    penup(); goto(110, 0); pendown()
+    carre(70, "royalblue")
+    penup(); goto(240, 0); pendown()
+    pencolor("crimson")
+    circle(42)
+
+formes_combinees()</textarea>
+        <pre class="out"></pre>
+        <div class="turtle-canvas" hidden></div>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     SÉRIE AVANCÉE — TRÈS AVANCÉ
+════════════════════════════════════════════════ -->
+<section id="avancee">
+  <h2><span class="num">SA</span> Série Avancée — Très avancé (accessible)</h2>
+  <p class="section-desc">9 exercices qui combinent toutes les notions : palindromes normalisés, spirales, labyrinthes Turtle, et motifs en console.</p>
+
+  <!-- AE1 -->
+  <article class="exo" id="ae1">
+    <div class="exo-bar">
+      <span class="exo-num">A·E1</span>
+      <span class="exo-title">Palindrome normalisé (espaces + casse)</span>
+      <span class="badge medium">Intermédiaire</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction qui prend une phrase et renvoie <code class="inl">True</code> si elle est un palindrome, en <strong>ignorant les espaces et la casse</strong>.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Il faut d'abord <strong>nettoyer</strong> la phrase : enlever les espaces et convertir en minuscules.</div>
+          <div class="hint-step">2️⃣ Pour supprimer les espaces : boucle sur les caractères et ne garde que ceux qui ne sont pas un espace. <code class="inl">if c != " ": nettoyee += c</code></div>
+          <div class="hint-step">3️⃣ Applique <code class="inl">.lower()</code> et compare <code class="inl">nettoyee == nettoyee[::-1]</code>.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def palindrome_normalise(phrase):
+    # Étape 1 : enlever les espaces
+    nettoyee = ""
+    for c in phrase:
+        if c != " ":
+            nettoyee += c
+    # Étape 2 : passer en minuscules
+    # Étape 3 : comparer avec son inverse
+    pass
+
+print(palindrome_normalise("Kayak"))              # True
+print(palindrome_normalise("python"))             # False
+print(palindrome_normalise("Esope reste ici"))    # False
+print(palindrome_normalise("laval"))              # True</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <div class="funcflow">
+        <div class="ff-arg">"Kayak"</div>
+        <div class="ff-arrow">→</div>
+        <div class="ff-box"><div class="fn">normalise</div><div class="fndesc">"kayak"<br>→ minuscules + sans espaces</div></div>
+        <div class="ff-arrow">→</div>
+        <div class="ff-ret">"kayak" == "kayak" → True</div>
+      </div>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def palindrome_normalise(phrase):
+    nettoyee = ""
+    for c in phrase:
+        if c != " ":           # supprime espaces
+            nettoyee += c
+    nettoyee = nettoyee.lower()  # minuscules
+    return nettoyee == nettoyee[::-1]
+
+print(palindrome_normalise("Kayak"))   # True
+print(palindrome_normalise("Laval"))   # True
+print(palindrome_normalise("python"))  # False
+print(palindrome_normalise("radar"))   # True</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+
+  <!-- AE2 -->
+  <article class="exo" id="ae2">
+    <div class="exo-bar">
+      <span class="exo-num">A·E2</span>
+      <span class="exo-title">Escalier inversé (aligné à droite)</span>
+      <span class="badge medium">Intermédiaire</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction qui affiche le mot en escalier inversé vers la gauche (dernière ligne alignée à gauche) :</p>
+      <div class="exp-out">     P
+    Py
+   Pyt
+  Pyth
+ Pytho
+Python</div>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Même structure qu'escalier normal : boucle de 1 à n, affiche <code class="inl">mot[:i]</code>.</div>
+          <div class="hint-step">2️⃣ Pour aligner à droite : ajoute des espaces <strong>avant</strong> chaque ligne. Ligne i → <code class="inl">(n - i)</code> espaces.</div>
+          <div class="hint-step">3️⃣ <code class="inl">print(" " * (n - i) + mot[:i])</code> — quand <code class="inl">i == n</code>, 0 espace donc ras à gauche.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def escalier_inverse(mot):
+    n = len(mot)
+    for i in range(1, n + 1):
+        espaces = " " * (n - i)   # (n-i) espaces avant
+        print(espaces + mot[:i])
+
+escalier_inverse("Python")</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <table class="trace">
+        <tr><th>i</th><th>n - i</th><th>espaces + mot[:i]</th></tr>
+        <tr><td class="v">1</td><td>5</td><td>"     P"</td></tr>
+        <tr><td class="v">2</td><td>4</td><td>"    Py"</td></tr>
+        <tr><td class="v">3</td><td>3</td><td>"   Pyt"</td></tr>
+        <tr><td class="v">4</td><td>2</td><td>"  Pyth"</td></tr>
+        <tr><td class="v">5</td><td>1</td><td>" Pytho"</td></tr>
+        <tr><td class="v">6</td><td class="vok">0</td><td class="vok">"Python"</td></tr>
+      </table>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def escalier_inverse(mot):
+    n = len(mot)
+    for i in range(1, n + 1):
+        print(" " * (n - i) + mot[:i])
+
+escalier_inverse("Python")</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+
+  <!-- AE3 -->
+  <article class="exo" id="ae3">
+    <div class="exo-bar">
+      <span class="exo-num">A·E3</span>
+      <span class="exo-title">Spirale Turtle simple (longueur et angle croissants)</span>
+      <span class="badge medium">Intermédiaire</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction Turtle qui dessine une spirale dont la longueur <strong>et</strong> l'angle augmentent progressivement.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Initialise deux variables : <code class="inl">longueur = 5</code> et <code class="inl">angle = 80</code>. Les deux grandissent à chaque pas.</div>
+          <div class="hint-step">2️⃣ Boucle <code class="inl">for i in range(80):</code> : <code class="inl">forward(longueur); right(angle)</code> puis incrémente les deux.</div>
+          <div class="hint-step">3️⃣ Joue sur les valeurs d'incrément (<code class="inl">longueur += 2</code>, <code class="inl">angle += 1</code>) pour modifier la forme.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell data-turtle>
+      <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Python · Turtle</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">from turtle import *
+
+def spirale_simple():
+    longueur = 5
+    angle = 80
+    speed(10)
+    for i in range(80):
+        forward(longueur)
+        right(angle)
+        longueur += 2
+        angle += 1
+
+spirale_simple()</textarea>
+      <pre class="out"></pre>
+      <div class="turtle-canvas" hidden></div>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <p class="corr-text">L'angle croissant crée une courbe qui se serre de plus en plus. Essaie différentes valeurs pour <code class="inl">angle</code> et l'incrément pour obtenir des formes variées.</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Correction — deux spirales</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+speed(10)
+pencolor("royalblue")
+
+def spirale_simple(longueur_init, angle_init, tours, incr_l, incr_a):
+    l = longueur_init
+    a = angle_init
+    for i in range(tours):
+        forward(l)
+        right(a)
+        l += incr_l
+        a += incr_a
+
+spirale_simple(5, 90, 60, 3, 1)</textarea>
+        <pre class="out"></pre>
+        <div class="turtle-canvas" hidden></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- AE4 -->
+  <article class="exo" id="ae4">
+    <div class="exo-bar">
+      <span class="exo-num">A·E4</span>
+      <span class="exo-title">Mot miroir horizontal (Turtle)</span>
+      <span class="badge hard">Avancé</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction Turtle qui dessine un mot <strong>et</strong> son miroir horizontal en dessous — en itérant sur les lettres du mot.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Positionne la tortue avec <code class="inl">penup(); goto(x, y); pendown()</code> avant d'écrire.</div>
+          <div class="hint-step">2️⃣ <code class="inl">for lettre in mot: write(lettre, ...); forward(30)</code> écrit chaque lettre une à une.</div>
+          <div class="hint-step">3️⃣ Pour le miroir : repositionne la tortue en bas et écris <code class="inl">mot[::-1]</code>.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell data-turtle>
+      <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Python · Turtle</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">from turtle import *
+
+def mot_miroir_turtle(mot):
+    x_depart = -len(mot) * 15
+
+    # Mot original en haut
+    penup(); goto(x_depart, 40); pendown()
+    for lettre in mot:
+        write(lettre, font=("Arial", 22, "bold"))
+        forward(30)
+
+    # Miroir en bas
+    penup(); goto(x_depart, -50); pendown()
+    for lettre in mot[::-1]:
+        write(lettre, font=("Arial", 22, "bold"))
+        forward(30)
+
+mot_miroir_turtle("NSI")</textarea>
+      <pre class="out"></pre>
+      <div class="turtle-canvas" hidden></div>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <p class="corr-text">Le calcul de <code class="inl">x_depart</code> centre le mot : chaque lettre occupe environ 30 px. <code class="inl">mot[::-1]</code> renverse l'ordre des lettres pour le miroir.</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+
+def mot_miroir_turtle(mot):
+    x = -len(mot) * 15    # centre approximatif
+    penup(); goto(x, 40); pendown()
+    for lettre in mot:
+        write(lettre, font=("Arial", 24, "bold"))
+        forward(30)
+
+    penup(); goto(x, -60); pendown()
+    for lettre in mot[::-1]:    # miroir = inversé
+        write(lettre, font=("Arial", 24, "bold"))
+        forward(30)
+
+mot_miroir_turtle("Python")</textarea>
+        <pre class="out"></pre>
+        <div class="turtle-canvas" hidden></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- AE5 -->
+  <article class="exo" id="ae5">
+    <div class="exo-bar">
+      <span class="exo-num">A·E5</span>
+      <span class="exo-title">Dessin répétitif — rosace de triangles</span>
+      <span class="badge hard">Avancé</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Créer un motif répétitif avec plusieurs triangles disposés en rosace, en utilisant des boucles imbriquées et des fonctions imbriquées.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Crée une fonction <code class="inl">triangle(n)</code> séparée. Réutilise-la dans une boucle.</div>
+          <div class="hint-step">2️⃣ Pour une rosace de triangles : <code class="inl">for i in range(6): triangle(80); right(60)</code> — 6 × 60° = 360°.</div>
+          <div class="hint-step">3️⃣ Ajoute <code class="inl">pencolor(couleurs[i % len(couleurs)])</code> pour varier les couleurs.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell data-turtle>
+      <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Python · Turtle</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">from turtle import *
+
+def triangle(n):
+    for i in range(3):
+        forward(n)
+        left(120)
+
+def dessin_repetitif():
+    couleurs = ["red", "orange", "gold", "green", "royalblue", "purple"]
+    speed(8)
+    for i in range(6):
+        pencolor(couleurs[i])
+        triangle(90)
+        right(60)  # tourne de 60° pour le prochain triangle
+
+dessin_repetitif()</textarea>
+      <pre class="out"></pre>
+      <div class="turtle-canvas" hidden></div>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <p class="corr-text">6 triangles × 60° de rotation = 360° : la rosace est complète. Le principe est le même que la rosace de cercles, mais avec des triangles.</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Correction — rosace colorée</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+speed(8)
+
+def triangle(n):
+    for i in range(3):
+        forward(n); left(120)
+
+def dessin_repetitif():
+    couleurs = ["crimson","orange","gold","limegreen","royalblue","violet"]
+    for i in range(6):
+        pencolor(couleurs[i])
+        triangle(100)
+        right(60)
+
+dessin_repetitif()</textarea>
+        <pre class="out"></pre>
+        <div class="turtle-canvas" hidden></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- AE6 -->
+  <article class="exo" id="ae6">
+    <div class="exo-bar">
+      <span class="exo-num">A·E6</span>
+      <span class="exo-title">Mot caché « articulé »</span>
+      <span class="badge medium">Intermédiaire</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction qui prend un mot et remplace les lettres d'<strong>indice impair</strong> par <code class="inl">*</code> pour créer un motif visuel régulier (l'inverse de S2-E5).</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Même structure que S2-E5, mais la condition est inversée : <code class="inl">if i % 2 != 0:</code> → étoile.</div>
+          <div class="hint-step">2️⃣ Les lettres gardées sont à <strong>indice pair</strong> : P (0), t (2), o (4) → <code class="inl">"P*t*o*"</code>.</div>
+          <div class="hint-step">3️⃣ Essaie aussi le motif <code class="inl">i % 3 == 1</code> pour un motif différent.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def mot_cache_articule(mot):
+    resultat = ""
+    for i in range(len(mot)):
+        if i % 2 != 0:         # indice impair → *
+            resultat += "*"
+        else:
+            resultat += mot[i] # indice pair → lettre
+    return resultat
+
+print(mot_cache_articule("Python"))   # P*t*o*
+print(mot_cache_articule("Bonjour"))  # B*n*o*r</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <div class="strdiag">
+        <div class="strdiag-label">"Python" — indices impairs remplacés par *</div>
+        <div class="strdiag-row">
+          <div class="strbox">P</div><div class="strbox hi">y</div><div class="strbox">t</div>
+          <div class="strbox hi">h</div><div class="strbox">o</div><div class="strbox hi">n</div>
+        </div>
+        <div class="strdiag-row">
+          <div class="stridx">0</div><div class="stridx">1✱</div><div class="stridx">2</div>
+          <div class="stridx">3✱</div><div class="stridx">4</div><div class="stridx">5✱</div>
+        </div>
+        <div class="strdiag-row">
+          <div class="strbox">P</div><div class="strbox hi">*</div><div class="strbox">t</div>
+          <div class="strbox hi">*</div><div class="strbox">o</div><div class="strbox hi">*</div>
+        </div>
+      </div>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def mot_cache_articule(mot):
+    resultat = ""
+    for i in range(len(mot)):
+        if i % 2 != 0:
+            resultat += "*"
+        else:
+            resultat += mot[i]
+    return resultat
+
+print(mot_cache_articule("Python"))   # P*t*o*
+print(mot_cache_articule("Bonjour"))  # B*n*o*r</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+
+  <!-- AE7 -->
+  <article class="exo" id="ae7">
+    <div class="exo-bar">
+      <span class="exo-num">A·E7</span>
+      <span class="exo-title">Spirale colorée avancée</span>
+      <span class="badge hard">Avancé</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Dessiner une spirale plus élaborée où la couleur change à chaque segment — utilise un compteur pour interpoler les teintes.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ <code class="inl">pencolor(r, g, b)</code> accepte des valeurs entre 0 et 1. Active d'abord avec <code class="inl">colormode(1.0)</code>.</div>
+          <div class="hint-step">2️⃣ La teinte peut varier en fonction de <code class="inl">i</code> : par ex. <code class="inl">r = (i * 3) % 256 / 255</code>.</div>
+          <div class="hint-step">3️⃣ Combine variation de longueur + variation de couleur + angle fixe (91°) pour une spirale arc-en-ciel.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell data-turtle>
+      <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Python · Turtle</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">from turtle import *
+
+def spirale_avancee():
+    couleurs = [
+        "#e74c3c","#e67e22","#f1c40f",
+        "#2ecc71","#3498db","#9b59b6",
+        "#1abc9c","#e91e63"
+    ]
+    longueur = 5
+    speed(10)
+    for i in range(100):
+        pencolor(couleurs[i % len(couleurs)])
+        forward(longueur)
+        right(91)
+        longueur += 3
+
+spirale_avancee()</textarea>
+      <pre class="out"></pre>
+      <div class="turtle-canvas" hidden></div>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <p class="corr-text">Utiliser des couleurs hexadécimales permet un contrôle plus précis de la palette. <code class="inl">i % len(couleurs)</code> cycle sur toutes les couleurs de la liste.</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+speed(10)
+
+def spirale_avancee():
+    palette = ["#e74c3c","#e67e22","#f39c12","#2ecc71",
+               "#1abc9c","#3498db","#9b59b6","#e91e63"]
+    l = 5
+    for i in range(120):
+        pencolor(palette[i % len(palette)])
+        forward(l)
+        right(91)
+        l += 2.5
+
+spirale_avancee()</textarea>
+        <pre class="out"></pre>
+        <div class="turtle-canvas" hidden></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- AE8 -->
+  <article class="exo" id="ae8">
+    <div class="exo-bar">
+      <span class="exo-num">A·E8</span>
+      <span class="exo-title">Mini labyrinthe Turtle</span>
+      <span class="badge hard">Avancé</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Dessiner un labyrinthe simple avec des lignes droites et des angles droits, en utilisant des boucles imbriquées et des compteurs.</p>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Crée une fonction <code class="inl">couloir(longueur)</code> qui dessine un couloir en U : avance, tourne 90°, avance peu, tourne 90°, revient.</div>
+          <div class="hint-step">2️⃣ Répète des couloirs successifs, en décalant la position de départ à chaque fois.</div>
+          <div class="hint-step">3️⃣ Utilise <code class="inl">penup(); goto(...)</code> pour te repositionner entre les couloirs.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell data-turtle>
+      <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Python · Turtle</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">from turtle import *
+speed(5)
+
+def couloir(longueur, hauteur):
+    forward(longueur)
+    right(90)
+    forward(hauteur)
+    right(90)
+    forward(longueur)
+    left(90)
+    forward(hauteur)
+    left(90)
+
+def mini_labyrinthe():
+    goto(-120, 80)
+    for i in range(4):
+        couloir(100, 20)
+        penup()
+        forward(20)  # avance pour le prochain couloir
+        pendown()
+
+mini_labyrinthe()</textarea>
+      <pre class="out"></pre>
+      <div class="turtle-canvas" hidden></div>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <p class="corr-text">Le labyrinthe est une répétition de couloirs en U. En variant la longueur et la hauteur, tu peux créer des labyrinthes plus complexes.</p>
+      <div class="cell" data-cell data-turtle>
+        <div class="cell-head"><span class="tag-label"><span class="dot g"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">from turtle import *
+speed(5)
+penup(); goto(-120, 90); pendown()
+
+def couloir(l, h):
+    forward(l); right(90)
+    forward(h); right(90)
+    forward(l); left(90)
+    forward(h); left(90)
+
+def mini_labyrinthe(nb):
+    for i in range(nb):
+        pencolor("royalblue" if i % 2 == 0 else "purple")
+        couloir(110, 25)
+        penup(); forward(25); pendown()
+
+mini_labyrinthe(5)</textarea>
+        <pre class="out"></pre>
+        <div class="turtle-canvas" hidden></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- AE9 -->
+  <article class="exo" id="ae9">
+    <div class="exo-bar">
+      <span class="exo-num">A·E9</span>
+      <span class="exo-title">Mot en zigzag dans la console</span>
+      <span class="badge hard">Avancé</span>
+    </div>
+    <div class="exo-body">
+      <p class="enonce">Écrire une fonction qui affiche un mot en zigzag — chaque ligne montre 3 lettres consécutives, décalées d'un espace :</p>
+      <div class="exp-out">P y t
+ y t h
+ t h o
+ h o n</div>
+      <div class="hint-box">
+        <button class="hint-toggle">💡 Voir un indice</button>
+        <div class="hint-steps">
+          <div class="hint-step">1️⃣ Chaque ligne i affiche 3 caractères consécutifs : <code class="inl">mot[i]</code>, <code class="inl">mot[i+1]</code>, <code class="inl">mot[i+2]</code>.</div>
+          <div class="hint-step">2️⃣ Boucle : <code class="inl">for i in range(len(mot) - 2):</code> pour éviter de dépasser la fin.</div>
+          <div class="hint-step">3️⃣ Toutes les lignes sauf la première ont 1 espace d'indentation : <code class="inl">esp = "" if i == 0 else " "</code>.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag-label"><span class="dot"></span>Python</span><button class="run-btn">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">def mot_zigzag(mot):
+    for i in range(len(mot) - 2):
+        esp = "" if i == 0 else " "
+        ligne = esp + mot[i] + " " + mot[i+1] + " " + mot[i+2]
+        print(ligne)
+
+mot_zigzag("Python")</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction">
+      <div class="corr-header"><span class="corr-badge">✅ Correction</span></div>
+      <table class="trace">
+        <tr><th>i</th><th>esp</th><th>mot[i..i+2]</th><th>ligne</th></tr>
+        <tr><td class="v">0</td><td>""</td><td>P, y, t</td><td class="v">"P y t"</td></tr>
+        <tr><td class="v">1</td><td>" "</td><td>y, t, h</td><td class="v">" y t h"</td></tr>
+        <tr><td class="v">2</td><td>" "</td><td>t, h, o</td><td class="v">" t h o"</td></tr>
+        <tr><td class="v">3</td><td>" "</td><td>h, o, n</td><td class="vok">" h o n"</td></tr>
+      </table>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag-label"><span class="dot"></span>Correction</span><button class="run-btn">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def mot_zigzag(mot):
+    for i in range(len(mot) - 2):  # fenêtre glissante de 3
+        esp = "" if i == 0 else " "
+        print(esp + mot[i] + " " + mot[i+1] + " " + mot[i+2])
+
+mot_zigzag("Python")
+print("---")
+mot_zigzag("Fonctions")</textarea>
+        <pre class="out"></pre>
+      </div>
+    </div>
+  </article>
+</section>
+
+<footer>
+  <p><strong>Pour aller plus loin :</strong> Python Tutor (visualiser l'exécution pas à pas) · France-IOI · Futurecoder</p>
+  <p class="mono-n" style="font-size:17px; margin-top:14px"><span>N</span><span>a</span><span>dtech</span> · NSI · Chapitre 4 · Exercices</p>
+</footer>
+</main>
+</div>
+
+<!-- ═══ TEACHER LOCK BUTTON ═══ -->
+<button id="lockBtn" title="Mode enseignant">🔒</button>
+
+<script>
+/* ── Skulpt Python runner ── */
+function builtinRead(x){
+  if(Sk.builtinFiles===undefined||Sk.builtinFiles["files"][x]===undefined) throw "File not found: '"+x+"'";
+  return Sk.builtinFiles["files"][x];
+}
+
+function runCell(cell){
+  var code=cell.querySelector('textarea.code').value;
+  var out=cell.querySelector('.out');
+  var btn=cell.querySelector('.run-btn');
+  var tw=cell.querySelector('.turtle-canvas');
+  out.classList.remove('err');
+  out.textContent='';
+  out.classList.add('show');
+  if(typeof Sk==='undefined'){out.classList.add('err'); out.textContent="Skulpt non chargé."; return;}
+  var conf={
+    output:function(t){out.textContent+=t;},
+    read:builtinRead,
+    inputfun:function(p){return window.prompt(p||"Entrée :")||"";},
+    inputfunTakesPrompt:true,
+    __future__:Sk.python3
+  };
+  Sk.configure(conf);
+  if(tw){
+    tw.hidden=false; tw.innerHTML='';
+    if(!tw.id) tw.id='tc-'+Math.random().toString(36).slice(2);
+    (Sk.TurtleGraphics||(Sk.TurtleGraphics={})).target=tw.id;
+    Sk.TurtleGraphics.width=320; Sk.TurtleGraphics.height=260;
+  }
+  btn.disabled=true; var lbl=btn.textContent; btn.textContent='…';
+  Sk.misceval.asyncToPromise(function(){
+    return Sk.importMainWithBody("<stdin>",false,code,true);
+  }).then(function(){
+    btn.disabled=false; btn.textContent=lbl;
+    if(!out.textContent&&!tw) out.textContent="(aucune sortie — utilise print())";
+  },function(err){
+    btn.disabled=false; btn.textContent=lbl;
+    out.classList.add('err'); out.textContent+="\n"+err.toString();
+  });
+}
+
+function initCells(){
+  document.querySelectorAll('[data-cell]').forEach(function(cell){
+    if(cell.dataset.inited) return;
+    cell.dataset.inited='1';
+    var ta=cell.querySelector('textarea.code');
+    ta.rows=Math.min(Math.max(ta.value.split('\n').length,3),22);
+    cell.querySelector('.run-btn').addEventListener('click',function(){runCell(cell);});
+    ta.addEventListener('keydown',function(e){
+      if(e.key==='Tab'){e.preventDefault();
+        var s=this.selectionStart,en=this.selectionEnd;
+        this.value=this.value.slice(0,s)+'    '+this.value.slice(en);
+        this.selectionStart=this.selectionEnd=s+4;
+      }
+    });
+  });
+}
+initCells();
+
+/* ── Hint system ── */
+document.querySelectorAll('.hint-box').forEach(function(box){
+  var steps=box.querySelectorAll('.hint-step');
+  var btn=box.querySelector('.hint-toggle');
+  var shown=0;
+  btn.addEventListener('click',function(){
+    if(shown<steps.length){
+      steps[shown].classList.add('vis');
+      shown++;
+      if(shown>=steps.length){
+        btn.textContent='✅ Tous les indices affichés';
+        btn.style.borderColor='rgba(52,211,153,.4)';
+        btn.style.color='var(--ok)';
+      } else {
+        btn.textContent='💡 Indice suivant ('+shown+'/'+steps.length+')';
+      }
+    }
+  });
+});
+
+/* ── Teacher / Correction mode ── */
+var PROF_PWD='LFI2025';
+var profMode=false;
+
+function activateProf(){
+  if(profMode) return;
+  profMode=true;
+  document.querySelectorAll('.correction').forEach(function(c){c.classList.add('vis');});
+  document.getElementById('profBanner').classList.add('show');
+  var lb=document.getElementById('lockBtn');
+  lb.textContent='✅'; lb.classList.add('on'); lb.title='Mode enseignant actif';
+  initCells(); // initialise les cellules des corrections
+}
+
+/* Check URL param: ?corrections=on */
+if(new URLSearchParams(window.location.search).get('corrections')==='on'){
+  activateProf();
+}
+
+/* Manual unlock via button */
+document.getElementById('lockBtn').addEventListener('click',function(){
+  if(profMode) return;
+  var pw=window.prompt('🔐 Code enseignant :');
+  if(pw===null) return;
+  if(pw===PROF_PWD){ activateProf(); }
+  else { alert('❌ Code incorrect.'); }
+});
+
+/* Keyboard shortcut Ctrl+Shift+P */
+document.addEventListener('keydown',function(e){
+  if(e.ctrlKey&&e.shiftKey&&e.key==='P'){
+    e.preventDefault();
+    if(!profMode){
+      var pw=window.prompt('🔐 Code enseignant :');
+      if(pw===PROF_PWD) activateProf();
+    }
+  }
+});
+
+/* ── Thème jour/nuit ── */
+(function(){
+  var b=document.getElementById('themeToggle'); if(!b) return;
+  function apply(m){ if(m==='light'){document.body.classList.add('light'); b.textContent='☀️';} else {document.body.classList.remove('light'); b.textContent='🌙';} }
+  var saved=null; try{ saved=localStorage.getItem('nadtech-theme'); }catch(e){}
+  apply(saved==='light'?'light':'dark');
+  b.addEventListener('click', function(){
+    var l=!document.body.classList.contains('light');
+    apply(l?'light':'dark');
+    try{ localStorage.setItem('nadtech-theme', l?'light':'dark'); }catch(e){}
+  });
+})();
+</script>
+</body>
+</html>
