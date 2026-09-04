@@ -121,6 +121,8 @@ body.light .theme-toggle{ box-shadow:0 8px 24px -14px rgba(20,24,45,.4); }
 .turtle-modal-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px}
 .turtle-modal-close{border:0; background:rgba(255,255,255,.12); color:#e7f0ff; width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:15px; line-height:1}
 .turtle-modal-close:hover{background:rgba(255,255,255,.22)}
+.turtle-modal-agrandir{border:0; background:rgba(255,255,255,.12); color:#e7f0ff; padding:0 12px; height:32px; border-radius:8px; cursor:pointer; font-size:13px; font-family:'Space Grotesk',sans-serif; font-weight:600; display:inline-flex; align-items:center; gap:6px}
+.turtle-modal-agrandir:hover{background:rgba(255,255,255,.22)}
 .turtle-modal-area{background:#fff; padding:18px; flex:1; display:flex; align-items:center; justify-content:center; overflow:auto}
 .turtle-draw{display:block}
 </style>
@@ -591,6 +593,23 @@ for ligne in range(n):
 </div>
 
 <script>
+function ouvrirTurtleGrand(containerOrId){
+  var container = typeof containerOrId === 'string' ? document.getElementById(containerOrId) : containerOrId;
+  if(!container) return;
+  var canvas = container.querySelector('canvas');
+  if(!canvas) return;
+  var url;
+  try{ url = canvas.toDataURL('image/png'); }catch(e){ return; }
+  var w = window.open('', '_blank');
+  if(!w) return;
+  w.document.write(
+    '<!doctype html><html><head><meta charset="utf-8"><title>Resultat Turtle</title>' +
+    '<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f4f4f8}' +
+    'img{max-width:96vw;max-height:96vh;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.25)}</style></head>' +
+    '<body><img src="' + url + '" alt="Resultat du programme Turtle"></body></html>'
+  );
+  w.document.close();
+}
 function fitTurtle(wrap){
   try{
     var canvases = wrap.querySelectorAll('canvas');
@@ -747,6 +766,7 @@ document.querySelectorAll('[data-cell]').forEach(function(cell){
   <div class="turtle-modal-box">
     <div class="turtle-modal-bar">
       <span class="turtle-modal-title">🐢 Résultat turtle</span>
+      <button class="turtle-modal-agrandir" id="turtleModalAgrandir" type="button">⤢ Agrandir</button>
       <button class="turtle-modal-close" id="turtleModalClose" aria-label="Fermer">✕</button>
     </div>
     <div class="turtle-modal-area"><div id="turtleModalArea" class="turtle-draw"></div></div>
@@ -755,6 +775,8 @@ document.querySelectorAll('[data-cell]').forEach(function(cell){
 <script>
 (function(){
   var modal=document.getElementById('turtleModal'); if(!modal) return;
+  var agrandir=document.getElementById('turtleModalAgrandir');
+  if(agrandir) agrandir.addEventListener('click', function(){ ouvrirTurtleGrand('turtleModalArea'); });
   var close=document.getElementById('turtleModalClose');
   function hide(){ modal.classList.remove('open'); }
   if(close) close.addEventListener('click', hide);
