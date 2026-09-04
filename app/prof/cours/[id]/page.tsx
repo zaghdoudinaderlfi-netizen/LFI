@@ -173,7 +173,7 @@ export default async function ModifierCoursPage({
               Page associée : <span className="font-medium text-neon-cyan">{cours.pageInteractive}</span>
               {" · "}
               <a
-                href={`/cours/${cours.pageInteractive}`}
+                href={`/cours/${cours.pageInteractive}?corrige=1`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-neon-blue underline underline-offset-2"

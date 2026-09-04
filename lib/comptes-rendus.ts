@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { notifierProfs } from "./notifications";
 
 export class CompteRenduError extends Error {}
 
@@ -48,15 +49,23 @@ export async function deposerCompteRendu({ coursId, noms, travail }: DeposerComp
 
   const cours = await prisma.cours.findUnique({
     where: { id: coursId },
-    select: { id: true },
+    select: { id: true, titre: true, matiere: true },
   });
   if (!cours) {
     throw new CompteRenduError("Cours introuvable.");
   }
 
-  return prisma.compteRendu.create({
+  const compteRendu = await prisma.compteRendu.create({
     data: { coursId, noms: nomsNettoyes, travail: travail ?? null },
   });
+
+  await notifierProfs(
+    `Compte-rendu déposé par ${nomsNettoyes} — « ${cours.titre} »`,
+    `/prof/comptes-rendus/${compteRendu.id}`,
+    cours.matiere
+  );
+
+  return compteRendu;
 }
 
 export async function obtenirCompteRendu(id: string) {

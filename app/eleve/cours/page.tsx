@@ -94,7 +94,7 @@ export default async function EleveCoursPage({
                       return (
                         <li key={c.id}>
                           <a
-                            href={`/cours/${c.pageInteractive}`}
+                            href={`/cours/${c.pageInteractive}${c.correctionVisible ? "?corrige=1" : ""}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="card-interactive flex h-full flex-col overflow-hidden"
