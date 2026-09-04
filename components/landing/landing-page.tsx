@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ExternalLink, GraduationCap, Moon, Sun } from "lucide-react";
+import { ExternalLink, GraduationCap, Moon, PlayCircle, Sun } from "lucide-react";
 
 /* ── Palette arcade (toujours sombre — fenêtre terminal) ─── */
 const INK = "#15103a";
@@ -45,7 +45,14 @@ const CODE_HTML =
 
 const MONO: React.CSSProperties = { fontFamily: "var(--font-mono), monospace" };
 
-export function LandingPage() {
+type CoursVitrine = {
+  id: string;
+  titre: string;
+  matiere: string;
+  niveau: string;
+};
+
+export function LandingPage({ coursVitrine }: { coursVitrine: CoursVitrine | null }) {
   const [sombre, setSombre] = useState(true);
   const typedRef = useRef<HTMLSpanElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -362,6 +369,28 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ═══════════════════════════════════════════
+          Découvrez un cours (vitrine, sans compte)
+          ══════════════════════════════════════════ */}
+      {coursVitrine && (
+        <section className="py-16">
+          <div className="mx-auto max-w-[1180px] px-6">
+            <div className="card flex flex-col items-center gap-4 p-8 text-center sm:p-12">
+              <span className="eyebrow">// accès libre</span>
+              <h2 className="page-title">Découvrez un cours</h2>
+              <p className="max-w-[52ch] text-ink-secondary">
+                Essayez tout de suite <strong className="text-ink-primary">{coursVitrine.titre}</strong>{" "}
+                ({coursVitrine.matiere} · {coursVitrine.niveau}) — aucun compte à créer.
+              </p>
+              <Link href={`/decouvrir/${coursVitrine.id}`} className="btn-primary">
+                <PlayCircle className="h-4 w-4" />
+                Lancer ce cours
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ═══════════════════════════════════════════
           À propos
