@@ -55,6 +55,18 @@ enum TypeContenuCours {
   PDF
 }
 
+// Type choisi dans le formulaire de création simplifié (5 boutons). Null pour
+// les cours composés via l'éditeur avancé existant (blocs, page interactive,
+// import Word/PDF classique) — ce champ ne remplace pas ce système, il
+// s'ajoute comme un mode de création alternatif et plus rapide.
+enum TypeCoursSimple {
+  HTML
+  PDF
+  WORD
+  VIDEO
+  QCM
+}
+
 enum TypeBloc {
   TEXTE
   IMAGE
@@ -161,8 +173,27 @@ model Cours {
   // Quand false, le cours n'apparaît pas côté élève (même s'il est publié).
   visibleEleves Boolean @default(true)
 
-  // Quand true, le lien élève inclut ?corrige=1 (corrections affichées dans la page HTML)
+  // Quand true, le lien élève inclut ?corrections=on (corrections affichées dans la page HTML)
   correctionVisible Boolean @default(false)
+
+  // ── Mode de création simplifié (5 boutons : HTML / PDF / WORD / VIDEO / QCM) ──
+  // Null si le cours a été composé via l'éditeur avancé existant (blocs,
+  // page interactive, import classique). Voir TypeCoursSimple ci-dessus.
+  typeSimple TypeCoursSimple?
+
+  // HTML / PDF / WORD (mode simplifié) : URL publique du fichier déposé
+  // dans Supabase Storage (bucket "cours").
+  fichierUrl String?
+
+  // VIDEO (mode simplifié) : URL YouTube ou Vimeo brute collée par le prof.
+  // L'ID d'embed est extrait à l'affichage, pas stocké.
+  videoUrl String?
+
+  // QCM (mode simplifié) : quiz existant du système Quiz/Question/Tentative,
+  // réutilisé tel quel (pas de duplication). Lien libre : le quiz garde son
+  // propre niveau/matière/visibleEleves indépendamment de ce cours.
+  quiz   Quiz?   @relation(fields: [quizId], references: [id], onDelete: SetNull)
+  quizId String?
 
   exercices     Exercice[]
   piecesJointes PieceJointe[]
@@ -170,6 +201,8 @@ model Cours {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([quizId])
 }
 
 // Bloc de contenu de la "boîte à outils" : le prof compose un cours en
@@ -325,6 +358,10 @@ model Quiz {
 
   questions  QuestionQuiz[]
   tentatives TentativeQuiz[]
+
+  // Cours (mode simplifié QCM) qui pointent vers ce quiz — lien libre,
+  // un même quiz peut être réutilisé par plusieurs cours ou aucun.
+  coursSimplifies Cours[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
