@@ -8,18 +8,19 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const session = await auth();
-
-  if (!session?.user) {
-    return NextResponse.redirect(new URL("/connexion", request.url));
-  }
 
   const piece = await obtenirPieceJointeAvecCours(id);
   if (!piece) {
     return NextResponse.json({ error: "Fichier introuvable." }, { status: 404 });
   }
 
-  if (session.user.role !== "PROF") {
+  const session = piece.cours.estPublic ? null : await auth();
+
+  if (!piece.cours.estPublic && !session?.user) {
+    return NextResponse.redirect(new URL("/connexion", request.url));
+  }
+
+  if (session && session.user.role !== "PROF") {
     const utilisateur = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: { classe: true },

@@ -10,18 +10,19 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const session = await auth();
-
-  if (!session?.user) {
-    return NextResponse.redirect(new URL("/connexion", request.url));
-  }
 
   const cours = await obtenirCoursParId(id);
   if (!cours || cours.typeContenu !== TypeContenuCours.PDF || !cours.pdfChemin || !cours.pdfNom) {
     return NextResponse.json({ error: "Fichier introuvable." }, { status: 404 });
   }
 
-  if (session.user.role !== "PROF") {
+  const session = cours.estPublic ? null : await auth();
+
+  if (!cours.estPublic && !session?.user) {
+    return NextResponse.redirect(new URL("/connexion", request.url));
+  }
+
+  if (session && session.user.role !== "PROF") {
     const utilisateur = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: { classe: true },
