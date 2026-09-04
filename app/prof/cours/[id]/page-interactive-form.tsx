@@ -25,6 +25,7 @@ export function PageInteractiveForm({
   const [apercu, setApercu] = useState<string | null>(null);
   const [supprimerImage, setSupprimerImage] = useState(false);
   const [corrVisible, setCorrVisible] = useState(correctionVisible);
+  const [ficSelectionne, setFicSelectionne] = useState(pageInteractive ?? "");
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -70,6 +71,7 @@ export function PageInteractiveForm({
             id="pageInteractive"
             name="pageInteractive"
             defaultValue={pageInteractive ?? ""}
+            onChange={(e) => setFicSelectionne(e.target.value)}
             className="input"
           >
             <option value="">— Aucun —</option>
@@ -136,7 +138,7 @@ export function PageInteractiveForm({
       </div>
 
       {/* Interrupteur corrections */}
-      {pageInteractive && (
+      {ficSelectionne && (
         <label className="flex items-center gap-3 cursor-pointer select-none w-fit">
           <div
             role="switch"
