@@ -27,6 +27,7 @@ export default async function CompteRenduDetailPage({
       <div className="card animate-fade-in-up p-6">
         <h1 className="text-2xl font-extrabold text-ink-primary font-heading">{compteRendu.noms}</h1>
         <p className="mt-2 text-sm text-ink-secondary">
+          {compteRendu.classe ? `${compteRendu.classe.nom} · ` : ""}
           {compteRendu.cours.titre} · {MATIERE_LABELS[compteRendu.cours.matiere]} ·{" "}
           {NIVEAU_LABELS[compteRendu.cours.niveau]}
         </p>

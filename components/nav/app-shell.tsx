@@ -11,7 +11,6 @@ import {
   Gamepad2,
   Bell,
   User,
-  ClipboardCheck,
   FileText,
   Users,
   UserCog,
@@ -58,7 +57,6 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
   PROF: [
     { href: "/prof", label: "Tableau de bord", icon: LayoutDashboard },
     { href: "/prof/cours", label: "Mes cours", icon: BookOpen },
-    { href: "/prof/devoirs", label: "Devoirs & corrections", icon: ClipboardCheck },
     { href: "/prof/comptes-rendus", label: "Comptes-rendus", icon: FileText },
     { href: "/prof/classes", label: "Mes classes", icon: Users },
     { href: "/prof/admin", label: "Gestion élèves", icon: UserCog },
@@ -302,6 +300,28 @@ export function AppShell({
               </div>
               <div className="flex-1 overflow-y-auto">
                 <NavLinks onNavigate={() => setMenuOuvert(false)} />
+              </div>
+
+              {/* Déconnexion : visible directement dans le volet, sans passer
+                  par le menu de l'avatar (difficile à trouver sur mobile). */}
+              <div className="mt-3 border-t-2 border-space-border pt-3">
+                <Link
+                  href={profilHref}
+                  onClick={() => setMenuOuvert(false)}
+                  className="mb-2 flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
+                >
+                  <User className="h-4 w-4 shrink-0" />
+                  Mon profil
+                </Link>
+                <form action={logout}>
+                  <button
+                    type="submit"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-red-500/40 bg-red-500/10 px-3 py-2.5 text-sm font-bold text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
+                  >
+                    <LogOut className="h-4 w-4 shrink-0" />
+                    Se déconnecter
+                  </button>
+                </form>
               </div>
             </div>
           </div>

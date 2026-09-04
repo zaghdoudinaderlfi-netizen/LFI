@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { ClipboardCheck, ListPlus, PlusCircle } from "lucide-react";
+import { FileText, ListPlus, PlusCircle } from "lucide-react";
 import { Matiere } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { compterSoumissionsACorriger, listerSoumissionsRecentes } from "@/lib/soumissions";
 import { listerClasses, NIVEAU_LABELS } from "@/lib/classes";
 import { NIVEAU_PAR_MATIERE, estMatiereValide } from "@/lib/classes-constants";
 import { MATIERE_LABELS } from "@/lib/cours";
-import { formaterNomComplet } from "@/lib/utilisateurs";
 import { AvatarDisplay } from "@/components/avatar/avatar-display";
 import { MatiereTabs } from "@/components/matiere-tabs";
 
@@ -24,15 +22,14 @@ export default async function ProfPage({
 
   const niveauFiltré = matiere ? NIVEAU_PAR_MATIERE[matiere] : undefined;
 
-  const [user, aCorrigerCount, recentes, classes] = await Promise.all([
+  const [user, comptesRendusCount, classes] = await Promise.all([
     session?.user?.id
       ? prisma.user.findUnique({
           where: { id: session.user.id },
           select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true },
         })
       : Promise.resolve(null),
-    compterSoumissionsACorriger(matiere ?? undefined),
-    listerSoumissionsRecentes(5, matiere ?? undefined),
+    prisma.compteRendu.count(),
     listerClasses(),
   ]);
 
@@ -80,77 +77,33 @@ export default async function ProfPage({
           <span className="icon-badge-snt">
             <ListPlus className="h-5 w-5" />
           </span>
-          <p className="font-semibold text-ink-primary">Créer un devoir</p>
+          <p className="font-semibold text-ink-primary">Mes cours</p>
           <p className="text-sm text-ink-secondary">
-            Ajoute un devoir depuis la page d&apos;un de tes cours.
+            Gère tes cours, leurs corrigés et leurs exercices.
           </p>
         </Link>
       </div>
 
-      {/* Copies à corriger */}
+      {/* Comptes-rendus */}
       <Link
-        href={matiere ? `/prof/devoirs?matiere=${matiere}` : "/prof/devoirs"}
+        href="/prof/comptes-rendus"
         className="card-hard card-hard-nsi flex items-center justify-between p-6 animate-fade-in-up [animation-delay:120ms]"
       >
         <div className="flex items-center gap-3">
           <span className="icon-badge-nsi">
-            <ClipboardCheck className="h-5 w-5" />
+            <FileText className="h-5 w-5" />
           </span>
           <div>
-            <h2 className="section-title">
-              Copies à corriger{labelMatiere ? ` — ${labelMatiere}` : ""}
-            </h2>
+            <h2 className="section-title">Comptes-rendus</h2>
             <p className="text-sm text-ink-secondary">
-              Travaux remis par les élèves, en attente de correction.
+              Travaux déposés par les élèves depuis les pages d&apos;exercices.
             </p>
           </div>
         </div>
         <p className="font-heading text-3xl font-bold" style={{ color: "rgb(var(--arcade-nsi))" }}>
-          {aCorrigerCount}
+          {comptesRendusCount}
         </p>
       </Link>
-
-      {/* Derniers travaux remis */}
-      <section className="card-hard animate-fade-in-up p-6 [animation-delay:180ms]">
-        <h2 className="section-title mb-4">
-          Derniers travaux remis{labelMatiere ? ` — ${labelMatiere}` : ""}
-        </h2>
-
-        {recentes.length === 0 ? (
-          <p className="text-sm text-ink-muted">Aucun travail remis pour le moment.</p>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {recentes.map((soumission) => (
-              <li key={soumission.id}>
-                <Link
-                  href="/prof/devoirs"
-                  className="item-arcade flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="font-medium text-ink-primary">{soumission.exercice.titre}</p>
-                    <p className="text-sm text-ink-secondary">
-                      {soumission.exercice.cours.titre} · {formaterNomComplet(soumission.eleve)}
-                    </p>
-                  </div>
-                  <div className="text-sm sm:text-right">
-                    <p className="text-ink-muted">{soumission.createdAt.toLocaleDateString("fr-FR")}</p>
-                    <p
-                      className="font-medium"
-                      style={{
-                        color: soumission.corrigeManuellement
-                          ? "rgb(52 211 153)"
-                          : "rgb(var(--arcade-techno))",
-                      }}
-                    >
-                      {soumission.corrigeManuellement ? "Corrigé" : "À corriger"}
-                    </p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
 
       {/* Mes classes */}
       <section className="card-hard card-hard-techno animate-fade-in-up p-6 [animation-delay:240ms]">

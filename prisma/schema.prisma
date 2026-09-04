@@ -133,7 +133,8 @@ model Classe {
   codeInscription String @unique
   anneeScolaire   String
 
-  eleves User[]
+  eleves        User[]
+  comptesRendus CompteRendu[]
 
   createdAt DateTime @default(now())
 }
@@ -231,7 +232,13 @@ model CompteRendu {
   // cette fonctionnalité. Les cellules de correction ne sont pas capturées.
   travail String? @db.Text
 
+  // Classe de l'élève connecté au moment du dépôt, relevée côté serveur
+  // (l'élève ne la saisit pas). Null s'il a déposé sans être connecté.
+  classe   Classe? @relation(fields: [classeId], references: [id], onDelete: SetNull)
+  classeId String?
+
   @@index([coursId])
+  @@index([classeId])
 }
 
 // Bloc de contenu de la "boîte à outils" : le prof compose un cours en

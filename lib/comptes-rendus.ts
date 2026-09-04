@@ -1,3 +1,5 @@
+import { Matiere } from "@prisma/client";
+import { auth } from "@/auth";
 import { prisma } from "./prisma";
 import { notifierProfs } from "./notifications";
 
@@ -55,8 +57,23 @@ export async function deposerCompteRendu({ coursId, noms, travail }: DeposerComp
     throw new CompteRenduError("Cours introuvable.");
   }
 
+  // La classe vient du compte connecté, pas d'une saisie de l'élève : c'est
+  // ce qui permet au prof de filtrer sans dépendre de l'orthographe.
+  const session = await auth();
+  const eleve = session?.user?.id
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { classeId: true },
+      })
+    : null;
+
   const compteRendu = await prisma.compteRendu.create({
-    data: { coursId, noms: nomsNettoyes, travail: travail ?? null },
+    data: {
+      coursId,
+      noms: nomsNettoyes,
+      travail: travail ?? null,
+      classeId: eleve?.classeId ?? null,
+    },
   });
 
   await notifierProfs(
@@ -71,18 +88,45 @@ export async function deposerCompteRendu({ coursId, noms, travail }: DeposerComp
 export async function obtenirCompteRendu(id: string) {
   return prisma.compteRendu.findUnique({
     where: { id },
-    include: { cours: { select: { titre: true, matiere: true, niveau: true } } },
+    include: {
+      cours: { select: { titre: true, matiere: true, niveau: true } },
+      classe: { select: { nom: true } },
+    },
   });
 }
 
 export type TriComptesRendus = "date" | "cours";
 
-export async function listerComptesRendus(tri: TriComptesRendus = "date") {
+export type FiltresComptesRendus = {
+  tri?: TriComptesRendus;
+  matiere?: Matiere;
+  classeId?: string;
+};
+
+export async function listerComptesRendus({
+  tri = "date",
+  matiere,
+  classeId,
+}: FiltresComptesRendus = {}) {
   return prisma.compteRendu.findMany({
-    include: { cours: { select: { titre: true, matiere: true, niveau: true } } },
-    orderBy:
-      tri === "cours"
-        ? { cours: { titre: "asc" } }
-        : { dateDepot: "desc" },
+    where: {
+      ...(matiere ? { cours: { matiere } } : {}),
+      ...(classeId ? { classeId } : {}),
+    },
+    include: {
+      cours: { select: { titre: true, matiere: true, niveau: true } },
+      classe: { select: { nom: true } },
+    },
+    orderBy: tri === "cours" ? { cours: { titre: "asc" } } : { dateDepot: "desc" },
   });
+}
+
+/** Classes ayant au moins un compte-rendu — pour ne proposer que des filtres utiles. */
+export async function listerClassesAvecComptesRendus() {
+  const classes = await prisma.classe.findMany({
+    where: { comptesRendus: { some: {} } },
+    select: { id: true, nom: true, niveau: true },
+    orderBy: { nom: "asc" },
+  });
+  return classes;
 }

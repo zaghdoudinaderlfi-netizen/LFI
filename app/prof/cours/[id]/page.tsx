@@ -271,12 +271,6 @@ export default async function ModifierCoursPage({
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-3">
-                      <Link
-                        href={`/prof/devoirs/${devoir.id}`}
-                        className="text-sm font-medium text-neon-cyan hover:underline"
-                      >
-                        Voir les rendus
-                      </Link>
                       <form action={supprimerDevoirAction}>
                         <input type="hidden" name="id" value={devoir.id} />
                         <input type="hidden" name="coursId" value={cours.id} />

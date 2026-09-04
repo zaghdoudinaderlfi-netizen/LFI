@@ -233,7 +233,7 @@ export async function deposerSoumission(
 
   await notifierProfs(
     `${eleve ? formaterNomComplet(eleve) : "Un élève"} a déposé « ${exercice.titre} » (${exercice.cours.titre})`,
-    `/prof/devoirs/${exerciceId}`,
+    `/prof/cours/${exercice.coursId}`,
     exercice.cours.matiere
   );
 
@@ -345,7 +345,7 @@ export async function deposerSoumissionFormulaire(
 
   await notifierProfs(
     `${eleve ? formaterNomComplet(eleve) : "Un élève"} a déposé « ${exercice.titre} » (${exercice.cours.titre})`,
-    `/prof/devoirs/${exerciceId}`,
+    `/prof/cours/${exercice.coursId}`,
     exercice.cours.matiere
   );
 
@@ -443,7 +443,7 @@ export async function soumettreExerciceCode(
   const eleve = await prisma.user.findUnique({ where: { id: eleveId }, select: { nom: true, prenom: true } });
   await notifierProfs(
     `${eleve ? formaterNomComplet(eleve) : "Un élève"} a soumis « ${exercice.titre} » (${exercice.cours.titre})`,
-    `/prof/devoirs/${exerciceId}`,
+    `/prof/cours/${exercice.coursId}`,
     exercice.cours.matiere
   );
 
