@@ -28,6 +28,7 @@ function lireInfosFormulaire(formData: FormData) {
   const niveau = formData.get("niveau");
   const matiere = formData.get("matiere");
   const publie = formData.get("publie") === "on";
+  const correctionVisible = formData.get("correctionVisible") === "on";
   const chapitreRaw = formData.get("chapitre");
   const chapitre =
     chapitreRaw && typeof chapitreRaw === "string" && chapitreRaw.trim() !== ""
@@ -46,6 +47,7 @@ function lireInfosFormulaire(formData: FormData) {
     niveau: niveau as Niveau,
     matiere: matiere as Matiere,
     publie,
+    correctionVisible,
     chapitre,
   };
 }

@@ -99,6 +99,10 @@ export type CoursSimpleInfoInput = {
   matiere: Matiere;
   publie: boolean;
   chapitre?: number | null;
+  // Uniquement pertinent pour un fichier HTML qui implémente lui-même la
+  // convention ?corrige=1 (voir correctionVisible sur le modèle Cours et
+  // le lien élève des cours interactifs). Ignoré pour les autres types.
+  correctionVisible?: boolean;
 };
 
 export type ContenuCoursSimple =
@@ -152,6 +156,7 @@ export async function creerCoursSimple(data: CoursSimpleInfoInput, contenu: Cont
       matiere: data.matiere,
       publie: data.publie,
       chapitre: data.chapitre ?? null,
+      correctionVisible: contenu.type === "HTML" && !!data.correctionVisible,
       ...champs,
     },
   });

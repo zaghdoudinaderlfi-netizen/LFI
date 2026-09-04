@@ -193,6 +193,22 @@ export function CoursForm({
             </div>
           )}
 
+          {typeSimple === "HTML" && (
+            <label className="flex items-start gap-2 text-sm font-medium text-ink-secondary">
+              <input
+                type="checkbox"
+                name="correctionVisible"
+                className="mt-0.5 h-4 w-4 rounded border-space-border accent-neon-blue"
+              />
+              <span>
+                Afficher le corrigé aux élèves
+                <span className="mt-0.5 block text-xs font-normal text-ink-muted">
+                  Uniquement si ton fichier HTML gère lui-même le paramètre <code className="text-neon-cyan">?corrige=1</code> pour révéler ses corrections.
+                </span>
+              </span>
+            </label>
+          )}
+
           {typeSimple === "VIDEO" && (
             <div className="flex flex-col gap-1">
               <label htmlFor="videoUrl" className="field-label">
