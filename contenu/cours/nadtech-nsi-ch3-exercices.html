@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NSI · Chapitre 1 — Exercices</title>
+<title>NSI · Chapitre 3 — Exercices (conditions, booléens)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -18,13 +18,11 @@
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{
-  margin:0; background:
+body{margin:0; background:
     radial-gradient(1100px 600px at 80% -10%, rgba(139,92,246,.18), transparent 60%),
     radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.14), transparent 55%),
     var(--bg);
-  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;
-}
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;}
 .wrap{max-width:920px; margin:0 auto; padding:0 20px}
 header.hero{padding:48px 0 24px; border-bottom:1px solid var(--line); margin-bottom:20px}
 .kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
@@ -42,30 +40,19 @@ code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.0
 strong{color:#fff}
 .enonce{background:rgba(255,255,255,.03); border:1px solid var(--line); border-left:3px solid var(--cyan); border-radius:0 10px 10px 0; padding:12px 16px; margin:14px 0}
 .note{display:flex; gap:12px; padding:13px 16px; border-radius:12px; background:rgba(245,158,11,.07); border:1px solid rgba(245,158,11,.25); margin:14px 0}
-.note .ico{font-size:18px}
-.note p{margin:0}
-ul{margin:10px 0 10px 0; padding-left:22px}
-li{margin:4px 0}
-
-/* Cellule exécutable */
+.note .ico{font-size:18px} .note p{margin:0}
 .cell{background:var(--code); border:1px solid var(--line); border-radius:14px; margin:14px 0; overflow:hidden; box-shadow:var(--glow)}
 .cell-head{display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,.025); border-bottom:1px solid var(--line)}
 .tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:7px}
 .dot{width:9px; height:9px; border-radius:50%; background:var(--violet); box-shadow:0 0 8px var(--violet)}
-.run{font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:#06121f; cursor:pointer;
-  border:0; border-radius:8px; padding:7px 16px; background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.15s}
-.run:hover{filter:brightness(1.08); transform:translateY(-1px)}
-.run:disabled{opacity:.5; cursor:wait}
-textarea.code{width:100%; border:0; outline:0; resize:vertical; background:transparent; color:#e7f0ff;
-  font-family:var(--mono); font-size:14px; line-height:1.6; padding:14px 16px; display:block; tab-size:4}
-.out{margin:0; padding:0 16px; max-height:0; overflow:hidden; font-family:var(--mono); font-size:13.5px; color:#bfe6c9;
-  white-space:pre-wrap; border-top:1px solid transparent; transition:max-height .2s, padding .2s}
+.run{font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:#06121f; cursor:pointer; border:0; border-radius:8px; padding:7px 16px; background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.15s}
+.run:hover{filter:brightness(1.08); transform:translateY(-1px)} .run:disabled{opacity:.5; cursor:wait}
+textarea.code{width:100%; border:0; outline:0; resize:vertical; background:transparent; color:#e7f0ff; font-family:var(--mono); font-size:14px; line-height:1.6; padding:14px 16px; display:block; tab-size:4}
+.out{margin:0; padding:0 16px; max-height:0; overflow:hidden; font-family:var(--mono); font-size:13.5px; color:#bfe6c9; white-space:pre-wrap; border-top:1px solid transparent; transition:max-height .2s, padding .2s}
 .out.show{max-height:420px; overflow:auto; padding:12px 16px; border-top:1px solid var(--line); background:rgba(0,0,0,.25)}
 .out.err{color:var(--err)}
 .turtle{display:flex; justify-content:center; align-items:center; overflow:auto; min-height:160px; max-height:520px; padding:10px; background:#fff; border-top:1px solid var(--line)}
 .turtle[hidden]{display:none}
-
-/* Correction */
 .correction{margin:14px 0}
 .reveal-btn{font-family:'Nunito'; font-weight:800; border:1px solid rgba(52,211,153,.4); background:rgba(52,211,153,.1); color:var(--ok); padding:9px 16px; border-radius:10px; cursor:pointer; transition:.15s}
 .reveal-btn:hover{background:rgba(52,211,153,.18)}
@@ -93,8 +80,6 @@ footer{padding:36px 0 70px; color:var(--muted); font-size:14px}
 .mono-n{font-family:var(--mono); font-weight:700; font-size:18px; margin-top:12px}
 .mono-n span:nth-child(1){color:var(--cyan)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--violet)}
 ::selection{background:rgba(139,92,246,.4)}
-.svgbox{background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:14px; margin:14px 0}
-.svgbox text{font-family:var(--mono); fill:var(--ink); font-size:13px}
 
 /* Rappel methode + indices progressifs */
 .method-mini{background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:14px 18px; margin:18px 0}
@@ -162,9 +147,9 @@ body.light .theme-toggle{ box-shadow:0 8px 24px -14px rgba(20,24,45,.4); }
 
 <div class="wrap">
   <header class="hero">
-    <span class="kicker">NSI · Première · Chapitre 1</span>
-    <h1>Exercices — <span class="accent">Arithmétique, variables, instructions</span></h1>
-    <p class="lede">Chaque exercice est <strong>exécutable</strong> : écris ton code, clique sur <em>Exécuter</em>, observe. Lis l'explication pour comprendre <strong>comment</strong> le programme fonctionne. Les corrections s'affichent lorsque ton professeur les autorise.</p>
+    <span class="kicker">NSI · Première · Chapitre 3</span>
+    <h1>Exercices — <span class="accent">conditions & booléens</span></h1>
+    <p class="lede">Chaque exercice est <strong>exécutable</strong> : écris ton code, clique sur <em>Exécuter</em>, observe. Les corrections (commentées) s'affichent lorsque ton professeur les autorise.</p>
   </header>
 <section>
   <div class="method-mini">
@@ -192,18 +177,18 @@ body.light .theme-toggle{ box-shadow:0 8px 24px -14px rgba(20,24,45,.4); }
 </div>
 <p class="niv-empty" id="nivEmpty">Aucun exercice à ce niveau dans ce chapitre.</p>
   <section id="ex1" data-niveau="facile">
-    <h2><span class="num">EX 1</span> <span class="niv niv-facile">Facile</span> Priorité des opérations</h2>
-    <div class="enonce"><p>Réécris les expressions suivantes en explicitant <strong>toutes</strong> les parenthèses :</p>
-    <p><code class="inl">1 + 2 * 3 - 4</code> &nbsp;·&nbsp; <code class="inl">1 + 2 / 4 * 3</code> &nbsp;·&nbsp; <code class="inl">1 - a + a * a / 2 - a * a * a / 6 + a * a * a * a / 24</code></p></div>
-    <p class="muted">Rappel : <code class="inl">*</code> et <code class="inl">/</code> sont prioritaires sur <code class="inl">+</code> et <code class="inl">-</code>. À priorité égale, on lit <strong>de gauche à droite</strong>. Exécute pour vérifier les valeurs :</p>
+    <h2><span class="num">EX 1</span> <span class="niv niv-facile">Facile</span> Les diviseurs d'un nombre</h2>
+    <div class="enonce"><p>Demande un entier <code class="inl">n</code> et affiche <strong>tous ses diviseurs</strong>.</p></div>
+    <p class="muted">Idée : <code class="inl">d</code> est un diviseur de <code class="inl">n</code> si le reste <code class="inl">n % d</code> vaut 0. On teste tous les <code class="inl">d</code> de 1 à n.</p>
     <div class="hints">
-  <details class="hint"><summary><span class="htag">Indice 1</span> Rappelle-toi la règle</summary><div class="hbody"><p>Les opérations <code class='inl'>*</code> et <code class='inl'>/</code> passent <strong>avant</strong> <code class='inl'>+</code> et <code class='inl'>-</code>. À priorité égale, on lit <strong>de gauche à droite</strong>.</p></div></details>
-  <details class="hint"><summary><span class="htag">Indice 2</span> Comment faire</summary><div class="hbody"><p>Souligne d'abord chaque <code class='inl'>*</code> et <code class='inl'>/</code> et mets-les entre parenthèses. Puis enchaîne les <code class='inl'>+</code>/<code class='inl'>-</code> restants, de gauche à droite, en parenthésant à chaque étape.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 1</span> Comprendre</summary><div class="hbody"><p>d est un diviseur de n si la division tombe juste, c'est-à-dire si le reste <code class='inl'>n % d</code> vaut 0. Il faut tester tous les d possibles.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 2</span> Les briques</summary><div class="hbody"><p>Une boucle <code class='inl'>for d in range(1, n+1):</code> et, à l'intérieur, un test <code class='inl'>if n % d == 0:</code> pour afficher d.</p></div></details>
 </div>
     <div class="cell" data-cell>
       <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">print(1 + 2 * 3 - 4)
-print(1 + 2 / 4 * 3)</textarea>
+      <textarea class="code" spellcheck="false">n = int(input("n : "))
+# pour chaque d de 1 a n : si n % d == 0, c'est un diviseur
+</textarea>
       <pre class="out"></pre>
     </div>
     <div class="correction" data-correction>
@@ -211,71 +196,73 @@ print(1 + 2 / 4 * 3)</textarea>
       <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
       <div class="correction-body">
         <h4>Correction</h4>
-        <pre class="sol">1 + 2 * 3 - 4      →  ( (1 + (2 * 3)) - 4 )        = 3
-1 + 2 / 4 * 3      →  ( 1 + ((2 / 4) * 3) )        = 2.5
-1 - a + a*a/2 - a*a*a/6 + a*a*a*a/24
-   →  ( ( ( (1 - a) + ((a*a)/2) ) - (((a*a)*a)/6) ) + ((((a*a)*a)*a)/24) )</pre>
-        <p class="muted">Pour la 2ᵉ : <code class="inl">/</code> et <code class="inl">*</code> ont la même priorité, on lit de gauche à droite, donc <code class="inl">2/4</code> d'abord (= 0.5), puis <code class="inl">×3</code> (= 1.5).<br>
-        La 3ᵉ est le début du développement de <code class="inl">e^(-a)</code> : chaque terme est un produit divisé, additionné/soustrait de gauche à droite.</p>
+        <pre class="sol">n = int(input("n : "))
+for d in range(1, n + 1):
+    if n % d == 0:
+        print(d, "est un diviseur de", n)</pre>
+        <p class="muted">On combine une <strong>boucle</strong> (chapitre 2) et un <strong>test</strong> (chapitre 3) : pour chaque <code class="inl">d</code>, on vérifie si la division tombe juste (<code class="inl">n % d == 0</code>).</p>
       </div>
     </div>
   </section>
 
   <!-- EX 2 -->
-  <section id="ex2" data-niveau="facile">
-    <h2><span class="num">EX 2</span> <span class="niv niv-facile">Facile</span> Que fait cette séquence ?</h2>
-    <div class="enonce"><pre class="sol">tmp = a
-a = b
-b = tmp</pre></div>
-    <p class="muted">Teste avec des valeurs concrètes, puis observe ce qui change :</p>
+  <section id="ex2" data-niveau="inter">
+    <h2><span class="num">EX 2</span> <span class="niv niv-inter">Intermédiaire</span> Nombre premier ?</h2>
+    <div class="enonce"><p>Demande un entier <code class="inl">n</code> et indique s'il est <strong>premier</strong> (divisible uniquement par 1 et lui-même).</p></div>
+    <p class="muted">Idée : compter les diviseurs, ou utiliser un « drapeau » booléen <code class="inl">est_premier</code> qu'on met à <code class="inl">False</code> dès qu'on trouve un diviseur.</p>
     <div class="hints">
-  <details class="hint"><summary><span class="htag">Indice 1</span> Fais-le à la main</summary><div class="hbody"><p>Pose <code class='inl'>a = 5</code> et <code class='inl'>b = 8</code>. Suis les 3 lignes une par une et note la valeur de chaque variable après chaque ligne.</p></div></details>
-  <details class="hint"><summary><span class="htag">Indice 2</span> La question clé</summary><div class="hbody"><p>À quoi sert <code class='inl'>tmp</code> ? Imagine qu'on l'enlève : que vaudrait <code class='inl'>a</code> au moment de faire <code class='inl'>b = a</code> ?</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 1</span> Comprendre &amp; tester à la main</summary><div class="hbody"><p>« Premier » = aucun diviseur entre 2 et n−1. Vérifie : 7 ne se divise par aucun → premier ; 9 se divise par 3 → pas premier.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 2</span> La logique (drapeau)</summary><div class="hbody"><div class='pseudo'>je suppose que n EST premier
+pour chaque d de 2 à n-1 :
+    si d divise n :
+        n N'EST PAS premier
+afficher le verdict</div></div></details>
+  <details class="hint"><summary><span class="htag">Indice 3</span> Les briques</summary><div class="hbody"><p><code class='inl'>est_premier = True</code> au départ ; une boucle <code class='inl'>for d in range(2, n):</code> ; le test <code class='inl'>n % d == 0</code> baisse le drapeau ; à la fin <code class='inl'>if est_premier:</code>.</p></div></details>
 </div>
     <div class="cell" data-cell>
       <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">a = 5
-b = 8
-print("Avant :  a =", a, " b =", b)
-
-tmp = a
-a = b
-b = tmp
-
-print("Après :  a =", a, " b =", b)</textarea>
+      <textarea class="code" spellcheck="false">n = int(input("n : "))
+est_premier = True
+# teste les diviseurs de 2 a n-1
+</textarea>
       <pre class="out"></pre>
-    </div>
-    <div class="svgbox">
-      <svg viewBox="0 0 560 120" width="100%">
-        <text x="20" y="20" fill="#9aa7c2">tmp = a</text><text x="170" y="20">tmp ← 5 (on garde l'ancien a)</text>
-        <text x="20" y="55" fill="#9aa7c2">a = b</text><text x="170" y="55">a ← 8</text>
-        <text x="20" y="90" fill="#9aa7c2">b = tmp</text><text x="170" y="90">b ← 5 (l'ancien a)</text>
-      </svg>
     </div>
     <div class="correction" data-correction>
       <button class="reveal-btn">Voir la correction</button>
       <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
       <div class="correction-body">
         <h4>Correction</h4>
-        <p>Cette séquence <strong>échange (permute) les valeurs</strong> de <code class="inl">a</code> et <code class="inl">b</code>. La variable <code class="inl">tmp</code> sert de mémoire temporaire : sans elle, l'instruction <code class="inl">a = b</code> écraserait l'ancienne valeur de <code class="inl">a</code> avant qu'on puisse la donner à <code class="inl">b</code>.</p>
+        <pre class="sol">n = int(input("n : "))
+est_premier = True
+if n < 2:
+    est_premier = False
+for d in range(2, n):
+    if n % d == 0:
+        est_premier = False
+if est_premier:
+    print(n, "est premier")
+else:
+    print(n, "n'est pas premier")</pre>
+        <p class="muted">Le <strong>drapeau booléen</strong> <code class="inl">est_premier</code> part à <code class="inl">True</code> et passe à <code class="inl">False</code> dès qu'un diviseur est trouvé. À la fin, on teste le drapeau. (Astuce : on peut s'arrêter à <code class="inl">√n</code> pour aller plus vite.)</p>
       </div>
     </div>
   </section>
 
   <!-- EX 3 -->
-  <section id="ex3" data-niveau="facile">
-    <h2><span class="num">EX 3</span> <span class="niv niv-facile">Facile</span> Aire d'un rectangle</h2>
-    <div class="enonce"><p>Écris un programme qui demande les deux côtés (entiers) d'un rectangle et affiche son aire.</p></div>
-    <p class="muted">Rappel : <code class="inl">input()</code> renvoie une <strong>chaîne</strong> ; on la convertit avec <code class="inl">int()</code>. Complète puis exécute :</p>
+  <section id="ex3" data-niveau="inter">
+    <h2><span class="num">EX 3</span> <span class="niv niv-inter">Intermédiaire</span> Triangle : possible ? quel type ?</h2>
+    <div class="enonce"><p>Demande trois longueurs et indique si elles forment un triangle. Si oui, précise s'il est <strong>équilatéral</strong>, <strong>isocèle</strong> ou <strong>scalène</strong>.</p></div>
+    <p class="muted">Inégalité triangulaire : chaque côté doit être plus petit que la somme des deux autres.</p>
     <div class="hints">
-  <details class="hint"><summary><span class="htag">Indice 1</span> Entrées → sortie</summary><div class="hbody"><p>Tu reçois <strong>deux longueurs entières</strong>, tu dois afficher <strong>une aire</strong>. L'aire d'un rectangle = longueur × largeur.</p></div></details>
-  <details class="hint"><summary><span class="htag">Indice 2</span> Les briques</summary><div class="hbody"><p><code class='inl'>int(input(...))</code> pour lire chaque côté, une multiplication, puis <code class='inl'>print</code> (idéalement une f-string).</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 1</span> D'abord : est-ce un triangle ?</summary><div class="hbody"><p>Inégalité triangulaire : chaque côté doit être plus petit que la somme des deux autres. Trois conditions reliées par <code class='inl'>and</code>.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 2</span> Ensuite : quel type ?</summary><div class="hbody"><p>Si c'est un triangle (conditions imbriquées) : <code class='inl'>a == b == c</code> → équilatéral ; deux côtés égaux → isocèle ; sinon → scalène.</p></div></details>
 </div>
     <div class="cell" data-cell>
       <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">longueur = int(input("Longueur : "))
-largeur = int(input("Largeur : "))
-# calcule l'aire puis affiche-la
+      <textarea class="code" spellcheck="false">a = float(input("a : "))
+b = float(input("b : "))
+c = float(input("c : "))
+# 1) est-ce un triangle ?  2) quel type ?
 </textarea>
       <pre class="out"></pre>
     </div>
@@ -284,29 +271,38 @@ largeur = int(input("Largeur : "))
       <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
       <div class="correction-body">
         <h4>Correction</h4>
-        <pre class="sol">longueur = int(input("Longueur : "))
-largeur = int(input("Largeur : "))
-aire = longueur * largeur
-print(f"L'aire du rectangle est {aire}.")</pre>
-        <p class="muted">On convertit chaque saisie en entier, on multiplie, et on affiche avec une f-string.</p>
+        <pre class="sol">a = float(input("a : "))
+b = float(input("b : "))
+c = float(input("c : "))
+
+if a < b + c and b < a + c and c < a + b:
+    if a == b == c:
+        print("Triangle équilatéral")
+    elif a == b or b == c or a == c:
+        print("Triangle isocèle")
+    else:
+        print("Triangle scalène")
+else:
+    print("Ce n'est pas un triangle")</pre>
+        <p class="muted">On teste d'abord l'inégalité triangulaire (avec <code class="inl">and</code>), puis <strong>à l'intérieur</strong> (conditions imbriquées), on classe selon l'égalité des côtés. Note <code class="inl">a == b == c</code> (chaîne de comparaisons) pour l'équilatéral.</p>
       </div>
     </div>
   </section>
 
   <!-- EX 4 -->
-  <section id="ex4" data-niveau="inter">
-    <h2><span class="num">EX 4</span> <span class="niv niv-inter">Intermédiaire</span> Conversion vers la base 10</h2>
-    <div class="enonce"><p>Demande une base (entre 2 et 36) et un nombre, puis affiche ce nombre en base 10.<br>
-    Indice : <code class="inl">int(chaine, base)</code> convertit une chaîne écrite dans une base donnée.</p></div>
+  <section id="ex4" data-niveau="avance">
+    <h2><span class="num">EX 4</span> <span class="niv niv-avance">Avancé</span> Triangle rectangle ?</h2>
+    <div class="enonce"><p>Enrichis l'exercice 3 : indique aussi si le triangle est <strong>rectangle</strong> (théorème de Pythagore : le carré du plus grand côté = somme des carrés des deux autres).</p></div>
     <div class="hints">
-  <details class="hint"><summary><span class="htag">Indice 1</span> L'outil donné</summary><div class="hbody"><p>L'énoncé te donne <code class='inl'>int(chaine, base)</code> : il convertit une chaîne écrite dans une base vers un entier base 10.</p></div></details>
-  <details class="hint"><summary><span class="htag">Indice 2</span> Attention au type</summary><div class="hbody"><p>Le nombre saisi doit rester une <strong>chaîne</strong> (donc <code class='inl'>input()</code> <em>sans</em> <code class='inl'>int()</code>), car <code class='inl'>int(chaine, base)</code> lit ses caractères.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 1</span> Le critère</summary><div class="hbody"><p>Théorème de Pythagore : le triangle est rectangle si le carré du <strong>plus grand</strong> côté = somme des carrés des deux autres.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 2</span> Les briques</summary><div class="hbody"><p>Trouve le plus grand côté avec <code class='inl'>max(a,b,c)</code>. Compare son carré à la somme des carrés des deux autres.</p></div></details>
 </div>
     <div class="cell" data-cell>
       <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">base = int(input("Base (entre 2 et 36) : "))
-nombre = input("Nombre : ")
-# affiche int(nombre, base)
+      <textarea class="code" spellcheck="false">a = float(input("a : "))
+b = float(input("b : "))
+c = float(input("c : "))
+# range les cotes pour trouver l'hypotenuse, puis Pythagore
 </textarea>
       <pre class="out"></pre>
     </div>
@@ -315,27 +311,41 @@ nombre = input("Nombre : ")
       <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
       <div class="correction-body">
         <h4>Correction</h4>
-        <pre class="sol">base = int(input("Base (entre 2 et 36) : "))
-nombre = input("Nombre : ")
-print(f"En base 10 : {int(nombre, base)}")</pre>
-        <p class="muted">Le nombre saisi reste une <strong>chaîne</strong> (ex. <code class="inl">"1010"</code>), car <code class="inl">int(chaine, base)</code> lit ses caractères selon la base. Exemple : <code class="inl">int("1010", 2)</code> donne <code class="inl">10</code>.</p>
+        <pre class="sol">a = float(input("a : "))
+b = float(input("b : "))
+c = float(input("c : "))
+
+if a < b + c and b < a + c and c < a + b:
+    # on identifie le plus grand cote (hypoténuse potentielle)
+    grand = max(a, b, c)
+    autres = a + b + c - grand
+    # somme des carrés des deux autres
+    if grand**2 == (a**2 + b**2 + c**2 - grand**2):
+        print("Triangle rectangle")
+    else:
+        print("Triangle non rectangle")
+else:
+    print("Ce n'est pas un triangle")</pre>
+        <p class="muted">Astuce : <code class="inl">a**2 + b**2 + c**2 - grand**2</code> donne la somme des carrés des deux <em>autres</em> côtés. On compare au carré du plus grand. (Avec des flottants, on tolère parfois une petite marge d'erreur.)</p>
       </div>
     </div>
   </section>
 
   <!-- EX 5 -->
-  <section id="ex5" data-niveau="inter">
-    <h2><span class="num">EX 5</span> <span class="niv niv-inter">Intermédiaire</span> Secondes → heures, minutes, secondes</h2>
-    <div class="enonce"><p>Demande un nombre de secondes et affiche-le sous la forme heures / minutes / secondes.</p></div>
-    <p class="muted">Clés : <code class="inl">//</code> (quotient) et <code class="inl">%</code> (reste). 1 h = 3600 s, 1 min = 60 s.</p>
+  <section id="ex5" data-niveau="avance">
+    <h2><span class="num">EX 5</span> <span class="niv niv-avance">Avancé</span> Trois points alignés ?</h2>
+    <div class="enonce"><p>Demande les coordonnées entières de trois points et indique s'ils sont <strong>alignés</strong>.</p></div>
+    <p class="muted">Critère sans division : les vecteurs AB et AC sont colinéaires si <code class="inl">(xB−xA)·(yC−yA) − (yB−yA)·(xC−xA) == 0</code>.</p>
     <div class="hints">
-  <details class="hint"><summary><span class="htag">Indice 1</span> Fais-le à la main</summary><div class="hbody"><p>Prends 3661 secondes. Combien d'heures entières ? Combien de minutes ensuite ? Combien de secondes restantes ?</p></div></details>
-  <details class="hint"><summary><span class="htag">Indice 2</span> Les briques</summary><div class="hbody"><p>1 h = 3600 s, 1 min = 60 s. Utilise <code class='inl'>//</code> (quotient) pour extraire et <code class='inl'>%</code> (reste) pour ce qui reste.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 1</span> L'idée géométrique</summary><div class="hbody"><p>Trois points sont alignés si les vecteurs AB et AC ont la même direction (colinéaires). On évite la division (pente) qui plante sur les droites verticales.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 2</span> Le critère (produit en croix)</summary><div class="hbody"><p>Calcule <code class='inl'>(xb-xa)*(yc-ya) - (yb-ya)*(xc-xa)</code>. S'il vaut <strong>0</strong> → alignés.</p></div></details>
 </div>
     <div class="cell" data-cell>
       <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">total = int(input("Nombre de secondes : "))
-# heures = ... ; minutes = ... ; secondes = ...
+      <textarea class="code" spellcheck="false">xa = int(input("xA : ")); ya = int(input("yA : "))
+xb = int(input("xB : ")); yb = int(input("yB : "))
+xc = int(input("xC : ")); yc = int(input("yC : "))
+# teste la colinéarité (produit en croix == 0)
 </textarea>
       <pre class="out"></pre>
     </div>
@@ -344,133 +354,218 @@ print(f"En base 10 : {int(nombre, base)}")</pre>
       <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
       <div class="correction-body">
         <h4>Correction</h4>
-        <pre class="sol">total = int(input("Nombre de secondes : "))
-heures = total // 3600
-minutes = (total % 3600) // 60
-secondes = total % 60
-print(f"{heures} h {minutes} min {secondes} s")</pre>
-        <p class="muted">On retire d'abord les heures (<code class="inl">// 3600</code>), il reste <code class="inl">total % 3600</code> secondes, dont on extrait les minutes, puis le reste donne les secondes.</p>
+        <pre class="sol">xa = int(input("xA : ")); ya = int(input("yA : "))
+xb = int(input("xB : ")); yb = int(input("yB : "))
+xc = int(input("xC : ")); yc = int(input("yC : "))
+
+produit_croise = (xb - xa) * (yc - ya) - (yb - ya) * (xc - xa)
+if produit_croise == 0:
+    print("Les points sont alignés")
+else:
+    print("Les points ne sont pas alignés")</pre>
+        <p class="muted">On évite la division (et le piège des droites verticales) en utilisant le <strong>produit en croix</strong> des vecteurs AB et AC : nul ⟺ alignés.</p>
       </div>
     </div>
   </section>
 
-  <!-- EX 6a -->
-  <section id="ex6a" data-niveau="facile">
-    <h2><span class="num">EX 6a</span> <span class="niv niv-facile">Facile</span> turtle — un rectangle</h2>
-    <div class="enonce"><p>À l'aide du module <code class="inl">turtle</code>, dessine un <strong>rectangle</strong>.</p></div>
-    <p class="muted">Idée : avancer, tourner de 90°, répéter. Les côtés vont par paires (longueur, largeur).</p>
+  <!-- EX 6 -->
+  <section id="ex6" data-niveau="facile">
+    <h2><span class="num">EX 6</span> <span class="niv niv-facile">Facile</span> Distance entre deux nombres</h2>
+    <div class="enonce"><p>Demande deux nombres et affiche la <strong>distance</strong> entre eux (toujours positive).</p></div>
+    <p class="muted">La distance est la valeur absolue de la différence. À faire <strong>avec un test</strong> (sans <code class="inl">abs</code>) pour s'entraîner.</p>
     <div class="hints">
-  <details class="hint"><summary><span class="htag">Indice 1</span> La logique</summary><div class="hbody"><p>Un rectangle = avancer, tourner de 90°, et recommencer. Les côtés vont par paires (longueur, largeur).</p></div></details>
-  <details class="hint"><summary><span class="htag">Indice 2</span> Les briques</summary><div class="hbody"><p>Une boucle <code class='inl'>for _ in range(2):</code> qui contient <code class='inl'>forward</code> + <code class='inl'>left(90)</code> deux fois (un grand, un petit côté).</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 1</span> Comprendre</summary><div class="hbody"><p>La distance entre deux nombres est toujours <strong>positive</strong> : c'est la valeur absolue de leur différence.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 2</span> Les briques</summary><div class="hbody"><p>Avec un test : <code class='inl'>if x > y: ... else: ...</code> pour soustraire dans le bon sens. (Ou directement <code class='inl'>abs(x - y)</code>.)</p></div></details>
 </div>
-    <div class="cell" data-cell data-turtle>
-      <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">from turtle import *
-
-# dessine un rectangle (ex. 200 sur 120)
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">x = float(input("x : "))
+y = float(input("y : "))
+# si x > y la distance est x - y, sinon y - x
 </textarea>
       <pre class="out"></pre>
-      <div class="turtle" hidden></div>
     </div>
     <div class="correction" data-correction>
       <button class="reveal-btn">Voir la correction</button>
       <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
       <div class="correction-body">
         <h4>Correction</h4>
-        <pre class="sol">from turtle import *
+        <pre class="sol">x = float(input("x : "))
+y = float(input("y : "))
 
-for i in range(2):
-    forward(200)
-    left(90)
-    forward(120)
-    left(90)</pre>
-        <p class="muted">Une boucle de 2 tours suffit : chaque tour trace un grand côté puis un petit côté.</p>
-      </div>
-    </div>
-  </section>
+if x > y:
+    distance = x - y
+else:
+    distance = y - x
+print("Distance :", distance)
 
-  <!-- EX 6b -->
-  <section id="ex6b" data-niveau="inter">
-    <h2><span class="num">EX 6b</span> <span class="niv niv-inter">Intermédiaire</span> turtle — un hexagone</h2>
-    <div class="enonce"><p>À l'aide du module <code class="inl">turtle</code>, dessine un <strong>hexagone régulier</strong> (6 côtés).</p></div>
-    <p class="muted">Astuce : pour un polygone régulier à <em>n</em> côtés, l'angle extérieur vaut <code class="inl">360 / n</code>.</p>
-    <div class="hints">
-  <details class="hint"><summary><span class="htag">Indice 1</span> La clé</summary><div class="hbody"><p>Pour un polygone régulier à <em>n</em> côtés, on tourne de <code class='inl'>360 / n</code> entre chaque côté. Pour un hexagone : 360/6 = 60°.</p></div></details>
-  <details class="hint"><summary><span class="htag">Indice 2</span> Les briques</summary><div class="hbody"><p><code class='inl'>for _ in range(6):</code> avec <code class='inl'>forward(...)</code> puis <code class='inl'>left(60)</code>.</p></div></details>
-</div>
-    <div class="cell" data-cell data-turtle>
-      <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">from turtle import *
-
-# 6 côtés, angle de 360/6 = 60°
-</textarea>
-      <pre class="out"></pre>
-      <div class="turtle" hidden></div>
-    </div>
-    <div class="correction" data-correction>
-      <button class="reveal-btn">Voir la correction</button>
-      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
-      <div class="correction-body">
-        <h4>Correction</h4>
-        <pre class="sol">from turtle import *
-
-for i in range(6):
-    forward(80)
-    left(60)</pre>
-        <p class="muted">6 côtés identiques, on tourne de 60° entre chaque (360 / 6).</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- EX 6c -->
-  <section id="ex6c" data-niveau="inter">
-    <h2><span class="num">EX 6c</span> <span class="niv niv-inter">Intermédiaire</span> turtle — une étoile à 6 branches</h2>
-    <div class="enonce"><p>À l'aide du module <code class="inl">turtle</code>, dessine l'<strong>astérisque / étoile à 6 branches</strong> (6 traits partant du centre).</p></div>
-    <p class="muted">Idée : avancer, revenir au centre, tourner, recommencer 6 fois.</p>
-    <div class="hints">
-  <details class="hint"><summary><span class="htag">Indice 1</span> La logique</summary><div class="hbody"><p>Une étoile à 6 branches = 6 traits qui partent du centre. Pour chaque branche : avance, puis <strong>reviens au centre</strong>, puis tourne.</p></div></details>
-  <details class="hint"><summary><span class="htag">Indice 2</span> Les briques</summary><div class="hbody"><p><code class='inl'>for _ in range(6):</code> avec <code class='inl'>forward(80)</code>, <code class='inl'>backward(80)</code>, <code class='inl'>left(60)</code>.</p></div></details>
-</div>
-    <div class="cell" data-cell data-turtle>
-      <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
-      <textarea class="code" spellcheck="false">from turtle import *
-
-# 6 branches autour du centre
-</textarea>
-      <pre class="out"></pre>
-      <div class="turtle" hidden></div>
-    </div>
-    <div class="correction" data-correction>
-      <button class="reveal-btn">Voir la correction</button>
-      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
-      <div class="correction-body">
-        <h4>Correction</h4>
-        <pre class="sol">from turtle import *
-
-for i in range(6):
-    forward(80)
-    backward(80)
-    left(60)</pre>
-        <p class="muted">À chaque tour : on trace une branche (forward), on revient au centre (backward), puis on tourne de 60°.</p>
+# Version courte avec la valeur absolue :
+# print("Distance :", abs(x - y))</pre>
+        <p class="muted">Le <code class="inl">if/else</code> garantit un résultat positif. La fonction <code class="inl">abs()</code> fait la même chose en une ligne.</p>
       </div>
     </div>
   </section>
 
   <!-- EX 7 -->
-  <section id="ex7" data-niveau="avance">
-    <h2><span class="num">EX 7</span> <span class="niv niv-avance">Avancé</span> turtle — le drapeau français</h2>
-    <div class="enonce"><p>Dessine un <strong>drapeau français</strong> (trois bandes : bleu, blanc, rouge).<br>
-    Utiles : <code class="inl">fillcolor</code>, <code class="inl">begin_fill</code>, <code class="inl">end_fill</code>.</p></div>
-    <p class="muted">Idée : pour chaque couleur, remplir un rectangle puis se décaler vers la droite.</p>
+  <section id="ex7" data-niveau="inter">
+    <h2><span class="num">EX 7</span> <span class="niv niv-inter">Intermédiaire</span> Année bissextile</h2>
+    <div class="enonce"><p>Demande une année et indique si elle est <strong>bissextile</strong>.</p></div>
+    <p class="muted">Règle : divisible par 4, <strong>sauf</strong> les années divisibles par 100 qui ne sont pas divisibles par 400.</p>
     <div class="hints">
-  <details class="hint"><summary><span class="htag">Indice 1</span> Découpe le problème</summary><div class="hbody"><p>Un drapeau = 3 bandes côte à côte (bleu, blanc, rouge). Tu fais 3 fois la même chose : remplir un rectangle, puis te décaler à droite.</p></div></details>
-  <details class="hint"><summary><span class="htag">Indice 2</span> Les briques</summary><div class="hbody"><p>Une boucle sur <code class='inl'>["blue","white","red"]</code> ; pour chaque couleur : <code class='inl'>fillcolor</code> + <code class='inl'>begin_fill()</code> … <code class='inl'>end_fill()</code> ; puis <code class='inl'>penup()</code> et avancer de la largeur d'une bande.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 1</span> La règle</summary><div class="hbody"><p>Une année est bissextile si elle est divisible par 4, <strong>sauf</strong> les années divisibles par 100 qui ne le sont pas par 400.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 2</span> En expression booléenne</summary><div class="hbody"><p>Tout tient en une condition : <code class='inl'>(annee % 4 == 0 and annee % 100 != 0) or (annee % 400 == 0)</code>. Teste 2000, 1900, 2024.</p></div></details>
+</div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">annee = int(input("Année : "))
+# combine les conditions avec and / or
+</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction" data-correction>
+      <button class="reveal-btn">Voir la correction</button>
+      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
+      <div class="correction-body">
+        <h4>Correction</h4>
+        <pre class="sol">annee = int(input("Année : "))
+
+if (annee % 4 == 0 and annee % 100 != 0) or (annee % 400 == 0):
+    print(annee, "est bissextile")
+else:
+    print(annee, "n'est pas bissextile")</pre>
+        <p class="muted">Toute la règle tient dans une <strong>expression booléenne</strong> combinant <code class="inl">and</code> et <code class="inl">or</code>. Teste 2000 (oui), 1900 (non), 2024 (oui).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- EX 8 -->
+  <section id="ex8" data-niveau="inter">
+    <h2><span class="num">EX 8</span> <span class="niv niv-inter">Intermédiaire</span> FizzBuzz (1 à 100)</h2>
+    <div class="enonce"><p>Parcours les entiers de 1 à 100. Affiche <code class="inl">fizz</code> pour les multiples de 3, <code class="inl">buzz</code> pour les multiples de 5, <code class="inl">fizzbuzz</code> pour les multiples de 15, sinon l'entier.</p></div>
+    <p class="muted">Le classique des entretiens ! Piège : tester <strong>15 d'abord</strong> (sinon on n'y arrive jamais).</p>
+    <div class="hints">
+  <details class="hint"><summary><span class="htag">Indice 1</span> Fais 1 à 15 à la main</summary><div class="hbody"><p>Note ce qui s'affiche : 1,2,fizz,4,buzz,fizz,7,8,fizz,buzz,11,fizz,13,14,fizzbuzz.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 2</span> Le piège de l'ordre</summary><div class="hbody"><p>Teste <strong>15 en premier</strong> (avec <code class='inl'>elif</code>), sinon un multiple de 15 afficherait « fizz » et n'arriverait jamais à « fizzbuzz ».</p></div></details>
+</div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+      <textarea class="code" spellcheck="false"># parcours 1..100 et teste 15, puis 3, puis 5, sinon i
+</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction" data-correction>
+      <button class="reveal-btn">Voir la correction</button>
+      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
+      <div class="correction-body">
+        <h4>Correction</h4>
+        <pre class="sol">for i in range(1, 101):
+    if i % 15 == 0:
+        print("fizzbuzz")
+    elif i % 3 == 0:
+        print("fizz")
+    elif i % 5 == 0:
+        print("buzz")
+    else:
+        print(i)</pre>
+        <p class="muted"><strong>L'ordre est crucial</strong> : on teste 15 en premier. Avec <code class="inl">elif</code>, dès qu'une condition est vraie, les suivantes sont ignorées — c'est exactement ce qu'on veut.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- EX 9 -->
+  <section id="ex9" data-niveau="inter">
+    <h2><span class="num">EX 9</span> <span class="niv niv-inter">Intermédiaire</span> Trois entiers dans l'ordre croissant</h2>
+    <div class="enonce"><p>Demande trois entiers et affiche-les <strong>dans l'ordre croissant</strong>.</p></div>
+    <div class="hints">
+  <details class="hint"><summary><span class="htag">Indice 1</span> Repère les extrêmes</summary><div class="hbody"><p>Le plus petit avec <code class='inl'>min(a,b,c)</code>, le plus grand avec <code class='inl'>max(a,b,c)</code>.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 2</span> L'astuce pour le moyen</summary><div class="hbody"><p>Le « moyen » = somme des trois − le plus petit − le plus grand. Puis affiche <code class='inl'>petit, moyen, grand</code>.</p></div></details>
+</div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">a = int(input("a : "))
+b = int(input("b : "))
+c = int(input("c : "))
+# trouve le plus petit, le moyen, le plus grand
+</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction" data-correction>
+      <button class="reveal-btn">Voir la correction</button>
+      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
+      <div class="correction-body">
+        <h4>Correction</h4>
+        <pre class="sol">a = int(input("a : "))
+b = int(input("b : "))
+c = int(input("c : "))
+
+petit = min(a, b, c)
+grand = max(a, b, c)
+moyen = a + b + c - petit - grand   # astuce : la somme moins les extrêmes
+print(petit, moyen, grand)</pre>
+        <p class="muted">Astuce élégante : le « moyen » est la somme des trois moins le plus petit et le plus grand. (On peut aussi le faire entièrement avec des <code class="inl">if</code> imbriqués.)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- EX 10 -->
+  <section id="ex10" data-niveau="avance">
+    <h2><span class="num">EX 10</span> <span class="niv niv-avance">Avancé</span> Équation du second degré</h2>
+    <div class="enonce"><p>Résous <code class="inl">ax² + bx + c = 0</code> : selon le discriminant Δ, affiche 0, 1 ou 2 solutions.</p></div>
+    <p class="muted">Δ = b² − 4ac. Si Δ &gt; 0 : deux solutions ; Δ = 0 : une ; Δ &lt; 0 : aucune (réelle).</p>
+    <div class="hints">
+  <details class="hint"><summary><span class="htag">Indice 1</span> Rappelle le cours de maths</summary><div class="hbody"><p>Δ = b² − 4ac. Trois cas : Δ &gt; 0 (deux solutions), Δ = 0 (une), Δ &lt; 0 (aucune réelle).</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 2</span> Les briques</summary><div class="hbody"><p>Calcule <code class='inl'>delta</code>, puis <code class='inl'>if/elif/else</code> sur son signe. Utilise <code class='inl'>sqrt</code> (module math) seulement quand Δ ≥ 0.</p></div></details>
+</div>
+    <div class="cell" data-cell>
+      <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+      <textarea class="code" spellcheck="false">from math import sqrt
+a = float(input("a : "))
+b = float(input("b : "))
+c = float(input("c : "))
+# calcule delta et distingue les 3 cas
+</textarea>
+      <pre class="out"></pre>
+    </div>
+    <div class="correction" data-correction>
+      <button class="reveal-btn">Voir la correction</button>
+      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
+      <div class="correction-body">
+        <h4>Correction</h4>
+        <pre class="sol">from math import sqrt
+a = float(input("a : "))
+b = float(input("b : "))
+c = float(input("c : "))
+
+delta = b**2 - 4*a*c
+if delta > 0:
+    x1 = (-b - sqrt(delta)) / (2*a)
+    x2 = (-b + sqrt(delta)) / (2*a)
+    print("Deux solutions :", x1, "et", x2)
+elif delta == 0:
+    x = -b / (2*a)
+    print("Une solution :", x)
+else:
+    print("Aucune solution réelle")</pre>
+        <p class="muted">Trois cas selon le signe de Δ → trois branches <code class="inl">if/elif/else</code>. On calcule la racine seulement quand Δ ≥ 0 (sinon <code class="inl">sqrt</code> planterait).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- EX 11 -->
+  <section id="ex11" data-niveau="avance">
+    <h2><span class="num">EX 11</span> <span class="niv niv-avance">Avancé</span> turtle — un damier n×n</h2>
+    <div class="enonce"><p>Demande un entier <code class="inl">n</code> et trace un <strong>damier</strong> de côté <code class="inl">n</code> (cases noires et blanches en alternance).</p></div>
+    <p class="muted">Idée : deux boucles imbriquées (ligne, colonne). Une case est noire si <code class="inl">(ligne + colonne)</code> est pair.</p>
+    <div class="hints">
+  <details class="hint"><summary><span class="htag">Indice 1</span> La structure</summary><div class="hbody"><p>Un damier = une grille. Il te faut <strong>deux boucles imbriquées</strong> : une pour les lignes, une pour les colonnes.</p></div></details>
+  <details class="hint"><summary><span class="htag">Indice 2</span> La couleur (le cœur)</summary><div class="hbody"><p>Une case est noire ou blanche selon la <strong>parité</strong> : <code class='inl'>if (ligne + colonne) % 2 == 0:</code> → une couleur, sinon l'autre. Puis dessine une case pleine.</p></div></details>
 </div>
     <div class="cell" data-cell data-turtle>
       <div class="cell-head"><span class="tag"><span class="dot"></span>Python · turtle</span><button class="run">Exécuter</button></div>
       <textarea class="code" spellcheck="false">from turtle import *
 
-# trois bandes verticales : bleu, blanc, rouge
+n = int(input("Taille du damier : "))
+# deux boucles imbriquées + un test de parité pour la couleur
 </textarea>
       <pre class="out"></pre>
       <div class="turtle" hidden></div>
@@ -482,21 +577,26 @@ for i in range(6):
         <h4>Correction</h4>
         <pre class="sol">from turtle import *
 
+n = int(input("Taille du damier : "))
+cote = 30
 speed(0)
-pencolor("black")
-L = 50    # largeur d'une bande
-H = 100   # hauteur du drapeau
-
-for c in ["blue", "white", "red"]:
-    fillcolor(c)
-    begin_fill()
-    forward(L); left(90)
-    forward(H); left(90)
-    forward(L); left(90)
-    forward(H); left(90)
-    end_fill()
-    penup(); forward(L); pendown()</pre>
-        <p class="muted">On parcourt les trois couleurs. Pour chacune : on remplit un rectangle (begin_fill … end_fill), puis on lève le crayon et on se décale de la largeur d'une bande vers la droite.</p>
+for ligne in range(n):
+    for colonne in range(n):
+        # couleur selon la parité de (ligne + colonne)
+        if (ligne + colonne) % 2 == 0:
+            fillcolor("black")
+        else:
+            fillcolor("white")
+        # on se place et on dessine une case pleine
+        penup()
+        goto(colonne * cote, ligne * cote)
+        pendown()
+        begin_fill()
+        for _ in range(4):
+            forward(cote)
+            left(90)
+        end_fill()</pre>
+        <p class="muted">Le cœur est le <strong>test de parité</strong> <code class="inl">(ligne + colonne) % 2 == 0</code> qui décide de la couleur — c'est ce qui crée l'alternance du damier. Le reste, ce sont deux boucles imbriquées (chapitre 2).</p>
       </div>
     </div>
   </section>
@@ -512,17 +612,11 @@ for c in ["blue", "white", "red"]:
   </section>
 
   <footer>
-    <p class="mono-n"><span>N</span><span>a</span><span>dtech</span> · NSI · Exercices Chapitre 1</p>
+    <p class="mono-n"><span>N</span><span>a</span><span>dtech</span> · NSI · Exercices Chapitre 3</p>
   </footer>
 </div>
 
 <script>
-/* ---------- Exécution Python (Skulpt) ---------- */
-function builtinRead(x){
-  if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
-    throw "File not found: '" + x + "'";
-  return Sk.builtinFiles["files"][x];
-}
 function ouvrirTurtleGrand(containerOrId){
   var container = typeof containerOrId === 'string' ? document.getElementById(containerOrId) : containerOrId;
   if(!container) return;
@@ -579,6 +673,11 @@ function fitTurtle(wrap){
     wrap.style.visibility='visible';
   }catch(e){}
 }
+function builtinRead(x){
+  if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+    throw "File not found: '" + x + "'";
+  return Sk.builtinFiles["files"][x];
+}
 function openTurtleModal(){ var m=document.getElementById('turtleModal'); if(m) m.classList.add('open'); }
 function runCell(cell){
   var code = cell.querySelector('textarea.code').value;
@@ -586,15 +685,12 @@ function runCell(cell){
   var btn  = cell.querySelector('.run');
   var turtleWrap = cell.querySelector('.turtle') ? document.getElementById('turtleModalArea') : null;
   out.classList.remove('err'); out.textContent = ''; out.classList.add('show');
-  if (typeof Sk === 'undefined'){
-    out.classList.add('err'); out.textContent = "Le moteur Python n'a pas pu se charger (connexion internet requise)."; return;
-  }
+  if (typeof Sk === 'undefined'){ out.classList.add('err'); out.textContent = "Le moteur Python n'a pas pu se charger (connexion internet requise)."; return; }
   var conf = {
     output: function(t){ out.textContent += t; },
     read: builtinRead,
     inputfun: function(p){ return window.prompt(p || "Entrée :") || ""; },
-    inputfunTakesPrompt: true,
-    __future__: Sk.python3
+    inputfunTakesPrompt: true, __future__: Sk.python3
   };
   Sk.configure(conf);
   Sk.execLimit = 7000;
@@ -637,27 +733,21 @@ document.querySelectorAll('[data-cell]').forEach(function(cell){
     }
   });
 });
-
-/* ---------- Corrections contrôlées par le professeur ---------- */
 (function(){
-  var params = new URLSearchParams(location.search);
-  var autorise = params.get('corrige') === '1';
+  /* Autorisation decidee par le serveur (voir app/cours/[fichier]/route.ts) :
+     sans elle, les corrections ne sont meme pas envoyees au navigateur. */
+  var autorise = window.__CORRECTION_ACTIVE__ === true;
   document.querySelectorAll('[data-correction]').forEach(function(wrap){
-    var btn  = wrap.querySelector('.reveal-btn');
+    var btn = wrap.querySelector('.reveal-btn');
     var body = wrap.querySelector('.correction-body');
     var lock = wrap.querySelector('.lock-note');
     if (autorise){
-      lock.style.display = 'none';
-      btn.style.display  = 'inline-block';
+      lock.style.display='none'; btn.style.display='inline-block';
       btn.addEventListener('click', function(){
         var open = body.classList.toggle('show');
         btn.textContent = open ? 'Masquer la correction' : 'Voir la correction';
       });
-    } else {
-      btn.style.display = 'none';
-      lock.style.display = 'flex';
-      body.classList.remove('show');
-    }
+    } else { btn.style.display='none'; lock.style.display='flex'; body.classList.remove('show'); }
   });
 })();
 </script>
@@ -721,7 +811,7 @@ document.querySelectorAll('[data-cell]').forEach(function(cell){
 </script>
 <script>
 (function(){
-  var COURS_ID = "cmr22fr5v0004da5qp9cbkp9z";
+  var COURS_ID = "cmr235cbw000bda5q8fixsrbv";
   var input = document.getElementById('crNoms');
   var btn = document.getElementById('crBtn');
   var msg = document.getElementById('crMsg');

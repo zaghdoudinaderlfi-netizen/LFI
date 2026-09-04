@@ -34,15 +34,22 @@ import { PageInteractiveForm } from "./page-interactive-form";
 import { ImageCouvertureForm } from "./image-couverture-form";
 
 function listerFichiersHtmlCours(): string[] {
-  try {
-    const dir = path.join(process.cwd(), "public", "cours");
-    return fs
-      .readdirSync(dir)
-      .filter((f) => f.endsWith(".html"))
-      .sort();
-  } catch {
-    return [];
-  }
+  // Deux emplacements : public/cours (servi tel quel) et contenu/cours (servi
+  // par /cours/[fichier], qui filtre les corrections selon le toggle du prof).
+  const dossiers = [
+    path.join(process.cwd(), "public", "cours"),
+    path.join(process.cwd(), "contenu", "cours"),
+  ];
+
+  const fichiers = dossiers.flatMap((dir) => {
+    try {
+      return fs.readdirSync(dir).filter((f) => f.endsWith(".html"));
+    } catch {
+      return [];
+    }
+  });
+
+  return [...new Set(fichiers)].sort();
 }
 
 export default async function ModifierCoursPage({
@@ -163,7 +170,7 @@ export default async function ModifierCoursPage({
               Page interactive
             </h2>
             <p className="mt-1 text-sm text-ink-secondary">
-              Associe un fichier HTML interactif (depuis <code className="text-neon-cyan">public/cours/</code>) à ce cours.
+              Associe un fichier HTML interactif (depuis <code className="text-neon-cyan">public/cours/</code> ou <code className="text-neon-cyan">contenu/cours/</code>) à ce cours.
               Les élèves verront un bouton « Ouvrir le cours interactif » qui ouvre la page dans un nouvel onglet.
             </p>
           </div>
@@ -173,7 +180,7 @@ export default async function ModifierCoursPage({
               Page associée : <span className="font-medium text-neon-cyan">{cours.pageInteractive}</span>
               {" · "}
               <a
-                href={`/cours/${cours.pageInteractive}?corrige=1`}
+                href={`/cours/${cours.pageInteractive}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-neon-blue underline underline-offset-2"

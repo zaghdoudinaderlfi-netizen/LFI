@@ -203,7 +203,7 @@ export function CoursForm({
               <span>
                 Afficher le corrigé aux élèves
                 <span className="mt-0.5 block text-xs font-normal text-ink-muted">
-                  Uniquement si ton fichier HTML gère lui-même le paramètre <code className="text-neon-cyan">?corrige=1</code> pour révéler ses corrections.
+                  Tant que c&apos;est décoché, les corrections ne sont pas envoyées au navigateur de l&apos;élève : elles restent invisibles même dans le code source de la page.
                 </span>
               </span>
             </label>

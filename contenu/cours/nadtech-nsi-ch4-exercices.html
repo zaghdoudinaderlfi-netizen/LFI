@@ -2083,11 +2083,10 @@ function activateProf(){
   initCells(); // initialise les cellules des corrections
 }
 
-/* Check URL param : ?corrige=1 (convention du site, activee depuis le
-   toggle "Corrigé visible" du dashboard prof) */
+/* Autorisation decidee par le serveur (voir app/cours/[fichier]/route.ts) :
+   sans elle, les corrections ne sont meme pas envoyees au navigateur. */
 (function(){
-  var p = new URLSearchParams(window.location.search);
-  if (p.get('corrige') === '1') activateProf();
+  if (window.__CORRECTION_ACTIVE__ === true) activateProf();
 })();
 
 /* ── Thème jour/nuit ── */
