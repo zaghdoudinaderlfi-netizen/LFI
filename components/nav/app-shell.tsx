@@ -185,30 +185,39 @@ export function AppShell({
         {userMenuOuvert && (
           <>
             <div
-              className="fixed inset-0 z-40"
+              className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]"
               onClick={() => setUserMenuOuvert(false)}
             />
             <div
-              className="absolute left-0 z-50 mt-1 w-48 rounded-xl border-2 border-space-border bg-space-surface p-1"
+              className="absolute left-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border-2 border-space-border bg-space-surface"
               style={{ boxShadow: "3px 3px 0 rgb(var(--arcade-shadow-clr))" }}
             >
-              <Link
-                href={profilHref}
-                onClick={() => setUserMenuOuvert(false)}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
-              >
-                <User className="h-4 w-4" />
-                Mon profil
-              </Link>
-              <form action={logout}>
-                <button
-                  type="submit"
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
+              {compact && (
+                <div className="flex items-center gap-2 border-b-2 border-space-border px-3 py-2.5">
+                  <AvatarDisplay user={user} neutre={role === "PROF"} taille="xs" />
+                  <span className="truncate text-sm font-medium text-ink-primary">{userName}</span>
+                </div>
+              )}
+              <div className="p-1">
+                <Link
+                  href={profilHref}
+                  onClick={() => setUserMenuOuvert(false)}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-ink-secondary transition-colors hover:bg-space-surface2 hover:text-ink-primary"
                 >
-                  <LogOut className="h-4 w-4" />
-                  Se déconnecter
-                </button>
-              </form>
+                  <User className="h-4 w-4 shrink-0" />
+                  Mon profil
+                </Link>
+                <div className="my-1 border-t border-space-border" />
+                <form action={logout}>
+                  <button
+                    type="submit"
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
+                  >
+                    <LogOut className="h-4 w-4 shrink-0" />
+                    Se déconnecter
+                  </button>
+                </form>
+              </div>
             </div>
           </>
         )}
