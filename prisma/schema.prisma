@@ -176,6 +176,14 @@ model Cours {
   // Quand true, le lien élève inclut ?corrections=on (corrections affichées dans la page HTML)
   correctionVisible Boolean @default(false)
 
+  // Quand true, le cours est accessible sans connexion via /decouvrir/[id].
+  estPublic Boolean @default(false)
+
+  // Un seul cours à la fois peut être mis en avant sur la page d'accueil
+  // publique (unicité gérée côté serveur, pas de contrainte DB : voir la
+  // route qui bascule ce champ).
+  enVitrine Boolean @default(false)
+
   // ── Mode de création simplifié (5 boutons : HTML / PDF / WORD / VIDEO / QCM) ──
   // Null si le cours a été composé via l'éditeur avancé existant (blocs,
   // page interactive, import classique). Voir TypeCoursSimple ci-dessus.
