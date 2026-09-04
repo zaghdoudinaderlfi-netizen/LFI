@@ -173,7 +173,7 @@ model Cours {
   // Quand false, le cours n'apparaît pas côté élève (même s'il est publié).
   visibleEleves Boolean @default(true)
 
-  // Quand true, le lien élève inclut ?corrections=on (corrections affichées dans la page HTML)
+  // Quand true, le lien élève inclut ?corrige=1 (corrections affichées dans la page HTML)
   correctionVisible Boolean @default(false)
 
   // Quand true, le cours est accessible sans connexion via /decouvrir/[id].
@@ -206,11 +206,27 @@ model Cours {
   exercices     Exercice[]
   piecesJointes PieceJointe[]
   blocs         Bloc[]
+  comptesRendus CompteRendu[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([quizId])
+}
+
+// Compte-rendu déposé par un élève (ou un groupe) directement depuis la page
+// HTML statique d'un cours interactif — voir le widget de dépôt dans
+// public/cours/*.html. Pas de compte élève requis : la page est ouverte
+// hors session, `noms` est donc une simple chaîne saisie librement (ex:
+// "Ali Ben Salem, Sami Trabelsi" pour un groupe).
+model CompteRendu {
+  id        String   @id @default(cuid())
+  cours     Cours    @relation(fields: [coursId], references: [id], onDelete: Cascade)
+  coursId   String
+  noms      String
+  dateDepot DateTime @default(now())
+
+  @@index([coursId])
 }
 
 // Bloc de contenu de la "boîte à outils" : le prof compose un cours en
