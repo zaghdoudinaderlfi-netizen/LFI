@@ -177,15 +177,6 @@ textarea.code{width:100%; border:0; outline:0; resize:vertical; background:trans
   background:rgba(52,211,153,.14); border-bottom:1px solid rgba(52,211,153,.4);
   padding:10px 20px; text-align:center; font-family:'Space Grotesk',sans-serif; font-size:13px; color:var(--ok); letter-spacing:.04em}
 #profBanner.show{display:block}
-#lockBtn{
-  position:fixed; bottom:24px; right:24px; z-index:999;
-  width:50px; height:50px; border-radius:50%; border:1px solid var(--line);
-  background:var(--bg2); cursor:pointer; font-size:21px;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:var(--glow); transition:.2s; color:var(--muted);
-}
-#lockBtn:hover{border-color:var(--violet); background:rgba(139,92,246,.15); transform:scale(1.08)}
-#lockBtn.on{border-color:var(--ok); background:rgba(52,211,153,.12); box-shadow:0 0 0 3px rgba(52,211,153,.2); color:var(--ok)}
 
 /* ── FOOTER ── */
 footer{padding:40px 0 80px; color:var(--muted); font-size:14px}
@@ -1905,9 +1896,6 @@ mot_zigzag("Fonctions")</textarea>
 </main>
 </div>
 
-<!-- ═══ TEACHER LOCK BUTTON ═══ -->
-<button id="lockBtn" title="Mode enseignant">🔒</button>
-
 <script>
 /* ── Skulpt Python runner ── */
 function builtinRead(x){
@@ -2061,7 +2049,6 @@ document.querySelectorAll('.hint-box').forEach(function(box){
 });
 
 /* ── Teacher / Correction mode ── */
-var PROF_PWD='LFI2025';
 var profMode=false;
 
 function activateProf(){
@@ -2069,37 +2056,15 @@ function activateProf(){
   profMode=true;
   document.querySelectorAll('.correction').forEach(function(c){c.classList.add('vis');});
   document.getElementById('profBanner').classList.add('show');
-  var lb=document.getElementById('lockBtn');
-  lb.textContent='✅'; lb.classList.add('on'); lb.title='Mode enseignant actif';
   initCells(); // initialise les cellules des corrections
 }
 
 /* Check URL param : ?corrige=1 (convention du site, activee depuis le
-   dashboard prof) ou ?corrections=on (raccourci prof historique) */
+   toggle "Corrigé visible" du dashboard prof) */
 (function(){
   var p = new URLSearchParams(window.location.search);
-  if (p.get('corrige') === '1' || p.get('corrections') === 'on') activateProf();
+  if (p.get('corrige') === '1') activateProf();
 })();
-
-/* Manual unlock via button */
-document.getElementById('lockBtn').addEventListener('click',function(){
-  if(profMode) return;
-  var pw=window.prompt('🔐 Code enseignant :');
-  if(pw===null) return;
-  if(pw===PROF_PWD){ activateProf(); }
-  else { alert('❌ Code incorrect.'); }
-});
-
-/* Keyboard shortcut Ctrl+Shift+P */
-document.addEventListener('keydown',function(e){
-  if(e.ctrlKey&&e.shiftKey&&e.key==='P'){
-    e.preventDefault();
-    if(!profMode){
-      var pw=window.prompt('🔐 Code enseignant :');
-      if(pw===PROF_PWD) activateProf();
-    }
-  }
-});
 
 /* ── Thème jour/nuit ── */
 (function(){
