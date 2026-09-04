@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technologie 3ème · Le stage en entreprise</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a31; --code:#0e1526; --ink:#e9eefb; --muted:#9aa7c2;
+  --amber:#f59e0b; --amber2:#fbbf24; --cyan:#22d3ee; --violet:#8b5cf6; --pink:#ec4899; --ok:#34d399; --err:#fb7185;
+  --line:rgba(255,255,255,.09); --glow:0 0 0 1px rgba(255,255,255,.04), 0 18px 40px -20px rgba(0,0,0,.7);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; background:
+    radial-gradient(1100px 600px at 80% -10%, rgba(245,158,11,.16), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.10), transparent 55%),
+    var(--bg);
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;}
+.wrap{max-width:1180px; margin:0 auto; padding:0 20px; display:grid; grid-template-columns:230px 1fr; gap:36px}
+@media(max-width:880px){ .wrap{grid-template-columns:1fr; gap:0} .toc{display:none!important} }
+.visitor-bar{background:linear-gradient(90deg,var(--amber),var(--amber2)); color:#06121f; text-align:center;
+  padding:9px 16px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13.5px; letter-spacing:.02em}
+header.hero{padding:44px 0 26px; border-bottom:1px solid var(--line); margin-bottom:30px}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; color:var(--amber);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(245,158,11,.08)}
+h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(28px,5vw,46px); line-height:1.08; margin:18px 0 10px}
+h1 .accent{background:linear-gradient(90deg,var(--amber),var(--amber2),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.lede{color:var(--muted); max-width:64ch; font-size:18px}
+.toc{position:sticky; top:18px; align-self:start; padding-top:30px; max-height:calc(100vh - 40px); overflow-y:auto}
+.toc h4{font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
+.toc a{display:block; color:var(--muted); text-decoration:none; font-size:12.5px; padding:5px 10px; border-left:2px solid transparent; border-radius:0 8px 8px 0; transition:.15s}
+.toc a:hover{color:var(--ink); background:rgba(255,255,255,.03); border-left-color:var(--amber)}
+section{padding:26px 0; border-bottom:1px solid var(--line)}
+h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:23px; margin:0 0 6px; scroll-margin-top:20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+h2 .num{font-family:var(--mono); font-size:12.5px; color:var(--amber); border:1px solid var(--line); border-radius:8px; padding:3px 9px; background:rgba(245,158,11,.08)}
+h3{font-family:'Space Grotesk',sans-serif; font-size:16.5px; margin:20px 0 8px; color:#fff}
+p{margin:10px 0}
+.muted{color:var(--muted)}
+code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; color:#ffe3b0; border:1px solid var(--line)}
+strong{color:#fff}
+ul{margin:10px 0; padding-left:22px} li{margin:4px 0}
+.note{display:flex; gap:12px; padding:14px 16px; border-radius:12px; background:rgba(245,158,11,.07); border:1px solid rgba(245,158,11,.25); margin:16px 0}
+.note.warn{background:rgba(251,113,133,.07); border-color:rgba(251,113,133,.28)}
+.note.link{background:rgba(34,211,238,.06); border-color:rgba(34,211,238,.22)}
+.note.ok{background:rgba(52,211,153,.07); border-color:rgba(52,211,153,.25)}
+.note .ico{font-size:18px; line-height:1.4} .note p{margin:0}
+.fiche{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px; margin:16px 0; box-shadow:var(--glow)}
+.source-tag{display:inline-block; font-family:var(--mono); font-size:10.5px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:2px 9px; margin-bottom:10px}
+/* Pieuvre environnement */
+.plink{stroke:#333; stroke-width:1.6; fill:none; transition:.2s}
+.plabel{font:700 11px 'Nunito',sans-serif; fill:#7a4a00}
+.pieuvre-sel .plink{opacity:.15}
+.pieuvre-sel .plink.hl{opacity:1; stroke:#b45309; stroke-width:3.2}
+.pieuvre-sel .plabel{opacity:.2}
+.pieuvre-sel .plabel.hl{opacity:1; fill:#b45309}
+.fnbar{display:flex; gap:8px; flex-wrap:wrap; margin:10px 0}
+.fnbtn{font-family:var(--mono); font-weight:700; font-size:13px; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--ink); padding:7px 13px; border-radius:9px; cursor:pointer; transition:.15s}
+.fnbtn:hover{border-color:var(--amber)}
+.fnbtn.on{background:linear-gradient(90deg,var(--amber),var(--amber2)); color:#06121f; border-color:transparent}
+.diagsvg{width:100%; height:auto; display:block; background:#fff; border-radius:12px; margin:12px 0}
+/* Classification cards (secteurs, type, taille...) */
+.cgroup{display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 0}
+.cgroup .btn{font-size:13px}
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin:14px 0}
+.ccard{background:var(--bg2); border:1px solid var(--line); border-top:3px solid var(--amber); border-radius:14px; padding:14px; box-shadow:var(--glow)}
+.ccard h5{font-family:'Space Grotesk',sans-serif; margin:2px 0 6px; color:#fff; font-size:14.5px}
+.ccard p{font-size:13px; color:var(--muted); margin:0}
+/* Table */
+table.car{width:100%; border-collapse:collapse; margin:12px 0; font-size:13.5px}
+table.car th{font-family:'Space Grotesk',sans-serif; text-align:left; padding:8px 11px; background:rgba(245,158,11,.1); border:1px solid var(--line); color:#fff}
+table.car td{padding:7px 11px; border:1px solid var(--line); color:var(--muted)}
+/* Organigramme M. Roy */
+.orga2{margin:18px 0; overflow-x:auto}
+/* Checklist */
+.checklist{display:flex; flex-direction:column; gap:8px; margin:14px 0}
+.check-item{display:flex; align-items:center; gap:10px; background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:10px 14px; cursor:pointer; transition:.15s; font-size:14px}
+.check-item:hover{border-color:var(--amber)}
+.check-item .box{width:20px; height:20px; border-radius:6px; border:2px solid var(--muted); flex-shrink:0; display:grid; place-items:center; font-size:13px; transition:.15s}
+.check-item.on .box{background:var(--ok); border-color:var(--ok); color:#06121f}
+.check-item.on span.txt{color:var(--muted); text-decoration:line-through}
+/* Accordion parties du rapport */
+.accordion{margin:14px 0}
+.acc-item{background:var(--bg2); border:1px solid var(--line); border-radius:14px; margin-bottom:10px; overflow:hidden; box-shadow:var(--glow)}
+.acc-head{padding:14px 18px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px}
+.acc-head:hover{background:rgba(245,158,11,.06)}
+.acc-head .arr{transition:.2s; color:var(--amber)}
+.acc-item.open .acc-head .arr{transform:rotate(90deg)}
+.acc-body{max-height:0; overflow:hidden; transition:max-height .3s}
+.acc-item.open .acc-body{max-height:900px}
+.acc-inner{padding:0 18px 16px; font-size:13.5px; color:var(--muted)}
+.acc-inner ul{padding-left:20px}
+.acc-inner li{margin:5px 0}
+/* Steps animation */
+.animbar{display:flex; gap:10px; flex-wrap:wrap; margin:10px 0}
+.btn{font-family:'Nunito'; font-weight:800; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--ink); padding:9px 16px; border-radius:10px; cursor:pointer; transition:.15s; font-size:14px}
+.btn:hover{border-color:var(--amber); background:rgba(245,158,11,.12)}
+.rstep{opacity:.3; transition:.35s; padding:10px 14px; border-radius:10px; border:1px solid var(--line); margin:8px 0; background:rgba(255,255,255,.02); font-size:14px}
+.rstep.on{opacity:1; border-color:var(--amber); background:rgba(245,158,11,.08)}
+.rstep .n{font-family:var(--mono); color:var(--amber); font-weight:700; margin-right:8px}
+.anim-msg{font-family:var(--mono); font-size:13px; color:#ffe3b0; background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.28); padding:8px 14px; border-radius:10px; min-height:20px; margin-top:8px}
+/* Lettre modele */
+.lettre{background:#fff; color:#241d0f; border-radius:12px; padding:22px 26px; margin:16px 0; font-family:'Nunito',sans-serif; font-size:13.5px; line-height:1.75; box-shadow:var(--glow)}
+.lettre .exp{text-align:right; color:#555; font-size:12.5px; margin-bottom:14px}
+.lettre .obj{font-weight:800; margin:14px 0}
+/* Jeu / quiz */
+.jeu{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin:18px 0; box-shadow:var(--glow)}
+.jeu .q{font-weight:800; margin:0 0 12px; font-family:'Space Grotesk',sans-serif}
+.jeu .q::before{content:"🎯"; margin-right:10px}
+.opt{display:block; padding:11px 14px; margin:8px 0; border:1px solid var(--line); border-radius:10px; cursor:pointer; transition:.12s; font-size:14px}
+.opt:hover{border-color:var(--amber); background:rgba(245,158,11,.07)}
+.opt.good{border-color:var(--ok); background:rgba(52,211,153,.12)}
+.opt.bad{border-color:var(--err); background:rgba(251,113,133,.12)}
+.opt.lock{pointer-events:none; opacity:.85}
+.feedback{margin-top:10px; font-size:14px; min-height:20px; color:var(--muted)}
+.feedback.ok{color:var(--ok)} .feedback.no{color:var(--err)}
+footer{padding:40px 0 70px; color:var(--muted); font-size:14px}
+.mono-n{font-family:var(--mono); font-weight:700; font-size:18px; margin-top:14px}
+.mono-n span:nth-child(1){color:var(--amber)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--cyan)}
+.tag-list{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+::selection{background:rgba(245,158,11,.35)}
+.theme-toggle{position:fixed; top:16px; right:16px; z-index:60; width:46px; height:46px; border-radius:12px;
+  border:1px solid var(--line); background:var(--bg2); color:var(--ink); font-size:20px; cursor:pointer;
+  box-shadow:0 8px 24px -12px rgba(0,0,0,.5); transition:.15s; display:grid; place-items:center}
+.theme-toggle:hover{border-color:var(--amber); transform:translateY(-1px)}
+body.light{
+  --bg:#f6f1e7; --bg2:#ffffff; --ink:#241d0f; --muted:#6d6250; --line:rgba(40,30,10,.14);
+  --glow:0 0 0 1px rgba(40,30,10,.04), 0 18px 40px -24px rgba(40,30,10,.22);
+}
+body.light h3, body.light strong, body.light .jeu .q, body.light .ccard h5, body.light .acc-head{color:#241d0f}
+body.light code.inl{background:rgba(40,30,10,.06); color:#92600a; border-color:rgba(40,30,10,.15)}
+body.light .theme-toggle{box-shadow:0 8px 24px -14px rgba(40,30,10,.35)}
+</style>
+</head>
+<body>
+<div class="visitor-bar">✨ Exemple de cours Nadtech — accessible librement, sans compte</div>
+<button id="themeToggle" class="theme-toggle" title="Basculer jour / nuit" aria-label="Basculer jour / nuit">🌙</button>
+<div class="wrap">
+  <nav class="toc">
+    <h4>Sommaire</h4>
+    <a href="#definition">Qu'est-ce qu'une entreprise ?</a>
+    <a href="#environnement">L'environnement de l'entreprise</a>
+    <a href="#biens">Biens ou services ?</a>
+    <a href="#classification">Classification des entreprises</a>
+    <a href="#organigramme">Lire un organigramme</a>
+    <a href="#activite-roy">Activité : l'entreprise de M. Roy</a>
+    <a href="#trouver">C'est mon affaire : trouver son stage</a>
+    <a href="#lettre">La lettre de motivation</a>
+    <a href="#convention">La convention de stage</a>
+    <a href="#rapport">La structure du rapport</a>
+    <a href="#carnet">Le carnet de bord</a>
+    <a href="#bilan-quotidien">Le bilan quotidien</a>
+    <a href="#metiers">Sensibilisation aux métiers</a>
+    <a href="#4p">Les 4 P (marketing)</a>
+    <a href="#soutenance">La soutenance orale</a>
+    <a href="#tuteur">La grille du tuteur</a>
+    <a href="#jeu">Jeu : quel secteur ?</a>
+    <a href="#bilan">Quiz bilan</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="kicker">Technologie · 3ème · LFI Sousse</span>
+      <h1>Le <span class="accent">stage en entreprise</span></h1>
+      <p class="lede">Une semaine hors du collège, à observer <strong>un vrai métier</strong>, dans <strong>une vraie entreprise</strong>. Ce cours reprend les notions d'économie d'entreprise à connaître, la méthode pour trouver son stage, et la structure exacte attendue pour le rapport et la soutenance.</p>
+      <div class="tag-list">
+        <span class="chip">notions d'entreprise</span><span class="chip">organigramme</span><span class="chip">rapport de stage</span><span class="chip">soutenance /20</span>
+      </div>
+    </header>
+
+    <!-- 01 DEFINITION -->
+    <section id="definition">
+      <h2><span class="num">01</span> Qu'est-ce qu'une entreprise ?</h2>
+      <div class="fiche">
+        <p><strong>Une entreprise réunit des hommes et des femmes</strong> (personnels) <strong>et des moyens</strong> (financiers, installations, matières premières) <strong>dans le but de tirer un profit</strong> de la vente de son produit.</p>
+      </div>
+      <div class="note"><span class="ico">💶</span><p><strong>Chiffre d'affaires (CA)</strong> : c'est la somme d'argent recueillie (la recette) par l'entreprise en vendant sa production.</p></div>
+    </section>
+
+    <!-- 02 ENVIRONNEMENT -->
+    <section id="environnement">
+      <h2><span class="num">02</span> L'environnement de l'entreprise</h2>
+      <p>Une entreprise ne vit pas seule : elle est entourée de <strong>partenaires indispensables</strong>, avec qui elle échange en permanence. <strong>Clique sur chaque partenaire</strong> pour voir ce qui circule entre lui et l'entreprise :</p>
+      <div class="fnbar">
+        <button class="fnbtn" data-env="fourn">Fournisseurs</button>
+        <button class="fnbtn" data-env="client">Clients</button>
+        <button class="fnbtn" data-env="banque">Banques</button>
+        <button class="fnbtn" data-env="etat">État</button>
+        <button class="fnbtn" id="envReset">Tout voir</button>
+      </div>
+      <svg class="diagsvg" id="envSvg" viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg">
+        <style>.ev{fill:#fff;stroke:#333;stroke-width:1.8}.evc{fill:#fde68a;stroke:#333;stroke-width:2}.evt{font:700 13px 'Nunito',sans-serif;fill:#111}.evs{font:11px 'Nunito',sans-serif;fill:#333}</style>
+        <!-- ENTREPRISE centre -->
+        <rect x="290" y="185" width="140" height="50" class="evc"/>
+        <text x="360" y="216" text-anchor="middle" class="evt">ENTREPRISE</text>
+        <!-- Banques (haut) -->
+        <rect x="270" y="30" width="180" height="60" class="ev"/>
+        <text x="360" y="55" text-anchor="middle" class="evt">Organismes</text>
+        <text x="360" y="72" text-anchor="middle" class="evt">financiers, banques</text>
+        <!-- Fournisseurs (gauche) -->
+        <rect x="30" y="180" width="170" height="60" class="ev"/>
+        <text x="115" y="205" text-anchor="middle" class="evt">Fournisseurs :</text>
+        <text x="115" y="222" text-anchor="middle" class="evt">d'autres entreprises</text>
+        <!-- Clients (droite) -->
+        <rect x="520" y="180" width="170" height="60" class="ev"/>
+        <text x="605" y="205" text-anchor="middle" class="evt">Clients,</text>
+        <text x="605" y="222" text-anchor="middle" class="evt">d'autres entreprises</text>
+        <!-- Etat (bas) -->
+        <rect x="270" y="330" width="180" height="70" class="ev"/>
+        <text x="360" y="355" text-anchor="middle" class="evt">État : diverses</text>
+        <text x="360" y="372" text-anchor="middle" class="evt">administrations</text>
+        <text x="360" y="389" text-anchor="middle" class="evs">(dont les impôts)</text>
+        <!-- liens banque -->
+        <path id="lbanque1" class="plink" d="M340,185 C340,150 340,120 340,92"/>
+        <path id="lbanque2" class="plink" d="M380,92 C380,120 380,150 380,185"/>
+        <text id="tbanque1" class="plabel" x="230" y="140">Argent, dépôts, intérêts</text>
+        <text id="tbanque2" class="plabel" x="400" y="140">Argent, prêts</text>
+        <!-- liens fournisseurs -->
+        <path id="lfourn1" class="plink" d="M200,195 C240,195 260,195 288,200"/>
+        <path id="lfourn2" class="plink" d="M288,222 C260,222 240,222 200,222"/>
+        <text id="tfourn1" class="plabel" x="205" y="188">Biens et/ou services</text>
+        <text id="tfourn2" class="plabel" x="215" y="255">Argent</text>
+        <!-- liens clients -->
+        <path id="lclient1" class="plink" d="M430,200 C460,195 490,195 518,195"/>
+        <path id="lclient2" class="plink" d="M518,222 C490,222 460,222 430,222"/>
+        <text id="tclient1" class="plabel" x="470" y="188">Biens et/ou services</text>
+        <text id="tclient2" class="plabel" x="530" y="255">Argent</text>
+        <!-- liens etat -->
+        <path id="letat1" class="plink" d="M340,235 C340,270 340,300 340,328"/>
+        <path id="letat2" class="plink" d="M380,328 C380,300 380,270 380,235"/>
+        <text id="tetat1" class="plabel" x="245" y="290">Argent, impôts</text>
+        <text id="tetat2" class="plabel" x="395" y="290">Argent, subventions</text>
+      </svg>
+      <div class="anim-msg" id="envMsg">Choisis un partenaire pour voir les flux (biens, services, argent) qui circulent avec l'entreprise.</div>
+      <table class="car" style="margin-top:16px">
+        <tr><th>Partenaire</th><th>Ce qui se passe</th></tr>
+        <tr><td>Fournisseurs</td><td>L'entreprise <strong>achète</strong> matières premières, marchandises, services : le fournisseur <strong>livre</strong>, l'entreprise <strong>paye</strong>.</td></tr>
+        <tr><td>Clients</td><td>L'entreprise <strong>vend</strong> ses produits/services : elle <strong>livre</strong> le client, qui la <strong>paye</strong>.</td></tr>
+        <tr><td>Banques</td><td>La banque peut <strong>prêter</strong> (l'entreprise paye des <strong>intérêts</strong>) ; l'entreprise peut aussi y <strong>déposer</strong> son argent.</td></tr>
+        <tr><td>État</td><td>L'entreprise collecte la <strong>TVA</strong> et paye l'<strong>impôt sur les bénéfices</strong> (IS/IR) ; elle peut recevoir des <strong>subventions</strong>.</td></tr>
+      </table>
+      <div class="note link"><span class="ico">🔗</span><p>Tu reconnais cette logique ? C'est exactement celle du <strong>diagramme des blocs internes</strong> vu en SysML : un système (ici, l'entreprise) échangeant des <strong>flux</strong> avec son environnement !</p></div>
+    </section>
+
+    <!-- 03 BIENS SERVICES -->
+    <section id="biens">
+      <h2><span class="num">03</span> L'entreprise produit : biens ou services ?</h2>
+      <div class="cards">
+        <div class="ccard"><h5>📦 Un bien</h5><p>Un produit qui satisfait un besoin exprimé et ayant une valeur durable dans le temps. <strong>Produit concret.</strong><br><br><em>Exemples :</em> produits de consommation (alimentaire, carburant, papier), biens d'équipement (voitures, réfrigérateurs, machines).</p></div>
+        <div class="ccard"><h5>🤝 Un service</h5><p>Une activité ayant une valeur marchande <strong>sans être un produit matériel</strong>.<br><br><em>Exemples :</em> teinturerie, banque, restaurant, transport, surveillance, location, livraison.</p></div>
+      </div>
+    </section>
+
+    <!-- 04 CLASSIFICATION -->
+    <section id="classification">
+      <h2><span class="num">04</span> Classification des entreprises</h2>
+      <p>On peut classer une entreprise selon <strong>cinq critères différents</strong> — clique sur chacun :</p>
+      <div class="cgroup" id="classTabs">
+        <button class="btn on" data-class="secteur">Secteur d'activité</button>
+        <button class="btn" data-class="type">Type d'activité</button>
+        <button class="btn" data-class="taille">Taille</button>
+        <button class="btn" data-class="statut">Statut juridique</button>
+        <button class="btn" data-class="propriete">Propriété</button>
+      </div>
+
+      <div class="cards class-panel" data-panel="secteur">
+        <div class="ccard"><h5>🌾 Primaire</h5><p>Production de matières premières : foresterie, pétrole, minerai, légumes, élevage, pêche…</p></div>
+        <div class="ccard"><h5>🏭 Secondaire</h5><p>Production industrielle — transformation des matières premières : automobile, électroménager, informatique, travaux publics…</p></div>
+        <div class="ccard"><h5>💼 Tertiaire</h5><p>Production de services : assurance, santé, éducation, banque, distribution… (et les services gouvernementaux en général)</p></div>
+        <div class="ccard"><h5>🚀 Quaternaire</h5><p>Production de haute technologie : spatial, aéronautique…</p></div>
+      </div>
+
+      <div class="cards class-panel" data-panel="type" style="display:none">
+        <div class="ccard"><h5>🔨 Artisanale</h5><p>Petite entreprise qui fabrique <strong>et</strong> vend directement : un boulanger, une poterie, une bijouterie, un menuisier.</p></div>
+        <div class="ccard"><h5>🏗️ Industrielle</h5><p>Grande entreprise qui transforme des matières premières en produits finis, qu'elle vend : Citroën, Renault, sidérurgie…</p></div>
+        <div class="ccard"><h5>⚙️ De production</h5><p>Fabrique mais <strong>ne vend pas directement</strong> : automobile, textile, matériel de bâtiment ou d'agriculture…</p></div>
+        <div class="ccard"><h5>🛒 Commerciale</h5><p>Vend <strong>sans fabriquer</strong> : Carrefour, une concession automobile, un magasin d'électroménager.</p></div>
+        <div class="ccard"><h5>💁 Prestataire de service</h5><p>Son activité principale est la <strong>vente de service</strong>.</p></div>
+      </div>
+
+      <div class="cards class-panel" data-panel="taille" style="display:none">
+        <div class="ccard"><h5>Très petite / artisanale</h5><p>Moins de 10 employés (1 à 9)</p></div>
+        <div class="ccard"><h5>Petite</h5><p>De 10 à 49 employés</p></div>
+        <div class="ccard"><h5>Moyenne</h5><p>De 50 à 499 employés</p></div>
+        <div class="ccard"><h5>Grande</h5><p>À partir de 500 employés</p></div>
+      </div>
+
+      <div class="cards class-panel" data-panel="statut" style="display:none">
+        <div class="ccard" style="grid-column:1/-1">
+          <h5>Individuelle</h5><p>Appartient à une seule personne.</p>
+          <h5 style="margin-top:12px">Société</h5><p>Appartient à plusieurs personnes :</p>
+          <table class="car" style="margin-top:8px">
+            <tr><th>Type</th><th>Associés</th><th>Responsabilité</th></tr>
+            <tr><td>SARL</td><td>2 à 50 personnes</td><td rowspan="2">Limitée aux apports</td></tr>
+            <tr><td>SUARL (unipersonnelle)</td><td>1 seule personne</td></tr>
+            <tr><td>SA (société anonyme)</td><td>7 associés au moins</td><td>Limitée aux apports</td></tr>
+            <tr><td>SCA (commandite par actions)</td><td>Commanditaires + commandités</td><td>Limitée pour les commanditaires, indéfinie pour les commandités</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="cards class-panel" data-panel="propriete" style="display:none">
+        <div class="ccard"><h5>🏛️ Publique</h5><p>L'État possède tout ou au moins 50% du capital de l'entreprise.</p></div>
+        <div class="ccard"><h5>🏢 Privée</h5><p>La majorité du capital est détenue par des actionnaires privés (individus ou entreprises).</p></div>
+      </div>
+    </section>
+
+    <!-- 05 ORGANIGRAMME METHODE -->
+    <section id="organigramme">
+      <h2><span class="num">05</span> Lire un organigramme</h2>
+      <div class="fiche">
+        <p>L'<strong>organigramme</strong> est le graphique qui représente la structure d'une entreprise : les différents services et leurs rapports les uns aux autres. Il se construit avec deux symboles : des <strong>rectangles</strong> (les fonctions/services) et des <strong>liaisons</strong> non fléchées.</p>
+        <p>Il se lit dans <strong>trois sens</strong> :</p>
+        <ul>
+          <li><strong>De haut en bas</strong> : qui est le chef de qui</li>
+          <li><strong>De bas en haut</strong> : qui est sous la responsabilité de qui</li>
+          <li><strong>Horizontalement</strong> : qui est au même niveau hiérarchique</li>
+        </ul>
+      </div>
+      <div class="note"><span class="ico">🧠</span><p><strong>Synthèse :</strong> un organigramme renseigne sur les services qui composent l'entreprise, les niveaux hiérarchiques, les noms des responsables, et le type de structure (management).</p></div>
+    </section>
+
+    <!-- 06 ACTIVITE M ROY -->
+    <section id="activite-roy">
+      <h2><span class="num">06</span> Activité : l'entreprise de M. Roy</h2>
+      <span class="source-tag">Exercice réel — cours de Technologie 3ème</span>
+      <p>Nous allons analyser l'organisation de l'entreprise de M. Roy, qui est le directeur, ses activités et son personnel. <strong>Observe l'organigramme</strong> puis réponds aux questions :</p>
+      <div class="orga2">
+        <svg class="diagsvg wide" viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg">
+          <style>.rb{fill:#fff;stroke:#333;stroke-width:1.6}.rt{font:700 12.5px 'Nunito',sans-serif;fill:#111}.rl{stroke:#333;stroke-width:1.4}.rlbl{font:700 11.5px 'Nunito',sans-serif;fill:#7a4a00}</style>
+          <rect x="380" y="15" width="140" height="46" class="rb"/>
+          <text x="450" y="35" text-anchor="middle" class="rt">Direction</text>
+          <text x="450" y="52" text-anchor="middle" class="rt">M. Roy</text>
+          <text x="20" y="90" class="rlbl">Chefs de</text><text x="20" y="104" class="rlbl">service</text>
+          <line x1="450" y1="61" x2="450" y2="80" class="rl"/>
+          <line x1="130" y1="80" x2="770" y2="80" class="rl"/>
+          <line x1="130" y1="80" x2="130" y2="100" class="rl"/>
+          <line x1="322" y1="80" x2="322" y2="100" class="rl"/>
+          <line x1="450" y1="80" x2="450" y2="100" class="rl"/>
+          <line x1="578" y1="80" x2="578" y2="100" class="rl"/>
+          <line x1="770" y1="80" x2="770" y2="100" class="rl"/>
+          <rect x="65" y="100" width="130" height="50" class="rb"/><text x="130" y="120" text-anchor="middle" class="rt">Service</text><text x="130" y="136" text-anchor="middle" class="rt">commercial</text><text x="130" y="150" text-anchor="middle" class="rt" font-size="11">Mme Sylvie</text>
+          <rect x="257" y="100" width="130" height="50" class="rb"/><text x="322" y="120" text-anchor="middle" class="rt">Service</text><text x="322" y="136" text-anchor="middle" class="rt">financier</text><text x="322" y="150" text-anchor="middle" class="rt" font-size="11">M. Damier</text>
+          <rect x="385" y="100" width="130" height="50" class="rb"/><text x="450" y="120" text-anchor="middle" class="rt">Service</text><text x="450" y="136" text-anchor="middle" class="rt">technique</text><text x="450" y="150" text-anchor="middle" class="rt" font-size="11">M. Cotte</text>
+          <rect x="513" y="100" width="130" height="50" class="rb"/><text x="578" y="120" text-anchor="middle" class="rt">Service</text><text x="578" y="136" text-anchor="middle" class="rt">administratif</text><text x="578" y="150" text-anchor="middle" class="rt" font-size="11">M. Mandon</text>
+          <rect x="705" y="100" width="130" height="50" class="rb"/><text x="770" y="120" text-anchor="middle" class="rt">Service</text><text x="770" y="136" text-anchor="middle" class="rt">sécurité</text><text x="770" y="150" text-anchor="middle" class="rt" font-size="11">M. Pestre</text>
+          <text x="20" y="200" class="rlbl">Employés</text><text x="20" y="214" class="rlbl">et ouvriers</text>
+          <line x1="130" y1="150" x2="130" y2="180" class="rl"/>
+          <rect x="65" y="180" width="130" height="40" class="rb"/><text x="130" y="204" text-anchor="middle" class="rt" font-size="11">Mlle Rodier</text>
+          <line x1="322" y1="150" x2="322" y2="170" class="rl"/>
+          <line x1="270" y1="170" x2="374" y2="170" class="rl"/>
+          <line x1="270" y1="170" x2="270" y2="180" class="rl"/>
+          <line x1="374" y1="170" x2="374" y2="180" class="rl"/>
+          <rect x="205" y="180" width="130" height="40" class="rb"/><text x="270" y="204" text-anchor="middle" class="rt" font-size="11">Mlle Dupuy</text>
+          <rect x="345" y="180" width="130" height="40" class="rb"/><text x="410" y="204" text-anchor="middle" class="rt" font-size="11">M. Dupond</text>
+          <line x1="450" y1="150" x2="450" y2="170" class="rl"/>
+          <line x1="398" y1="170" x2="502" y2="170" class="rl"/>
+          <line x1="398" y1="170" x2="398" y2="180" class="rl"/>
+          <line x1="502" y1="170" x2="502" y2="180" class="rl"/>
+          <rect x="363" y="180" width="130" height="40" class="rb"/><text x="428" y="204" text-anchor="middle" class="rt" font-size="11">M. Duperier</text>
+          <rect x="503" y="180" width="130" height="40" class="rb"/><text x="568" y="204" text-anchor="middle" class="rt" font-size="11">M. Leroy</text>
+          <line x1="578" y1="150" x2="578" y2="180" class="rl"/>
+          <rect x="643" y="180" width="130" height="40" class="rb"/><text x="708" y="204" text-anchor="middle" class="rt" font-size="11">M. Faure</text>
+        </svg>
+      </div>
+      <p class="muted">Structure : Direction (M. Roy) → 5 chefs de service (Commercial/Mme Sylvie, Financier/M. Damier, Technique/M. Cotte, Administratif/M. Mandon, Sécurité/M. Pestre) → employés et ouvriers.</p>
+      <div class="jeu" data-quiz data-answer="2">
+        <p class="q">1) Le graphique qui représente la structure d'une entreprise s'appelle ?</p>
+        <div class="opt" data-i="0">Le diagramme pieuvre</div>
+        <div class="opt" data-i="1">La bête à cornes</div>
+        <div class="opt" data-i="2">L'organigramme</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="2">
+        <p class="q">2) Combien de personnes travaillent dans cette entreprise ?</p>
+        <div class="opt" data-i="0">6</div>
+        <div class="opt" data-i="1">10</div>
+        <div class="opt" data-i="2">12 (1 direction + 5 chefs de service + 6 employés)</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">3) Quels sont les services présents dans cette entreprise ?</p>
+        <div class="opt" data-i="0">Achats, ventes, production</div>
+        <div class="opt" data-i="1">Commercial, financier, technique, administratif, sécurité</div>
+        <div class="opt" data-i="2">Marketing, communication, RH</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="0">
+        <p class="q">4) Qui dirige cette entreprise ?</p>
+        <div class="opt" data-i="0">M. Roy</div>
+        <div class="opt" data-i="1">M. Damier</div>
+        <div class="opt" data-i="2">Mme Sylvie</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">5) À qui Mlle Rodier doit-elle s'adresser pour son travail ?</p>
+        <div class="opt" data-i="0">À M. Roy directement</div>
+        <div class="opt" data-i="1">À Mme Sylvie (service commercial)</div>
+        <div class="opt" data-i="2">À M. Pestre</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">6) Quelles sont les personnes sous la direction de M. Damier ?</p>
+        <div class="opt" data-i="0">M. Leroy et M. Duperier</div>
+        <div class="opt" data-i="1">Mlle Dupuy et M. Dupond</div>
+        <div class="opt" data-i="2">M. Faure</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="2">
+        <p class="q">7) Combien y a-t-il de niveaux hiérarchiques, et lesquels ?</p>
+        <div class="opt" data-i="0">2 : Direction et employés</div>
+        <div class="opt" data-i="1">4 : Direction, chefs, sous-chefs, employés</div>
+        <div class="opt" data-i="2">3 : Direction, chefs de service, employés et ouvriers</div>
+        <p class="feedback"></p>
+      </div>
+    </section>
+
+    <!-- 07 TROUVER -->
+    <section id="trouver">
+      <h2><span class="num">07</span> « C'est mon affaire » : trouver son stage</h2>
+      <div class="note"><span class="ico">💪</span><p><strong>C'est d'abord mon affaire, je m'en occupe dès à présent.</strong> Trouver son stage fait partie de l'exercice — personne ne le fera à ta place.</p></div>
+      <h3>Qui peut m'aider ?</h3>
+      <div class="cards">
+        <div class="ccard"><h5>🏫 À l'intérieur du collège</h5><p>Mes professeurs · les élèves de 3ème qui ont déjà fait un stage · le fichier entreprises · les propositions des familles</p></div>
+        <div class="ccard"><h5>🌍 À l'extérieur du collège</h5><p>Ma famille · mes amis · les relations de mes proches · mes relations sportives ou associatives · la chambre des métiers · les annuaires professionnels</p></div>
+      </div>
+      <h3>3 pistes possibles</h3>
+      <p>📞 Par téléphone · ✉️ Par écrit · 🚪 Par contact direct</p>
+      <div class="fiche">
+        <p><strong>Si tu appelles, prépare ce que tu vas dire :</strong></p>
+        <ol style="padding-left:20px">
+          <li>Je me présente (nom, adresse, âge, de la part de…)</li>
+          <li>Je dis d'où je viens (établissement, classe)</li>
+          <li>Je dis que je recherche un stage d'observation</li>
+          <li>Je présente la convention (dates, horaires, assurance…)</li>
+          <li>Je donne le nom de mon professeur responsable</li>
+          <li>Je parle du dossier de stage que je vais devoir remplir</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 08 LETTRE -->
+    <section id="lettre">
+      <h2><span class="num">08</span> La lettre de motivation</h2>
+      <p>Courte, polie, et qui montre pourquoi <strong>cette entreprise précisément</strong> t'intéresse :</p>
+      <div class="lettre">
+        <div class="exp">[Ton prénom NOM]<br>[Ton adresse]<br>[Ta ville, la date]</div>
+        <div>À l'attention de [Nom de l'entreprise]</div>
+        <div class="obj">Objet : Demande de stage d'observation du [date] au [date]</div>
+        <p>Madame, Monsieur,</p>
+        <p>Actuellement élève en classe de 3ème au Lycée Français International de Sousse, je dois effectuer un stage d'observation en milieu professionnel d'une durée d'une semaine.</p>
+        <p>[Ici : explique en 1-2 phrases pourquoi CETTE entreprise t'intéresse.]</p>
+        <p>Je me tiens à votre disposition pour tout entretien complémentaire, et vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.</p>
+        <div style="text-align:right; margin-top:14px">[Ton prénom NOM]</div>
+      </div>
+    </section>
+
+    <!-- 09 CONVENTION -->
+    <section id="convention">
+      <h2><span class="num">09</span> La convention de stage</h2>
+      <div class="fiche">
+        <p>Document officiel <strong>obligatoire</strong>, signé par trois parties : le <strong>collège</strong>, l'<strong>entreprise</strong>, et toi (+ ton responsable légal). Elle précise dates, horaires, missions, sécurité — et rappelle que le stage n'est <strong>pas rémunéré</strong>.</p>
+      </div>
+    </section>
+
+    <!-- 10 RAPPORT STRUCTURE -->
+    <section id="rapport">
+      <h2><span class="num">10</span> La structure officielle du rapport</h2>
+      <span class="source-tag">Guide de rédaction — LFI Sousse</span>
+      <p>Ton rapport doit être <strong>relié, imprimé en trois exemplaires</strong>, relu sans erreur, et suivre <strong>exactement</strong> ce sommaire. Clique sur ▶ pour dérouler les grandes parties, puis clique sur chacune des trois parties centrales pour voir le détail attendu :</p>
+      <div class="animbar">
+        <button class="btn" id="rapGo">▶ Dérouler le sommaire</button>
+        <button class="btn" id="rapReset">↺</button>
+      </div>
+      <div id="rapSteps">
+        <div class="rstep" data-r><span class="n">1</span>Page de couverture — ton nom, ton établissement, ta classe, le titre, les dates, le nom/logo de l'entreprise, ton tuteur</div>
+        <div class="rstep" data-r><span class="n">2</span>Sommaire — parties, sous-parties, numéros de page</div>
+        <div class="rstep" data-r><span class="n">3</span>Remerciements — succincts (tuteur, personnel, professeurs, parents)</div>
+        <div class="rstep" data-r><span class="n">4</span>Introduction — ta recherche, le nom de l'entreprise, les dates, pourquoi ce choix</div>
+        <div class="rstep" data-r><span class="n">5</span>1. Étude de l'entreprise</div>
+        <div class="rstep" data-r><span class="n">6</span>2. Déroulement du stage</div>
+        <div class="rstep" data-r><span class="n">7</span>3. Sensibilisation aux métiers et à leur formation</div>
+        <div class="rstep" data-r><span class="n">8</span>Conclusion — bilan personnel, orientation</div>
+        <div class="rstep" data-r><span class="n">9</span>Annexes — bilan du tuteur, photos, documents</div>
+      </div>
+      <div class="anim-msg" id="rapMsg">Clique sur ▶ pour voir apparaître chaque partie.</div>
+
+      <h3>Le détail des trois grandes parties</h3>
+      <div class="accordion">
+        <div class="acc-item" data-acc>
+          <div class="acc-head"><span>1. Étude de l'entreprise</span><span class="arr">▶</span></div>
+          <div class="acc-body"><div class="acc-inner">
+            <p><strong>a. Description</strong> — Nom (pourquoi ce nom ?), historique, année de création, fondateur, effectif à la création et aujourd'hui, logo, quel besoin l'entreprise satisfait-elle ?</p>
+            <p><strong>b. Classification</strong> — Bien et/ou service ? Artisanale, commerciale, industrielle, prestataire de service ? Administration/service public ? Sa taille ? Son secteur d'activité (l'activité <em>principale</em> seulement) ?</p>
+            <p><strong>c. Organisation</strong> — Construis l'organigramme fonctionnel de l'entreprise et analyse-le brièvement. Fais le plan du site. Décris les équipements techniques du service qui t'a le plus intéressé·e.</p>
+            <p><strong>Données économiques</strong> — Chiffre d'affaires et résultat sur 5 ans si possible ; les 4 P (Product/Place/Price/Promotion — voir plus bas) ; la démarche qualité (normes, contrôles).</p>
+          </div></div>
+        </div>
+        <div class="acc-item" data-acc>
+          <div class="acc-head"><span>2. Déroulement du stage</span><span class="arr">▶</span></div>
+          <div class="acc-body"><div class="acc-inner">
+            <p><strong>2.1 Avant le stage</strong> — Comment as-tu trouvé cette entreprise ? Quelles démarches ? Combien de demandes ? Qu'attendais-tu de ce stage ?</p>
+            <p><strong>2.2 Pendant le stage</strong> — Tiens un carnet de bord chaque jour (voir section dédiée). Analyse, ne raconte pas seulement.</p>
+            <p><strong>2.3 Bilan du stage</strong> — Ce stage a-t-il apporté ce que tu attendais ? As-tu acquis de nouvelles connaissances ? Ton orientation se précise-t-elle ? Referais-tu ce choix ?</p>
+          </div></div>
+        </div>
+        <div class="acc-item" data-acc>
+          <div class="acc-head"><span>3. Sensibilisation aux métiers et à leur formation</span><span class="arr">▶</span></div>
+          <div class="acc-body"><div class="acc-inner">
+            <p><strong>3.1 Description du métier analysé</strong> — Choisis une personne dont le métier t'a plu. Son nom, 4 tâches principales, conditions/horaires/lieu de travail, individuel ou en équipe, 2 avantages, 2 inconvénients, 2 qualités nécessaires.</p>
+            <p><strong>3.2 La formation à ce métier</strong> — Dessine en organigramme le cursus scolaire PUIS professionnel de cette personne. Ce métier a-t-il de l'avenir ?</p>
+            <p><strong>3.3 Si je devais faire ce métier</strong> — Quel cursus devrais-tu suivre ? Construis ton propre organigramme. Le cursus a-t-il changé depuis l'époque de la personne observée ?</p>
+          </div></div>
+        </div>
+      </div>
+      <div class="note warn"><span class="ico">⚠️</span><p>Le rapport n'est <strong>pas un résumé du site web de l'entreprise</strong> — c'est le récit de ce que TOI tu as observé et compris. Analyse plus que tu ne racontes.</p></div>
+    </section>
+
+    <!-- 11 CARNET DE BORD -->
+    <section id="carnet">
+      <h2><span class="num">11</span> Le carnet de bord (pendant le stage)</h2>
+      <p>Chaque jour, matin et après-midi, note ce que tu as fait — <strong>ne remplis pas ce tableau seulement à la fin</strong> :</p>
+      <table class="car">
+        <tr><th>Horaires</th><th>Lundi</th><th>Mardi</th><th>Mercredi</th><th>Jeudi</th><th>Vendredi</th></tr>
+        <tr><td>Matin</td><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+        <tr><td>Après-midi</td><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+      </table>
+      <p class="muted">Ce tableau peut figurer dans le rapport, mais <strong>il ne remplace pas ta rédaction</strong> — développe ensuite un moment qui t'a particulièrement marqué·e.</p>
+      <p>Points à observer chaque jour :</p>
+      <div class="checklist" id="checklist">
+        <div class="check-item" data-check><div class="box"></div><span class="txt">Le secteur d'activité et la taille de l'entreprise</span></div>
+        <div class="check-item" data-check><div class="box"></div><span class="txt">L'organigramme et les services rencontrés</span></div>
+        <div class="check-item" data-check><div class="box"></div><span class="txt">Les métiers rencontrés et leurs tâches</span></div>
+        <div class="check-item" data-check><div class="box"></div><span class="txt">Les outils, machines ou logiciels utilisés</span></div>
+        <div class="check-item" data-check><div class="box"></div><span class="txt">Un produit ou service, du début à la fin</span></div>
+        <div class="check-item" data-check><div class="box"></div><span class="txt">Ce qui t'a surpris, plu, ou moins plu</span></div>
+      </div>
+    </section>
+
+    <!-- 12 BILAN QUOTIDIEN -->
+    <section id="bilan-quotidien">
+      <h2><span class="num">12</span> Le bilan quotidien</h2>
+      <p>Pour chaque demi-journée, note un point <strong>positif</strong> et un point <strong>négatif</strong> (ou « rien à signaler ») :</p>
+      <table class="car">
+        <tr><th>Jour</th><th>Matin +</th><th>Matin −</th><th>Après-midi +</th><th>Après-midi −</th></tr>
+        <tr><td>Lundi</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+        <tr><td>Mardi</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+        <tr><td>Mercredi</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+        <tr><td>Jeudi</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+        <tr><td>Vendredi</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+      </table>
+    </section>
+
+    <!-- 13 METIERS -->
+    <section id="metiers">
+      <h2><span class="num">13</span> Sensibilisation aux métiers</h2>
+      <div class="fiche">
+        <p>Choisis dans l'entreprise une personne dont le métier t'a plu, et réponds à ces questions dans ton rapport :</p>
+        <ul>
+          <li>Quel est le nom de ce métier ? Décris 4 tâches principales.</li>
+          <li>Quelles sont ses conditions de travail (horaires, lieu) ? Travail individuel ou en équipe ?</li>
+          <li>2 avantages, 2 inconvénients, 2 qualités nécessaires pour l'exercer.</li>
+          <li>Construis en <strong>organigramme</strong> le cursus scolaire puis professionnel de cette personne.</li>
+          <li>Et toi ? Quel cursus devrais-tu suivre pour faire ce métier ? Bâtis ton propre organigramme.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 14 4P -->
+    <section id="4p">
+      <h2><span class="num">14</span> Les 4 P (le marketing en 4 questions)</h2>
+      <p>Pour analyser comment une entreprise vend ses produits, une méthode classique : les <strong>4 P</strong>.</p>
+      <div class="cards">
+        <div class="ccard"><h5>📦 Product</h5><p>Que vend l'entreprise ? Quelles caractéristiques des principaux produits ?</p></div>
+        <div class="ccard"><h5>🚚 Place</h5><p>Quels moyens de distribution ? (magasins, vente directe, grande distribution…)</p></div>
+        <div class="ccard"><h5>💰 Price</h5><p>Quels niveaux de prix ? Quelle valeur ajoutée ?</p></div>
+        <div class="ccard"><h5>📣 Promotion</h5><p>Comment l'entreprise se fait-elle connaître ? Quels moyens de publicité ?</p></div>
+      </div>
+    </section>
+
+    <!-- 15 SOUTENANCE -->
+    <section id="soutenance">
+      <h2><span class="num">15</span> La soutenance orale</h2>
+      <span class="source-tag">Barème réel — Soutenance orale stage 3ème</span>
+      <div class="fiche">
+        <p>Rapport remis le <strong>26 janvier</strong>. Oral de <strong>15 minutes</strong> : <strong>5 min de présentation</strong> + <strong>10 min de questions du jury</strong>. À préparer à la maison ou sur ton temps libre à l'établissement.</p>
+        <h3>Déroulement</h3>
+        <ul>
+          <li>Pourquoi ce stage ?</li>
+          <li>Présentation succincte de l'entreprise, ses activités</li>
+          <li>Description des activités observées (possibilité de développer un métier qui t'a plu)</li>
+          <li>Bilan personnel : tes impressions, ton analyse</li>
+        </ul>
+        <p class="muted">Le jury pourra revenir sur la présentation, le rapport, ou le lien avec ton parcours d'orientation.</p>
+      </div>
+      <h3>Notation — sur 20</h3>
+      <table class="car">
+        <tr><th>Critère</th><th>Ce qui est observé</th></tr>
+        <tr><td><strong>Présentation du candidat</strong></td><td>Tenue correcte et allure dynamique · regarder le jury (ne pas lire ses notes) · parler distinctement, varier le ton · vocabulaire adapté</td></tr>
+        <tr><td><strong>Présentation du stage</strong></td><td>Choix et démarches expliqués · fiche d'identité du lieu de stage · métier(s) observé(s) : avantages/inconvénients · avis argumenté sur le stage</td></tr>
+        <tr><td><strong>Questionnement</strong></td><td>Qualité des réponses : analyse et argumentation du vécu en stage</td></tr>
+      </table>
+    </section>
+
+    <!-- 16 TUTEUR -->
+    <section id="tuteur">
+      <h2><span class="num">16</span> La grille du tuteur</h2>
+      <p>Ton tuteur de stage remplit une grille d'appréciation, jointe en annexe de ton rapport. Elle porte sur deux axes, chacun noté <em>Très bien / Bien / Moyen / Insuffisant</em> :</p>
+      <div class="cards">
+        <div class="ccard"><h5>🧍 Comportement</h5><p>Ponctualité · Présentation · Dynamisme · Adaptation aux activités observées ou effectuées</p></div>
+        <div class="ccard"><h5>💼 Qualité du travail</h5><p>Compréhension des consignes · Persévérance · Faculté d'observation · Aptitude à accepter les critiques constructives</p></div>
+      </div>
+      <div class="note"><span class="ico">📋</span><p>Le tuteur indique aussi si tu lui as bien remis une <strong>lettre de motivation</strong> lors de ta demande — encore une bonne raison de la soigner !</p></div>
+    </section>
+
+    <!-- 17 JEU -->
+    <section id="jeu">
+      <h2><span class="num">17</span> Jeu : quel secteur d'activité ? 🎯</h2>
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">Une usine qui fabrique des pièces automobiles</p>
+        <div class="opt" data-i="0">Primaire</div><div class="opt" data-i="1">Secondaire</div><div class="opt" data-i="2">Tertiaire</div><div class="opt" data-i="3">Quaternaire</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="0">
+        <p class="q">Une exploitation agricole qui cultive du blé</p>
+        <div class="opt" data-i="0">Primaire</div><div class="opt" data-i="1">Secondaire</div><div class="opt" data-i="2">Tertiaire</div><div class="opt" data-i="3">Quaternaire</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="2">
+        <p class="q">Un cabinet médical</p>
+        <div class="opt" data-i="0">Primaire</div><div class="opt" data-i="1">Secondaire</div><div class="opt" data-i="2">Tertiaire</div><div class="opt" data-i="3">Quaternaire</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="3">
+        <p class="q">Une agence spatiale</p>
+        <div class="opt" data-i="0">Primaire</div><div class="opt" data-i="1">Secondaire</div><div class="opt" data-i="2">Tertiaire</div><div class="opt" data-i="3">Quaternaire</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">Une boulangerie qui fabrique son pain</p>
+        <div class="opt" data-i="0">Primaire</div><div class="opt" data-i="1">Secondaire</div><div class="opt" data-i="2">Tertiaire</div><div class="opt" data-i="3">Quaternaire</div>
+        <p class="feedback"></p>
+      </div>
+    </section>
+
+    <!-- QUIZ BILAN -->
+    <section id="bilan">
+      <h2><span class="num">✓</span> Quiz bilan</h2>
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">Une entreprise réunit des personnes et des moyens dans le but de…</p>
+        <div class="opt" data-i="0">rendre service à l'État</div>
+        <div class="opt" data-i="1">tirer un profit de la vente de son produit</div>
+        <div class="opt" data-i="2">employer le plus de monde possible</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="2">
+        <p class="q">La convention de stage est signée par…</p>
+        <div class="opt" data-i="0">seulement l'élève</div>
+        <div class="opt" data-i="1">seulement l'entreprise</div>
+        <div class="opt" data-i="2">le collège, l'entreprise et l'élève (+ responsable légal)</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="0">
+        <p class="q">Le rapport de stage a combien de grandes parties numérotées (hors intro/conclusion) ?</p>
+        <div class="opt" data-i="0">3 : étude de l'entreprise, déroulement, sensibilisation aux métiers</div>
+        <div class="opt" data-i="1">2 : entreprise et métier</div>
+        <div class="opt" data-i="2">5</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="2">
+        <p class="q">Combien de temps dure la soutenance orale ?</p>
+        <div class="opt" data-i="0">5 minutes au total</div>
+        <div class="opt" data-i="1">30 minutes</div>
+        <div class="opt" data-i="2">15 minutes (5 de présentation + 10 de questions)</div>
+        <p class="feedback"></p>
+      </div>
+      <div class="jeu" data-quiz data-answer="1">
+        <p class="q">Le CA (chiffre d'affaires) est…</p>
+        <div class="opt" data-i="0">le bénéfice net de l'entreprise</div>
+        <div class="opt" data-i="1">la somme d'argent recueillie en vendant sa production</div>
+        <div class="opt" data-i="2">le nombre d'employés</div>
+        <p class="feedback"></p>
+      </div>
+    </section>
+
+    <footer>
+      <p><strong>À retenir :</strong> un bon stage se prépare (recherche autonome, lettre), s'observe avec méthode (carnet de bord, bilan quotidien), et se raconte selon une structure précise — rapport détaillé, puis soutenance de 15 minutes notée sur 20.</p>
+      <p class="mono-n"><span>N</span><span>a</span><span>dtech</span> · Technologie · Stage en entreprise</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+/* Pieuvre environnement */
+var envSvg=document.getElementById('envSvg');
+var envMsg=document.getElementById('envMsg');
+var envDefs={
+  fourn:"Fournisseurs : le fournisseur LIVRE l'entreprise (biens et/ou services) ; l'entreprise le PAYE (argent).",
+  client:"Clients : l'entreprise LIVRE son client (biens et/ou services) ; le client la PAYE (argent).",
+  banque:"Banques : elles peuvent PRÊTER de l'argent (l'entreprise paye des intérêts) ; l'entreprise peut aussi y DÉPOSER son argent.",
+  etat:"État : l'entreprise paye des IMPÔTS (TVA, IS/IR) ; elle peut recevoir des SUBVENTIONS."
+};
+function clearEnv(){
+  envSvg.classList.remove('pieuvre-sel');
+  envSvg.querySelectorAll('.plink,.plabel').forEach(function(e){ e.classList.remove('hl'); });
+  document.querySelectorAll('.fnbtn[data-env]').forEach(function(b){ b.classList.remove('on'); });
+}
+document.querySelectorAll('.fnbtn[data-env]').forEach(function(b){
+  b.addEventListener('click', function(){
+    clearEnv(); b.classList.add('on');
+    envSvg.classList.add('pieuvre-sel');
+    var k=b.dataset.env;
+    ['1','2'].forEach(function(n){
+      var l=document.getElementById('l'+k+n), t=document.getElementById('t'+k+n);
+      if(l) l.classList.add('hl'); if(t) t.classList.add('hl');
+    });
+    envMsg.textContent=envDefs[k];
+  });
+});
+document.getElementById('envReset').addEventListener('click', function(){
+  clearEnv(); envMsg.textContent="Choisis un partenaire pour voir les flux (biens, services, argent) qui circulent avec l'entreprise.";
+});
+
+/* Onglets classification */
+document.querySelectorAll('#classTabs .btn').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('#classTabs .btn').forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+    document.querySelectorAll('.class-panel').forEach(function(p){ p.style.display='none'; });
+    document.querySelector('.class-panel[data-panel="'+b.dataset.class+'"]').style.display='grid';
+  });
+});
+
+/* Checklist */
+document.querySelectorAll('[data-check]').forEach(function(item){
+  item.addEventListener('click', function(){
+    item.classList.toggle('on');
+    item.querySelector('.box').textContent = item.classList.contains('on') ? '✓' : '';
+  });
+});
+
+/* Accordion */
+document.querySelectorAll('[data-acc]').forEach(function(item){
+  item.querySelector('.acc-head').addEventListener('click', function(){
+    item.classList.toggle('open');
+  });
+});
+
+/* Etapes rapport animees */
+(function(){
+  var steps=document.querySelectorAll('[data-r]');
+  var msg=document.getElementById('rapMsg');
+  var timer=null;
+  function reset(){ if(timer) clearInterval(timer);
+    steps.forEach(function(s){ s.classList.remove('on'); });
+    msg.textContent="Clique sur ▶ pour voir apparaître chaque partie.";
+  }
+  document.getElementById('rapGo').addEventListener('click', function(){
+    reset(); var k=0;
+    timer=setInterval(function(){
+      if(k>=steps.length){ clearInterval(timer); msg.textContent="Sommaire complet ✅ — 9 parties, dans cet ordre exact."; return; }
+      steps[k].classList.add('on');
+      msg.textContent="Partie "+(k+1)+" sur "+steps.length+" ajoutée.";
+      k++;
+    }, 650);
+  });
+  document.getElementById('rapReset').addEventListener('click', reset);
+})();
+
+/* Quiz / jeu */
+document.querySelectorAll('[data-quiz]').forEach(function(q){
+  var ans = +q.dataset.answer;
+  var fb = q.querySelector('.feedback');
+  q.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click', function(){
+      var i = +opt.dataset.i;
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.add('lock'); });
+      if (i === ans){ opt.classList.add('good'); fb.textContent="Bravo, c'est exact ! 🎉"; fb.className="feedback ok"; }
+      else { opt.classList.add('bad'); fb.textContent="Pas tout à fait — la bonne réponse est en vert."; fb.className="feedback no";
+        q.querySelector('.opt[data-i="'+ans+'"]').classList.add('good'); }
+    });
+  });
+});
+
+/* Theme jour/nuit */
+(function(){
+  var b=document.getElementById('themeToggle'); if(!b) return;
+  function apply(m){ if(m==='light'){document.body.classList.add('light'); b.textContent='☀️';} else {document.body.classList.remove('light'); b.textContent='🌙';} }
+  var saved=null; try{ saved=localStorage.getItem('nadtech-theme'); }catch(e){}
+  apply(saved==='light'?'light':'dark');
+  b.addEventListener('click', function(){
+    var l=!document.body.classList.contains('light');
+    apply(l?'light':'dark');
+    try{ localStorage.setItem('nadtech-theme', l?'light':'dark'); }catch(e){}
+  });
+})();
+</script>
+</body>
+</html>
