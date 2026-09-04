@@ -2074,10 +2074,12 @@ function activateProf(){
   initCells(); // initialise les cellules des corrections
 }
 
-/* Check URL param: ?corrections=on */
-if(new URLSearchParams(window.location.search).get('corrections')==='on'){
-  activateProf();
-}
+/* Check URL param : ?corrige=1 (convention du site, activee depuis le
+   dashboard prof) ou ?corrections=on (raccourci prof historique) */
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  if (p.get('corrige') === '1' || p.get('corrections') === 'on') activateProf();
+})();
 
 /* Manual unlock via button */
 document.getElementById('lockBtn').addEventListener('click',function(){
