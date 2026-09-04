@@ -347,6 +347,41 @@ export async function basculerVisibiliteEleves(id: string, visible: boolean) {
   });
 }
 
+export async function basculerEstPublic(id: string, estPublic: boolean) {
+  return prisma.cours.update({
+    where: { id },
+    data: { estPublic },
+  });
+}
+
+// Un seul cours à la fois est en vitrine : le désactiver ne demande qu'une
+// mise à jour, mais l'activer doit d'abord retirer le badge de l'ancien.
+export async function basculerVitrine(id: string, enVitrine: boolean) {
+  if (!enVitrine) {
+    return prisma.cours.update({ where: { id }, data: { enVitrine: false } });
+  }
+
+  return prisma.$transaction(async (tx) => {
+    await tx.cours.updateMany({
+      where: { enVitrine: true, id: { not: id } },
+      data: { enVitrine: false },
+    });
+    return tx.cours.update({ where: { id }, data: { enVitrine: true } });
+  });
+}
+
+export async function obtenirCoursVitrine() {
+  return prisma.cours.findFirst({
+    where: { enVitrine: true, estPublic: true },
+  });
+}
+
+export async function obtenirCoursPublicParId(id: string) {
+  return prisma.cours.findFirst({
+    where: { id, estPublic: true },
+  });
+}
+
 export async function supprimerCours(id: string) {
   const cours = await prisma.cours.findUnique({
     where: { id },

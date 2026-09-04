@@ -8,6 +8,8 @@ import { estMatiereValide } from "@/lib/classes-constants";
 import { MatiereTabs } from "@/components/matiere-tabs";
 import { SupprimerCoursButton } from "./[id]/supprimer-cours-button";
 import { VisibiliteToggle } from "./visibilite-toggle";
+import { EstPublicToggle } from "./estpublic-toggle";
+import { VitrineButton } from "./vitrine-button";
 
 export default async function ProfCoursPage({
   searchParams,
@@ -103,6 +105,8 @@ export default async function ProfCoursPage({
                           {c.publie ? "Publié" : "Brouillon"}
                         </span>
                         <VisibiliteToggle coursId={c.id} visibleEleves={c.visibleEleves} />
+                        <EstPublicToggle coursId={c.id} estPublic={c.estPublic} />
+                        <VitrineButton coursId={c.id} enVitrine={c.enVitrine} estPublic={c.estPublic} />
                         <Link href={`/prof/cours/${c.id}`} className="btn-secondary">
                           Modifier
                         </Link>

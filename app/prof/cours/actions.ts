@@ -12,6 +12,8 @@ import {
   remplacerContenuCours,
   supprimerCours,
   basculerVisibiliteEleves,
+  basculerEstPublic,
+  basculerVitrine,
 } from "@/lib/cours";
 import {
   CoursSimpleError,
@@ -240,6 +242,43 @@ export async function basculerVisibiliteElevesAction(formData: FormData): Promis
 
   revalidatePath("/prof/cours");
   revalidatePath("/eleve/cours");
+}
+
+export async function basculerEstPublicAction(formData: FormData): Promise<void> {
+  const session = await auth();
+  if (session?.user?.role !== "PROF") return;
+
+  const id = formData.get("coursId");
+  const estPublic = formData.get("estPublic") === "true";
+  if (typeof id !== "string") return;
+
+  try {
+    await basculerEstPublic(id, estPublic);
+  } catch (error) {
+    if (error instanceof CoursError) return;
+    throw error;
+  }
+
+  revalidatePath("/prof/cours");
+}
+
+export async function basculerVitrineAction(formData: FormData): Promise<void> {
+  const session = await auth();
+  if (session?.user?.role !== "PROF") return;
+
+  const id = formData.get("coursId");
+  const enVitrine = formData.get("enVitrine") === "true";
+  if (typeof id !== "string") return;
+
+  try {
+    await basculerVitrine(id, enVitrine);
+  } catch (error) {
+    if (error instanceof CoursError) return;
+    throw error;
+  }
+
+  revalidatePath("/prof/cours");
+  revalidatePath("/");
 }
 
 export async function supprimerCoursAction(formData: FormData): Promise<void> {
