@@ -9,6 +9,12 @@ export const NIVEAU_LABELS: Record<Niveau, string> = {
   PREMIERE: "1ère",
 };
 
+export const MATIERE_LABELS: Record<Matiere, string> = {
+  TECHNOLOGIE: "Technologie",
+  SNT: "SNT",
+  NSI: "NSI",
+};
+
 // Matière principale associée à chaque niveau (convention pédagogique).
 // Utilisé pour filtrer les classes par onglet matière dans le tableau de bord.
 export const NIVEAU_PAR_MATIERE: Record<string, Niveau> = {

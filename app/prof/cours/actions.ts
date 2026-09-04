@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { Matiere, Niveau } from "@prisma/client";
+import { Matiere, Niveau, TypeCoursSimple } from "@prisma/client";
 import { auth } from "@/auth";
 import {
   CoursError,
@@ -13,6 +13,11 @@ import {
   supprimerCours,
   basculerVisibiliteEleves,
 } from "@/lib/cours";
+import {
+  CoursSimpleError,
+  type ContenuCoursSimple,
+  creerCoursSimple,
+} from "@/lib/cours-simple";
 import { DocxError } from "@/lib/docx";
 import { TAILLE_MAX_OCTETS, extensionDe } from "@/lib/fichiers";
 
@@ -73,6 +78,42 @@ async function lireContenuFichier(formData: FormData): Promise<ResultatContenuFi
   return { ok: false, erreur: "Format de fichier non pris en charge. Utilise un fichier Word (.docx) ou PDF (.pdf)." };
 }
 
+const TYPES_COURS_SIMPLE = new Set<string>(["HTML", "PDF", "WORD", "VIDEO", "QCM"]);
+
+function lireTypeSimple(formData: FormData): TypeCoursSimple | null {
+  const type = formData.get("type");
+  if (typeof type !== "string" || !TYPES_COURS_SIMPLE.has(type)) return null;
+  return type as TypeCoursSimple;
+}
+
+type ResultatContenuSimple =
+  | { ok: true; contenu: ContenuCoursSimple }
+  | { ok: false; erreur: string };
+
+function lireContenuSimple(formData: FormData, type: TypeCoursSimple): ResultatContenuSimple {
+  if (type === "VIDEO") {
+    const videoUrl = formData.get("videoUrl");
+    if (typeof videoUrl !== "string" || !videoUrl.trim()) {
+      return { ok: false, erreur: "Colle le lien YouTube ou Vimeo de la vidéo." };
+    }
+    return { ok: true, contenu: { type: "VIDEO", videoUrl } };
+  }
+
+  if (type === "QCM") {
+    const quizId = formData.get("quizId");
+    if (typeof quizId !== "string" || !quizId) {
+      return { ok: false, erreur: "Choisis un quiz existant." };
+    }
+    return { ok: true, contenu: { type: "QCM", quizId } };
+  }
+
+  const fichier = formData.get("fichier");
+  if (!(fichier instanceof File) || fichier.size === 0) {
+    return { ok: false, erreur: "Dépose un fichier." };
+  }
+  return { ok: true, contenu: { type, fichier } };
+}
+
 export async function creerCoursAction(
   _prevState: string | undefined,
   formData: FormData
@@ -87,21 +128,30 @@ export async function creerCoursAction(
     return "Formulaire invalide.";
   }
 
-  const resultatFichier = await lireContenuFichier(formData);
-  if (!resultatFichier.ok) {
-    return resultatFichier.erreur;
-  }
+  // Un des 5 boutons a été choisi : cours mono-contenu créé directement.
+  // Sinon (aucun bouton cliqué) : cours vierge, à composer ensuite avec
+  // l'éditeur avancé (blocs, page interactive, import Word/PDF...), comme
+  // avant l'ajout du formulaire simplifié.
+  const typeSimple = lireTypeSimple(formData);
 
   let cours;
   try {
-    cours = await creerCours(infos, resultatFichier.contenu);
+    if (typeSimple) {
+      const resultat = lireContenuSimple(formData, typeSimple);
+      if (!resultat.ok) return resultat.erreur;
+      cours = await creerCoursSimple(infos, resultat.contenu);
+    } else {
+      cours = await creerCours(infos, null);
+    }
   } catch (error) {
-    if (error instanceof CoursError || error instanceof DocxError) return error.message;
+    if (error instanceof CoursError || error instanceof CoursSimpleError || error instanceof DocxError) {
+      return error.message;
+    }
     throw error;
   }
 
   revalidatePath("/prof/cours");
-  redirect(`/prof/cours/${cours.id}`);
+  redirect(typeSimple ? "/prof/cours" : `/prof/cours/${cours.id}`);
 }
 
 export async function modifierCoursAction(

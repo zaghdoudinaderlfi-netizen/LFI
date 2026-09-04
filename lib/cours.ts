@@ -3,7 +3,14 @@ import { Matiere, Niveau, TypeContenuCours } from "@prisma/client";
 import { prisma } from "./prisma";
 import { notifierElevesDuNiveau } from "./notifications";
 import { nomFichierSur } from "./fichiers";
-import { supabaseAdmin, BUCKET_PIECES_JOINTES, BUCKET_RENDUS_DEVOIRS, BUCKET_IMAGES_COURS, assurerBucketPublic } from "./supabase";
+import {
+  supabaseAdmin,
+  BUCKET_PIECES_JOINTES,
+  BUCKET_RENDUS_DEVOIRS,
+  BUCKET_IMAGES_COURS,
+  BUCKET_COURS_SIMPLE,
+  assurerBucketPublic,
+} from "./supabase";
 import { convertirDocxEnHtml, supprimerImagesCours } from "./docx";
 
 const PREFIX_COUVERTURE = "couvertures";
@@ -48,11 +55,7 @@ async function supprimerImageCouverture(chemin: string | null) {
 
 export class CoursError extends Error {}
 
-export const MATIERE_LABELS: Record<Matiere, string> = {
-  TECHNOLOGIE: "Technologie",
-  SNT: "SNT",
-  NSI: "NSI",
-};
+export { MATIERE_LABELS } from "./classes-constants";
 
 const PREFIX_PDF_COURS = "cours-pdf";
 
@@ -65,7 +68,7 @@ function slugify(texte: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-async function genererSlugUnique(titre: string, excludeId?: string) {
+export async function genererSlugUnique(titre: string, excludeId?: string) {
   const base = slugify(titre) || "cours";
   let slug = base;
   let suffixe = 2;
@@ -404,6 +407,16 @@ export async function supprimerCours(id: string) {
   // Supprimer le dossier d'images (cours HTML importé depuis Word)
   if (cours.typeContenu === TypeContenuCours.HTML) {
     await supprimerImagesCours(id);
+  }
+
+  // Supprimer le fichier du formulaire simplifié (bucket "cours"), si présent
+  if (cours.fichierUrl) {
+    const marqueur = `/object/public/${BUCKET_COURS_SIMPLE}/`;
+    const index = cours.fichierUrl.indexOf(marqueur);
+    if (index !== -1) {
+      const chemin = decodeURIComponent(cours.fichierUrl.slice(index + marqueur.length));
+      await supabaseAdmin.storage.from(BUCKET_COURS_SIMPLE).remove([chemin]);
+    }
   }
 
   // Supprimer le cours en DB (cascade gère exercices, soumissions, blocs, PJ)

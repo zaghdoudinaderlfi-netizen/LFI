@@ -1,9 +1,18 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { listerQuizProf } from "@/lib/quiz";
 import { creerCoursAction } from "../actions";
 import { CoursForm } from "../cours-form";
 
-export default function NouveauCoursPage() {
+export default async function NouveauCoursPage() {
+  const quizzes = await listerQuizProf();
+  const quizzesDisponibles = quizzes.map((q) => ({
+    id: q.id,
+    titre: q.titre,
+    niveau: q.niveau,
+    matiere: q.matiere,
+  }));
+
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <div className="animate-fade-in-up">
@@ -15,7 +24,7 @@ export default function NouveauCoursPage() {
       </div>
 
       <div className="card animate-fade-in-up p-6 [animation-delay:60ms]">
-        <CoursForm action={creerCoursAction} submitLabel="Créer le cours" />
+        <CoursForm action={creerCoursAction} submitLabel="Créer le cours" quizzesDisponibles={quizzesDisponibles} />
       </div>
     </div>
   );
