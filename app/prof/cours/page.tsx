@@ -10,6 +10,7 @@ import { SupprimerCoursButton } from "./[id]/supprimer-cours-button";
 import { VisibiliteToggle } from "./visibilite-toggle";
 import { EstPublicToggle } from "./estpublic-toggle";
 import { VitrineButton } from "./vitrine-button";
+import { CorrectionToggle } from "./correction-toggle";
 
 export default async function ProfCoursPage({
   searchParams,
@@ -107,6 +108,9 @@ export default async function ProfCoursPage({
                         <VisibiliteToggle coursId={c.id} visibleEleves={c.visibleEleves} />
                         <EstPublicToggle coursId={c.id} estPublic={c.estPublic} />
                         <VitrineButton coursId={c.id} enVitrine={c.enVitrine} />
+                        {(c.pageInteractive || c.typeSimple === "HTML") && (
+                          <CorrectionToggle coursId={c.id} correctionVisible={c.correctionVisible} />
+                        )}
                         <Link href={`/prof/cours/${c.id}`} className="btn-secondary">
                           Modifier
                         </Link>

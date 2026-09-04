@@ -14,6 +14,7 @@ import {
   basculerVisibiliteEleves,
   basculerEstPublic,
   basculerVitrine,
+  basculerCorrectionVisible,
 } from "@/lib/cours";
 import {
   CoursSimpleError,
@@ -281,6 +282,25 @@ export async function basculerVitrineAction(formData: FormData): Promise<void> {
 
   revalidatePath("/prof/cours");
   revalidatePath("/");
+}
+
+export async function basculerCorrectionVisibleAction(formData: FormData): Promise<void> {
+  const session = await auth();
+  if (session?.user?.role !== "PROF") return;
+
+  const id = formData.get("coursId");
+  const correctionVisible = formData.get("correctionVisible") === "true";
+  if (typeof id !== "string") return;
+
+  try {
+    await basculerCorrectionVisible(id, correctionVisible);
+  } catch (error) {
+    if (error instanceof CoursError) return;
+    throw error;
+  }
+
+  revalidatePath("/prof/cours");
+  revalidatePath("/eleve/cours");
 }
 
 export async function supprimerCoursAction(formData: FormData): Promise<void> {
