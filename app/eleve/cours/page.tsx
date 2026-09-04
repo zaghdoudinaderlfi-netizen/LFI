@@ -136,13 +136,25 @@ export default async function EleveCoursPage({
                       <li key={c.id}>
                         <Link
                           href={`/eleve/cours/${c.slug}`}
-                          className="card-interactive flex h-full flex-col gap-1 p-4"
+                          className="card-interactive flex h-full flex-col overflow-hidden"
                         >
-                          <span className="eyebrow flex items-center gap-1.5">
-                            <BookOpen className="h-3.5 w-3.5" />
-                            {MATIERE_LABELS[c.matiere]}
-                          </span>
-                          <span className="font-medium text-ink-primary">{c.titre}</span>
+                          {imageUrl && (
+                            <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-neon-blue/15 to-neon-violet/20">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={imageUrl}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <div className="flex flex-col gap-1 p-4">
+                            <span className="eyebrow flex items-center gap-1.5">
+                              <BookOpen className="h-3.5 w-3.5" />
+                              {MATIERE_LABELS[c.matiere]}
+                            </span>
+                            <span className="font-medium text-ink-primary">{c.titre}</span>
+                          </div>
                         </Link>
                       </li>
                     );

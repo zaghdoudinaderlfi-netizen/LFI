@@ -50,6 +50,7 @@ type CoursVitrine = {
   titre: string;
   matiere: string;
   niveau: string;
+  imageUrl: string | null;
 };
 
 export function LandingPage({ coursVitrine }: { coursVitrine: CoursVitrine | null }) {
@@ -376,8 +377,14 @@ export function LandingPage({ coursVitrine }: { coursVitrine: CoursVitrine | nul
       {coursVitrine && (
         <section className="py-16">
           <div className="mx-auto max-w-[1180px] px-6">
-            <div className="card flex flex-col items-center gap-4 p-8 text-center sm:p-12">
-              <span className="eyebrow">// accès libre</span>
+            <div className="card flex flex-col items-center gap-4 overflow-hidden p-8 text-center sm:p-12">
+              {coursVitrine.imageUrl && (
+                <div className="-m-8 mb-0 h-40 w-[calc(100%+4rem)] overflow-hidden sm:-m-12 sm:mb-0 sm:h-52 sm:w-[calc(100%+6rem)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={coursVitrine.imageUrl} alt="" className="h-full w-full object-cover" />
+                </div>
+              )}
+              <span className={coursVitrine.imageUrl ? "eyebrow mt-4" : "eyebrow"}>// accès libre</span>
               <h2 className="page-title">Découvrez un cours</h2>
               <p className="max-w-[52ch] text-ink-secondary">
                 Essayez tout de suite <strong className="text-ink-primary">{coursVitrine.titre}</strong>{" "}

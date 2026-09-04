@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { LandingPage } from "@/components/landing/landing-page";
-import { obtenirCoursVitrine, MATIERE_LABELS } from "@/lib/cours";
+import { obtenirCoursVitrine, MATIERE_LABELS, urlImageCouverture } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
 
 export default async function Home() {
@@ -18,6 +18,7 @@ export default async function Home() {
         titre: cours.titreInteractif ?? cours.titre,
         matiere: MATIERE_LABELS[cours.matiere],
         niveau: NIVEAU_LABELS[cours.niveau],
+        imageUrl: urlImageCouverture(cours.imageCouvertureChemin),
       }
     : null;
 

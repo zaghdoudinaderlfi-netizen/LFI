@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ClipboardList, Code2, FileText, Layers, MonitorPlay, Paperclip } from "lucide-react";
+import { ArrowLeft, ClipboardList, Code2, FileText, Image as ImageIcon, Layers, MonitorPlay, Paperclip } from "lucide-react";
 import { TypeExercice } from "@prisma/client";
 import { ApercuFichier } from "@/components/apercu-fichier";
 import { SupprimerCoursButton } from "./supprimer-cours-button";
@@ -31,6 +31,7 @@ import { supprimerDevoirAction, supprimerSujetDevoirAction } from "./devoirs-act
 import { ExerciceCodeForm } from "./exercices-code-form";
 import { supprimerExerciceCodeAction } from "./exercices-code-actions";
 import { PageInteractiveForm } from "./page-interactive-form";
+import { ImageCouvertureForm } from "./image-couverture-form";
 
 function listerFichiersHtmlCours(): string[] {
   try {
@@ -98,6 +99,23 @@ export default async function ModifierCoursPage({
 
         <div className="card animate-fade-in-up p-6">
           <CoursForm action={modifierCoursAction} cours={cours} submitLabel="Enregistrer" />
+        </div>
+
+        <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:30ms]">
+          <div>
+            <h2 className="section-title flex items-center gap-2">
+              <ImageIcon className="h-5 w-5 text-neon-violet" />
+              Image de couverture
+            </h2>
+            <p className="mt-1 text-sm text-ink-secondary">
+              Affichée en vignette dans la liste des cours élève, et sur l&apos;accueil si ce cours est mis en vitrine.
+            </p>
+          </div>
+
+          <ImageCouvertureForm
+            coursId={cours.id}
+            imageCouvertureUrl={urlImageCouverture(cours.imageCouvertureChemin)}
+          />
         </div>
 
         <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:60ms]">
@@ -169,9 +187,7 @@ export default async function ModifierCoursPage({
             coursId={cours.id}
             pageInteractive={cours.pageInteractive}
             titreInteractif={cours.titreInteractif}
-            imageCouvertureUrl={urlImageCouverture(cours.imageCouvertureChemin)}
             fichiersDisponibles={listerFichiersHtmlCours()}
-            correctionVisible={cours.correctionVisible}
           />
         </div>
 

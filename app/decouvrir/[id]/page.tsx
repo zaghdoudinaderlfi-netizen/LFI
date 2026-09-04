@@ -39,6 +39,16 @@ export default async function CoursDecouvertePage({
       </div>
 
       <article className="card overflow-hidden">
+        {!cours.pageInteractive && urlImageCouverture(cours.imageCouvertureChemin) && (
+          <div className="relative h-48 w-full overflow-hidden sm:h-64">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={urlImageCouverture(cours.imageCouvertureChemin)!}
+              alt=""
+              className="h-full w-full object-cover"
+            />
+          </div>
+        )}
         <div className="border-b border-space-border bg-gradient-to-br from-neon-blue/10 to-neon-violet/10 px-6 pb-5 pt-6 sm:px-10">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <span className="badge bg-space-surface2/80 px-3 text-neon-cyan ring-1 ring-neon-cyan/30">
