@@ -75,6 +75,20 @@ textarea.code{width:100%; border:0; outline:0; resize:vertical; background:trans
 .correction-body h4{font-family:'Space Grotesk',sans-serif; color:var(--ok); margin:16px 0 6px}
 pre.sol{background:var(--code); border:1px solid var(--line); border-radius:12px; padding:12px 14px; overflow:auto; font-family:var(--mono); font-size:13.5px; line-height:1.6; color:#e7f0ff; white-space:pre}
 
+/* Dépôt de compte-rendu */
+.cr-depot{margin:40px 0 20px; padding:20px 22px; background:var(--bg2); border:1px solid var(--line); border-radius:14px; box-shadow:var(--glow)}
+.cr-depot h3{margin:0 0 8px; font-family:'Space Grotesk',sans-serif; color:var(--ink)}
+.cr-depot-desc{margin:0 0 14px; color:var(--muted); font-size:14px; line-height:1.6}
+.cr-depot-row{display:flex; gap:10px; flex-wrap:wrap}
+.cr-depot-row input{flex:1 1 260px; padding:10px 14px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font:inherit}
+.cr-depot-row input:focus{outline:2px solid var(--cyan); outline-offset:1px}
+.cr-depot-row button{padding:10px 18px; border-radius:10px; border:1px solid var(--violet); background:rgba(139,92,246,.15); color:var(--ink); font:inherit; cursor:pointer; transition:.15s; white-space:nowrap}
+.cr-depot-row button:hover{background:rgba(139,92,246,.28)}
+.cr-depot-row button:disabled{opacity:.5; cursor:not-allowed}
+.cr-depot-msg{margin:12px 0 0; font-size:14px; min-height:20px}
+.cr-depot-msg.ok{color:var(--ok)}
+.cr-depot-msg.err{color:var(--err)}
+
 footer{padding:36px 0 70px; color:var(--muted); font-size:14px}
 .mono-n{font-family:var(--mono); font-weight:700; font-size:18px; margin-top:12px}
 .mono-n span:nth-child(1){color:var(--cyan)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--violet)}
@@ -487,6 +501,16 @@ for c in ["blue", "white", "red"]:
     </div>
   </section>
 
+  <section class="cr-depot" id="depotCompteRendu">
+    <h3>📤 Déposer ton compte-rendu</h3>
+    <p class="cr-depot-desc">Indique ton nom (ou plusieurs noms séparés par une virgule si vous travaillez en groupe), puis clique sur le bouton.</p>
+    <div class="cr-depot-row">
+      <input type="text" id="crNoms" placeholder="Ton nom (ou noms séparés par une virgule)" maxlength="300" autocomplete="off">
+      <button id="crBtn" type="button">📤 Déposer mon compte-rendu</button>
+    </div>
+    <p id="crMsg" class="cr-depot-msg" role="status"></p>
+  </section>
+
   <footer>
     <p class="muted">Astuce prof : ajoute <code class="inl">?corrige=1</code> à la fin de l'adresse de la page pour activer l'affichage des corrections. Sans ce paramètre, les corrections restent masquées pour les élèves.</p>
     <p class="mono-n"><span>N</span><span>a</span><span>dtech</span> · NSI · Exercices Chapitre 1</p>
@@ -694,6 +718,59 @@ document.querySelectorAll('[data-cell]').forEach(function(cell){
   if(close) close.addEventListener('click', hide);
   modal.addEventListener('click', function(e){ if(e.target===modal) hide(); });
   document.addEventListener('keydown', function(e){ if(e.key==='Escape') hide(); });
+})();
+</script>
+<script>
+(function(){
+  var COURS_ID = "cmr22fr5v0004da5qp9cbkp9z";
+  var input = document.getElementById('crNoms');
+  var btn = document.getElementById('crBtn');
+  var msg = document.getElementById('crMsg');
+  if (!input || !btn || !msg) return;
+
+  btn.addEventListener('click', function(){
+    var noms = input.value.trim();
+    msg.textContent = '';
+    msg.className = 'cr-depot-msg';
+
+    if (!noms){
+      msg.textContent = '⚠️ Indique ton nom (ou les noms du groupe) avant de déposer.';
+      msg.classList.add('err');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Envoi…';
+
+    fetch('/api/comptes-rendus', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ coursId: COURS_ID, noms: noms })
+    })
+    .then(function(res){
+      return res.json().then(function(data){ return { ok: res.ok, data: data }; });
+    })
+    .then(function(result){
+      if (result.ok){
+        msg.textContent = '✅ Compte-rendu déposé !';
+        msg.classList.add('ok');
+        input.value = '';
+      } else {
+        msg.textContent = '❌ ' + (result.data && result.data.error ? result.data.error : 'Le dépôt a échoué.');
+        msg.classList.add('err');
+      }
+    })
+    .catch(function(){
+      msg.textContent = "❌ Impossible de contacter le serveur — ouvre ce fichier depuis le site (pas en local) et vérifie ta connexion.";
+      msg.classList.add('err');
+    })
+    .finally(function(){
+      btn.disabled = false;
+      btn.textContent = '📤 Déposer mon compte-rendu';
+    });
+  });
+
+  input.addEventListener('keydown', function(e){ if (e.key === 'Enter') btn.click(); });
 })();
 </script>
 </body>
