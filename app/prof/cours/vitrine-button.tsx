@@ -7,11 +7,9 @@ import { basculerVitrineAction } from "./actions";
 export function VitrineButton({
   coursId,
   enVitrine,
-  estPublic,
 }: {
   coursId: string;
   enVitrine: boolean;
-  estPublic: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -22,25 +20,21 @@ export function VitrineButton({
     startTransition(() => basculerVitrineAction(formData));
   }
 
-  const desactive = !estPublic && !enVitrine;
-
   return (
     <button
       type="button"
       onClick={handleToggle}
-      disabled={isPending || desactive}
+      disabled={isPending}
       title={
-        !estPublic
-          ? "Le cours doit être public pour être mis en vitrine"
-          : enVitrine
-            ? "Retirer ce cours de la vitrine de l'accueil"
-            : "Mettre ce cours en vitrine sur la page d'accueil"
+        enVitrine
+          ? "Retirer ce cours de la vitrine de l'accueil"
+          : "Mettre ce cours en vitrine sur la page d'accueil (le rend public automatiquement)"
       }
       className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${
         enVitrine
           ? "border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
           : "border-space-border bg-space-surface2/60 text-ink-muted hover:bg-space-surface2"
-      } ${isPending || desactive ? "opacity-50" : ""} ${desactive ? "cursor-not-allowed" : ""}`}
+      } ${isPending ? "opacity-50" : ""}`}
     >
       <Sparkles className="h-3.5 w-3.5" />
       {enVitrine ? "En vitrine" : "Mettre en vitrine"}

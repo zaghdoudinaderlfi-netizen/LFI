@@ -356,6 +356,8 @@ export async function basculerEstPublic(id: string, estPublic: boolean) {
 
 // Un seul cours à la fois est en vitrine : le désactiver ne demande qu'une
 // mise à jour, mais l'activer doit d'abord retirer le badge de l'ancien.
+// Mettre un cours en vitrine le rend aussi public (sinon /decouvrir et
+// l'accueil ne pourraient pas l'afficher) : un seul clic suffit au prof.
 export async function basculerVitrine(id: string, enVitrine: boolean) {
   if (!enVitrine) {
     return prisma.cours.update({ where: { id }, data: { enVitrine: false } });
@@ -366,7 +368,7 @@ export async function basculerVitrine(id: string, enVitrine: boolean) {
       where: { enVitrine: true, id: { not: id } },
       data: { enVitrine: false },
     });
-    return tx.cours.update({ where: { id }, data: { enVitrine: true } });
+    return tx.cours.update({ where: { id }, data: { enVitrine: true, estPublic: true } });
   });
 }
 

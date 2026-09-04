@@ -106,7 +106,7 @@ export default async function ProfCoursPage({
                         </span>
                         <VisibiliteToggle coursId={c.id} visibleEleves={c.visibleEleves} />
                         <EstPublicToggle coursId={c.id} estPublic={c.estPublic} />
-                        <VitrineButton coursId={c.id} enVitrine={c.enVitrine} estPublic={c.estPublic} />
+                        <VitrineButton coursId={c.id} enVitrine={c.enVitrine} />
                         <Link href={`/prof/cours/${c.id}`} className="btn-secondary">
                           Modifier
                         </Link>
