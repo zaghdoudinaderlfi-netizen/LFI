@@ -20,6 +20,11 @@ export const BUCKET_RENDUS_DEVOIRS = "rendus-lfi";
 // passer par une URL signée.
 export const BUCKET_IMAGES_COURS = "images-cours-lfi";
 
+// Bucket public : fichiers HTML/PDF/Word déposés via le formulaire de
+// création simplifié (5 boutons). Public pour que `fichierUrl` soit
+// directement utilisable en <a href> / <iframe src> côté élève.
+export const BUCKET_COURS_SIMPLE = "cours";
+
 const bucketsVerifies = new Set<string>();
 
 /**
