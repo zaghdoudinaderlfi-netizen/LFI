@@ -8,14 +8,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 });
   }
 
-  const { coursId, noms } = body as Record<string, unknown>;
+  const { coursId, noms, travail } = body as Record<string, unknown>;
 
   if (typeof coursId !== "string" || typeof noms !== "string") {
     return NextResponse.json({ error: "Champs manquants ou invalides." }, { status: 400 });
   }
 
   try {
-    const compteRendu = await deposerCompteRendu({ coursId, noms });
+    const compteRendu = await deposerCompteRendu({
+      coursId,
+      noms,
+      travail: typeof travail === "string" ? travail : undefined,
+    });
     return NextResponse.json(
       { id: compteRendu.id, dateDepot: compteRendu.dateDepot },
       { status: 201 }

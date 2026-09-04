@@ -3,18 +3,37 @@ import { prisma } from "./prisma";
 export class CompteRenduError extends Error {}
 
 const NOMS_LONGUEUR_MAX = 300;
+const TRAVAIL_LONGUEUR_MAX = 200_000;
 
 export type DeposerCompteRenduInput = {
   coursId: string;
   noms: string;
+  travail?: string;
 };
+
+export type ExerciceRendu = { exercice: string; code: string };
+
+/** Relit le JSON de `travail` ; renvoie [] si absent ou illisible. */
+export function lireTravail(travail: string | null): ExerciceRendu[] {
+  if (!travail) return [];
+  try {
+    const donnees = JSON.parse(travail);
+    if (!Array.isArray(donnees)) return [];
+    return donnees.filter(
+      (e): e is ExerciceRendu =>
+        typeof e?.exercice === "string" && typeof e?.code === "string"
+    );
+  } catch {
+    return [];
+  }
+}
 
 /**
  * Enregistre le dépôt d'un compte-rendu par un élève (ou un groupe) depuis
  * la page HTML statique d'un cours interactif. Appelé sans session : la
  * seule protection contre le spam est la validation de `noms`.
  */
-export async function deposerCompteRendu({ coursId, noms }: DeposerCompteRenduInput) {
+export async function deposerCompteRendu({ coursId, noms, travail }: DeposerCompteRenduInput) {
   const nomsNettoyes = noms.trim();
 
   if (!nomsNettoyes) {
@@ -22,6 +41,9 @@ export async function deposerCompteRendu({ coursId, noms }: DeposerCompteRenduIn
   }
   if (nomsNettoyes.length > NOMS_LONGUEUR_MAX) {
     throw new CompteRenduError(`Le champ noms est trop long (${NOMS_LONGUEUR_MAX} caractères maximum).`);
+  }
+  if (travail && travail.length > TRAVAIL_LONGUEUR_MAX) {
+    throw new CompteRenduError("Le travail joint est trop volumineux.");
   }
 
   const cours = await prisma.cours.findUnique({
@@ -33,7 +55,14 @@ export async function deposerCompteRendu({ coursId, noms }: DeposerCompteRenduIn
   }
 
   return prisma.compteRendu.create({
-    data: { coursId, noms: nomsNettoyes },
+    data: { coursId, noms: nomsNettoyes, travail: travail ?? null },
+  });
+}
+
+export async function obtenirCompteRendu(id: string) {
+  return prisma.compteRendu.findUnique({
+    where: { id },
+    include: { cours: { select: { titre: true, matiere: true, niveau: true } } },
   });
 }
 

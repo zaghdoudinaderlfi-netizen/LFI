@@ -39,23 +39,33 @@ export default async function ComptesRendusPage({
       ) : (
         <ul className="flex flex-col gap-3 animate-fade-in-up [animation-delay:60ms]">
           {comptesRendus.map((cr) => (
-            <li key={cr.id} className="card flex flex-col gap-1 p-5 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="font-medium text-ink-primary">{cr.noms}</p>
-                <p className="mt-1 text-sm text-ink-secondary">
-                  {cr.cours.titre} · {MATIERE_LABELS[cr.cours.matiere]} · {NIVEAU_LABELS[cr.cours.niveau]}
-                </p>
-              </div>
-              <p className="text-xs text-ink-muted">
-                Déposé le{" "}
-                {cr.dateDepot.toLocaleDateString("fr-FR", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
+            <li key={cr.id}>
+              <Link
+                href={`/prof/comptes-rendus/${cr.id}`}
+                className="card flex flex-col gap-1 p-5 transition-colors hover:border-neon-blue/50 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p className="font-medium text-ink-primary">{cr.noms}</p>
+                  <p className="mt-1 text-sm text-ink-secondary">
+                    {cr.cours.titre} · {MATIERE_LABELS[cr.cours.matiere]} · {NIVEAU_LABELS[cr.cours.niveau]}
+                  </p>
+                </div>
+                <div className="flex flex-col sm:items-end">
+                  <p className="text-xs text-ink-muted">
+                    Déposé le{" "}
+                    {cr.dateDepot.toLocaleDateString("fr-FR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                  <span className="mt-1 text-xs text-neon-cyan">
+                    {cr.travail ? "Voir le travail →" : "Sans travail joint"}
+                  </span>
+                </div>
+              </Link>
             </li>
           ))}
         </ul>

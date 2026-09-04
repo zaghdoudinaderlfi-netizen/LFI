@@ -226,6 +226,11 @@ model CompteRendu {
   noms      String
   dateDepot DateTime @default(now())
 
+  // Code saisi par l'élève dans chaque cellule de la page, au moment du
+  // dépôt : JSON [{ exercice, code }]. Null pour les dépôts antérieurs à
+  // cette fonctionnalité. Les cellules de correction ne sont pas capturées.
+  travail String? @db.Text
+
   @@index([coursId])
 }
 

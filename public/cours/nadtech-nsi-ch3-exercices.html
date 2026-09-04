@@ -817,6 +817,32 @@ document.querySelectorAll('[data-cell]').forEach(function(cell){
   var msg = document.getElementById('crMsg');
   if (!input || !btn || !msg) return;
 
+  function titreExercice(cell){
+    var art = cell.closest('article');
+    if (art){
+      var num = art.querySelector('.exo-num');
+      var titre = art.querySelector('.exo-title');
+      var libelle = ((num ? num.textContent : '') + ' ' + (titre ? titre.textContent : '')).trim();
+      if (libelle) return libelle.replace(/\s+/g, ' ');
+    }
+    var sec = cell.closest('section');
+    var h2 = sec ? sec.querySelector('h2') : null;
+    return h2 ? h2.textContent.trim().replace(/\s+/g, ' ') : 'Exercice';
+  }
+
+  /* Capture ce que l'eleve a tape dans chaque cellule ; les cellules de
+     correction ne sont pas son travail, on les ignore. */
+  function collecterTravail(){
+    var travail = [];
+    document.querySelectorAll('[data-cell]').forEach(function(cell){
+      if (cell.closest('.correction')) return;
+      var ta = cell.querySelector('textarea.code');
+      if (!ta) return;
+      travail.push({ exercice: titreExercice(cell), code: ta.value });
+    });
+    return JSON.stringify(travail);
+  }
+
   btn.addEventListener('click', function(){
     var noms = input.value.trim();
     msg.textContent = '';
@@ -834,7 +860,7 @@ document.querySelectorAll('[data-cell]').forEach(function(cell){
     fetch('/api/comptes-rendus', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ coursId: COURS_ID, noms: noms })
+      body: JSON.stringify({ coursId: COURS_ID, noms: noms, travail: collecterTravail() })
     })
     .then(function(res){
       return res.json().then(function(data){ return { ok: res.ok, data: data }; });
