@@ -77,6 +77,8 @@ textarea.code{width:100%; border:0; outline:0; resize:vertical; background:trans
 .out.err{color:var(--err)}
 .turtle{display:flex; justify-content:center; padding:10px; background:#fff; border-top:1px solid var(--line)}
 .turtle[hidden]{display:none}
+.turtle-inner{position:relative; overflow:hidden; width:100%; max-width:420px; height:300px; margin:0 auto; transition:visibility 0s}
+.turtle-inner canvas{display:block; position:absolute}
 
 pre.static{background:var(--code); border:1px solid var(--line); border-radius:14px; padding:14px 16px; overflow:auto;
   font-family:var(--mono); font-size:13.5px; line-height:1.6; margin:16px 0; color:#e7f0ff}
@@ -636,6 +638,40 @@ function builtinRead(x){
     throw "File not found: '" + x + "'";
   return Sk.builtinFiles["files"][x];
 }
+/* ── Ajuste le dessin Turtle : centré, proportions correctes, jamais déformé ── */
+function fitTurtle(inner){
+  var canvas=inner.querySelector('canvas');
+  if(!canvas) return;
+  try{
+    var w=canvas.width, h=canvas.height;
+    var ctx=canvas.getContext('2d');
+    var data=ctx.getImageData(0,0,w,h).data;
+    var minX=w,minY=h,maxX=0,maxY=0,found=false,step=2;
+    for(var y=0;y<h;y+=step){
+      for(var x=0;x<w;x+=step){
+        var idx=(y*w+x)*4, a=data[idx+3], r=data[idx], g=data[idx+1], b=data[idx+2];
+        var isBg=(a<10)||(r>248&&g>248&&b>248);
+        if(!isBg){ found=true; if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
+      }
+    }
+    var availW=inner.clientWidth-24, availH=inner.clientHeight-24;
+    if(!found){
+      var k0=Math.min(availW/w, availH/h, 1);
+      canvas.style.width=(w*k0)+'px'; canvas.style.height=(h*k0)+'px';
+      canvas.style.left=((inner.clientWidth-w*k0)/2)+'px';
+      canvas.style.top=((inner.clientHeight-h*k0)/2)+'px';
+      return;
+    }
+    var bw=Math.max(maxX-minX,30), bh=Math.max(maxY-minY,30);
+    var k=Math.min(availW/bw, availH/bh);
+    k=Math.min(k,3); k=Math.max(k,0.05);
+    var bcx=(minX+maxX)/2, bcy=(minY+maxY)/2;
+    canvas.style.width=(w*k)+'px';
+    canvas.style.height=(h*k)+'px';
+    canvas.style.left=(inner.clientWidth/2 - bcx*k)+'px';
+    canvas.style.top=(inner.clientHeight/2 - bcy*k)+'px';
+  }catch(e){ /* scan impossible (cas rare) : on laisse le canvas tel quel */ }
+}
 function runCell(cell){
   var code = cell.querySelector('textarea.code').value;
   var out  = cell.querySelector('.out');
@@ -655,21 +691,32 @@ function runCell(cell){
     __future__: Sk.python3
   };
   Sk.configure(conf);
+  var inner = null;
   if (turtleWrap){
     turtleWrap.hidden = false; turtleWrap.innerHTML = '';
-    if (!turtleWrap.id) turtleWrap.id = 'turtle-' + Math.random().toString(36).slice(2);
-    (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = turtleWrap.id;
-    Sk.TurtleGraphics.width = 320; Sk.TurtleGraphics.height = 280;
+    inner = document.createElement('div');
+    inner.className = 'turtle-inner';
+    inner.id = 'ti-' + Math.random().toString(36).slice(2);
+    inner.style.visibility = 'hidden';
+    turtleWrap.appendChild(inner);
+    (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = inner.id;
+    Sk.TurtleGraphics.width = 700; Sk.TurtleGraphics.height = 550;
   }
+  Sk.execLimit = 7000;
   btn.disabled = true; var old = btn.textContent; btn.textContent = '…';
   Sk.misceval.asyncToPromise(function(){
     return Sk.importMainWithBody("<stdin>", false, code, true);
   }).then(function(){
     btn.disabled = false; btn.textContent = old;
     if (!out.textContent && !turtleWrap) out.textContent = "(aucune sortie — pense à print(...) )";
+    if (inner){
+      [40,150,400,900].forEach(function(ms){ setTimeout(function(){ fitTurtle(inner); }, ms); });
+      setTimeout(function(){ inner.style.visibility = 'visible'; }, 950);
+    }
   }, function(err){
     btn.disabled = false; btn.textContent = old;
     out.classList.add('err'); out.textContent += "\n" + err.toString();
+    if (inner) inner.style.visibility = 'visible';
   });
 }
 document.querySelectorAll('[data-cell]').forEach(function(cell){

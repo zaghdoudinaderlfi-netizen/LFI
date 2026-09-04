@@ -665,7 +665,10 @@ function runCell(cell){
   }).then(function(){
     btn.disabled = false; btn.textContent = old;
     if (!out.textContent && !turtleWrap) out.textContent = "(aucune sortie — pense à print(...) )";
-    if (turtleWrap){ setTimeout(function(){ fitTurtle(turtleWrap); turtleWrap.style.visibility='visible'; }, 60); }
+    if (turtleWrap){
+      [40,150,400,900].forEach(function(ms){ setTimeout(function(){ fitTurtle(turtleWrap); }, ms); });
+      setTimeout(function(){ turtleWrap.style.visibility='visible'; }, 950);
+    }
   }, function(err){
     btn.disabled = false; btn.textContent = old;
     out.classList.add('err');
