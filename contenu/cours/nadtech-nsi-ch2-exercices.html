@@ -75,6 +75,19 @@ pre.sol{background:var(--code); border:1px solid var(--line); border-radius:12px
 .cr-depot-msg{margin:12px 0 0; font-size:14px; min-height:20px}
 .cr-depot-msg.ok{color:var(--ok)}
 .cr-depot-msg.err{color:var(--err)}
+.cr-depot-btn{margin-top:4px; padding:10px 18px; border-radius:10px; border:1px solid var(--violet); background:rgba(139,92,246,.15); color:var(--ink); font:inherit; cursor:pointer; transition:.15s; white-space:nowrap}
+.cr-depot-btn:hover{background:rgba(139,92,246,.28)}
+.cr-depot-btn:disabled{opacity:.5; cursor:not-allowed}
+.cr-depot-auth{margin-bottom:14px}
+.cr-camarades{position:relative}
+.cr-camarades input{width:100%; box-sizing:border-box; padding:10px 14px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font:inherit}
+.cr-camarades input:focus{outline:2px solid var(--cyan); outline-offset:1px}
+.cr-camarade-liste{position:absolute; z-index:5; top:calc(100% + 4px); left:0; right:0; max-height:200px; overflow-y:auto; background:var(--bg); border:1px solid var(--line); border-radius:10px; box-shadow:var(--glow)}
+.cr-camarade-liste button{display:block; width:100%; text-align:left; padding:9px 14px; background:none; border:none; color:var(--ink); font:inherit; cursor:pointer}
+.cr-camarade-liste button:hover{background:rgba(139,92,246,.15)}
+.cr-camarade-chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+.cr-chip{display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; background:rgba(139,92,246,.15); border:1px solid var(--violet); color:var(--ink); font-size:13px}
+.cr-chip button{background:none; border:none; color:var(--ink); cursor:pointer; font-size:14px; line-height:1; padding:0}
 
 footer{padding:36px 0 70px; color:var(--muted); font-size:14px}
 .mono-n{font-family:var(--mono); font-weight:700; font-size:18px; margin-top:12px}
@@ -415,11 +428,21 @@ for _ in range(n):
 
   <section class="cr-depot" id="depotCompteRendu">
     <h3>📤 Déposer ton compte-rendu</h3>
-    <p class="cr-depot-desc">Indique ton nom (ou plusieurs noms séparés par une virgule si vous travaillez en groupe), puis clique sur le bouton.</p>
-    <div class="cr-depot-row">
-      <input type="text" id="crNoms" placeholder="Ton nom (ou noms séparés par une virgule)" maxlength="300" autocomplete="off">
-      <button id="crBtn" type="button">📤 Déposer mon compte-rendu</button>
+    <div id="crAuth" class="cr-depot-auth" hidden>
+      <p class="cr-depot-desc">Tu déposes en tant que <strong id="crMoi"></strong>. Si vous avez travaillé en groupe, cherche tes camarades :</p>
+      <div class="cr-camarades">
+        <input type="text" id="crCamaradeInput" placeholder="Nom d'un camarade de la classe..." autocomplete="off">
+        <div id="crCamaradeListe" class="cr-camarade-liste" hidden></div>
+      </div>
+      <div id="crCamaradeChips" class="cr-camarade-chips"></div>
     </div>
+    <div id="crAnonyme">
+      <p class="cr-depot-desc">Indique ton nom (ou plusieurs noms séparés par une virgule si vous travaillez en groupe), puis clique sur le bouton.</p>
+      <div class="cr-depot-row">
+        <input type="text" id="crNoms" placeholder="Ton nom (ou noms séparés par une virgule)" maxlength="300" autocomplete="off">
+      </div>
+    </div>
+    <button id="crBtn" type="button" class="cr-depot-btn">📤 Déposer mon compte-rendu</button>
     <p id="crMsg" class="cr-depot-msg" role="status"></p>
   </section>
 
@@ -655,15 +678,105 @@ document.querySelectorAll('[data-cell]').forEach(function(cell){
     return JSON.stringify(travail);
   }
 
+  /* ---- Identité auto-détectée + recherche de camarades (élève connecté) ---- */
+  var contexte = window.__CONTEXTE_ELEVE__ || null;
+  var camaradesSelectionnes = [];
+
+  var authBox = document.getElementById('crAuth');
+  var anonBox = document.getElementById('crAnonyme');
+  var moiSpan = document.getElementById('crMoi');
+  var camaradeInput = document.getElementById('crCamaradeInput');
+  var camaradeListe = document.getElementById('crCamaradeListe');
+  var camaradeChips = document.getElementById('crCamaradeChips');
+
+  function normaliser(txt){
+    var s = (txt || '').toLowerCase().normalize('NFD');
+    var out = '';
+    for (var i = 0; i < s.length; i++){
+      var code = s.charCodeAt(i);
+      if (code < 0x0300 || code > 0x036f) out += s[i];
+    }
+    return out;
+  }
+
+  function renderChips(){
+    if (!camaradeChips) return;
+    camaradeChips.innerHTML = '';
+    camaradesSelectionnes.forEach(function(c){
+      var chip = document.createElement('span');
+      chip.className = 'cr-chip';
+      var texte = document.createElement('span');
+      texte.textContent = c.nom;
+      var retirer = document.createElement('button');
+      retirer.type = 'button';
+      retirer.setAttribute('aria-label', 'Retirer ' + c.nom);
+      retirer.textContent = '✕';
+      retirer.addEventListener('click', function(){
+        camaradesSelectionnes = camaradesSelectionnes.filter(function(x){ return x.id !== c.id; });
+        renderChips();
+      });
+      chip.appendChild(texte);
+      chip.appendChild(retirer);
+      camaradeChips.appendChild(chip);
+    });
+  }
+
+  function fermerListe(){
+    if (camaradeListe){ camaradeListe.hidden = true; camaradeListe.innerHTML = ''; }
+  }
+
+  if (contexte && authBox && anonBox){
+    authBox.hidden = false;
+    anonBox.style.display = 'none';
+    if (moiSpan) moiSpan.textContent = contexte.moi.nom;
+
+    if (camaradeInput){
+      camaradeInput.addEventListener('input', function(){
+        var q = normaliser(camaradeInput.value);
+        fermerListe();
+        if (!q) return;
+        var dejaPris = camaradesSelectionnes.map(function(c){ return c.id; });
+        var resultats = (contexte.camarades || []).filter(function(c){
+          return dejaPris.indexOf(c.id) === -1 && normaliser(c.nom).indexOf(q) !== -1;
+        }).slice(0, 8);
+        if (!resultats.length) return;
+        resultats.forEach(function(c){
+          var opt = document.createElement('button');
+          opt.type = 'button';
+          opt.textContent = c.nom;
+          opt.addEventListener('click', function(){
+            camaradesSelectionnes.push(c);
+            renderChips();
+            camaradeInput.value = '';
+            fermerListe();
+            camaradeInput.focus();
+          });
+          camaradeListe.appendChild(opt);
+        });
+        camaradeListe.hidden = false;
+      });
+      document.addEventListener('click', function(e){
+        if (e.target !== camaradeInput && camaradeListe && !camaradeListe.contains(e.target)) fermerListe();
+      });
+    }
+  }
+
   btn.addEventListener('click', function(){
-    var noms = input.value.trim();
     msg.textContent = '';
     msg.className = 'cr-depot-msg';
 
-    if (!noms){
-      msg.textContent = '⚠️ Indique ton nom (ou les noms du groupe) avant de déposer.';
-      msg.classList.add('err');
-      return;
+    var payload = { coursId: COURS_ID, travail: collecterTravail() };
+
+    if (contexte){
+      payload.camaradesIds = camaradesSelectionnes.map(function(c){ return c.id; });
+    } else {
+      var noms = input.value.trim();
+      if (!noms){
+        msg.textContent = '⚠️ Indique ton nom (ou les noms du groupe) avant de déposer.';
+        msg.classList.add('err');
+        return;
+      }
+      payload.noms = noms;
     }
 
     btn.disabled = true;
@@ -672,7 +785,7 @@ document.querySelectorAll('[data-cell]').forEach(function(cell){
     fetch('/api/comptes-rendus', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ coursId: COURS_ID, noms: noms, travail: collecterTravail() })
+      body: JSON.stringify(payload)
     })
     .then(function(res){
       return res.json().then(function(data){ return { ok: res.ok, data: data }; });
@@ -681,7 +794,8 @@ document.querySelectorAll('[data-cell]').forEach(function(cell){
       if (result.ok){
         msg.textContent = '✅ Compte-rendu déposé !';
         msg.classList.add('ok');
-        input.value = '';
+        if (input) input.value = '';
+        if (contexte){ camaradesSelectionnes = []; renderChips(); }
       } else {
         msg.textContent = '❌ ' + (result.data && result.data.error ? result.data.error : 'Le dépôt a échoué.');
         msg.classList.add('err');

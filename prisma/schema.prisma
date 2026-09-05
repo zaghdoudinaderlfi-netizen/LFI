@@ -116,6 +116,8 @@ model User {
   notifications  Notification[]
   tokensReinit   TokenReinitMdp[]
   entreesSuivi   EntreeSuivi[]
+  comptesRendus         CompteRendu[]       @relation("AuteurCompteRendu")
+  comptesRendusMembre   MembreCompteRendu[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -248,14 +250,47 @@ model CompteRendu {
   classe   Classe? @relation(fields: [classeId], references: [id], onDelete: SetNull)
   classeId String?
 
+  // Auteur du dépôt — relevé côté serveur depuis la session (jamais saisi).
+  // Null pour un dépôt fait hors connexion (widget ouvert sans compte,
+  // `noms` reste alors la seule trace de qui a déposé).
+  eleve   User?   @relation("AuteurCompteRendu", fields: [eleveId], references: [id], onDelete: SetNull)
+  eleveId String?
+
+  // Coéquipiers choisis par l'auteur parmi les élèves de sa classe (widget
+  // de recherche côté élève) — même schéma que Soumission/MembreGroupe.
+  membres MembreCompteRendu[]
+
+  // Note en étoiles (0-5) donnée par le prof à ce dépôt précis — moyennée
+  // par trimestre pour former le critère "comptes-rendus" de la note orale
+  // (voir lib/suivi-oral.ts). Null tant que le prof n'a pas noté.
+  noteEtoiles Int?
+
   @@index([coursId])
   @@index([classeId])
+  @@index([eleveId])
+}
+
+// Coéquipier d'un dépôt de compte-rendu, choisi par l'auteur parmi les
+// élèves de sa classe (recherche dans le widget de dépôt).
+model MembreCompteRendu {
+  id            String      @id @default(cuid())
+  compteRendu   CompteRendu @relation(fields: [compteRenduId], references: [id], onDelete: Cascade)
+  compteRenduId String
+  eleve         User        @relation(fields: [eleveId], references: [id], onDelete: Cascade)
+  eleveId       String
+
+  createdAt DateTime @default(now())
+
+  @@unique([compteRenduId, eleveId])
+  @@index([eleveId])
 }
 
 // Point de suivi "vie de classe" saisi ponctuellement par le prof pendant le
-// trimestre (une entrée = une observation à une date donnée, pas un cumul).
-// La moyenne des entrées d'un trimestre donne le score ludique (étoiles,
-// affiché en direct sur le tableau de bord élève) et se convertit en note
+// trimestre (une entrée = une observation à une date donnée, pas un cumul) :
+// travail fait et assiduité. Le troisième critère de la note orale, "comptes-
+// rendus", n'est pas saisi ici — il est calculé depuis CompteRendu.noteEtoiles
+// (la note que le prof donne à chaque dépôt réel). La moyenne des trois donne
+// le score ludique (étoiles, tableau de bord élève) et se convertit en note
 // orale /20 une fois le trimestre terminé — voir lib/suivi-oral.ts.
 model EntreeSuivi {
   id      String @id @default(cuid())
@@ -271,7 +306,6 @@ model EntreeSuivi {
 
   // Chaque critère noté de 0 à 5 étoiles.
   travailFait Int
-  compteRendu Int
   assiduite   Int
 
   commentaire String?

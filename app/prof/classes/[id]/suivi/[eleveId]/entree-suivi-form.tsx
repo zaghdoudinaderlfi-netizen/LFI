@@ -27,8 +27,11 @@ export function EntreeSuiviForm({ classeId, eleveId }: { classeId: string; eleve
       <input type="hidden" name="eleveId" value={eleveId} />
 
       <EtoilesSelecteur key={`travail-${cle}`} name="travailFait" label={CRITERE_LABELS.travailFait} />
-      <EtoilesSelecteur key={`compte-rendu-${cle}`} name="compteRendu" label={CRITERE_LABELS.compteRendu} />
       <EtoilesSelecteur key={`assiduite-${cle}`} name="assiduite" label={CRITERE_LABELS.assiduite} />
+      <p className="text-xs text-ink-muted">
+        Le critère « {CRITERE_LABELS.compteRendu} » n&apos;est plus saisi ici : il se calcule
+        automatiquement à partir des notes données à chaque dépôt (page Comptes-rendus).
+      </p>
 
       <div className="flex flex-col gap-1">
         <label htmlFor="commentaire" className="field-label">

@@ -8,16 +8,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 });
   }
 
-  const { coursId, noms, travail } = body as Record<string, unknown>;
+  const { coursId, noms, camaradesIds, travail } = body as Record<string, unknown>;
 
-  if (typeof coursId !== "string" || typeof noms !== "string") {
+  if (typeof coursId !== "string") {
+    return NextResponse.json({ error: "Champs manquants ou invalides." }, { status: 400 });
+  }
+  if (noms !== undefined && typeof noms !== "string") {
+    return NextResponse.json({ error: "Champs manquants ou invalides." }, { status: 400 });
+  }
+  if (
+    camaradesIds !== undefined &&
+    !(Array.isArray(camaradesIds) && camaradesIds.every((id) => typeof id === "string"))
+  ) {
     return NextResponse.json({ error: "Champs manquants ou invalides." }, { status: 400 });
   }
 
   try {
     const compteRendu = await deposerCompteRendu({
       coursId,
-      noms,
+      noms: typeof noms === "string" ? noms : undefined,
+      camaradesIds: Array.isArray(camaradesIds) ? (camaradesIds as string[]) : undefined,
       travail: typeof travail === "string" ? travail : undefined,
     });
     return NextResponse.json(

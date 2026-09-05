@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, BadgeCheck } from "lucide-react";
 import { obtenirCompteRendu, lireTravail } from "@/lib/comptes-rendus";
 import { MATIERE_LABELS } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
+import { NotationCompteRendu } from "@/components/suivi/notation-compte-rendu";
 
 export default async function CompteRenduDetailPage({
   params,
@@ -31,7 +32,15 @@ export default async function CompteRenduDetailPage({
       </div>
 
       <div className="card animate-fade-in-up p-6">
-        <h1 className="text-2xl font-extrabold text-ink-primary font-heading">{compteRendu.noms}</h1>
+        <h1 className="flex flex-wrap items-center gap-2 text-2xl font-extrabold text-ink-primary font-heading">
+          {compteRendu.noms}
+          {compteRendu.eleveId && (
+            <BadgeCheck
+              className="h-5 w-5 text-neon-cyan"
+              aria-label="Identité vérifiée (compte élève)"
+            />
+          )}
+        </h1>
         <p className="mt-2 text-sm text-ink-secondary">
           {compteRendu.classe ? `${compteRendu.classe.nom} · ` : ""}
           {compteRendu.cours.titre} · {MATIERE_LABELS[compteRendu.cours.matiere]} ·{" "}
@@ -47,6 +56,11 @@ export default async function CompteRenduDetailPage({
             minute: "2-digit",
           })}
         </p>
+
+        <div className="mt-4 border-t border-space-border pt-4">
+          <p className="eyebrow mb-2">Note de ce dépôt</p>
+          <NotationCompteRendu id={compteRendu.id} valeurInitiale={compteRendu.noteEtoiles} />
+        </div>
       </div>
 
       {travail.length === 0 ? (

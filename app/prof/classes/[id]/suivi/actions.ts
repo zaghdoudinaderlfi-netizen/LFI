@@ -30,7 +30,6 @@ export async function ajouterEntreeSuiviAction(
     await ajouterEntreeSuivi({
       eleveId,
       travailFait: nombreEntier(formData, "travailFait"),
-      compteRendu: nombreEntier(formData, "compteRendu"),
       assiduite: nombreEntier(formData, "assiduite"),
       commentaire: typeof commentaire === "string" ? commentaire : undefined,
     });

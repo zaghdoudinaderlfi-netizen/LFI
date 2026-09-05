@@ -135,6 +135,9 @@ export default async function ComptesRendusPage({
                   <span className="mt-1 text-xs text-neon-cyan">
                     {cr.travail ? "Voir le travail →" : "Sans travail joint"}
                   </span>
+                  <span className="mt-1 text-xs text-ink-muted">
+                    {cr.noteEtoiles !== null ? `⭐ ${cr.noteEtoiles}/5` : "Non noté"}
+                  </span>
                 </div>
               </Link>
             </li>

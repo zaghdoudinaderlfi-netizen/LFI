@@ -74,3 +74,24 @@ export function activerCorrections(html: string): string {
     "<script>window.__CORRECTION_ACTIVE__ = true;</script>\n</head>"
   );
 }
+
+export type ContexteEleveDepot = {
+  moi: { id: string; nom: string };
+  camarades: { id: string; nom: string }[];
+};
+
+/**
+ * Injecte l'identité de l'élève connecté et la liste de ses camarades de
+ * classe : le widget de dépôt de compte-rendu peut alors se passer de
+ * saisie libre (voir __CONTEXTE_ELEVE__ dans le script du widget).
+ */
+export function injecterContexteEleve(html: string, contexte: ContexteEleveDepot): string {
+  // Échappe "<" pour qu'aucune séquence "</script>" dans un nom ne puisse
+  // casser hors du tag (les noms viennent de la base, pas de l'utilisateur
+  // courant, mais un autre élève a pu saisir le sien à l'inscription).
+  const json = JSON.stringify(contexte).replace(/</g, "\\u003c");
+  return html.replace(
+    "</head>",
+    `<script>window.__CONTEXTE_ELEVE__ = ${json};</script>\n</head>`
+  );
+}

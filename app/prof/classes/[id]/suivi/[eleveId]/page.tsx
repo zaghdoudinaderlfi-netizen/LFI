@@ -41,6 +41,10 @@ export default async function SuiviEleveDetailPage({
   const trimestreCourant = suivi.find((t) => t.trimestre === trimestre) ?? {
     trimestre,
     entrees: [],
+    comptesRendus: [],
+    travailFaitAvg: null,
+    compteRenduAvg: null,
+    assiduiteAvg: null,
     moyenne0a5: null,
     note20: null,
     estActuel: trimestre === trimestreActuel(),
@@ -86,9 +90,27 @@ export default async function SuiviEleveDetailPage({
                 ? "Note orale indicative — le trimestre est en cours"
                 : `Note orale du ${TRIMESTRE_LABELS[trimestre].toLowerCase()}`}
             </p>
+            <div className="mt-4 flex flex-col gap-2 border-t border-space-border pt-4 text-left">
+              {(
+                [
+                  ["travailFait", trimestreCourant.travailFaitAvg],
+                  ["compteRendu", trimestreCourant.compteRenduAvg],
+                  ["assiduite", trimestreCourant.assiduiteAvg],
+                ] as const
+              ).map(([critere, moyenne]) => (
+                <div key={critere} className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-ink-secondary">{CRITERE_LABELS[critere]}</span>
+                  {moyenne !== null ? (
+                    <EtoilesAffichage valeur={moyenne} />
+                  ) : (
+                    <span className="text-xs text-ink-muted">—</span>
+                  )}
+                </div>
+              ))}
+            </div>
           </>
         ) : (
-          <p className="text-ink-secondary">Aucune entrée pour ce trimestre pour le moment.</p>
+          <p className="text-ink-secondary">Aucune donnée pour ce trimestre pour le moment.</p>
         )}
       </div>
 
@@ -125,7 +147,7 @@ export default async function SuiviEleveDetailPage({
                   </form>
                 </div>
                 <div className="mt-2 flex flex-col gap-1">
-                  {(["travailFait", "compteRendu", "assiduite"] as const).map((critere) => (
+                  {(["travailFait", "assiduite"] as const).map((critere) => (
                     <div key={critere} className="flex items-center justify-between gap-3">
                       <span className="text-sm text-ink-secondary">{CRITERE_LABELS[critere]}</span>
                       <EtoilesAffichage valeur={entree[critere]} />
@@ -135,6 +157,34 @@ export default async function SuiviEleveDetailPage({
                 {entree.commentaire && (
                   <p className="mt-2 text-sm text-ink-secondary">{entree.commentaire}</p>
                 )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {trimestreCourant.comptesRendus.length > 0 && (
+        <section className="animate-fade-in-up [animation-delay:160ms]">
+          <h2 className="section-title mb-3">Comptes-rendus notés — {TRIMESTRE_LABELS[trimestre]}</h2>
+          <ul className="flex flex-col gap-3">
+            {trimestreCourant.comptesRendus.map((cr) => (
+              <li key={cr.id}>
+                <Link
+                  href={`/prof/comptes-rendus/${cr.id}`}
+                  className="card flex items-center justify-between gap-3 p-4 transition-colors hover:border-neon-blue/50"
+                >
+                  <div>
+                    <p className="font-medium text-ink-primary">{cr.cours.titre}</p>
+                    <p className="text-xs text-ink-muted">
+                      {cr.dateDepot.toLocaleDateString("fr-FR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <EtoilesAffichage valeur={cr.noteEtoiles ?? 0} />
+                </Link>
               </li>
             ))}
           </ul>
