@@ -2,22 +2,30 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { Star } from "lucide-react";
 import { listerNotesEleve } from "@/lib/soumissions";
-import { obtenirSuiviEleve, TRIMESTRE_LABELS } from "@/lib/suivi-oral";
+import { obtenirSuiviEleve, obtenirProgressionEleve, TRIMESTRE_LABELS } from "@/lib/suivi-oral";
 import { EtoilesAffichage } from "@/components/suivi/etoiles";
+import { ProgressionBouclier } from "@/components/suivi/bouclier";
 
 export default async function EleveNotesPage() {
   const session = await auth();
 
-  const [notes, suivi] = session?.user?.id
+  const [notes, suivi, progression] = session?.user?.id
     ? await Promise.all([
         listerNotesEleve(session.user.id),
         obtenirSuiviEleve(session.user.id),
+        obtenirProgressionEleve(session.user.id),
       ])
-    : [[], []];
+    : [[], [], null];
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <h1 className="page-title animate-fade-in-up">Mes notes</h1>
+
+      {progression && (
+        <section className="card-hard card-hard-violet animate-fade-in-up p-6">
+          <ProgressionBouclier {...progression} />
+        </section>
+      )}
 
       {suivi.length > 0 && (
         <section className="card-hard card-hard-violet animate-fade-in-up p-6">

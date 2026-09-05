@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Trimestre } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { NIVEAU_LABELS } from "@/lib/classes";
-import { TRIMESTRE_LABELS, trimestreActuel, listerElevesAvecSuiviClasse, noteSur20 } from "@/lib/suivi-oral";
+import { TRIMESTRE_LABELS, trimestreActuel, listerElevesAvecSuiviClasse } from "@/lib/suivi-oral";
 import { EtoilesAffichage } from "@/components/suivi/etoiles";
 
 const TRIMESTRES: Trimestre[] = ["T1", "T2", "T3"];
@@ -84,7 +84,7 @@ export default async function SuiviClassePage({
                     <div className="flex flex-col items-end gap-1">
                       <EtoilesAffichage valeur={eleve.moyenne0a5} />
                       <span className="text-xs font-bold text-ink-secondary">
-                        {noteSur20(eleve.moyenne0a5).toFixed(1)}/20
+                        {eleve.note20 !== null ? `${eleve.note20.toFixed(1)}/20` : "—"}
                       </span>
                     </div>
                   ) : (

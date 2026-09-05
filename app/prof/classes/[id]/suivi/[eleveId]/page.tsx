@@ -8,7 +8,6 @@ import {
   CRITERE_LABELS,
   trimestreActuel,
   obtenirSuiviEleve,
-  noteSur20,
 } from "@/lib/suivi-oral";
 import { EtoilesAffichage } from "@/components/suivi/etoiles";
 import { EntreeSuiviForm } from "./entree-suivi-form";
@@ -46,6 +45,7 @@ export default async function SuiviEleveDetailPage({
     compteRenduAvg: null,
     assiduiteAvg: null,
     moyenne0a5: null,
+    pointsTrimestre: 0,
     note20: null,
     estActuel: trimestre === trimestreActuel(),
   };
@@ -83,12 +83,14 @@ export default async function SuiviEleveDetailPage({
               <EtoilesAffichage valeur={trimestreCourant.moyenne0a5} taille="h-7 w-7" />
             </div>
             <p className="mt-2 font-heading text-3xl font-extrabold text-ink-primary">
-              {noteSur20(trimestreCourant.moyenne0a5).toFixed(1)}<span className="text-lg text-ink-muted">/20</span>
+              {trimestreCourant.note20?.toFixed(1) ?? "0.0"}<span className="text-lg text-ink-muted">/20</span>
             </p>
             <p className="mt-1 text-xs text-ink-muted">
+              {trimestreCourant.pointsTrimestre} point{trimestreCourant.pointsTrimestre > 1 ? "s" : ""} cumulé
+              {trimestreCourant.pointsTrimestre > 1 ? "s" : ""} ce trimestre ·{" "}
               {trimestreCourant.estActuel
-                ? "Note orale indicative — le trimestre est en cours"
-                : `Note orale du ${TRIMESTRE_LABELS[trimestre].toLowerCase()}`}
+                ? "note orale indicative, trimestre en cours"
+                : `note orale du ${TRIMESTRE_LABELS[trimestre].toLowerCase()}`}
             </p>
             <div className="mt-4 flex flex-col gap-2 border-t border-space-border pt-4 text-left">
               {(

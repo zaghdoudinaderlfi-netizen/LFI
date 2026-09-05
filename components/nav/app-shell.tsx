@@ -23,9 +23,11 @@ import {
 } from "lucide-react";
 import { logout } from "@/app/actions";
 import { AvatarDisplay } from "@/components/avatar/avatar-display";
+import { BadgeBouclierAvatar } from "@/components/suivi/bouclier";
 import { PageTransition } from "@/components/ui/page-transition";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { formaterNomComplet } from "@/lib/utilisateurs";
+import type { PalierBouclier } from "@/lib/suivi-oral-constants";
 
 type Role = "ELEVE" | "PROF";
 
@@ -86,11 +88,14 @@ export function AppShell({
   role,
   user,
   notificationsNonLues,
+  shieldPalier,
   children,
 }: {
   role: Role;
   user: ShellUser;
   notificationsNonLues: number;
+  /** Palier de bouclier de l'élève (ELEVE uniquement) — incrusté sur son avatar. */
+  shieldPalier?: PalierBouclier;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -102,6 +107,7 @@ export function AppShell({
   const notificationsHref = NOTIFICATIONS_HREF[role];
   const profilHref = PROFIL_HREF[role];
   const userName = formaterNomComplet(user);
+  const badgeAvatar = shieldPalier ? <BadgeBouclierAvatar palier={shieldPalier} taille="sm" /> : undefined;
 
   function estActif(href: string) {
     if (href === dashboardHref) return pathname === href;
@@ -169,7 +175,7 @@ export function AppShell({
           aria-label="Menu utilisateur"
           aria-expanded={userMenuOuvert}
         >
-          <AvatarDisplay user={user} neutre={role === "PROF"} taille={compact ? "xs" : "sm"} />
+          <AvatarDisplay user={user} neutre={role === "PROF"} taille={compact ? "xs" : "sm"} badge={badgeAvatar} />
           {!compact && (
             <>
               <span className="flex-1 truncate text-left">{userName}</span>
@@ -194,7 +200,7 @@ export function AppShell({
             >
               {compact && (
                 <div className="flex items-center gap-2 border-b-2 border-space-border px-3 py-2.5">
-                  <AvatarDisplay user={user} neutre={role === "PROF"} taille="xs" />
+                  <AvatarDisplay user={user} neutre={role === "PROF"} taille="xs" badge={badgeAvatar} />
                   <span className="truncate text-sm font-medium text-ink-primary">{userName}</span>
                 </div>
               )}

@@ -8,8 +8,15 @@ import { listerNotesEleve } from "@/lib/soumissions";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { configAvatarUtilisateur, genererAvatarSvg } from "@/lib/avatar";
 import { Mascotte } from "@/components/mascotte/mascotte";
-import { obtenirScoreLudiqueActuel, CRITERE_LABELS, TRIMESTRE_LABELS, trimestreActuel } from "@/lib/suivi-oral";
+import {
+  obtenirScoreLudiqueActuel,
+  obtenirProgressionEleve,
+  CRITERE_LABELS,
+  TRIMESTRE_LABELS,
+  trimestreActuel,
+} from "@/lib/suivi-oral";
 import { EtoilesAffichage } from "@/components/suivi/etoiles";
+import { BadgeBouclierAvatar } from "@/components/suivi/bouclier";
 import type { Matiere } from "@prisma/client";
 
 const MATIERE_STYLE: Record<Matiere, React.CSSProperties> = {
@@ -28,14 +35,15 @@ export default async function ElevePage() {
       })
     : null;
 
-  const [derniersCours, devoirs, notes, scoreLudique] = user?.classe
+  const [derniersCours, devoirs, notes, scoreLudique, progression] = user?.classe
     ? await Promise.all([
         listerDerniersCoursPublies(user.classe.niveau, 3),
         listerDevoirsAFaire(user.id, user.classe.niveau),
         listerNotesEleve(user.id),
         obtenirScoreLudiqueActuel(user.id),
+        obtenirProgressionEleve(user.id),
       ])
-    : [[], [], [], null];
+    : [[], [], [], null, null];
 
   const devoirsAFaire = devoirs.filter((devoir) => !devoir.soumission).slice(0, 4);
   const dernieresNotes = notes.slice(0, 4);
@@ -49,7 +57,11 @@ export default async function ElevePage() {
       {/* En-tête avec avatar / mascotte */}
       <div className="flex items-center gap-4 animate-fade-in-up">
         {svgMascotte ? (
-          <Mascotte svgAvatar={svgMascotte} prenom={user?.prenom} />
+          <Mascotte
+            svgAvatar={svgMascotte}
+            prenom={user?.prenom}
+            badge={progression ? <BadgeBouclierAvatar palier={progression.palier} taille="md" /> : undefined}
+          />
         ) : null}
         <div>
           <p className="font-mono text-xs font-bold tracking-widest" style={{ color: "rgb(var(--snt-txt))" }}>
@@ -61,6 +73,11 @@ export default async function ElevePage() {
           {user?.classe && (
             <p className="text-sm text-ink-secondary">
               {user.classe.nom} · {NIVEAU_LABELS[user.classe.niveau]}
+            </p>
+          )}
+          {progression && (
+            <p className="mt-0.5 text-xs font-medium" style={{ color: "rgb(var(--neon-violet))" }}>
+              Palier {progression.palier.nom} · {progression.pointsCumules} pt{progression.pointsCumules > 1 ? "s" : ""}
             </p>
           )}
         </div>

@@ -69,9 +69,12 @@ const variantesBulle = {
 export function Mascotte({
   svgAvatar,
   prenom,
+  badge,
 }: {
   svgAvatar: string;
   prenom?: string | null;
+  /** Incrustation optionnelle (ex. bouclier de palier) posée sur l'avatar. */
+  badge?: React.ReactNode;
 }) {
   const [etat, setEtatState] = useState<Etat>("actif");
   const [message, setMessage] = useState<string | null>(null);
@@ -194,6 +197,7 @@ export function Mascotte({
             className="h-24 w-24 overflow-hidden rounded-full ring-2 ring-neon-cyan/40 shadow-glow-cyan"
             dangerouslySetInnerHTML={{ __html: svgAvatar }}
           />
+          {badge}
         </motion.div>
 
         {/* Zzz flottants quand endormi */}

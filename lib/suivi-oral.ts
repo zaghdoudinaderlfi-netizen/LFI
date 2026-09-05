@@ -2,9 +2,12 @@ import { Trimestre } from "@prisma/client";
 import { prisma } from "./prisma";
 import {
   ETOILES_MAX,
+  POINTS_PAR_PALIER,
   trimestreDeDate,
   trimestreActuel,
-  noteSur20,
+  palierDePoints,
+  prochainPalier,
+  type PalierBouclier,
 } from "./suivi-oral-constants";
 
 export class SuiviOralError extends Error {}
@@ -18,6 +21,11 @@ export {
   trimestreDeDate,
   trimestreActuel,
   noteSur20,
+  POINTS_PAR_PALIER,
+  PALIERS_BOUCLIER,
+  type PalierBouclier,
+  palierDePoints,
+  prochainPalier,
 } from "./suivi-oral-constants";
 
 /** Moyenne d'une liste de notes /5, ou null si la liste est vide. */
@@ -30,6 +38,11 @@ function moyenneListe(valeurs: number[]): number | null {
 function moyenneComposantes(composantes: (number | null)[]): number | null {
   const dispo = composantes.filter((v): v is number => v !== null);
   return dispo.length ? dispo.reduce((a, b) => a + b, 0) / dispo.length : null;
+}
+
+/** Convertit un total de points (étoiles cumulées) en note /20, plafonnée à 20. */
+function pointsVersNote20(points: number): number {
+  return Math.min(20, Math.round((points / POINTS_PAR_PALIER) * 20 * 10) / 10);
 }
 
 function validerNote(valeur: number, champ: string) {
@@ -118,14 +131,20 @@ export type TrimestreSuivi = {
   compteRenduAvg: number | null;
   assiduiteAvg: number | null;
   moyenne0a5: number | null;
+  // Total des étoiles données ce trimestre (travail fait + assiduité + notes
+  // de comptes-rendus) — chaque POINTS_PAR_PALIER points vaut 20/20.
+  pointsTrimestre: number;
   note20: number | null;
   estActuel: boolean;
 };
 
 /**
  * Regroupe par trimestre le suivi manuel (travail fait / assiduité) et les
- * comptes-rendus notés (critère "comptes-rendus") d'un élève, avec la
- * moyenne des 3 composantes disponibles et la note orale /20 qui en découle.
+ * comptes-rendus notés (critère "comptes-rendus") d'un élève. La note orale
+ * /20 se calcule sur le CUMUL des étoiles du trimestre (pas leur moyenne) :
+ * chaque POINTS_PAR_PALIER points donne 20/20, plafonné à 20 — voir
+ * pointsVersNote20(). `moyenne0a5` reste une moyenne /5 pour l'affichage en
+ * étoiles (détail par critère), séparée de ce calcul.
  */
 export async function obtenirSuiviEleve(eleveId: string): Promise<TrimestreSuivi[]> {
   const [entrees, comptesRendus] = await Promise.all([
@@ -142,8 +161,13 @@ export async function obtenirSuiviEleve(eleveId: string): Promise<TrimestreSuivi
       const travailFaitAvg = moyenneListe(entreesTrimestre.map((e) => e.travailFait));
       const assiduiteAvg = moyenneListe(entreesTrimestre.map((e) => e.assiduite));
       const compteRenduAvg = moyenneListe(comptesRendusTrimestre.map((cr) => cr.noteEtoiles!));
-
       const moyenne = moyenneComposantes([travailFaitAvg, compteRenduAvg, assiduiteAvg]);
+
+      const pointsTrimestre =
+        entreesTrimestre.reduce((acc, e) => acc + e.travailFait + e.assiduite, 0) +
+        comptesRendusTrimestre.reduce((acc, cr) => acc + (cr.noteEtoiles ?? 0), 0);
+
+      const aDesDonnees = entreesTrimestre.length > 0 || comptesRendusTrimestre.length > 0;
 
       return {
         trimestre,
@@ -153,7 +177,8 @@ export async function obtenirSuiviEleve(eleveId: string): Promise<TrimestreSuivi
         compteRenduAvg,
         assiduiteAvg,
         moyenne0a5: moyenne,
-        note20: moyenne === null ? null : noteSur20(moyenne),
+        pointsTrimestre,
+        note20: aDesDonnees ? pointsVersNote20(pointsTrimestre) : null,
         estActuel: trimestre === actuel,
       };
     })
@@ -194,6 +219,7 @@ export type EleveAvecMoyenne = {
   nom: string;
   prenom: string | null;
   moyenne0a5: number | null;
+  note20: number | null;
   nombreEntrees: number;
 };
 
@@ -230,12 +256,51 @@ export async function listerElevesAvecSuiviClasse(
     const compteRenduAvg = moyenneListe(comptesRendusNotes.map((cr) => cr.noteEtoiles!));
     const moyenne = moyenneComposantes([travailFaitAvg, compteRenduAvg, assiduiteAvg]);
 
+    const pointsTrimestre =
+      entreesTrimestre.reduce((acc, e) => acc + e.travailFait + e.assiduite, 0) +
+      comptesRendusNotes.reduce((acc, cr) => acc + (cr.noteEtoiles ?? 0), 0);
+    const aDesDonnees = entreesTrimestre.length > 0 || comptesRendusNotes.length > 0;
+
     return {
       id: eleve.id,
       nom: eleve.nom,
       prenom: eleve.prenom,
       moyenne0a5: moyenne,
+      note20: aDesDonnees ? pointsVersNote20(pointsTrimestre) : null,
       nombreEntrees: entreesTrimestre.length + comptesRendusNotes.length,
     };
   });
+}
+
+export type ProgressionEleve = {
+  pointsCumules: number;
+  palier: PalierBouclier;
+  prochainPalier: PalierBouclier | null;
+  pointsRestants: number;
+};
+
+/**
+ * Progression ludique cumulée d'un élève, toutes périodes confondues (ne se
+ * remet jamais à zéro) : total de points → palier de bouclier atteint. Voir
+ * PALIERS_BOUCLIER / POINTS_PAR_PALIER dans lib/suivi-oral-constants.ts.
+ */
+export async function obtenirProgressionEleve(eleveId: string): Promise<ProgressionEleve> {
+  const [entrees, comptesRendus] = await Promise.all([
+    listerEntreesEleve(eleveId),
+    listerComptesRendusNotesEleve(eleveId),
+  ]);
+
+  const pointsCumules =
+    entrees.reduce((acc, e) => acc + e.travailFait + e.assiduite, 0) +
+    comptesRendus.reduce((acc, cr) => acc + (cr.noteEtoiles ?? 0), 0);
+
+  const palier = palierDePoints(pointsCumules);
+  const suivant = prochainPalier(pointsCumules);
+
+  return {
+    pointsCumules,
+    palier,
+    prochainPalier: suivant,
+    pointsRestants: suivant ? suivant.seuil - pointsCumules : 0,
+  };
 }
