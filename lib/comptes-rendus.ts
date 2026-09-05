@@ -1,7 +1,7 @@
 import { Matiere } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "./prisma";
-import { notifierProfs } from "./notifications";
+import { notifierProfs, notifierEleve } from "./notifications";
 import { formaterNomComplet } from "./utilisateurs";
 
 export class CompteRenduError extends Error {}
@@ -153,7 +153,33 @@ export async function noterCompteRendu(id: string, noteEtoiles: number) {
   if (!Number.isInteger(noteEtoiles) || noteEtoiles < 0 || noteEtoiles > NOTE_ETOILES_MAX) {
     throw new CompteRenduError(`La note doit être un entier entre 0 et ${NOTE_ETOILES_MAX}.`);
   }
-  return prisma.compteRendu.update({ where: { id }, data: { noteEtoiles } });
+
+  const compteRendu = await prisma.compteRendu.update({
+    where: { id },
+    data: { noteEtoiles },
+    include: {
+      cours: { select: { titre: true, matiere: true } },
+      membres: { select: { eleveId: true } },
+    },
+  });
+
+  const destinataires = [
+    ...(compteRendu.eleveId ? [compteRendu.eleveId] : []),
+    ...compteRendu.membres.map((m) => m.eleveId),
+  ];
+  await Promise.all(
+    destinataires.map((eleveId) =>
+      notifierEleve(
+        eleveId,
+        `Ton compte-rendu « ${compteRendu.cours.titre} » a été noté : ${noteEtoiles}/${NOTE_ETOILES_MAX}`,
+        undefined,
+        compteRendu.cours.matiere,
+        "NOTE"
+      )
+    )
+  );
+
+  return compteRendu;
 }
 
 export async function obtenirCompteRendu(id: string) {

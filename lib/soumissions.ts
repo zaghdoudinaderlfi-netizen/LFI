@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { Matiere, ModeRemiseFormulaire, TypeExercice } from "@prisma/client";
 import { prisma } from "./prisma";
 import { supabaseAdmin, BUCKET_PIECES_JOINTES, BUCKET_RENDUS_DEVOIRS } from "./supabase";
-import { notifierProfs } from "./notifications";
+import { notifierProfs, notifierEleve } from "./notifications";
 import { remplirFormulaire, FormulaireError } from "./formulaires";
 import { estTypeExerciceCode } from "./exercices-code";
 import { MAX_COEQUIPIERS, type CamaradeClasse } from "./groupes";
@@ -588,7 +588,12 @@ export async function noterSoumission(
 ) {
   const soumission = await prisma.soumission.findUnique({
     where: { id },
-    include: { exercice: { select: { points: true } } },
+    include: {
+      exercice: {
+        select: { points: true, titre: true, cours: { select: { slug: true, matiere: true } } },
+      },
+      membres: { select: { eleveId: true } },
+    },
   });
 
   if (!soumission) {
@@ -599,7 +604,7 @@ export async function noterSoumission(
     throw new SoumissionError(`La note doit être comprise entre 0 et ${soumission.exercice.points}.`);
   }
 
-  return prisma.soumission.update({
+  const resultat = await prisma.soumission.update({
     where: { id },
     data: {
       note,
@@ -608,6 +613,21 @@ export async function noterSoumission(
       reussi: note >= soumission.exercice.points / 2,
     },
   });
+
+  const destinataires = [soumission.eleveId, ...soumission.membres.map((m) => m.eleveId)];
+  await Promise.all(
+    destinataires.map((eleveId) =>
+      notifierEleve(
+        eleveId,
+        `Nouvelle note : « ${soumission.exercice.titre} » — ${note}/${soumission.exercice.points}`,
+        `/eleve/cours/${soumission.exercice.cours.slug}`,
+        soumission.exercice.cours.matiere,
+        "NOTE"
+      )
+    )
+  );
+
+  return resultat;
 }
 
 export async function creerUrlTelechargementSoumission(

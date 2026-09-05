@@ -24,6 +24,7 @@ import {
 import { logout } from "@/app/actions";
 import { AvatarDisplay } from "@/components/avatar/avatar-display";
 import { BadgeBouclierAvatar } from "@/components/suivi/bouclier";
+import { NotificationSon } from "@/components/nav/notification-son";
 import { PageTransition } from "@/components/ui/page-transition";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { formaterNomComplet } from "@/lib/utilisateurs";
@@ -88,12 +89,15 @@ export function AppShell({
   role,
   user,
   notificationsNonLues,
+  notificationsParType,
   shieldPalier,
   children,
 }: {
   role: Role;
   user: ShellUser;
   notificationsNonLues: number;
+  /** Comptes non lues par type au chargement — amorce le son de notification. */
+  notificationsParType?: { GENERALE: number; NOTE: number };
   /** Palier de bouclier de l'élève (ELEVE uniquement) — incrusté sur son avatar. */
   shieldPalier?: PalierBouclier;
   children: React.ReactNode;
@@ -233,6 +237,7 @@ export function AppShell({
 
   return (
     <div className="min-h-screen lg:flex">
+      {notificationsParType && <NotificationSon initial={notificationsParType} />}
       {/* Sidebar bureau */}
       <aside className="hidden lg:flex lg:w-64 lg:flex-col arcade-sidebar-desktop">
         <div className="flex h-16 items-center justify-between border-b-2 border-space-border px-6">

@@ -86,6 +86,14 @@ enum Trimestre {
   T3
 }
 
+// Catégorie d'une notification — permet au client de jouer un son différent
+// selon le type (une note reçue est plus "importante" qu'une notification
+// générale) sans avoir à interpréter le texte du message.
+enum TypeNotification {
+  GENERALE
+  NOTE
+}
+
 // ───────────────────────────────────────────────
 //  UTILISATEURS & CLASSES
 // ───────────────────────────────────────────────
@@ -591,6 +599,10 @@ model Notification {
   // filtrage côté prof/élève. Null si la notification n'est pas rattachée
   // à une matière précise.
   matiere Matiere?
+
+  // GENERALE par défaut ; NOTE pour une note reçue (devoir corrigé, compte-
+  // rendu noté) — son de notification différent côté client.
+  type TypeNotification @default(GENERALE)
 
   createdAt DateTime @default(now())
 
