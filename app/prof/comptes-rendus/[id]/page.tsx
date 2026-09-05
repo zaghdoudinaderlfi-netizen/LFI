@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import { obtenirCompteRendu, lireTravail } from "@/lib/comptes-rendus";
 import { MATIERE_LABELS } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
@@ -19,10 +19,16 @@ export default async function CompteRenduDetailPage({
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <Link href="/prof/comptes-rendus" className="btn-secondary w-fit animate-fade-in-up">
-        <ArrowLeft className="h-4 w-4" />
-        Retour aux comptes-rendus
-      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3 animate-fade-in-up">
+        <Link href="/prof/comptes-rendus" className="btn-secondary w-fit">
+          <ArrowLeft className="h-4 w-4" />
+          Retour aux comptes-rendus
+        </Link>
+        <a href={`/api/comptes-rendus/${compteRendu.id}/html`} download className="btn-secondary w-fit">
+          <Download className="h-4 w-4" />
+          Télécharger en HTML
+        </a>
+      </div>
 
       <div className="card animate-fade-in-up p-6">
         <h1 className="text-2xl font-extrabold text-ink-primary font-heading">{compteRendu.noms}</h1>

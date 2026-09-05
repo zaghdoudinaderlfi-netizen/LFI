@@ -77,6 +77,15 @@ enum TypeBloc {
   EDITEUR_PYTHON
 }
 
+// Trimestre scolaire — déterminé automatiquement à partir de la date de
+// l'entrée de suivi (voir trimestreDeDate() dans lib/suivi-oral.ts), pas
+// saisi manuellement : T1 = sept-déc, T2 = janv-mars, T3 = avril-août.
+enum Trimestre {
+  T1
+  T2
+  T3
+}
+
 // ───────────────────────────────────────────────
 //  UTILISATEURS & CLASSES
 // ───────────────────────────────────────────────
@@ -106,6 +115,7 @@ model User {
   tentativesQuiz TentativeQuiz[]
   notifications  Notification[]
   tokensReinit   TokenReinitMdp[]
+  entreesSuivi   EntreeSuivi[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -135,6 +145,7 @@ model Classe {
 
   eleves        User[]
   comptesRendus CompteRendu[]
+  entreesSuivi  EntreeSuivi[]
 
   createdAt DateTime @default(now())
 }
@@ -238,6 +249,36 @@ model CompteRendu {
   classeId String?
 
   @@index([coursId])
+  @@index([classeId])
+}
+
+// Point de suivi "vie de classe" saisi ponctuellement par le prof pendant le
+// trimestre (une entrée = une observation à une date donnée, pas un cumul).
+// La moyenne des entrées d'un trimestre donne le score ludique (étoiles,
+// affiché en direct sur le tableau de bord élève) et se convertit en note
+// orale /20 une fois le trimestre terminé — voir lib/suivi-oral.ts.
+model EntreeSuivi {
+  id      String @id @default(cuid())
+  eleve   User   @relation(fields: [eleveId], references: [id], onDelete: Cascade)
+  eleveId String
+
+  // Classe de l'élève au moment de la saisie (relevée côté serveur, comme
+  // pour CompteRendu — reste correcte même si l'élève change de classe).
+  classe   Classe @relation(fields: [classeId], references: [id], onDelete: Cascade)
+  classeId String
+
+  date DateTime @default(now())
+
+  // Chaque critère noté de 0 à 5 étoiles.
+  travailFait Int
+  compteRendu Int
+  assiduite   Int
+
+  commentaire String?
+
+  createdAt DateTime @default(now())
+
+  @@index([eleveId])
   @@index([classeId])
 }
 

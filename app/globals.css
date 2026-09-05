@@ -360,6 +360,7 @@ body::after {
 .card-hard-techno { border-top: 3px solid rgb(var(--arcade-techno)); }
 .card-hard-snt    { border-top: 3px solid rgb(var(--arcade-snt)); }
 .card-hard-nsi    { border-top: 3px solid rgb(var(--arcade-nsi)); }
+.card-hard-violet { border-top: 3px solid rgb(var(--neon-violet)); }
 
 /* Tuiles d'action CTA (liens Créer cours / devoir) */
 .tile-arcade {

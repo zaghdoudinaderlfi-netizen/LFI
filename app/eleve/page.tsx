@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Award, BookOpen, ListChecks } from "lucide-react";
+import { Award, BookOpen, ListChecks, Star } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { listerDerniersCoursPublies, MATIERE_LABELS } from "@/lib/cours";
@@ -8,6 +8,8 @@ import { listerNotesEleve } from "@/lib/soumissions";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { configAvatarUtilisateur, genererAvatarSvg } from "@/lib/avatar";
 import { Mascotte } from "@/components/mascotte/mascotte";
+import { obtenirScoreLudiqueActuel, CRITERE_LABELS, TRIMESTRE_LABELS, trimestreActuel } from "@/lib/suivi-oral";
+import { EtoilesAffichage } from "@/components/suivi/etoiles";
 import type { Matiere } from "@prisma/client";
 
 const MATIERE_STYLE: Record<Matiere, React.CSSProperties> = {
@@ -26,13 +28,14 @@ export default async function ElevePage() {
       })
     : null;
 
-  const [derniersCours, devoirs, notes] = user?.classe
+  const [derniersCours, devoirs, notes, scoreLudique] = user?.classe
     ? await Promise.all([
         listerDerniersCoursPublies(user.classe.niveau, 3),
         listerDevoirsAFaire(user.id, user.classe.niveau),
         listerNotesEleve(user.id),
+        obtenirScoreLudiqueActuel(user.id),
       ])
-    : [[], [], []];
+    : [[], [], [], null];
 
   const devoirsAFaire = devoirs.filter((devoir) => !devoir.soumission).slice(0, 4);
   const dernieresNotes = notes.slice(0, 4);
@@ -139,6 +142,40 @@ export default async function ElevePage() {
                   </li>
                 ))}
               </ul>
+            )}
+          </section>
+
+          {/* Score ludique (vie de classe) — accent violet */}
+          <section className="card-hard card-hard-violet animate-fade-in-up p-6 [animation-delay:150ms]">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="section-title flex items-center gap-2">
+                <Star className="h-5 w-5" style={{ color: "rgb(var(--neon-violet))" }} />
+                Ta progression
+              </h2>
+              <Link href="/eleve/notes" className="text-sm font-medium hover:underline" style={{ color: "rgb(var(--neon-violet))" }}>
+                Voir mes notes
+              </Link>
+            </div>
+
+            {!scoreLudique ? (
+              <p className="text-sm text-ink-muted">
+                Rien à afficher pour le {TRIMESTRE_LABELS[trimestreActuel()].toLowerCase()} pour le moment.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm text-ink-secondary">{TRIMESTRE_LABELS[scoreLudique.trimestre]} — en cours</p>
+                  <EtoilesAffichage valeur={scoreLudique.moyenne0a5} taille="h-6 w-6" />
+                </div>
+                <ul className="flex flex-col gap-2">
+                  {(["travailFait", "compteRendu", "assiduite"] as const).map((critere) => (
+                    <li key={critere} className="flex items-center justify-between gap-3">
+                      <span className="text-sm text-ink-secondary">{CRITERE_LABELS[critere]}</span>
+                      <EtoilesAffichage valeur={scoreLudique.parCritere[critere]} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </section>
 

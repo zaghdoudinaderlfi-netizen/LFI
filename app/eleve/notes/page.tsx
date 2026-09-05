@@ -1,17 +1,48 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { Star } from "lucide-react";
 import { listerNotesEleve } from "@/lib/soumissions";
+import { obtenirSuiviEleve, TRIMESTRE_LABELS } from "@/lib/suivi-oral";
+import { EtoilesAffichage } from "@/components/suivi/etoiles";
 
 export default async function EleveNotesPage() {
   const session = await auth();
 
-  const notes = session?.user?.id
-    ? await listerNotesEleve(session.user.id)
-    : [];
+  const [notes, suivi] = session?.user?.id
+    ? await Promise.all([
+        listerNotesEleve(session.user.id),
+        obtenirSuiviEleve(session.user.id),
+      ])
+    : [[], []];
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <h1 className="page-title animate-fade-in-up">Mes notes</h1>
+
+      {suivi.length > 0 && (
+        <section className="card-hard card-hard-violet animate-fade-in-up p-6">
+          <h2 className="section-title mb-4 flex items-center gap-2">
+            <Star className="h-5 w-5" style={{ color: "rgb(var(--neon-violet))" }} />
+            Vie de classe — note orale
+          </h2>
+          <ul className="flex flex-col gap-3">
+            {suivi.map((t) => (
+              <li key={t.trimestre} className="item-arcade flex items-center justify-between gap-3 p-4">
+                <div>
+                  <p className="font-medium text-ink-primary">
+                    {TRIMESTRE_LABELS[t.trimestre]}
+                    {t.estActuel && <span className="ml-2 text-xs text-ink-muted">(en cours)</span>}
+                  </p>
+                  {t.moyenne0a5 !== null && <EtoilesAffichage valeur={t.moyenne0a5} taille="h-4 w-4" />}
+                </div>
+                <p className="font-heading text-lg font-bold text-ink-primary">
+                  {t.note20 !== null ? `${t.note20.toFixed(1)} / 20` : "—"}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {notes.length === 0 ? (
         <div className="card animate-fade-in-up p-6 text-center">

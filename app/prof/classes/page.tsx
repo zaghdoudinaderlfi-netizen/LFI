@@ -1,4 +1,5 @@
-import { PlusCircle, Users } from "lucide-react";
+import Link from "next/link";
+import { PlusCircle, Users, Star } from "lucide-react";
 import { anneeScolaireParDefaut, listerClasses, NIVEAU_LABELS } from "@/lib/classes";
 import { ClasseForm } from "../classe-form";
 
@@ -42,11 +43,15 @@ export default async function ProfClassesPage() {
                     {classe.nombreEleves > 1 ? "élèves" : "élève"}
                   </p>
                 </div>
-                <div className="flex flex-col items-start sm:items-end">
+                <div className="flex flex-col items-start gap-2 sm:items-end">
                   <span className="eyebrow mb-1">Code d&apos;inscription</span>
                   <span className="rounded-md bg-space-surface2 px-3 py-1 font-mono text-lg font-bold text-neon-cyan">
                     {classe.codeInscription}
                   </span>
+                  <Link href={`/prof/classes/${classe.id}/suivi`} className="btn-secondary">
+                    <Star className="h-4 w-4" />
+                    Suivi oral
+                  </Link>
                 </div>
               </li>
             ))}
