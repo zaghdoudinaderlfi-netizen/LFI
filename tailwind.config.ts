@@ -72,6 +72,11 @@ const config: Config = {
           "0%, 100%": { opacity: "0.2" },
           "50%": { opacity: "0.9" },
         },
+        "shake-screen": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "10%, 30%, 50%, 70%, 90%": { transform: "translateX(-6px) rotate(-0.5deg)" },
+          "20%, 40%, 60%, 80%": { transform: "translateX(6px) rotate(0.5deg)" },
+        },
       },
       animation: {
         "blink": "blink 1s steps(2) infinite",
@@ -79,6 +84,7 @@ const config: Config = {
         "pop-in": "pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1) both",
         "glow-pulse": "glow-pulse 2.4s ease-in-out infinite",
         "twinkle": "twinkle 4s ease-in-out infinite",
+        "shake-screen": "shake-screen 0.5s ease-in-out 1",
       },
     },
   },

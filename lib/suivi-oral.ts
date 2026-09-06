@@ -34,7 +34,13 @@ function moyenneListe(valeurs: number[]): number | null {
   return valeurs.reduce((a, b) => a + b, 0) / valeurs.length;
 }
 
-/** Moyenne des 3 critères disponibles (ignore ceux à null), ou null si aucun. */
+/** Comme moyenneListe, mais ignore les valeurs null (entrées saisies avant
+ * l'ajout du critère "comportement", par exemple). */
+function moyenneListeAvecNuls(valeurs: (number | null)[]): number | null {
+  return moyenneListe(valeurs.filter((v): v is number => v !== null));
+}
+
+/** Moyenne des critères disponibles (ignore ceux à null), ou null si aucun. */
 function moyenneComposantes(composantes: (number | null)[]): number | null {
   const dispo = composantes.filter((v): v is number => v !== null);
   return dispo.length ? dispo.reduce((a, b) => a + b, 0) / dispo.length : null;
@@ -55,22 +61,25 @@ export type AjouterEntreeSuiviInput = {
   eleveId: string;
   travailFait: number;
   assiduite: number;
+  comportement: number;
   commentaire?: string;
 };
 
 /**
- * Ajoute un point de suivi "travail fait / assiduité" pour un élève ; la
- * classe est relevée côté serveur. Le critère "comptes-rendus" n'est pas
- * saisi ici — voir noterCompteRendu() dans lib/comptes-rendus.ts.
+ * Ajoute un point de suivi "travail fait / assiduité / comportement" pour un
+ * élève ; la classe est relevée côté serveur. Le critère "comptes-rendus"
+ * n'est pas saisi ici — voir noterCompteRendu() dans lib/comptes-rendus.ts.
  */
 export async function ajouterEntreeSuivi({
   eleveId,
   travailFait,
   assiduite,
+  comportement,
   commentaire,
 }: AjouterEntreeSuiviInput) {
   validerNote(travailFait, "Le score « travail toujours fait »");
   validerNote(assiduite, "Le score « assiduité »");
+  validerNote(comportement, "Le score « comportement »");
 
   const eleve = await prisma.user.findUnique({
     where: { id: eleveId },
@@ -89,6 +98,7 @@ export async function ajouterEntreeSuivi({
       classeId: eleve.classeId,
       travailFait,
       assiduite,
+      comportement,
       commentaire: commentaire?.trim() || null,
     },
   });
@@ -130,9 +140,11 @@ export type TrimestreSuivi = {
   travailFaitAvg: number | null;
   compteRenduAvg: number | null;
   assiduiteAvg: number | null;
+  comportementAvg: number | null;
   moyenne0a5: number | null;
-  // Total des étoiles données ce trimestre (travail fait + assiduité + notes
-  // de comptes-rendus) — chaque POINTS_PAR_PALIER points vaut 20/20.
+  // Total des étoiles données ce trimestre (travail fait + assiduité +
+  // comportement + notes de comptes-rendus) — chaque POINTS_PAR_PALIER
+  // points vaut 20/20.
   pointsTrimestre: number;
   note20: number | null;
   estActuel: boolean;
@@ -160,11 +172,12 @@ export async function obtenirSuiviEleve(eleveId: string): Promise<TrimestreSuivi
 
       const travailFaitAvg = moyenneListe(entreesTrimestre.map((e) => e.travailFait));
       const assiduiteAvg = moyenneListe(entreesTrimestre.map((e) => e.assiduite));
+      const comportementAvg = moyenneListeAvecNuls(entreesTrimestre.map((e) => e.comportement));
       const compteRenduAvg = moyenneListe(comptesRendusTrimestre.map((cr) => cr.noteEtoiles!));
-      const moyenne = moyenneComposantes([travailFaitAvg, compteRenduAvg, assiduiteAvg]);
+      const moyenne = moyenneComposantes([travailFaitAvg, compteRenduAvg, assiduiteAvg, comportementAvg]);
 
       const pointsTrimestre =
-        entreesTrimestre.reduce((acc, e) => acc + e.travailFait + e.assiduite, 0) +
+        entreesTrimestre.reduce((acc, e) => acc + e.travailFait + e.assiduite + (e.comportement ?? 0), 0) +
         comptesRendusTrimestre.reduce((acc, cr) => acc + (cr.noteEtoiles ?? 0), 0);
 
       const aDesDonnees = entreesTrimestre.length > 0 || comptesRendusTrimestre.length > 0;
@@ -176,6 +189,7 @@ export async function obtenirSuiviEleve(eleveId: string): Promise<TrimestreSuivi
         travailFaitAvg,
         compteRenduAvg,
         assiduiteAvg,
+        comportementAvg,
         moyenne0a5: moyenne,
         pointsTrimestre,
         note20: aDesDonnees ? pointsVersNote20(pointsTrimestre) : null,
@@ -197,8 +211,9 @@ export async function obtenirScoreLudiqueActuel(eleveId: string) {
 
   const travailFaitAvg = moyenneListe(entreesTrimestre.map((e) => e.travailFait));
   const assiduiteAvg = moyenneListe(entreesTrimestre.map((e) => e.assiduite));
+  const comportementAvg = moyenneListeAvecNuls(entreesTrimestre.map((e) => e.comportement));
   const compteRenduAvg = moyenneListe(comptesRendusTrimestre.map((cr) => cr.noteEtoiles!));
-  const moyenne = moyenneComposantes([travailFaitAvg, compteRenduAvg, assiduiteAvg]);
+  const moyenne = moyenneComposantes([travailFaitAvg, compteRenduAvg, assiduiteAvg, comportementAvg]);
 
   if (moyenne === null) return null;
 
@@ -210,6 +225,7 @@ export async function obtenirScoreLudiqueActuel(eleveId: string) {
       travailFait: travailFaitAvg ?? 0,
       compteRendu: compteRenduAvg ?? 0,
       assiduite: assiduiteAvg ?? 0,
+      comportement: comportementAvg ?? 0,
     },
   };
 }
@@ -234,7 +250,7 @@ export async function listerElevesAvecSuiviClasse(
       id: true,
       nom: true,
       prenom: true,
-      entreesSuivi: { select: { date: true, travailFait: true, assiduite: true } },
+      entreesSuivi: { select: { date: true, travailFait: true, assiduite: true, comportement: true } },
       comptesRendus: { select: { dateDepot: true, noteEtoiles: true } },
       comptesRendusMembre: {
         select: { compteRendu: { select: { dateDepot: true, noteEtoiles: true } } },
@@ -253,11 +269,12 @@ export async function listerElevesAvecSuiviClasse(
 
     const travailFaitAvg = moyenneListe(entreesTrimestre.map((e) => e.travailFait));
     const assiduiteAvg = moyenneListe(entreesTrimestre.map((e) => e.assiduite));
+    const comportementAvg = moyenneListeAvecNuls(entreesTrimestre.map((e) => e.comportement));
     const compteRenduAvg = moyenneListe(comptesRendusNotes.map((cr) => cr.noteEtoiles!));
-    const moyenne = moyenneComposantes([travailFaitAvg, compteRenduAvg, assiduiteAvg]);
+    const moyenne = moyenneComposantes([travailFaitAvg, compteRenduAvg, assiduiteAvg, comportementAvg]);
 
     const pointsTrimestre =
-      entreesTrimestre.reduce((acc, e) => acc + e.travailFait + e.assiduite, 0) +
+      entreesTrimestre.reduce((acc, e) => acc + e.travailFait + e.assiduite + (e.comportement ?? 0), 0) +
       comptesRendusNotes.reduce((acc, cr) => acc + (cr.noteEtoiles ?? 0), 0);
     const aDesDonnees = entreesTrimestre.length > 0 || comptesRendusNotes.length > 0;
 
@@ -291,7 +308,7 @@ export async function obtenirProgressionEleve(eleveId: string): Promise<Progress
   ]);
 
   const pointsCumules =
-    entrees.reduce((acc, e) => acc + e.travailFait + e.assiduite, 0) +
+    entrees.reduce((acc, e) => acc + e.travailFait + e.assiduite + (e.comportement ?? 0), 0) +
     comptesRendus.reduce((acc, cr) => acc + (cr.noteEtoiles ?? 0), 0);
 
   const palier = palierDePoints(pointsCumules);

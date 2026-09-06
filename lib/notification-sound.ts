@@ -52,3 +52,13 @@ export function jouerSonNote() {
   jouerTonalite(1046.5, 0, 0.16, contexte); // Do6
   jouerTonalite(1318.5, 0.09, 0.28, contexte); // Mi6
 }
+
+/** Nouvelle annonce du prof — petit bip enjoué à trois notes, bien
+ * reconnaissable, pour accompagner la bulle qui vibre à l'écran. */
+export function jouerSonAnnonce() {
+  const contexte = obtenirContexte();
+  if (!contexte) return;
+  jouerTonalite(783.99, 0, 0.12, contexte); // Sol5
+  jouerTonalite(987.77, 0.1, 0.12, contexte); // Si5
+  jouerTonalite(1318.5, 0.2, 0.32, contexte); // Mi6
+}

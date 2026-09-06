@@ -126,6 +126,7 @@ model User {
   entreesSuivi   EntreeSuivi[]
   comptesRendus         CompteRendu[]       @relation("AuteurCompteRendu")
   comptesRendusMembre   MembreCompteRendu[]
+  annoncesCreees        Annonce[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -315,6 +316,10 @@ model EntreeSuivi {
   // Chaque critère noté de 0 à 5 étoiles.
   travailFait Int
   assiduite   Int
+
+  // Ajouté après coup : nullable pour ne pas fausser la moyenne des entrées
+  // saisies avant l'existence de ce critère (voir moyenneListe côté lib).
+  comportement Int?
 
   commentaire String?
 
@@ -607,4 +612,28 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@index([destinataireId])
+}
+
+// Bulle d'annonce diffusée à tous les élèves depuis le dashboard prof
+// (consigne, message du jour, document à télécharger). Une seule annonce
+// est "actif" à la fois — en publier une nouvelle désactive l'ancienne.
+// Historique conservé (pas de suppression automatique) pour pouvoir la
+// republier ou revenir en arrière.
+model Annonce {
+  id      String  @id @default(cuid())
+  message String  @db.Text
+  actif   Boolean @default(true)
+
+  fichierNom      String?
+  fichierChemin   String?
+  fichierTaille   Int?
+  fichierTypeMime String?
+
+  auteur   User   @relation(fields: [auteurId], references: [id])
+  auteurId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([actif])
 }

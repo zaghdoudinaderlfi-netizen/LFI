@@ -31,6 +31,7 @@ export async function ajouterEntreeSuiviAction(
       eleveId,
       travailFait: nombreEntier(formData, "travailFait"),
       assiduite: nombreEntier(formData, "assiduite"),
+      comportement: nombreEntier(formData, "comportement"),
       commentaire: typeof commentaire === "string" ? commentaire : undefined,
     });
   } catch (error) {

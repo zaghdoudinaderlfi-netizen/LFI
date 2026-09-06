@@ -12,13 +12,14 @@ export const TRIMESTRE_LABELS: Record<Trimestre, string> = {
 export const ETOILES_MAX = 5;
 const NOTE_SUR = 20;
 
-export const CRITERES = ["travailFait", "compteRendu", "assiduite"] as const;
+export const CRITERES = ["travailFait", "compteRendu", "assiduite", "comportement"] as const;
 export type Critere = (typeof CRITERES)[number];
 
 export const CRITERE_LABELS: Record<Critere, string> = {
   travailFait: "Travail toujours fait",
   compteRendu: "Comptes-rendus",
   assiduite: "Assiduité en classe",
+  comportement: "Comportement en classe",
 };
 
 /** T1 = sept-déc, T2 = janv-mars, T3 = avril-août. */

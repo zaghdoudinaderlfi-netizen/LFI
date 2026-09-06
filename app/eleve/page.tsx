@@ -17,6 +17,8 @@ import {
 } from "@/lib/suivi-oral";
 import { EtoilesAffichage } from "@/components/suivi/etoiles";
 import { BadgeBouclierAvatar } from "@/components/suivi/bouclier";
+import { AnnonceBulle } from "@/components/eleve/annonce-bulle";
+import { obtenirAnnonceActive } from "@/lib/annonces";
 import type { Matiere } from "@prisma/client";
 
 const MATIERE_STYLE: Record<Matiere, React.CSSProperties> = {
@@ -35,15 +37,16 @@ export default async function ElevePage() {
       })
     : null;
 
-  const [derniersCours, devoirs, notes, scoreLudique, progression] = user?.classe
+  const [derniersCours, devoirs, notes, scoreLudique, progression, annonce] = user?.classe
     ? await Promise.all([
         listerDerniersCoursPublies(user.classe.niveau, 3),
         listerDevoirsAFaire(user.id, user.classe.niveau),
         listerNotesEleve(user.id),
         obtenirScoreLudiqueActuel(user.id),
         obtenirProgressionEleve(user.id),
+        obtenirAnnonceActive(),
       ])
-    : [[], [], [], null, null];
+    : [[], [], [], null, null, null];
 
   const devoirsAFaire = devoirs.filter((devoir) => !devoir.soumission).slice(0, 4);
   const dernieresNotes = notes.slice(0, 4);
@@ -82,6 +85,17 @@ export default async function ElevePage() {
           )}
         </div>
       </div>
+
+      {annonce && (
+        <AnnonceBulle
+          annonce={{
+            id: annonce.id,
+            message: annonce.message,
+            fichierNom: annonce.fichierNom,
+            fichierTaille: annonce.fichierTaille,
+          }}
+        />
+      )}
 
       {!user?.classe ? (
         <div className="card-hard animate-fade-in-up p-6 text-center">
@@ -185,7 +199,7 @@ export default async function ElevePage() {
                   <EtoilesAffichage valeur={scoreLudique.moyenne0a5} taille="h-6 w-6" />
                 </div>
                 <ul className="flex flex-col gap-2">
-                  {(["travailFait", "compteRendu", "assiduite"] as const).map((critere) => (
+                  {(["travailFait", "compteRendu", "assiduite", "comportement"] as const).map((critere) => (
                     <li key={critere} className="flex items-center justify-between gap-3">
                       <span className="text-sm text-ink-secondary">{CRITERE_LABELS[critere]}</span>
                       <EtoilesAffichage valeur={scoreLudique.parCritere[critere]} />

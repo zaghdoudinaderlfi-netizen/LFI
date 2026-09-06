@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { FileText, ListPlus, PlusCircle } from "lucide-react";
+import { FileText, ListPlus, Megaphone, PlusCircle } from "lucide-react";
 import { Matiere } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -9,6 +9,7 @@ import { NIVEAU_PAR_MATIERE, estMatiereValide } from "@/lib/classes-constants";
 import { MATIERE_LABELS } from "@/lib/cours";
 import { AvatarDisplay } from "@/components/avatar/avatar-display";
 import { MatiereTabs } from "@/components/matiere-tabs";
+import { obtenirAnnonceActive } from "@/lib/annonces";
 
 export default async function ProfPage({
   searchParams,
@@ -22,7 +23,7 @@ export default async function ProfPage({
 
   const niveauFiltré = matiere ? NIVEAU_PAR_MATIERE[matiere] : undefined;
 
-  const [user, comptesRendusCount, classes] = await Promise.all([
+  const [user, comptesRendusCount, classes, annonceActive] = await Promise.all([
     session?.user?.id
       ? prisma.user.findUnique({
           where: { id: session.user.id },
@@ -31,6 +32,7 @@ export default async function ProfPage({
       : Promise.resolve(null),
     prisma.compteRendu.count(),
     listerClasses(),
+    obtenirAnnonceActive(),
   ]);
 
   const classesFiltrees = niveauFiltré
@@ -83,6 +85,39 @@ export default async function ProfPage({
           </p>
         </Link>
       </div>
+
+      {/* Annonce aux élèves */}
+      <Link
+        href="/prof/annonce"
+        className="card-hard card-hard-violet flex items-center justify-between p-6 animate-fade-in-up [animation-delay:90ms]"
+      >
+        <div className="flex items-center gap-3">
+          <span className="icon-badge-nsi">
+            <Megaphone className="h-5 w-5" />
+          </span>
+          <div>
+            <h2 className="section-title">Annonce aux élèves</h2>
+            <p className="text-sm text-ink-secondary">
+              {annonceActive
+                ? "Une annonce est actuellement affichée sur leur tableau de bord."
+                : "Diffuse un message, une consigne ou un document à toute la classe."}
+            </p>
+          </div>
+        </div>
+        {annonceActive && (
+          <span
+            className="shrink-0 rounded-full px-3 py-1 font-mono text-xs font-bold"
+            style={{
+              color: "rgb(var(--neon-violet))",
+              borderColor: "rgba(var(--neon-violet), 0.35)",
+              background: "rgba(var(--neon-violet), 0.1)",
+              border: "1px solid",
+            }}
+          >
+            🔴 en direct
+          </span>
+        )}
+      </Link>
 
       {/* Comptes-rendus */}
       <Link

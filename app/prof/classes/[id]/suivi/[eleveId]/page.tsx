@@ -44,6 +44,7 @@ export default async function SuiviEleveDetailPage({
     travailFaitAvg: null,
     compteRenduAvg: null,
     assiduiteAvg: null,
+    comportementAvg: null,
     moyenne0a5: null,
     pointsTrimestre: 0,
     note20: null,
@@ -98,6 +99,7 @@ export default async function SuiviEleveDetailPage({
                   ["travailFait", trimestreCourant.travailFaitAvg],
                   ["compteRendu", trimestreCourant.compteRenduAvg],
                   ["assiduite", trimestreCourant.assiduiteAvg],
+                  ["comportement", trimestreCourant.comportementAvg],
                 ] as const
               ).map(([critere, moyenne]) => (
                 <div key={critere} className="flex items-center justify-between gap-3">
@@ -149,12 +151,19 @@ export default async function SuiviEleveDetailPage({
                   </form>
                 </div>
                 <div className="mt-2 flex flex-col gap-1">
-                  {(["travailFait", "assiduite"] as const).map((critere) => (
-                    <div key={critere} className="flex items-center justify-between gap-3">
-                      <span className="text-sm text-ink-secondary">{CRITERE_LABELS[critere]}</span>
-                      <EtoilesAffichage valeur={entree[critere]} />
-                    </div>
-                  ))}
+                  {(["travailFait", "assiduite", "comportement"] as const).map((critere) => {
+                    const valeur = entree[critere];
+                    return (
+                      <div key={critere} className="flex items-center justify-between gap-3">
+                        <span className="text-sm text-ink-secondary">{CRITERE_LABELS[critere]}</span>
+                        {valeur !== null ? (
+                          <EtoilesAffichage valeur={valeur} />
+                        ) : (
+                          <span className="text-xs text-ink-muted">—</span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
                 {entree.commentaire && (
                   <p className="mt-2 text-sm text-ink-secondary">{entree.commentaire}</p>
