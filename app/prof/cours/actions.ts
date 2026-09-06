@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Matiere, Niveau, TypeCoursSimple } from "@prisma/client";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import {
   CoursError,
   type ContenuFichier,
@@ -15,6 +16,7 @@ import {
   basculerEstPublic,
   basculerVitrine,
   basculerCorrectionVisible,
+  televerserImageCouverture,
 } from "@/lib/cours";
 import {
   CoursSimpleError,
@@ -155,8 +157,19 @@ export async function creerCoursAction(
     throw error;
   }
 
+  const imageCouverture = formData.get("imageCouverture");
+  if (imageCouverture instanceof File && imageCouverture.size > 0) {
+    try {
+      const imageCouvertureChemin = await televerserImageCouverture(cours.id, imageCouverture);
+      await prisma.cours.update({ where: { id: cours.id }, data: { imageCouvertureChemin } });
+    } catch (error) {
+      if (error instanceof CoursError) return error.message;
+      throw error;
+    }
+  }
+
   revalidatePath("/prof/cours");
-  redirect(typeSimple ? "/prof/cours" : `/prof/cours/${cours.id}`);
+  redirect(`/prof/cours/${cours.id}`);
 }
 
 export async function modifierCoursAction(

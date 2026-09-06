@@ -17,6 +17,7 @@ import {
 } from "@/lib/devoirs";
 import { listerExercicesCodeCours, TYPE_EXERCICE_CODE_LABELS } from "@/lib/exercices-code";
 import { listerBlocsCours } from "@/lib/blocs";
+import { listerQuizProf } from "@/lib/quiz";
 import { BlocListeProf } from "@/components/blocs/bloc-liste-prof";
 import { modifierCoursAction } from "../actions";
 import { CoursForm } from "../cours-form";
@@ -32,6 +33,15 @@ import { ExerciceCodeForm } from "./exercices-code-form";
 import { supprimerExerciceCodeAction } from "./exercices-code-actions";
 import { PageInteractiveForm } from "./page-interactive-form";
 import { ImageCouvertureForm } from "./image-couverture-form";
+import { ContenuSimpleForm } from "./contenu-simple-form";
+
+const LABEL_TYPE_SIMPLE: Record<string, string> = {
+  HTML: "Fichier HTML importé",
+  PDF: "PDF importé",
+  WORD: "Document Word importé",
+  VIDEO: "Vidéo",
+  QCM: "Quiz",
+};
 
 function listerFichiersHtmlCours(): string[] {
   // Deux emplacements : public/cours (servi tel quel) et contenu/cours (servi
@@ -68,6 +78,10 @@ export default async function ModifierCoursPage({
   const blocs = await listerBlocsCours(id);
   const devoirs = await listerDevoirsCours(id);
   const exercicesCode = await listerExercicesCodeCours(id);
+  const quizzesDisponibles =
+    cours.typeSimple === "QCM"
+      ? (await listerQuizProf()).map((q) => ({ id: q.id, titre: q.titre, niveau: q.niveau, matiere: q.matiere }))
+      : [];
   const devoirsAvecChamps = await Promise.all(
     devoirs.map(async (devoir) => {
       if (devoir.type !== TypeExercice.DEVOIR_PDF_FORMULAIRE) {
@@ -125,27 +139,68 @@ export default async function ModifierCoursPage({
           />
         </div>
 
-        <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:60ms]">
-          <h2 className="section-title flex items-center gap-2">
-            <FileText className="h-5 w-5 text-neon-cyan" />
-            Contenu du cours
-          </h2>
+        {cours.typeSimple ? (
+          <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:60ms]">
+            <h2 className="section-title flex items-center gap-2">
+              <FileText className="h-5 w-5 text-neon-cyan" />
+              {LABEL_TYPE_SIMPLE[cours.typeSimple]}
+            </h2>
 
-          {cours.typeContenu === "PDF" && cours.pdfNom ? (
-            <p className="text-sm text-ink-secondary">
-              📄 PDF importé : <span className="font-medium text-ink-primary">{cours.pdfNom}</span>
-              {cours.pdfTaille != null && ` (${formaterTaille(cours.pdfTaille)})`}
-            </p>
-          ) : cours.contenu.trim() ? (
-            <p className="text-sm text-ink-secondary">
-              📝 Contenu texte (importé depuis un fichier Word).
-            </p>
-          ) : (
-            <p className="text-sm text-ink-muted">Aucun contenu importé pour le moment.</p>
-          )}
+            {cours.typeSimple === "VIDEO" && cours.videoUrl && (
+              <p className="text-sm text-ink-secondary">
+                Lien actuel :{" "}
+                <a href={cours.videoUrl} target="_blank" rel="noopener noreferrer" className="text-neon-blue underline underline-offset-2">
+                  {cours.videoUrl}
+                </a>
+              </p>
+            )}
 
-          <ContenuForm coursId={cours.id} />
-        </div>
+            {cours.typeSimple === "QCM" && (
+              <p className="text-sm text-ink-secondary">
+                {cours.quizId ? (
+                  <Link href={`/prof/quiz/${cours.quizId}`} className="text-neon-blue underline underline-offset-2">
+                    Voir le quiz associé
+                  </Link>
+                ) : (
+                  "Aucun quiz associé."
+                )}
+              </p>
+            )}
+
+            {(cours.typeSimple === "HTML" || cours.typeSimple === "PDF" || cours.typeSimple === "WORD") && cours.fichierUrl && (
+              <p className="text-sm text-ink-secondary">
+                Fichier actuel :{" "}
+                <a href={cours.fichierUrl} target="_blank" rel="noopener noreferrer" className="text-neon-blue underline underline-offset-2">
+                  Ouvrir
+                </a>
+              </p>
+            )}
+
+            <ContenuSimpleForm coursId={cours.id} typeSimple={cours.typeSimple} quizzesDisponibles={quizzesDisponibles} />
+          </div>
+        ) : (
+          <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:60ms]">
+            <h2 className="section-title flex items-center gap-2">
+              <FileText className="h-5 w-5 text-neon-cyan" />
+              Contenu du cours
+            </h2>
+
+            {cours.typeContenu === "PDF" && cours.pdfNom ? (
+              <p className="text-sm text-ink-secondary">
+                📄 PDF importé : <span className="font-medium text-ink-primary">{cours.pdfNom}</span>
+                {cours.pdfTaille != null && ` (${formaterTaille(cours.pdfTaille)})`}
+              </p>
+            ) : cours.contenu.trim() ? (
+              <p className="text-sm text-ink-secondary">
+                📝 Contenu texte (importé depuis un fichier Word).
+              </p>
+            ) : (
+              <p className="text-sm text-ink-muted">Aucun contenu importé pour le moment.</p>
+            )}
+
+            <ContenuForm coursId={cours.id} />
+          </div>
+        )}
 
         <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:120ms]">
           <div>

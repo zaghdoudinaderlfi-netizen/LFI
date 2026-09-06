@@ -75,7 +75,7 @@ export function CoursForm({
   }, [message, enregistre, publie, addToast]);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} className="flex flex-col gap-4" encType="multipart/form-data">
       {cours?.id && <input type="hidden" name="id" value={cours.id} />}
 
       {!cours?.id && (
@@ -152,6 +152,24 @@ export function CoursForm({
           </select>
         </div>
       </div>
+
+      {!cours?.id && (
+        <div className="flex flex-col gap-1">
+          <label htmlFor="imageCouverture" className="field-label">
+            Image de couverture <span className="text-ink-muted font-normal">(optionnel)</span>
+          </label>
+          <input
+            id="imageCouverture"
+            name="imageCouverture"
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/webp"
+            className="input file:mr-3 file:rounded file:border-0 file:bg-space-surface file:px-3 file:py-1 file:text-sm file:text-ink-primary"
+          />
+          <p className="text-xs text-ink-muted">
+            PNG, JPG, WebP — 5 Mo max. Affichée en vignette dans la liste des cours élève.
+          </p>
+        </div>
+      )}
 
       {!cours?.id && (
         <div className="flex flex-col gap-3">

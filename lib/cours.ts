@@ -8,10 +8,10 @@ import {
   BUCKET_PIECES_JOINTES,
   BUCKET_RENDUS_DEVOIRS,
   BUCKET_IMAGES_COURS,
-  BUCKET_COURS_SIMPLE,
   assurerBucketPublic,
 } from "./supabase";
 import { convertirDocxEnHtml, supprimerImagesCours } from "./docx";
+import { supprimerFichierCoursSimple } from "./cours-simple";
 
 const PREFIX_COUVERTURE = "couvertures";
 const EXTENSIONS_IMAGE_COUVERTURE = new Set(["png", "jpg", "jpeg", "gif", "webp"]);
@@ -454,14 +454,7 @@ export async function supprimerCours(id: string) {
   }
 
   // Supprimer le fichier du formulaire simplifié (bucket "cours"), si présent
-  if (cours.fichierUrl) {
-    const marqueur = `/object/public/${BUCKET_COURS_SIMPLE}/`;
-    const index = cours.fichierUrl.indexOf(marqueur);
-    if (index !== -1) {
-      const chemin = decodeURIComponent(cours.fichierUrl.slice(index + marqueur.length));
-      await supabaseAdmin.storage.from(BUCKET_COURS_SIMPLE).remove([chemin]);
-    }
-  }
+  await supprimerFichierCoursSimple(cours.fichierUrl);
 
   // Supprimer le cours en DB (cascade gère exercices, soumissions, blocs, PJ)
   await prisma.cours.delete({ where: { id } });

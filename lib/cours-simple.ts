@@ -77,12 +77,19 @@ export async function televerserFichierCoursSimple(
 /** Supprime du bucket "cours" le fichier référencé par une URL publique stockée en base. */
 export async function supprimerFichierCoursSimple(fichierUrl: string | null) {
   if (!fichierUrl) return;
-  const chemin = cheminDepuisUrlPublique(fichierUrl);
+  const chemin = cheminCoursSimpleDepuisUrl(fichierUrl);
   if (!chemin) return;
   await supabaseAdmin.storage.from(BUCKET_COURS_SIMPLE).remove([chemin]);
 }
 
-function cheminDepuisUrlPublique(url: string): string | null {
+/**
+ * Retrouve le chemin de stockage (bucket "cours") à partir de l'URL publique
+ * stockée dans `Cours.fichierUrl`. Utilisé pour supprimer/remplacer le
+ * fichier, ou pour le retélécharger côté serveur (voir /api/cours/[id]/html,
+ * nécessaire car Supabase force `Content-Type: text/plain` + une CSP
+ * bloquante sur les fichiers HTML servis via l'URL publique directe).
+ */
+export function cheminCoursSimpleDepuisUrl(url: string): string | null {
   const marqueur = `/object/public/${BUCKET_COURS_SIMPLE}/`;
   const index = url.indexOf(marqueur);
   if (index === -1) return null;

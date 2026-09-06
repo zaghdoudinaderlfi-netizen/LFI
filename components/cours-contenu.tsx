@@ -50,9 +50,10 @@ export function CoursContenu({ cours }: CoursContenuProps) {
   }
 
   if (cours.typeSimple === "HTML" && cours.fichierUrl) {
-    const src = cours.correctionVisible
-      ? `${cours.fichierUrl}${cours.fichierUrl.includes("?") ? "&" : "?"}corrige=1`
-      : cours.fichierUrl;
+    // Passe par notre propre route plutôt que par l'URL publique Supabase :
+    // celle-ci force Content-Type: text/plain + une CSP sandbox sur les
+    // fichiers HTML, ce qui affiche le code source au lieu de la page.
+    const src = `/api/cours/${cours.id}/html${cours.correctionVisible ? "?corrige=1" : ""}`;
     return (
       <iframe
         src={src}
