@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSI · Représentation des textes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://skulpt.org/js/skulpt.min.js" type="text/javascript"></script>
+<script src="https://skulpt.org/js/skulpt-stdlib.js" type="text/javascript"></script>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a31; --code:#0e1526; --ink:#e9eefb; --muted:#9aa7c2;
+  --cyan:#22d3ee; --violet:#8b5cf6; --pink:#ec4899; --ok:#34d399; --err:#fb7185; --warn:#fbbf24;
+  --line:rgba(255,255,255,.09);
+  --glow:0 0 0 1px rgba(255,255,255,.04), 0 18px 40px -20px rgba(0,0,0,.7);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:
+    radial-gradient(1100px 600px at 80% -10%, rgba(139,92,246,.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.14), transparent 55%),
+    var(--bg);
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;
+}
+.wrap{max-width:1180px; margin:0 auto; padding:0 20px; display:grid; grid-template-columns:230px 1fr; gap:36px}
+@media(max-width:880px){ .wrap{grid-template-columns:1fr; gap:0} .toc{display:none!important} }
+
+/* Header */
+header.hero{padding:54px 0 26px; border-bottom:1px solid var(--line); margin-bottom:30px}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; color:var(--cyan);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(34,211,238,.06)}
+.mono-n{font-family:var(--mono); font-weight:700}
+.mono-n span:nth-child(1){color:var(--cyan)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--violet)}
+h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(28px,5vw,46px); line-height:1.08; margin:18px 0 10px}
+h1 .accent{background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.lede{color:var(--muted); max-width:62ch; font-size:18px}
+
+/* TOC */
+.toc{position:sticky; top:18px; align-self:start; padding-top:30px; max-height:96vh; overflow-y:auto}
+.toc h4{font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
+.toc a{display:block; color:var(--muted); text-decoration:none; font-size:13.5px; padding:5px 10px; border-left:2px solid transparent; border-radius:0 8px 8px 0; transition:.15s}
+.toc a:hover{color:var(--ink); background:rgba(255,255,255,.03); border-left-color:var(--violet)}
+
+/* Sections */
+section{padding:30px 0; border-bottom:1px solid var(--line)}
+h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; margin:0 0 6px; scroll-margin-top:20px;
+  display:flex; align-items:center; gap:12px}
+h2 .num{font-family:var(--mono); font-size:14px; color:var(--violet); border:1px solid var(--line); border-radius:8px; padding:3px 9px; background:rgba(139,92,246,.08)}
+h3{font-family:'Space Grotesk',sans-serif; font-size:18px; margin:26px 0 8px; color:#fff}
+p{margin:10px 0}
+.muted{color:var(--muted)}
+code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; color:#cfe6ff; border:1px solid var(--line)}
+strong{color:#fff}
+a.link{color:var(--cyan)}
+ul{margin:10px 0; padding-left:22px} li{margin:5px 0}
+
+/* Callout */
+.note{display:flex; gap:12px; padding:14px 16px; border-radius:12px; background:rgba(34,211,238,.06); border:1px solid rgba(34,211,238,.22); margin:16px 0}
+.note.warn{background:rgba(251,113,133,.07); border-color:rgba(251,113,133,.28)}
+.note.gold{background:rgba(251,191,36,.06); border-color:rgba(251,191,36,.25)}
+.note .ico{font-size:18px; line-height:1.4}
+.note p{margin:0}
+
+/* Runnable cell */
+.cell{background:var(--code); border:1px solid var(--line); border-radius:14px; margin:16px 0; overflow:hidden; box-shadow:var(--glow)}
+.cell-head{display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,.025); border-bottom:1px solid var(--line)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:7px}
+.dot{width:9px; height:9px; border-radius:50%; background:var(--violet); box-shadow:0 0 8px var(--violet)}
+.run{font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:#06121f; cursor:pointer;
+  border:0; border-radius:8px; padding:7px 16px; background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.15s}
+.run:hover{filter:brightness(1.08); transform:translateY(-1px)}
+.run:disabled{opacity:.5; cursor:wait; transform:none}
+textarea.code{width:100%; border:0; outline:0; resize:vertical; background:transparent; color:#e7f0ff;
+  font-family:var(--mono); font-size:14px; line-height:1.6; padding:14px 16px; display:block; tab-size:4}
+.out{margin:0; padding:0 16px; max-height:0; overflow:hidden; font-family:var(--mono); font-size:13.5px; color:#bfe6c9;
+  white-space:pre-wrap; border-top:1px solid transparent; transition:max-height .2s, padding .2s}
+.out.show{max-height:420px; overflow:auto; padding:12px 16px; border-top:1px solid var(--line); background:rgba(0,0,0,.25)}
+.out.err{color:var(--err)}
+
+/* Static code */
+pre.static{background:var(--code); border:1px solid var(--line); border-radius:14px; padding:14px 16px; overflow:auto;
+  font-family:var(--mono); font-size:13.5px; line-height:1.6; margin:16px 0; color:#e7f0ff}
+pre.static .c{color:#7c8aa6} pre.static .k{color:var(--violet)} pre.static .s{color:#7ee0a6} pre.static .e{color:var(--err)}
+
+/* Interactive panel */
+.panel{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px; margin:18px 0; box-shadow:var(--glow)}
+.panel .bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+.panel .step-code{font-family:var(--mono); font-size:14px; color:#cfe6ff; background:rgba(255,255,255,.05);
+  padding:6px 12px; border-radius:8px; border:1px solid var(--line); flex:1; min-width:150px}
+.btn{font-family:'Nunito',sans-serif; font-weight:700; border:1px solid var(--line); background:rgba(255,255,255,.04);
+  color:var(--ink); padding:7px 14px; border-radius:9px; cursor:pointer; transition:.15s}
+.btn:hover{border-color:var(--violet); background:rgba(139,92,246,.12)}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.btn.on{border-color:var(--cyan); background:rgba(34,211,238,.15); color:var(--cyan)}
+.hint{color:var(--muted); font-size:14px; margin:8px 2px 0}
+.panel input[type=text],.panel input[type=number]{
+  font-family:var(--mono); font-size:15px; background:rgba(0,0,0,.3); color:var(--cyan);
+  border:1px solid var(--line); border-radius:9px; padding:8px 12px; width:150px; outline:none}
+.panel input:focus{border-color:var(--cyan)}
+.panel label{font-size:13px; color:var(--muted); font-family:'Space Grotesk',sans-serif}
+
+/* Bit boxes (parité) */
+.bits{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin:6px 0}
+.bitcol{display:flex; flex-direction:column; align-items:center; gap:3px}
+.bit{width:44px; height:44px; border-radius:10px; border:1px solid var(--line); background:rgba(255,255,255,.04);
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-weight:700; font-size:18px;
+  color:var(--muted); cursor:pointer; transition:.18s; user-select:none}
+.bit:hover{border-color:var(--violet)}
+.bit.on{background:rgba(34,211,238,.16); border-color:var(--cyan); color:var(--cyan); box-shadow:0 0 12px -2px rgba(34,211,238,.5)}
+.bit.parity{border-color:rgba(236,72,153,.5); background:rgba(236,72,153,.1); color:var(--pink); cursor:default}
+.bit.parity:hover{border-color:rgba(236,72,153,.5)}
+.bitw{font-family:var(--mono); font-size:10.5px; color:var(--muted)}
+.bigres{text-align:center; font-family:var(--mono); font-size:24px; font-weight:700; margin:10px 0 0}
+.bigres .v{color:var(--ok)}
+
+/* ASCII grid */
+.asciigrid{display:inline-grid; grid-template-columns:repeat(16,1fr); gap:3px; margin:14px 0}
+.acell{width:42px; height:42px; border-radius:8px; border:1px solid var(--line); background:rgba(255,255,255,.03);
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:15px; font-weight:700;
+  color:var(--ink); cursor:pointer; transition:.15s}
+.acell:hover{border-color:var(--cyan); background:rgba(34,211,238,.1)}
+.acell.ctrl{color:var(--pink); font-size:10px}
+.acell.sel{border-color:var(--cyan); background:rgba(34,211,238,.22); box-shadow:0 0 12px -2px rgba(34,211,238,.5)}
+.asciireadout{background:rgba(0,0,0,.25); border:1px solid var(--line); border-radius:12px; padding:14px 18px; margin-top:8px;
+  font-family:var(--mono); font-size:14.5px; display:flex; gap:22px; flex-wrap:wrap; align-items:center}
+.asciireadout b{color:var(--cyan); font-size:20px}
+.asciireadout .sig{color:var(--muted); font-family:'Nunito',sans-serif; font-size:13.5px}
+
+/* Encodeur texte -> octets */
+.enctable{display:flex; flex-wrap:wrap; gap:2px; margin:14px 0; font-family:var(--mono)}
+.enccol{display:flex; flex-direction:column; align-items:center}
+.enccol .ch{width:34px; height:34px; display:flex; align-items:center; justify-content:center; background:rgba(139,92,246,.14);
+  border:1px solid rgba(139,92,246,.4); border-radius:6px 6px 0 0; font-size:15px; color:var(--ink)}
+.enccol .hx{width:34px; padding:4px 0; text-align:center; background:rgba(34,211,238,.1); border:1px solid rgba(34,211,238,.35);
+  border-top:0; border-radius:0 0 6px 6px; font-size:11px; color:var(--cyan)}
+
+/* Regroupement d'octets UTF-8 */
+.u8wrap{overflow-x:auto; margin:14px 0}
+.u8row{display:flex; gap:14px; justify-content:center; min-width:max-content; padding:4px}
+.u8byte{display:flex; flex-direction:column; align-items:center; gap:6px}
+.u8bits{display:flex; gap:2px}
+.u8bits span{width:26px; height:32px; border-radius:5px; display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-weight:700; font-size:13px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--muted)}
+.u8bits span.fixed{color:var(--violet); border-color:rgba(139,92,246,.4); background:rgba(139,92,246,.1)}
+.u8bits span.payload{color:var(--cyan)}
+.u8hex{font-family:var(--mono); font-weight:700; font-size:16px; color:var(--ok)}
+.u8label{font-family:var(--mono); font-size:10.5px; color:var(--muted)}
+
+/* Steps (UTF-16) */
+.steprow{display:flex; align-items:baseline; gap:12px; margin:9px 0; opacity:0; transform:translateY(6px); transition:.35s; flex-wrap:wrap}
+.steprow.show{opacity:1; transform:none}
+.steplab{font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:var(--muted); width:190px; flex-shrink:0}
+.stepval{font-family:var(--mono); font-size:15px; color:var(--ink)}
+.stepval .hi{color:var(--violet); font-weight:700}
+.stepval .lo{color:var(--pink); font-weight:700}
+
+/* Data tables */
+table.data{border-collapse:collapse; margin:14px auto; font-family:var(--mono); font-size:13.5px}
+table.data th{background:rgba(139,92,246,.15); color:var(--violet); padding:8px 16px; border:1px solid var(--line); font-size:12.5px}
+table.data td{padding:6px 16px; border:1px solid var(--line); text-align:center; color:var(--muted)}
+table.data tr:nth-child(even) td{background:rgba(255,255,255,.025)}
+table.data td.hl{color:var(--cyan); font-weight:700}
+.scrollx{overflow-x:auto}
+
+/* Quiz */
+.quiz{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin:18px 0; box-shadow:var(--glow)}
+.quiz .q{font-weight:800; margin:0 0 12px; font-family:'Space Grotesk',sans-serif}
+.quiz .q::before{content:"?"; display:inline-grid; place-items:center; width:24px; height:24px; margin-right:10px; border-radius:7px;
+  background:linear-gradient(135deg,var(--violet),var(--pink)); color:#fff; font-family:var(--mono); font-weight:700; font-size:14px; vertical-align:middle}
+.opt{display:block; padding:11px 14px; margin:8px 0; border:1px solid var(--line); border-radius:10px; cursor:pointer; transition:.12s; font-family:var(--mono); font-size:14px}
+.opt:hover{border-color:var(--violet); background:rgba(139,92,246,.07)}
+.opt.good{border-color:var(--ok); background:rgba(52,211,153,.12)}
+.opt.bad{border-color:var(--err); background:rgba(251,113,133,.12)}
+.opt.lock{pointer-events:none; opacity:.85}
+.feedback{margin-top:10px; font-size:14px; min-height:20px; color:var(--muted)}
+.feedback.ok{color:var(--ok)} .feedback.no{color:var(--err)}
+
+footer{padding:40px 0 70px; color:var(--muted); font-size:14px}
+footer a{color:var(--cyan)}
+.tag-list{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+::selection{background:rgba(139,92,246,.4)}
+
+/* ══ COUVERTURE ══ */
+#cover{min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+  background:linear-gradient(155deg,#050817 0%,#0d0b2d 42%,#0b1020 100%); border-bottom:1px solid rgba(255,255,255,.06)}
+.cover-grid{position:absolute; inset:0; pointer-events:none;
+  background-image:linear-gradient(rgba(139,92,246,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.07) 1px,transparent 1px);
+  background-size:44px 44px}
+.cover-glow{position:absolute; width:900px; height:900px; border-radius:50%;
+  background:radial-gradient(circle,rgba(139,92,246,.16) 0%,transparent 65%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none}
+.cover-rain{position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:1}
+.cover-rain span{position:absolute; font-family:var(--mono); font-size:13px; color:rgba(34,211,238,.16);
+  white-space:pre; user-select:none; line-height:1.9; animation:drift 22s linear infinite}
+@keyframes drift{from{transform:translateY(-40%)}to{transform:translateY(115vh)}}
+@media(prefers-reduced-motion:reduce){.cover-rain span{animation:none}}
+.cover-content{position:relative; z-index:2; text-align:center; padding:48px 24px; max-width:720px}
+.cover-kicker{display:inline-block; font-family:'Space Grotesk',sans-serif; font-weight:600; letter-spacing:.18em;
+  text-transform:uppercase; font-size:12px; color:var(--cyan); border:1px solid rgba(34,211,238,.25);
+  padding:7px 16px; border-radius:999px; background:rgba(34,211,238,.06); margin-bottom:26px}
+.cover-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(42px,8vw,76px); line-height:1.05; margin:0 0 8px;
+  background:linear-gradient(120deg,#fff 0%,var(--cyan) 32%,var(--violet) 68%,var(--pink) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent}
+.cover-sub{font-family:'Nunito',sans-serif; font-size:clamp(15px,2.4vw,18px); color:rgba(255,255,255,.5); margin:0 0 28px}
+.cover-svg-wrap{margin-bottom:26px; display:flex; justify-content:center}
+.cover-pills{display:flex; gap:9px; justify-content:center; flex-wrap:wrap; margin-bottom:32px}
+.cover-pill{font-family:var(--mono); font-size:12px; padding:6px 14px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.5); background:rgba(255,255,255,.04)}
+.cover-pill.b1{border-color:rgba(34,211,238,.4); color:var(--cyan)}
+.cover-pill.b2{border-color:rgba(139,92,246,.4); color:var(--violet)}
+.cover-pill.b3{border-color:rgba(236,72,153,.4); color:var(--pink)}
+.cover-btn{display:inline-flex; align-items:center; gap:10px; text-decoration:none; font-family:'Space Grotesk',sans-serif;
+  font-weight:700; font-size:16px; color:#06121f; padding:14px 32px; border-radius:14px;
+  background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.2s}
+.cover-btn:hover{filter:brightness(1.08); transform:translateY(-2px); box-shadow:0 8px 28px rgba(34,211,238,.35)}
+
+/* ══ THEME BUTTON ══ */
+#themeBtn{position:fixed; top:18px; right:18px; z-index:1001; width:46px; height:46px; border-radius:50%;
+  border:1px solid var(--line); background:var(--bg2); cursor:pointer; font-size:19px; line-height:1;
+  display:flex; align-items:center; justify-content:center; box-shadow:var(--glow); transition:.2s}
+#themeBtn:hover{border-color:var(--cyan); transform:scale(1.1)}
+
+/* ══ MODE JOUR ══ */
+[data-theme="light"]{
+  --bg:#eef1ff; --bg2:#ffffff; --code:#e8ecfc; --ink:#1a1f3c; --muted:#5a6490;
+  --line:rgba(26,31,60,.1); --glow:0 0 0 1px rgba(0,0,0,.05),0 6px 20px -6px rgba(0,0,0,.12);
+}
+[data-theme="light"] body{background:
+  radial-gradient(1100px 600px at 80% -10%,rgba(139,92,246,.09),transparent 60%),
+  radial-gradient(900px 500px at -10% 10%,rgba(34,211,238,.07),transparent 55%),var(--bg)}
+[data-theme="light"] h1,[data-theme="light"] h2,[data-theme="light"] h3,[data-theme="light"] strong{color:#1a1f3c}
+[data-theme="light"] p,[data-theme="light"] li,[data-theme="light"] .lede,[data-theme="light"] .note p{color:#374151}
+[data-theme="light"] .toc a{color:#5a6490}
+[data-theme="light"] .toc a:hover{color:#1a1f3c; background:rgba(0,0,0,.04)}
+[data-theme="light"] textarea.code{color:#1a1f3c}
+[data-theme="light"] pre.static{color:#1a1f3c}
+[data-theme="light"] .out{color:#166534} [data-theme="light"] .out.err{color:#991b1b}
+[data-theme="light"] .bit{color:#6b7280} [data-theme="light"] .bit.on{color:#0e7490}
+[data-theme="light"] .acell{color:#1a1f3c} [data-theme="light"] .acell.ctrl{color:#be185d}
+[data-theme="light"] table.data td{color:#4b5563}
+[data-theme="light"] table.data tr:nth-child(even) td{background:rgba(0,0,0,.03)}
+[data-theme="light"] .u8bits span{color:#4b5563}
+[data-theme="light"] .stepval{color:#1a1f3c}
+[data-theme="light"] .asciireadout{color:#1a1f3c} [data-theme="light"] .asciireadout .sig{color:#5a6490}
+[data-theme="light"] #themeBtn{background:#ffffff}
+</style>
+</head>
+<body>
+
+<!-- ══════════ COUVERTURE ══════════ -->
+<div id="cover">
+  <div class="cover-grid"></div>
+  <div class="cover-glow"></div>
+  <div class="cover-rain" id="rain"></div>
+
+  <div class="cover-content">
+    <div class="cover-kicker">NSI · Première · Chapitre 9</div>
+
+    <div class="cover-svg-wrap">
+      <svg viewBox="0 0 420 96" width="420" height="96" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="cvA" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b5cf6"/></marker>
+          <marker id="cvB" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ec4899"/></marker>
+        </defs>
+        <rect x="0" y="28" width="90" height="42" rx="10" fill="rgba(34,211,238,.1)" stroke="rgba(34,211,238,.45)" stroke-width="1.5"/>
+        <text x="45" y="47" font-family="monospace" font-size="11" fill="rgba(34,211,238,.6)" text-anchor="middle">'A'</text>
+        <text x="45" y="63" font-family="monospace" font-size="15" fill="#22d3ee" text-anchor="middle" font-weight="700">U+0041</text>
+        <line x1="94" y1="49" x2="130" y2="49" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#cvA)"/>
+        <rect x="134" y="28" width="150" height="42" rx="10" fill="rgba(139,92,246,.1)" stroke="rgba(139,92,246,.5)" stroke-width="1.5"/>
+        <text x="209" y="47" font-family="monospace" font-size="11" fill="rgba(139,92,246,.65)" text-anchor="middle">UTF-8</text>
+        <text x="209" y="63" font-family="monospace" font-size="15" fill="#8b5cf6" text-anchor="middle" font-weight="700">01000001</text>
+        <line x1="288" y1="49" x2="322" y2="49" stroke="#ec4899" stroke-width="1.5" marker-end="url(#cvB)"/>
+        <rect x="326" y="28" width="94" height="42" rx="10" fill="rgba(236,72,153,.1)" stroke="rgba(236,72,153,.45)" stroke-width="1.5"/>
+        <text x="373" y="47" font-family="monospace" font-size="11" fill="rgba(236,72,153,.6)" text-anchor="middle">hexa</text>
+        <text x="373" y="63" font-family="monospace" font-size="16" fill="#ec4899" text-anchor="middle" font-weight="700">41</text>
+      </svg>
+    </div>
+
+    <h1 class="cover-title">Représentation<br>des textes</h1>
+    <p class="cover-sub">ASCII, Unicode et encodages UTF — M. Zaghdoudi · LFI Sousse</p>
+
+    <div class="cover-pills">
+      <span class="cover-pill b1">ASCII</span>
+      <span class="cover-pill b2">ISO 8859</span>
+      <span class="cover-pill b3">Unicode</span>
+      <span class="cover-pill">UTF-8 / 16 / 32</span>
+    </div>
+
+    <a href="#intro" class="cover-btn">Commencer le cours →</a>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- Sommaire -->
+  <nav class="toc">
+    <h4>Sommaire</h4>
+    <a href="#intro">Pourquoi coder le texte ?</a>
+    <a href="#ascii">Codage ASCII</a>
+    <a href="#categories">Catégories de caractères</a>
+    <a href="#exemple">Texte → octets</a>
+    <a href="#ligne">Retour à la ligne</a>
+    <a href="#parite">Bit de parité</a>
+    <a href="#iso8859">Normes ISO 8859</a>
+    <a href="#unicode">Codage Unicode</a>
+    <a href="#utf8">UTF-8</a>
+    <a href="#utf16">UTF-16</a>
+    <a href="#utf32">UTF-32</a>
+    <a href="#boutisme">UTF et boutisme</a>
+    <a href="#python">Python</a>
+    <a href="#quiz">Quiz bilan</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="kicker">NSI · Représentation des textes</span>
+      <h1>Des caractères<br><span class="accent">aux octets</span></h1>
+      <p class="lede">Stocker ou échanger un texte revient, en informatique, à associer un <strong>numéro unique</strong> à chaque caractère. Ce chapitre explore les normes qui ont rendu ça possible — d'<strong>ASCII</strong>, limité à l'anglais, jusqu'à <strong>Unicode</strong>, qui vise toutes les langues du monde.</p>
+      <div class="tag-list">
+        <span class="chip">ASCII</span><span class="chip">ISO 8859</span><span class="chip">Unicode</span>
+        <span class="chip">UTF-8</span><span class="chip">UTF-16</span><span class="chip">encodage / décodage</span>
+      </div>
+    </header>
+
+    <!-- ══ 01 INTRO ══ -->
+    <section id="intro">
+      <h2><span class="num">01</span> Pourquoi coder le texte ?</h2>
+      <p>En théorie, représenter des caractères est simple : il suffit d'associer un numéro unique à chacun. En pratique, un bon encodage doit respecter plusieurs contraintes :</p>
+      <ul>
+        <li><strong>L'universalité</strong> : tous les ordinateurs doivent utiliser le même encodage pour pouvoir échanger des textes sans erreur.</li>
+        <li><strong>La couverture</strong> : il faut pouvoir représenter un maximum de caractères, y compris des caractères <em>non imprimables</em> (passer à la ligne, émettre un bip) ou des commandes de protocoles de communication (accusé de réception, début de texte…).</li>
+        <li><strong>La compacité</strong> : l'encodage doit économiser la mémoire et le volume des échanges réseau.</li>
+      </ul>
+      <div class="note"><span class="ico">🕰️</span><p>Dans les années 50, chaque constructeur avait son propre encodage — tous incompatibles entre eux. Il fallait des programmes de conversion pour échanger le moindre texte d'une machine à l'autre. L'histoire de ce chapitre est celle d'une quête d'unification, encore en cours aujourd'hui.</p></div>
+    </section>
+
+    <!-- ══ 02 ASCII ══ -->
+    <section id="ascii">
+      <h2><span class="num">02</span> Codage ASCII</h2>
+      <p>Au début des années 60, l'<strong>ANSI</strong> (American National Standards Institute) propose une norme de codage des caractères : l'<strong>ASCII</strong> (American Standard Code for Information Interchange). Elle définit un jeu de <strong>128 caractères</strong>, chacun représenté par un octet.</p>
+      <p>Pour trouver l'octet associé à un caractère, on concatène le chiffre de sa <strong>ligne</strong> avec celui de sa <strong>colonne</strong> dans la table ci-dessous — le résultat est un nombre hexadécimal à deux chiffres. <strong>Clique sur une case</strong> pour voir son détail :</p>
+
+      <div class="panel">
+        <div class="scrollx"><div class="asciigrid" id="asciiGrid"></div></div>
+        <div class="asciireadout" id="asciiReadout">
+          <span>caractère : <b id="aoChar">A</b></span>
+          <span>décimal : <b id="aoDec">65</b></span>
+          <span>hexadécimal : <b id="aoHex">41</b></span>
+          <span class="sig" id="aoSig"></span>
+        </div>
+        <p class="hint">Par exemple, <code class="inl">A</code> correspond à <code class="inl">41</code> et <code class="inl">+</code> à <code class="inl">2B</code>.</p>
+      </div>
+
+      <p>La table ASCII regroupe plusieurs catégories de caractères :</p>
+      <ul>
+        <li>les lettres majuscules (<code class="inl">41</code> à <code class="inl">5A</code>) et minuscules (<code class="inl">61</code> à <code class="inl">7A</code>) de l'alphabet latin ;</li>
+        <li>les chiffres <code class="inl">0</code> à <code class="inl">9</code> (<code class="inl">30</code> à <code class="inl">39</code>) ;</li>
+        <li>des signes de ponctuation, parenthèses et crochets (la virgule <code class="inl">,</code> vaut <code class="inl">2C</code>, le crochet <code class="inl">[</code> vaut <code class="inl">5B</code>) ;</li>
+        <li>des opérateurs arithmétiques (<code class="inl">+</code> vaut <code class="inl">2B</code>) ;</li>
+        <li>des caractères spéciaux et de contrôle, non imprimables (entre <code class="inl">00</code> et <code class="inl">20</code>, ainsi que <code class="inl">7F</code>).</li>
+      </ul>
+    </section>
+
+    <!-- ══ 03 CATÉGORIES ══ -->
+    <section id="categories">
+      <h2><span class="num">03</span> Catégories de caractères spéciaux</h2>
+      <p>Parmi les caractères non imprimables, on distingue les <strong>caractères blancs</strong> (espaces, tabulations, retours chariot…) :</p>
+      <table class="data">
+        <tr><th>caractère</th><th>numéro</th><th>signification</th></tr>
+        <tr><td class="hl">HT</td><td>09</td><td>Tabulation horizontale</td></tr>
+        <tr><td class="hl">LF</td><td>0A</td><td>Nouvelle ligne</td></tr>
+        <tr><td class="hl">VT</td><td>0B</td><td>Tabulation verticale</td></tr>
+        <tr><td class="hl">FF</td><td>0C</td><td>Nouvelle page</td></tr>
+        <tr><td class="hl">CR</td><td>0D</td><td>Retour chariot</td></tr>
+        <tr><td class="hl">SP</td><td>20</td><td>Espace</td></tr>
+        <tr><td class="hl">BS</td><td>08</td><td>Suppression</td></tr>
+        <tr><td class="hl">DEL</td><td>7F</td><td>Effacement</td></tr>
+      </table>
+      <p>Et les <strong>caractères de contrôle</strong>, sans forme imprimable, utilisés par des protocoles de communication ou pour piloter des périphériques :</p>
+      <table class="data">
+        <tr><th>caractère</th><th>numéro</th><th>signification</th></tr>
+        <tr><td class="hl">SOH</td><td>01</td><td>Début d'entête</td></tr>
+        <tr><td class="hl">STX</td><td>02</td><td>Début de texte</td></tr>
+        <tr><td class="hl">ETX</td><td>03</td><td>Fin de texte</td></tr>
+        <tr><td class="hl">EOT</td><td>04</td><td>Fin de transmission</td></tr>
+        <tr><td class="hl">ENQ</td><td>05</td><td>Demande</td></tr>
+        <tr><td class="hl">ACK</td><td>06</td><td>Accusé de réception</td></tr>
+        <tr><td class="hl">BEL</td><td>07</td><td>Son sur le haut-parleur</td></tr>
+        <tr><td class="hl">DC1</td><td>11</td><td>Contrôle de périphérique 1</td></tr>
+      </table>
+      <div class="note"><span class="ico">🔎</span><p>Ces sigles réapparaissent en tête de la grille ASCII de la section précédente — clique dessus pour retrouver leur signification.</p></div>
+    </section>
+
+    <!-- ══ 04 EXEMPLE ══ -->
+    <section id="exemple">
+      <h2><span class="num">04</span> Texte → octets</h2>
+      <p>Un texte codé en ASCII n'est rien d'autre qu'une <strong>suite d'octets</strong> correspondant à la séquence de ses caractères. Tape un texte (caractères ASCII uniquement) pour voir sa traduction en octets :</p>
+
+      <div class="panel">
+        <div class="bar">
+          <label for="encInput">Texte</label>
+          <input type="text" id="encInput" value="Ceci est un texte!" style="width:280px" maxlength="40" autocomplete="off">
+        </div>
+        <div class="enctable" id="encTable"></div>
+        <p class="hint" id="encHint"></p>
+      </div>
+    </section>
+
+    <!-- ══ 05 RETOUR À LA LIGNE ══ -->
+    <section id="ligne">
+      <h2><span class="num">05</span> Retour à la ligne</h2>
+      <p>Les caractères <code class="inl">LF</code> (<em>Line Feed</em>, nouvelle ligne) et <code class="inl">CR</code> (<em>Carriage Return</em>, retour chariot) ont des effets voisins, mais leur interprétation diffère selon les systèmes :</p>
+      <table class="data">
+        <tr><th>Système</th><th>Caractère(s) utilisé(s)</th></tr>
+        <tr><td>Windows</td><td class="hl">CR + LF</td></tr>
+        <tr><td>Linux / macOS</td><td class="hl">LF seul</td></tr>
+        <tr><td>Anciens systèmes</td><td class="hl">CR seul</td></tr>
+      </table>
+      <div class="note warn"><span class="ico">⚠️</span><p>Il est préférable de <strong>tester</strong> l'effet de ces caractères spéciaux plutôt que de le supposer : une confusion CR/LF est une source classique de fichiers qui « s'affichent mal » d'un système à l'autre.</p></div>
+    </section>
+
+    <!-- ══ 06 PARITÉ ══ -->
+    <section id="parite">
+      <h2><span class="num">06</span> Bit de parité</h2>
+      <p>128 caractères tiennent sur 7 bits (de <code class="inl">0000000</code> à <code class="inl">1111111</code>), mais en pratique chaque caractère occupe un <strong>octet entier</strong> (8 bits). Le bit de poids fort, inutilisé par l'ASCII, sert alors de <strong>somme de contrôle</strong> pour détecter d'éventuelles erreurs de transmission.</p>
+      <p>L'idée : fixer ce <strong>bit de parité</strong> de façon à ce que le nombre total de bits à 1 dans l'octet soit toujours pair. <strong>Clique sur les 7 bits</strong> ci-dessous — le bit de parité (en rose) se recalcule automatiquement :</p>
+
+      <div class="panel">
+        <div class="bits" id="parBits"></div>
+        <p class="bigres">Octet complet = <span class="v" id="parHex">41</span> <span class="muted" style="font-size:15px">(dont 1 bit de parité)</span></p>
+        <p class="hint">Le bit de parité vaut ici <b id="parBitVal" style="color:var(--pink)">0</b> — le nombre de bits à 1 dans l'octet est bien pair.</p>
+      </div>
+    </section>
+
+    <!-- ══ 07 ISO 8859 ══ -->
+    <section id="iso8859">
+      <h2><span class="num">07</span> Normes ISO 8859</h2>
+      <p>Les caractères imprimables de l'ASCII se sont vite révélés insuffisants dès qu'il fallait écrire dans une langue autre que l'anglais — même en restant sur un alphabet latin, il manque les lettres accentuées, les symboles monétaires…</p>
+      <p>L'<strong>ISO</strong> (Organisation Internationale de Normalisation) a proposé la norme <strong>ISO 8859</strong> : une extension de l'ASCII utilisant les <strong>8 bits</strong> de l'octet, soit <strong>256 caractères</strong> encodables. Les 128 premiers restent ceux de l'ASCII ; les 128 suivants sont spécifiques à chaque table, notée <code class="inl">ISO-8859-n</code>.</p>
+      <div class="scrollx">
+        <table class="data">
+          <tr><th>code ISO</th><th>zone</th></tr>
+          <tr><td class="hl">8859-1 (latin-1)</td><td>Europe occidentale</td></tr>
+          <tr><td class="hl">8859-2 (latin-2)</td><td>Europe centrale ou de l'est</td></tr>
+          <tr><td class="hl">8859-5</td><td>Cyrillique</td></tr>
+          <tr><td class="hl">8859-6</td><td>Arabe</td></tr>
+          <tr><td class="hl">8859-7</td><td>Grec</td></tr>
+          <tr><td class="hl">8859-8</td><td>Hébreu</td></tr>
+          <tr><td class="hl">8859-9 (latin-5)</td><td>Turc, kurde</td></tr>
+          <tr><td class="hl">8859-11</td><td>Thaï</td></tr>
+          <tr><td class="hl">8859-15 (latin-9)</td><td>Révision du latin-1</td></tr>
+        </table>
+      </div>
+      <div class="note gold"><span class="ico">⚠️</span><p>La norme compte <strong>16 tables au total</strong>, indépendantes mais compatibles entre elles. Problème : elles restent <strong>insuffisantes pour mélanger plusieurs langues</strong> dans un même texte, puisqu'un même octet peut désigner un caractère différent selon la table choisie.</p></div>
+    </section>
+
+    <!-- ══ 08 UNICODE ══ -->
+    <section id="unicode">
+      <h2><span class="num">08</span> Codage Unicode</h2>
+      <h3>Norme ISO-10646</h3>
+      <p>Pour remplacer l'usage de pages de code multiples, l'ISO a défini un jeu universel de caractères (<strong>UCS</strong>, Universal Character Set) sous la norme <strong>ISO-10646</strong>. Chaque caractère — lettre, chiffre, idéogramme, emoji… — y reçoit un nom unique et un numéro appelé <strong>point de code</strong>.</p>
+      <p>On note un point de code <code class="inl">U+x..x</code>, où chaque <code class="inl">x</code> est un chiffre hexadécimal (au minimum 4 chiffres). Par exemple, <code class="inl">U+006F</code> désigne la lettre <code class="inl">o</code> (point de code 111). Il y a aujourd'hui plus de <strong>110 000 caractères</strong> recensés, pour une capacité maximale théorique de <strong>4 294 967 295</strong> — le plus grand entier non signé sur 32 bits. Par compatibilité, les 256 premiers points de code sont ceux du latin-1 (ISO-8859-1).</p>
+
+      <h3>Norme Unicode</h3>
+      <p>Le <strong>consortium Unicode</strong> définit plusieurs techniques d'encodage des points de code, plus ou moins économiques. Ces formats de transformation universelle (<strong>UTF</strong>) portent le nom <code class="inl">UTF-n</code>, où <em>n</em> indique le nombre minimal de bits par point de code.</p>
+    </section>
+
+    <!-- ══ 09 UTF-8 ══ -->
+    <section id="utf8">
+      <h2><span class="num">09</span> UTF-8</h2>
+      <p>C'est le format le plus répandu : Linux, le Web, les protocoles réseau, Python… Il est <strong>entièrement compatible avec l'ASCII</strong> : les 127 premiers caractères sont codés sur 1 octet, exactement comme en ASCII.</p>
+      <p>Principe : si le bit de poids fort d'un octet vaut <strong>0</strong>, c'est un caractère ASCII sur les 7 bits restants. Sinon, une séquence de bits à <strong>1</strong> terminée par un <strong>0</strong> indique le nombre d'octets utilisés ; les octets suivants commencent tous par <code class="inl">10</code> :</p>
+      <div class="scrollx">
+        <table class="data">
+          <tr><th>Plage</th><th>Suite d'octets (binaire)</th><th>bits codants</th></tr>
+          <tr><td>U+0000 à U+007F</td><td class="hl">0xxxxxxx</td><td>7 bits</td></tr>
+          <tr><td>U+0080 à U+07FF</td><td class="hl">110xxxxx 10xxxxxx</td><td>11 bits</td></tr>
+          <tr><td>U+0800 à U+FFFF</td><td class="hl">1110xxxx 10xxxxxx 10xxxxxx</td><td>16 bits</td></tr>
+          <tr><td>U+10000 à U+10FFFF</td><td class="hl">11110xxx 10xxxxxx 10xxxxxx 10xxxxxx</td><td>21 bits</td></tr>
+        </table>
+      </div>
+      <p>La version actuelle d'UTF-8 ne permet pas plus de <strong>4 octets</strong> par caractère. Essaie le convertisseur ci-dessous — un point de code Unicode (hexadécimal) ou l'un des exemples :</p>
+
+      <div class="panel">
+        <div class="bar">
+          <label for="u8Input">Point de code U+</label>
+          <input type="text" id="u8Input" value="004B" maxlength="6" autocomplete="off">
+          <button class="btn" data-u8="004B">K · U+004B</button>
+          <button class="btn" data-u8="00C5">Å · U+00C5</button>
+          <button class="btn" data-u8="0A9C">ஜ · U+0A9C</button>
+          <button class="btn" data-u8="1F603">😃 · U+1F603</button>
+        </div>
+        <div class="u8wrap"><div class="u8row" id="u8Row"></div></div>
+        <p class="bigres">UTF-8 (hexa) = <span class="v" id="u8Hex"></span></p>
+        <p class="hint" id="u8Hint"></p>
+      </div>
+      <div class="note"><span class="ico">💡</span><p>En violet : les bits <strong>fixes</strong> qui indiquent la structure de l'octet (nombre d'octets, ou octet de continuation). En cyan : les bits de <strong>charge utile</strong>, issus du point de code.</p></div>
+    </section>
+
+    <!-- ══ 10 UTF-16 ══ -->
+    <section id="utf16">
+      <h2><span class="num">10</span> UTF-16</h2>
+      <p>Ce format utilise <strong>16 bits au minimum</strong> par caractère. Les points de code de <code class="inl">U+0000</code> à <code class="inl">U+FFFF</code> tiennent sur un seul mot de 16 bits (2 octets). Au-delà, il faut <strong>deux mots</strong> (4 octets), appelés une <strong>paire de substituts</strong> (<em>surrogate pair</em>).</p>
+      <p><strong>Encodage</strong> d'un point de code <em>p</em> &gt; U+FFFF : on soustrait <code class="inl">10000</code> (hexa) à <em>p</em>, ce qui tient sur 20 bits ; on découpe ce résultat en deux blocs de 10 bits, puis on ajoute <code class="inl">D800</code> au premier bloc (mot « haut ») et <code class="inl">DC00</code> au second (mot « bas ») :</p>
+
+      <div class="panel">
+        <div class="bar">
+          <label for="u16Input">Point de code U+</label>
+          <input type="text" id="u16Input" value="1F603" maxlength="6" autocomplete="off">
+          <button class="btn" id="u16Go">Calculer</button>
+        </div>
+        <div id="u16Steps"></div>
+      </div>
+
+      <table class="data">
+        <tr><th>Intervalle</th><th>Rôle</th></tr>
+        <tr><td class="hl">D800 – DBFF</td><td>mot « haut » (<em>high surrogate</em>)</td></tr>
+        <tr><td class="hl">DC00 – DFFF</td><td>mot « bas » (<em>low surrogate</em>)</td></tr>
+      </table>
+      <div class="note warn"><span class="ico">⚠️</span><p>Les points de code entre <code class="inl">U+D800</code> et <code class="inl">U+DFFF</code> ne sont <strong>jamais</strong> attribués à un vrai caractère : Unicode réserve exprès cette plage aux mots de substitution UTF-16.</p></div>
+    </section>
+
+    <!-- ══ 11 UTF-32 ══ -->
+    <section id="utf32">
+      <h2><span class="num">11</span> UTF-32</h2>
+      <p>Ce format n'a rien d'économique : chaque caractère occupe <strong>32 bits (4 octets)</strong>, quel que soit son point de code. Son intérêt est ailleurs : puisque chaque caractère occupe le <strong>même espace</strong> en mémoire, les algorithmes de manipulation de chaînes (accès au <em>n</em>-ième élément, extraction d'une sous-chaîne…) sont grandement simplifiés — plus besoin de « compter » les octets pour trouver le début d'un caractère.</p>
+    </section>
+
+    <!-- ══ 12 BOUTISME ══ -->
+    <section id="boutisme">
+      <h2><span class="num">12</span> UTF et boutisme</h2>
+      <p>UTF-8 est insensible à l'ordre des octets en mémoire : il se lit toujours octet par octet, dans l'ordre. En revanche, <strong>UTF-16</strong> et <strong>UTF-32</strong> manipulent directement des mots de plusieurs octets, et se heurtent donc au problème du <strong>boutisme</strong> (quel octet stocker en premier ?).</p>
+      <p>Pour lever l'ambiguïté, on place en <strong>début de texte</strong> le point de code <code class="inl">U+FEFF</code>, appelé <strong>BOM</strong> (<em>Byte Order Mark</em>) :</p>
+      <ul>
+        <li>si les octets lus sont <code class="inl">FE</code> puis <code class="inl">FF</code>, l'ordre est <strong>gros boutien</strong> (<em>big endian</em>) ;</li>
+        <li>dans le cas contraire (<code class="inl">FF</code> puis <code class="inl">FE</code>), l'ordre est <strong>petit boutien</strong> (<em>little endian</em>).</li>
+      </ul>
+    </section>
+
+    <!-- ══ 13 PYTHON ══ -->
+    <section id="python">
+      <h2><span class="num">13</span> Python et les caractères</h2>
+      <p>La fonction <code class="inl">ord</code> renvoie le point de code Unicode d'un caractère (en base 10) ; <code class="inl">chr</code> fait l'inverse :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">print(ord('a'))
+print(hex(ord('a')))
+print(chr(0x26))</textarea>
+        <pre class="out"></pre>
+      </div>
+
+      <p>Les caractères peuvent aussi être saisis directement par leur code hexadécimal, avec la notation d'échappement <code class="inl">\xhh</code> (le caractère <code class="inl">\</code> est le <strong>caractère d'échappement</strong>) :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">print("\x43e\x63i es\x74...")</textarea>
+        <pre class="out"></pre>
+      </div>
+
+      <p>D'autres raccourcis existent pour les caractères spéciaux :</p>
+      <table class="data">
+        <tr><th>séquence</th><th>signification</th></tr>
+        <tr><td class="hl">\a</td><td>BEL (son)</td></tr>
+        <tr><td class="hl">\b</td><td>BS (suppression)</td></tr>
+        <tr><td class="hl">\f</td><td>FF (nouvelle page)</td></tr>
+        <tr><td class="hl">\n</td><td>LF (nouvelle ligne)</td></tr>
+        <tr><td class="hl">\r</td><td>CR (retour chariot)</td></tr>
+        <tr><td class="hl">\t</td><td>HT (tabulation)</td></tr>
+        <tr><td class="hl">\v</td><td>VT (tabulation verticale)</td></tr>
+        <tr><td class="hl">\\</td><td>le caractère \</td></tr>
+      </table>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">print("bona\bjour\n à \ttous!")</textarea>
+        <pre class="out"></pre>
+      </div>
+
+      <h3>Chaînes et points de code Unicode</h3>
+      <p>Les chaînes de caractères Python peuvent contenir directement des points de code, avec <code class="inl">\uxxxx</code> (16 bits) ou <code class="inl">\Uxxxxxxxx</code> (32 bits) — il existe aussi <code class="inl">\N{nom unicode}</code>, qui utilise le nom officiel du caractère :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">s = "ça et \U0001F600 !"
+print(s)
+
+for caractere in ['\U0001F3AE', '♣', '✌', '\U0001F600']:
+    print(caractere)</textarea>
+        <pre class="out"></pre>
+      </div>
+      <p>On peut également saisir directement des caractères Unicode dans le code source :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">s = "Numérique — ßønjour"
+print(s)
+print(len(s))</textarea>
+        <pre class="out"></pre>
+      </div>
+
+      <h3>Encoder et décoder</h3>
+      <p>La méthode <code class="inl">.encode()</code> convertit une chaîne de caractères en une <strong>chaîne d'octets</strong> (<code class="inl">b'...'</code>), par défaut en UTF-8. À l'inverse, <code class="inl">.decode()</code> reconstitue le texte à partir des octets — <strong>à condition d'utiliser le bon encodage</strong> :</p>
+      <pre class="static"><span class="c"># longueur en caractères vs longueur en octets</span>
+s = <span class="s">"ßønⅉɵur"</span>
+len(s)              <span class="c"># 7 caractères</span>
+l = s.encode()
+len(l)              <span class="c"># 10 octets (certains caractères prennent 2 octets en UTF-8)</span>
+
+<span class="c"># exemples d'encodage / décodage</span>
+<span class="s">'é'</span>.encode()             <span class="c"># b'\xc3\xa9'   (UTF-8, 2 octets)</span>
+<span class="s">'é'</span>.encode(<span class="s">'latin-1'</span>)   <span class="c"># b'\xe9'       (1 octet)</span>
+<span class="s">'😃'</span>.encode(<span class="s">'UTF-16'</span>)   <span class="c"># b'\xff\xfe=\xd8\x03\xde'</span>
+b<span class="s">'\xC3\x85'</span>.decode()   <span class="c"># 'Å'</span></pre>
+      <div class="note gold"><span class="ico">🧪</span><p>Le mini-interpréteur Python de cette page (Skulpt) ne prend pas toujours en charge tous les noms d'encodages ; le bloc ci-dessus n'est donc pas exécutable ici, mais fonctionne tel quel dans un vrai interpréteur Python.</p></div>
+
+      <h3>Quand le décodage se trompe</h3>
+      <p>Si un texte est décodé avec un <strong>mauvais encodage</strong>, le résultat n'a plus aucun sens — même s'il ne provoque pas forcément d'erreur. C'est une source classique de « caractères étranges » dans les pages Web ou les courriels mal configurés :</p>
+      <pre class="static">citation = <span class="s">"Der er en gammel historie..."</span>   <span class="c"># texte original, en danois</span>
+information = citation.encode()                <span class="c"># encodage correct : UTF-8</span>
+
+information.decode(<span class="s">"latin1"</span>)     <span class="c"># texte différent de l'original !</span>
+information.decode(<span class="s">"iso8859_11"</span>) <span class="c"># texte différent, autrement</span></pre>
+      <div class="note"><span class="ico">📌</span><p>D'où l'importance des <strong>standards</strong> : un texte doit toujours être décodé avec l'encodage qui a servi à le produire.</p></div>
+    </section>
+
+    <!-- ══ 14 QUIZ ══ -->
+    <section id="quiz">
+      <h2><span class="num">14</span> Quiz bilan</h2>
+      <p class="muted">Huit questions pour vérifier l'essentiel. Clique sur ta réponse.</p>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Combien de caractères la norme ASCII définit-elle ?</p>
+        <div class="opt" data-i="0">64</div>
+        <div class="opt" data-i="1">128</div>
+        <div class="opt" data-i="2">256</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="0">
+        <p class="q">Dans quel intervalle hexadécimal se trouvent les lettres majuscules en ASCII ?</p>
+        <div class="opt" data-i="0">41 à 5A</div>
+        <div class="opt" data-i="1">61 à 7A</div>
+        <div class="opt" data-i="2">30 à 39</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">À quoi sert le bit de parité ?</p>
+        <div class="opt" data-i="0">Coder un caractère supplémentaire</div>
+        <div class="opt" data-i="1">Détecter d'éventuelles erreurs de transmission</div>
+        <div class="opt" data-i="2">Indiquer si le caractère est une majuscule</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Combien de caractères la norme ISO 8859 permet-elle d'encoder au total ?</p>
+        <div class="opt" data-i="0">128</div>
+        <div class="opt" data-i="1">256</div>
+        <div class="opt" data-i="2">512</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="0">
+        <p class="q">Que désigne un « point de code » dans la norme Unicode ?</p>
+        <div class="opt" data-i="0">Un numéro identifiant un caractère</div>
+        <div class="opt" data-i="1">Le nombre d'octets occupés par un caractère</div>
+        <div class="opt" data-i="2">Le nom d'une police d'écriture</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="0">
+        <p class="q">En UTF-8, un octet dont le bit de poids fort vaut 0 représente :</p>
+        <div class="opt" data-i="0">Un caractère ASCII, sur 7 bits</div>
+        <div class="opt" data-i="1">Le début d'un caractère sur 4 octets</div>
+        <div class="opt" data-i="2">Toujours un octet de continuation</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">En UTF-8, un octet de continuation commence toujours par :</p>
+        <div class="opt" data-i="0">0</div>
+        <div class="opt" data-i="1">10</div>
+        <div class="opt" data-i="2">11</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">En UTF-16, un point de code au-delà de U+FFFF est codé sur :</p>
+        <div class="opt" data-i="0">2 octets</div>
+        <div class="opt" data-i="1">4 octets, via une paire de substituts</div>
+        <div class="opt" data-i="2">8 octets</div>
+        <p class="feedback"></p>
+      </div>
+    </section>
+
+    <footer>
+      <p><strong>Pour aller plus loin :</strong> Documentation Python — opérations sur les chaînes et guide Unicode · Unicode Consortium, Standard et Character Code Charts · Table de caractères Unicode.</p>
+      <p class="mono-n" style="font-size:18px; margin-top:14px"><span>N</span><span>a</span><span>dtech</span> · NSI · Représentation des textes</p>
+    </footer>
+  </main>
+</div>
+
+<button id="themeBtn" title="Passer en mode jour">☀️</button>
+
+<script>
+/* ═══════════ Skulpt ═══════════ */
+function builtinRead(x){
+  if(Sk.builtinFiles===undefined||Sk.builtinFiles["files"][x]===undefined) throw "File not found: '"+x+"'";
+  return Sk.builtinFiles["files"][x];
+}
+function runCell(cell){
+  var code=cell.querySelector('textarea.code').value;
+  var out=cell.querySelector('.out');
+  var btn=cell.querySelector('.run');
+  out.classList.remove('err'); out.textContent=''; out.classList.add('show');
+  if(typeof Sk==='undefined'){
+    out.classList.add('err');
+    out.textContent="Le moteur Python n'a pas pu se charger (connexion internet requise).";
+    return;
+  }
+  Sk.configure({
+    output:function(t){out.textContent+=t;},
+    read:builtinRead,
+    inputfun:function(p){return window.prompt(p||"Entrée :")||"";},
+    inputfunTakesPrompt:true,
+    __future__:Sk.python3
+  });
+  btn.disabled=true; var lbl=btn.textContent; btn.textContent='…';
+  Sk.misceval.asyncToPromise(function(){
+    return Sk.importMainWithBody("<stdin>",false,code,true);
+  }).then(function(){
+    btn.disabled=false; btn.textContent=lbl;
+    if(!out.textContent) out.textContent="(aucune sortie — pense à print(...) )";
+  },function(err){
+    btn.disabled=false; btn.textContent=lbl;
+    out.classList.add('err'); out.textContent+="\n"+err.toString();
+  });
+}
+document.querySelectorAll('[data-cell]').forEach(function(cell){
+  var ta=cell.querySelector('textarea.code');
+  ta.rows=Math.min(Math.max(ta.value.split('\n').length,2),18);
+  cell.querySelector('.run').addEventListener('click',function(){runCell(cell);});
+  ta.addEventListener('keydown',function(e){
+    if(e.key==='Tab'){e.preventDefault();
+      var s=this.selectionStart,en=this.selectionEnd;
+      this.value=this.value.slice(0,s)+"    "+this.value.slice(en);
+      this.selectionStart=this.selectionEnd=s+4;
+    }
+  });
+});
+
+/* ═══════════ Quiz ═══════════ */
+document.querySelectorAll('[data-quiz]').forEach(function(q){
+  var ans=+q.dataset.answer;
+  var fb=q.querySelector('.feedback');
+  q.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      var i=+opt.dataset.i;
+      q.querySelectorAll('.opt').forEach(function(o){o.classList.add('lock');});
+      if(i===ans){opt.classList.add('good'); fb.textContent="Bravo, c'est exact !"; fb.className="feedback ok";}
+      else{
+        opt.classList.add('bad');
+        fb.textContent="Pas tout à fait — la bonne réponse est en vert.";
+        fb.className="feedback no";
+        q.querySelector('.opt[data-i="'+ans+'"]').classList.add('good');
+      }
+    });
+  });
+});
+
+/* ═══════════ Pluie d'octets (couverture) ═══════════ */
+(function(){
+  var rain=document.getElementById('rain');
+  if(!rain) return;
+  var chars='ABCDEFabcdef0123456789';
+  for(var c=0;c<9;c++){
+    var col=document.createElement('span');
+    var txt='';
+    for(var r=0;r<34;r++){ txt+=chars[Math.floor(Math.random()*chars.length)]+chars[Math.floor(Math.random()*chars.length)]+'\n'; }
+    col.textContent=txt;
+    col.style.left=(3+c*11.5)+'%';
+    col.style.animationDuration=(15+Math.random()*16).toFixed(1)+'s';
+    col.style.animationDelay=(-Math.random()*20).toFixed(1)+'s';
+    rain.appendChild(col);
+  }
+})();
+
+/* ═══════════ 02 · Grille ASCII interactive ═══════════ */
+(function(){
+  var grid=document.getElementById('asciiGrid');
+  if(!grid) return;
+  var CTRL={0:'NUL',1:'SOH',2:'STX',3:'ETX',4:'EOT',5:'ENQ',6:'ACK',7:'BEL',8:'BS',9:'HT',10:'LF',11:'VT',12:'FF',13:'CR',14:'SO',15:'SI',
+    16:'DLE',17:'DC1',18:'DC2',19:'DC3',20:'DC4',21:'NAK',22:'SYN',23:'ETB',24:'CAN',25:'EM',26:'SUB',27:'ESC',28:'FS',29:'GS',30:'RS',31:'US',127:'DEL'};
+  var SIG={0:"Caractère nul",7:"Son sur le haut-parleur",8:"Suppression",9:"Tabulation horizontale",10:"Nouvelle ligne",
+    11:"Tabulation verticale",12:"Nouvelle page",13:"Retour chariot",27:"Échappement",32:"Espace",127:"Effacement"};
+  var cells=[];
+  for(var i=0;i<128;i++){
+    (function(i){
+      var el=document.createElement('div');
+      var isCtrl = i<32 || i===127;
+      el.className='acell'+(isCtrl?' ctrl':'');
+      el.textContent = i===32 ? 'SP' : (isCtrl ? CTRL[i] : String.fromCharCode(i));
+      el.title='U+'+i.toString(16).toUpperCase().padStart(4,'0');
+      el.addEventListener('click',function(){
+        cells.forEach(function(c){c.classList.remove('sel');});
+        el.classList.add('sel');
+        document.getElementById('aoChar').textContent = isCtrl ? CTRL[i] : (i===32?'espace':String.fromCharCode(i));
+        document.getElementById('aoDec').textContent = i;
+        document.getElementById('aoHex').textContent = i.toString(16).toUpperCase().padStart(2,'0');
+        document.getElementById('aoSig').textContent = SIG[i] || (isCtrl ? 'caractère de contrôle' : '');
+      });
+      cells.push(el);
+      grid.appendChild(el);
+    })(i);
+  }
+  cells[65].classList.add('sel'); // 'A' par défaut
+})();
+
+/* ═══════════ 04 · Texte → octets ═══════════ */
+(function(){
+  var input=document.getElementById('encInput');
+  var table=document.getElementById('encTable');
+  var hint=document.getElementById('encHint');
+  if(!input) return;
+  function render(){
+    var txt=input.value;
+    table.innerHTML='';
+    var nonAscii=0;
+    for(var i=0;i<txt.length;i++){
+      var code=txt.charCodeAt(i);
+      if(code>127) nonAscii++;
+      var col=document.createElement('div');
+      col.className='enccol';
+      var ch=document.createElement('div'); ch.className='ch'; ch.textContent = txt[i]===' '?'␣':txt[i];
+      var hx=document.createElement('div'); hx.className='hx'; hx.textContent = code.toString(16).toUpperCase().padStart(2,'0');
+      col.appendChild(ch); col.appendChild(hx);
+      table.appendChild(col);
+    }
+    hint.textContent = nonAscii>0
+      ? nonAscii+' caractère(s) hors ASCII (code > 127) — non représentable(s) tel quel en ASCII pur.'
+      : txt.length+' caractère(s) = '+txt.length+' octet(s) en ASCII.';
+  }
+  input.addEventListener('input',render);
+  render();
+})();
+
+/* ═══════════ 06 · Bit de parité ═══════════ */
+(function(){
+  var row=document.getElementById('parBits');
+  if(!row) return;
+  var bits=[1,0,0,0,0,0,1]; // 'A' = 1000001 (7 bits utiles)
+  function render(){
+    row.innerHTML='';
+    var ones=0;
+    for(var i=0;i<7;i++){ if(bits[i]) ones++; }
+    var parity = (ones%2===0) ? 0 : 1;
+    for(var i=0;i<7;i++){
+      (function(i){
+        var col=document.createElement('div'); col.className='bitcol';
+        var w=document.createElement('div'); w.className='bitw'; w.textContent='b'+(6-i);
+        var b=document.createElement('div'); b.className='bit'+(bits[i]?' on':'');
+        b.textContent=bits[i];
+        b.addEventListener('click',function(){ bits[i]=bits[i]?0:1; render(); });
+        col.appendChild(w); col.appendChild(b);
+        row.appendChild(col);
+      })(i);
+    }
+    var pcol=document.createElement('div'); pcol.className='bitcol';
+    var pw=document.createElement('div'); pw.className='bitw'; pw.textContent='parité';
+    var pb=document.createElement('div'); pb.className='bit parity'; pb.textContent=parity;
+    pcol.appendChild(pw); pcol.appendChild(pb);
+    row.appendChild(pcol);
+    var octet = parity*128 + bits.reduce(function(acc,b,i){return acc + b*Math.pow(2,6-i);},0);
+    document.getElementById('parHex').textContent = octet.toString(16).toUpperCase().padStart(2,'0');
+    document.getElementById('parBitVal').textContent = parity;
+  }
+  render();
+})();
+
+/* ═══════════ 09 · Convertisseur UTF-8 ═══════════ */
+(function(){
+  var input=document.getElementById('u8Input');
+  var rowEl=document.getElementById('u8Row');
+  var hexEl=document.getElementById('u8Hex');
+  var hintEl=document.getElementById('u8Hint');
+  if(!input) return;
+
+  function utf8Bytes(cp){
+    if(cp<=0x7F) return [{v:cp,fixed:1}];
+    if(cp<=0x7FF) return [
+      {v:0xC0|(cp>>6), fixed:3},
+      {v:0x80|(cp&0x3F), fixed:2}
+    ];
+    if(cp<=0xFFFF) return [
+      {v:0xE0|(cp>>12), fixed:4},
+      {v:0x80|((cp>>6)&0x3F), fixed:2},
+      {v:0x80|(cp&0x3F), fixed:2}
+    ];
+    return [
+      {v:0xF0|(cp>>18), fixed:5},
+      {v:0x80|((cp>>12)&0x3F), fixed:2},
+      {v:0x80|((cp>>6)&0x3F), fixed:2},
+      {v:0x80|(cp&0x3F), fixed:2}
+    ];
+  }
+
+  function render(){
+    var hex=input.value.replace(/[^0-9a-fA-F]/g,'');
+    if(!hex){ rowEl.innerHTML=''; hexEl.textContent=''; hintEl.textContent='Saisis un point de code hexadécimal.'; return; }
+    var cp=parseInt(hex,16);
+    if(cp>0x10FFFF){ hintEl.textContent='Point de code hors du domaine Unicode (max U+10FFFF).'; return; }
+    var bytes=utf8Bytes(cp);
+    rowEl.innerHTML='';
+    var hexParts=[];
+    bytes.forEach(function(byteInfo){
+      var byteEl=document.createElement('div'); byteEl.className='u8byte';
+      var bitsEl=document.createElement('div'); bitsEl.className='u8bits';
+      var bin=byteInfo.v.toString(2).padStart(8,'0');
+      for(var i=0;i<8;i++){
+        var span=document.createElement('span');
+        span.textContent=bin[i];
+        span.className = i<byteInfo.fixed ? 'fixed' : 'payload';
+        bitsEl.appendChild(span);
+      }
+      var lab=document.createElement('div'); lab.className='u8label';
+      lab.textContent=byteInfo.v.toString(16).toUpperCase().padStart(2,'0');
+      byteEl.appendChild(bitsEl); byteEl.appendChild(lab);
+      rowEl.appendChild(byteEl);
+      hexParts.push(byteInfo.v.toString(16).toUpperCase().padStart(2,'0'));
+    });
+    hexEl.textContent=hexParts.join(' ');
+    hintEl.textContent='U+'+cp.toString(16).toUpperCase().padStart(4,'0')+' est encodé sur '+bytes.length+' octet(s) en UTF-8.';
+  }
+  input.addEventListener('input',render);
+  document.querySelectorAll('[data-u8]').forEach(function(b){
+    b.addEventListener('click',function(){ input.value=b.dataset.u8; render(); });
+  });
+  render();
+})();
+
+/* ═══════════ 10 · UTF-16 (paire de substituts) ═══════════ */
+(function(){
+  var input=document.getElementById('u16Input');
+  var go=document.getElementById('u16Go');
+  var stepsEl=document.getElementById('u16Steps');
+  if(!input) return;
+
+  function pad(n,len){ return n.toString(2).padStart(len,'0'); }
+
+  function render(){
+    stepsEl.innerHTML='';
+    var hex=input.value.replace(/[^0-9a-fA-F]/g,'');
+    if(!hex) return;
+    var cp=parseInt(hex,16);
+    var rows=[];
+    if(cp<=0xFFFF && !(cp>=0xD800 && cp<=0xDFFF)){
+      rows.push(['Point de code','U+'+cp.toString(16).toUpperCase().padStart(4,'0')]);
+      rows.push(['Dans [U+0000 ; U+FFFF]','représenté tel quel, sur un seul mot de 16 bits']);
+      rows.push(['Mot UTF-16', '<span class="hi">'+cp.toString(16).toUpperCase().padStart(4,'0')+'</span>']);
+    } else if(cp>=0xD800 && cp<=0xDFFF){
+      rows.push(['Point de code','U+'+cp.toString(16).toUpperCase().padStart(4,'0')+' — non représentable (plage réservée aux substituts)']);
+    } else {
+      var pp = cp - 0x10000;
+      var high10 = pp >> 10;
+      var low10 = pp & 0x3FF;
+      var highWord = 0xD800 + high10;
+      var lowWord = 0xDC00 + low10;
+      rows.push(['Point de code','U+'+cp.toString(16).toUpperCase().padStart(5,'0')]);
+      rows.push(["p' = p − 10000 (hexa)", pp.toString(16).toUpperCase().padStart(5,'0')]);
+      rows.push(["p' sur 20 bits", pad(pp,20)]);
+      rows.push(['10 bits forts / 10 bits faibles', pad(high10,10)+' &nbsp; '+pad(low10,10)]);
+      rows.push(['+ D800 (mot haut)', '<span class="hi">'+highWord.toString(16).toUpperCase().padStart(4,'0')+'</span>']);
+      rows.push(['+ DC00 (mot bas)', '<span class="lo">'+lowWord.toString(16).toUpperCase().padStart(4,'0')+'</span>']);
+      rows.push(['Représentation UTF-16', '<span class="hi">'+highWord.toString(16).toUpperCase().padStart(4,'0')+'</span> <span class="lo">'+lowWord.toString(16).toUpperCase().padStart(4,'0')+'</span>']);
+    }
+    rows.forEach(function(r,i){
+      var div=document.createElement('div'); div.className='steprow';
+      div.innerHTML='<span class="steplab">'+r[0]+'</span><span class="stepval">'+r[1]+'</span>';
+      stepsEl.appendChild(div);
+      setTimeout(function(){ div.classList.add('show'); }, i*140);
+    });
+  }
+  go.addEventListener('click',render);
+  render();
+})();
+
+/* ═══════════ Mode Jour / Nuit ═══════════ */
+(function(){
+  var btn=document.getElementById('themeBtn');
+  function setTheme(t){
+    document.documentElement.setAttribute('data-theme',t);
+    btn.textContent=(t==='light')?'🌙':'☀️';
+    btn.title=(t==='light')?'Passer en mode nuit':'Passer en mode jour';
+    try{ localStorage.setItem('nadtech_theme',t); }catch(e){}
+  }
+  var saved=null;
+  try{ saved=localStorage.getItem('nadtech_theme'); }catch(e){}
+  if(saved==='light') setTheme('light');
+  btn.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    setTheme(cur==='light'?'dark':'light');
+  });
+})();
+</script>
+</body>
+</html>
