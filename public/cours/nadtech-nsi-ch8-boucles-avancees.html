@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSI · Chapitre 8 — Utilisation avancée des boucles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://skulpt.org/js/skulpt.min.js" type="text/javascript"></script>
+<script src="https://skulpt.org/js/skulpt-stdlib.js" type="text/javascript"></script>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a31; --code:#0e1526; --ink:#e9eefb; --muted:#9aa7c2;
+  --cyan:#22d3ee; --violet:#8b5cf6; --pink:#ec4899; --ok:#34d399; --err:#fb7185; --warn:#fbbf24;
+  --line:rgba(255,255,255,.09);
+  --glow:0 0 0 1px rgba(255,255,255,.04), 0 18px 40px -20px rgba(0,0,0,.7);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; background:
+  radial-gradient(1100px 600px at 80% -10%, rgba(139,92,246,.18), transparent 60%),
+  radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.14), transparent 55%), var(--bg);
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65}
+.wrap{max-width:1180px; margin:0 auto; padding:0 20px; display:grid; grid-template-columns:230px 1fr; gap:36px}
+@media(max-width:880px){.wrap{grid-template-columns:1fr; gap:0} .toc{display:none!important}}
+
+header.hero{padding:54px 0 26px; border-bottom:1px solid var(--line); margin-bottom:30px}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; color:var(--cyan);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(34,211,238,.06)}
+.mono-n{font-family:var(--mono); font-weight:700}
+.mono-n span:nth-child(1){color:var(--cyan)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--violet)}
+h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(28px,5vw,46px); line-height:1.08; margin:18px 0 10px}
+h1 .accent{background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.lede{color:var(--muted); max-width:62ch; font-size:18px}
+
+.toc{position:sticky; top:18px; align-self:start; padding-top:30px; max-height:96vh; overflow-y:auto}
+.toc h4{font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
+.toc a{display:block; color:var(--muted); text-decoration:none; font-size:13.5px; padding:5px 10px; border-left:2px solid transparent; border-radius:0 8px 8px 0; transition:.15s}
+.toc a:hover{color:var(--ink); background:rgba(255,255,255,.03); border-left-color:var(--violet)}
+
+section{padding:30px 0; border-bottom:1px solid var(--line)}
+h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; margin:0 0 6px; scroll-margin-top:20px; display:flex; align-items:center; gap:12px}
+h2 .num{font-family:var(--mono); font-size:14px; color:var(--violet); border:1px solid var(--line); border-radius:8px; padding:3px 9px; background:rgba(139,92,246,.08)}
+h3{font-family:'Space Grotesk',sans-serif; font-size:18px; margin:26px 0 8px; color:#fff}
+p{margin:10px 0} .muted{color:var(--muted)}
+code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; color:#cfe6ff; border:1px solid var(--line)}
+strong{color:#fff} ul{margin:10px 0; padding-left:22px} li{margin:5px 0}
+
+.note{display:flex; gap:12px; padding:14px 16px; border-radius:12px; background:rgba(34,211,238,.06); border:1px solid rgba(34,211,238,.22); margin:16px 0}
+.note.warn{background:rgba(251,113,133,.07); border-color:rgba(251,113,133,.28)}
+.note.gold{background:rgba(251,191,36,.06); border-color:rgba(251,191,36,.25)}
+.note .ico{font-size:18px; line-height:1.4} .note p{margin:0}
+
+.cell{background:var(--code); border:1px solid var(--line); border-radius:14px; margin:16px 0; overflow:hidden; box-shadow:var(--glow)}
+.cell-head{display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,.025); border-bottom:1px solid var(--line)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:7px}
+.dot{width:9px; height:9px; border-radius:50%; background:var(--violet); box-shadow:0 0 8px var(--violet)}
+.run{font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:#06121f; cursor:pointer; border:0; border-radius:8px; padding:7px 16px; background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.15s}
+.run:hover{filter:brightness(1.08); transform:translateY(-1px)}
+.run:disabled{opacity:.5; cursor:wait; transform:none}
+textarea.code{width:100%; border:0; outline:0; resize:vertical; background:transparent; color:#e7f0ff; font-family:var(--mono); font-size:14px; line-height:1.6; padding:14px 16px; display:block; tab-size:4}
+.out{margin:0; padding:0 16px; max-height:0; overflow:hidden; font-family:var(--mono); font-size:13.5px; color:#bfe6c9; white-space:pre-wrap; border-top:1px solid transparent; transition:max-height .2s, padding .2s}
+.out.show{max-height:440px; overflow:auto; padding:12px 16px; border-top:1px solid var(--line); background:rgba(0,0,0,.25)}
+.out.err{color:var(--err)}
+
+pre.static{background:var(--code); border:1px solid var(--line); border-radius:14px; padding:14px 16px; overflow:auto; font-family:var(--mono); font-size:13.5px; line-height:1.6; margin:16px 0; color:#e7f0ff}
+pre.static .c{color:#7c8aa6} pre.static .k{color:var(--violet)} pre.static .s{color:#7ee0a6} pre.static .e{color:var(--err)} pre.static .n{color:var(--pink)} pre.static .f{color:var(--cyan)}
+
+.panel{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px; margin:18px 0; box-shadow:var(--glow)}
+.panel .bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+.btn{font-family:'Nunito',sans-serif; font-weight:700; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--ink); padding:7px 14px; border-radius:9px; cursor:pointer; transition:.15s}
+.btn:hover{border-color:var(--violet); background:rgba(139,92,246,.12)}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.btn.on{border-color:var(--cyan); background:rgba(34,211,238,.15); color:var(--cyan)}
+.hint{color:var(--muted); font-size:14px; margin:10px 2px 0; min-height:22px}
+.panel input[type=number]{font-family:var(--mono); font-size:15px; background:rgba(0,0,0,.3); color:var(--cyan); border:1px solid var(--line); border-radius:9px; padding:8px 12px; width:92px; outline:none}
+.panel input[type=range]{accent-color:var(--violet); width:190px}
+.panel label{font-size:13px; color:var(--muted); font-family:'Space Grotesk',sans-serif}
+.paneltitle{font-family:'Space Grotesk',sans-serif; font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin-bottom:7px}
+
+/* Grille d'itération */
+.gridwrap{display:grid; grid-template-columns:1fr 260px; gap:18px}
+@media(max-width:760px){.gridwrap{grid-template-columns:1fr}}
+.igrid{display:inline-grid; gap:7px}
+.gcell{width:66px; height:52px; border-radius:10px; border:1px solid var(--line); background:rgba(255,255,255,.035);
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:14px; color:var(--muted); transition:.22s}
+.gcell.act{border-color:var(--pink); background:rgba(236,72,153,.22); color:#fff; transform:scale(1.09); box-shadow:0 0 16px -3px rgba(236,72,153,.6)}
+.gcell.done{border-color:rgba(52,211,153,.35); background:rgba(52,211,153,.1); color:var(--ok)}
+.gaxis{font-family:var(--mono); font-size:12px; color:var(--violet); display:flex; align-items:center; justify-content:center}
+.console{background:rgba(0,0,0,.4); border:1px solid var(--line); border-radius:11px; padding:11px 14px; font-family:var(--mono); font-size:14px; color:#bfe6c9; min-height:200px; max-height:230px; overflow:auto; white-space:pre-wrap}
+.console .ph{color:rgba(255,255,255,.2)}
+.console span{display:block; animation:sl .28s}
+@keyframes sl{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+
+/* Matrice de couples */
+.mat{display:inline-grid; gap:3px; margin:10px 0}
+.mcell{width:30px; height:30px; border-radius:5px; border:1px solid var(--line); background:rgba(255,255,255,.03); transition:.2s}
+.mcell.use{background:rgba(139,92,246,.35); border-color:var(--violet)}
+.mcell.diag{background:rgba(255,255,255,.02); border-style:dashed; opacity:.4}
+.mcell.act{background:rgba(236,72,153,.6); border-color:var(--pink); transform:scale(1.2)}
+.mlabel{font-family:var(--mono); font-size:11px; color:var(--muted); display:flex; align-items:center; justify-content:center}
+.matlegend{display:flex; gap:16px; flex-wrap:wrap; font-size:13px; color:var(--muted); margin-top:8px}
+.matlegend i{display:inline-block; width:14px; height:14px; border-radius:4px; vertical-align:-2px; margin-right:6px}
+
+/* Compteurs */
+.counters{display:flex; gap:10px; flex-wrap:wrap; margin:12px 0}
+.cnt{flex:1; min-width:118px; background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:11px; padding:9px 12px; text-align:center}
+.cnt .cn{font-family:'Space Grotesk',sans-serif; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.cnt .cv{font-family:var(--mono); font-size:20px; font-weight:700; color:var(--cyan)}
+.cnt.a .cv{color:var(--warn)} .cnt.b .cv{color:var(--ok)} .cnt.c .cv{color:var(--pink)}
+
+/* Recherche double tableau */
+.tw{margin:12px 0}
+.twlab{font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:var(--muted); margin-bottom:5px}
+.arr{display:flex; gap:6px; flex-wrap:wrap}
+.acell{width:48px; height:48px; border-radius:9px; border:1px solid var(--line); background:rgba(255,255,255,.04);
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-weight:700; font-size:16px; color:var(--muted); transition:.2s}
+.acell.i1{border-color:var(--violet); background:rgba(139,92,246,.25); color:#fff; transform:translateY(-4px)}
+.acell.i2{border-color:var(--warn); background:rgba(251,191,36,.2); color:var(--warn); transform:translateY(-4px)}
+.acell.hit{border-color:var(--ok); background:rgba(52,211,153,.28); color:var(--ok)}
+
+/* Table complexité */
+table.data{border-collapse:collapse; margin:14px auto; font-family:var(--mono); font-size:13.5px}
+table.data th{background:rgba(139,92,246,.15); color:var(--violet); padding:8px 16px; border:1px solid var(--line); font-size:12.5px}
+table.data td{padding:7px 16px; border:1px solid var(--line); text-align:right; color:var(--muted)}
+table.data td:first-child{text-align:center}
+table.data tr:nth-child(even) td{background:rgba(255,255,255,.025)}
+table.data td.lin{color:var(--ok)} table.data td.qua{color:var(--warn)} table.data td.cub{color:var(--err)}
+.scrollx{overflow-x:auto}
+
+/* Graphe */
+.chart{width:100%; height:300px; display:block}
+.chart .ax{stroke:rgba(255,255,255,.18); stroke-width:1}
+.chart .gl{stroke:rgba(255,255,255,.06); stroke-width:1}
+.chart text{font-family:var(--mono); font-size:11px; fill:var(--muted)}
+.chart .c1{stroke:#34d399; fill:none; stroke-width:2.4}
+.chart .c2{stroke:#22d3ee; fill:none; stroke-width:2.4}
+.chart .c3{stroke:#fb7185; fill:none; stroke-width:2.4}
+.legend{display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:13px; margin-top:8px; justify-content:center}
+.legend i{display:inline-block; width:22px; height:3px; border-radius:2px; vertical-align:4px; margin-right:7px}
+
+/* continue */
+.cloop{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin:12px 0}
+.citem{width:48px; height:48px; border-radius:10px; border:1px solid var(--line); background:rgba(255,255,255,.04);
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-weight:700; font-size:16px; color:var(--muted); transition:.25s}
+.citem.act{border-color:var(--pink); background:rgba(236,72,153,.22); color:#fff; transform:scale(1.12)}
+.citem.skip{border-color:var(--err); background:rgba(251,113,133,.14); color:var(--err); opacity:.6}
+.citem.kept{border-color:var(--ok); background:rgba(52,211,153,.18); color:var(--ok)}
+
+/* Quiz */
+.quiz{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin:18px 0; box-shadow:var(--glow)}
+.quiz .q{font-weight:800; margin:0 0 12px; font-family:'Space Grotesk',sans-serif}
+.quiz .q::before{content:"?"; display:inline-grid; place-items:center; width:24px; height:24px; margin-right:10px; border-radius:7px;
+  background:linear-gradient(135deg,var(--violet),var(--pink)); color:#fff; font-family:var(--mono); font-weight:700; font-size:14px; vertical-align:middle}
+.opt{display:block; padding:11px 14px; margin:8px 0; border:1px solid var(--line); border-radius:10px; cursor:pointer; transition:.12s; font-family:var(--mono); font-size:14px}
+.opt:hover{border-color:var(--violet); background:rgba(139,92,246,.07)}
+.opt.good{border-color:var(--ok); background:rgba(52,211,153,.12)}
+.opt.bad{border-color:var(--err); background:rgba(251,113,133,.12)}
+.opt.lock{pointer-events:none; opacity:.85}
+.feedback{margin-top:10px; font-size:14px; min-height:20px; color:var(--muted)}
+.feedback.ok{color:var(--ok)} .feedback.no{color:var(--err)}
+
+footer{padding:40px 0 70px; color:var(--muted); font-size:14px}
+.tag-list{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+::selection{background:rgba(139,92,246,.4)}
+
+/* COUVERTURE */
+#cover{min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+  background:linear-gradient(155deg,#050817 0%,#0d0b2d 42%,#0b1020 100%); border-bottom:1px solid rgba(255,255,255,.06)}
+.cover-grid{position:absolute; inset:0; pointer-events:none;
+  background-image:linear-gradient(rgba(139,92,246,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.07) 1px,transparent 1px);
+  background-size:44px 44px}
+.cover-glow{position:absolute; width:900px; height:900px; border-radius:50%;
+  background:radial-gradient(circle,rgba(139,92,246,.16) 0%,transparent 65%); top:50%; left:50%; transform:translate(-50%,-50%)}
+.cover-content{position:relative; z-index:2; text-align:center; padding:48px 24px; max-width:740px}
+.cover-kicker{display:inline-block; font-family:'Space Grotesk',sans-serif; font-weight:600; letter-spacing:.18em;
+  text-transform:uppercase; font-size:12px; color:var(--cyan); border:1px solid rgba(34,211,238,.25);
+  padding:7px 16px; border-radius:999px; background:rgba(34,211,238,.06); margin-bottom:26px}
+.cover-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(42px,8vw,76px); line-height:1.03; margin:0 0 10px;
+  background:linear-gradient(120deg,#fff 0%,var(--cyan) 32%,var(--violet) 68%,var(--pink) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent}
+.cover-sub{font-family:'Nunito',sans-serif; font-size:clamp(15px,2.4vw,18px); color:rgba(255,255,255,.5); margin:0 0 28px}
+.cover-svg-wrap{margin-bottom:26px; display:flex; justify-content:center}
+.cover-pills{display:flex; gap:9px; justify-content:center; flex-wrap:wrap; margin-bottom:32px}
+.cover-pill{font-family:var(--mono); font-size:12px; padding:6px 14px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.5); background:rgba(255,255,255,.04)}
+.cover-pill.g{border-color:rgba(52,211,153,.4); color:var(--ok)}
+.cover-pill.w{border-color:rgba(251,191,36,.4); color:var(--warn)}
+.cover-pill.r{border-color:rgba(251,113,133,.4); color:var(--err)}
+.cover-btn{display:inline-flex; align-items:center; gap:10px; text-decoration:none; font-family:'Space Grotesk',sans-serif;
+  font-weight:700; font-size:16px; color:#06121f; padding:14px 32px; border-radius:14px;
+  background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.2s}
+.cover-btn:hover{filter:brightness(1.08); transform:translateY(-2px); box-shadow:0 8px 28px rgba(34,211,238,.35)}
+.cvdot{opacity:.25; animation:cvp 3s ease-in-out infinite}
+@keyframes cvp{0%,100%{opacity:.2}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.cvdot{animation:none; opacity:.6}}
+
+#themeBtn{position:fixed; top:18px; right:18px; z-index:1001; width:46px; height:46px; border-radius:50%;
+  border:1px solid var(--line); background:var(--bg2); cursor:pointer; font-size:19px; line-height:1;
+  display:flex; align-items:center; justify-content:center; box-shadow:var(--glow); transition:.2s}
+#themeBtn:hover{border-color:var(--cyan); transform:scale(1.1)}
+
+/* MODE JOUR */
+[data-theme="light"]{
+  --bg:#eef1ff; --bg2:#ffffff; --code:#e8ecfc; --ink:#1a1f3c; --muted:#5a6490;
+  --line:rgba(26,31,60,.1); --glow:0 0 0 1px rgba(0,0,0,.05),0 6px 20px -6px rgba(0,0,0,.12);
+}
+[data-theme="light"] body{background:
+  radial-gradient(1100px 600px at 80% -10%,rgba(139,92,246,.09),transparent 60%),
+  radial-gradient(900px 500px at -10% 10%,rgba(34,211,238,.07),transparent 55%),var(--bg)}
+[data-theme="light"] h1,[data-theme="light"] h2,[data-theme="light"] h3,[data-theme="light"] strong{color:#1a1f3c}
+[data-theme="light"] p,[data-theme="light"] li,[data-theme="light"] .lede,[data-theme="light"] .note p{color:#374151}
+[data-theme="light"] .toc a{color:#5a6490}
+[data-theme="light"] .toc a:hover{color:#1a1f3c; background:rgba(0,0,0,.04)}
+[data-theme="light"] textarea.code,[data-theme="light"] pre.static{color:#1a1f3c}
+[data-theme="light"] .out{color:#166534} [data-theme="light"] .out.err{color:#991b1b}
+[data-theme="light"] .console{background:rgba(0,0,0,.05); color:#166534}
+[data-theme="light"] .console .ph{color:rgba(26,31,60,.28)}
+[data-theme="light"] .gcell,[data-theme="light"] .acell,[data-theme="light"] .citem,[data-theme="light"] table.data td{color:#4b5563}
+[data-theme="light"] table.data tr:nth-child(even) td{background:rgba(0,0,0,.03)}
+[data-theme="light"] .chart text{fill:#4b5563}
+[data-theme="light"] .chart .ax{stroke:rgba(26,31,60,.25)}
+[data-theme="light"] .chart .gl{stroke:rgba(26,31,60,.08)}
+[data-theme="light"] #themeBtn{background:#ffffff}
+</style>
+</head>
+<body>
+
+<!-- ══ COUVERTURE ══ -->
+<div id="cover">
+  <div class="cover-grid"></div>
+  <div class="cover-glow"></div>
+  <div class="cover-content">
+    <div class="cover-kicker">NSI · Première · Chapitre 8</div>
+
+    <div class="cover-svg-wrap">
+      <svg viewBox="0 0 300 120" width="300" height="120" xmlns="http://www.w3.org/2000/svg">
+        <text x="18" y="18" font-family="monospace" font-size="11" fill="#8b5cf6" fill-opacity=".7">j</text>
+        <text x="150" y="115" font-family="monospace" font-size="11" fill="#8b5cf6" fill-opacity=".7" text-anchor="middle">i</text>
+        <g>
+          <!-- grille 8x4 de points qui pulsent en cascade -->
+          <g id="cvGrid"></g>
+        </g>
+        <line x1="34" y1="98" x2="278" y2="98" stroke="rgba(255,255,255,.2)" stroke-width="1.2"/>
+        <line x1="34" y1="12" x2="34" y2="98" stroke="rgba(255,255,255,.2)" stroke-width="1.2"/>
+      </svg>
+    </div>
+
+    <h1 class="cover-title">Utilisation avancée<br>des boucles</h1>
+    <p class="cover-sub">Boucles imbriquées et complexité — M. Zaghdoudi · LFI Sousse</p>
+
+    <div class="cover-pills">
+      <span class="cover-pill">imbrication</span>
+      <span class="cover-pill g">O(n)</span>
+      <span class="cover-pill w">O(n²)</span>
+      <span class="cover-pill r">O(n³)</span>
+      <span class="cover-pill">continue</span>
+    </div>
+
+    <a href="#imbriquees" class="cover-btn">Commencer le cours →</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="toc">
+    <h4>Sommaire</h4>
+    <a href="#imbriquees">Boucles imbriquées</a>
+    <a href="#ordre">L'ordre des boucles</a>
+    <a href="#exemples">Deux exemples classiques</a>
+    <a href="#dependantes">Boucles dépendantes</a>
+    <a href="#complexite">Estimer la complexité</a>
+    <a href="#observation">Observer la complexité</a>
+    <a href="#graphe">Représentation graphique</a>
+    <a href="#continue">L'instruction continue</a>
+    <a href="#quiz">Quiz bilan</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="kicker">NSI · Première · Chapitre 8</span>
+      <h1>Quand les boucles<br><span class="accent">s'emboîtent</span></h1>
+      <p class="lede">Une boucle peut en contenir une autre. C'est extrêmement utile — parcourir un tableau à deux dimensions, comparer tous les couples d'éléments — mais le coût explose vite. Ce chapitre montre comment <strong>compter</strong> ce que fait un programme avant de le lancer.</p>
+      <div class="tag-list">
+        <span class="chip">boucles imbriquées</span><span class="chip">complexité</span>
+        <span class="chip">linéaire</span><span class="chip">quadratique</span><span class="chip">continue</span>
+      </div>
+    </header>
+
+    <!-- ══ 01 ══ -->
+    <section id="imbriquees">
+      <h2><span class="num">01</span> Boucles imbriquées</h2>
+      <p>Le bloc répété par une boucle <code class="inl">for</code> peut contenir <strong>n'importe quelle instruction</strong> de Python — y compris une autre boucle. On parle alors de <strong>boucles imbriquées</strong>.</p>
+      <pre class="static"><span class="k">for</span> i <span class="k">in</span> range(<span class="n">3</span>)<span class="k">:</span>
+    <span class="k">for</span> j <span class="k">in</span> range(<span class="n">2</span>)<span class="k">:</span>
+        print(i, j)</pre>
+      <p>La boucle extérieure est la <strong>boucle externe</strong>, celle qui est à l'intérieur la <strong>boucle interne</strong>. Pour <em>chaque</em> tour de la boucle externe, la boucle interne effectue <em>tous</em> ses tours.</p>
+      <div class="note"><span class="ico">✖️</span><p>Le nombre total de passages dans le corps est le <strong>produit</strong> des deux amplitudes : ici 3 × 2 = <strong>6</strong> affichages. C'est ce produit qui rend les boucles imbriquées coûteuses.</p></div>
+    </section>
+
+    <!-- ══ 02 ══ -->
+    <section id="ordre">
+      <h2><span class="num">02</span> L'ordre des boucles change tout</h2>
+      <p>Le choix de la boucle qui est externe et de celle qui est interne <strong>n'affecte pas le nombre</strong> d'opérations — mais il change <strong>l'ordre</strong> dans lequel elles sont faites. Compare les deux versions :</p>
+
+      <div class="panel" id="ordPanel">
+        <div class="bar">
+          <button class="btn on" id="ordA">i externe, j interne</button>
+          <button class="btn" id="ordB">j externe, i interne</button>
+          <button class="btn" id="ordPlay">▶ Dérouler</button>
+          <button class="btn" id="ordReset">↺</button>
+        </div>
+        <pre class="static" id="ordCode" style="margin:0 0 14px"></pre>
+        <div class="gridwrap">
+          <div>
+            <div class="paneltitle">Cases visitées (i horizontal, j vertical)</div>
+            <div id="ordGrid"></div>
+          </div>
+          <div>
+            <div class="paneltitle">Sortie</div>
+            <div class="console" id="ordOut"><span class="ph">(vide)</span></div>
+          </div>
+        </div>
+        <p class="hint" id="ordHint">Choisis un ordre puis clique sur « Dérouler » pour voir le parcours.</p>
+      </div>
+
+      <p>Dans les deux cas, les 6 mêmes couples sont visités — mais pas dans le même ordre. C'est décisif quand on remplit un tableau ligne par ligne plutôt que colonne par colonne.</p>
+
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">print("--- i externe, j interne ---")
+for i in range(3):
+    for j in range(2):
+        print(i, j)
+
+print("--- j externe, i interne ---")
+for j in range(2):
+    for i in range(3):
+        print(i, j)</textarea>
+        <pre class="out"></pre>
+      </div>
+    </section>
+
+    <!-- ══ 03 ══ -->
+    <section id="exemples">
+      <h2><span class="num">03</span> Deux exemples classiques</h2>
+
+      <h3>Élément commun à deux tableaux</h3>
+      <p>Pour savoir si deux tableaux partagent au moins un élément, on compare chaque élément du premier à chaque élément du second :</p>
+      <pre class="static"><span class="k">def</span> <span class="f">element_commun</span>(t1, t2)<span class="k">:</span>
+    <span class="k">for</span> i1 <span class="k">in</span> range(len(t1))<span class="k">:</span>
+        <span class="k">for</span> i2 <span class="k">in</span> range(len(t2))<span class="k">:</span>
+            <span class="k">if</span> t1[i1] == t2[i2]<span class="k">:</span>
+                <span class="k">return</span> <span class="n">True</span>
+    <span class="k">return</span> <span class="n">False</span></pre>
+
+      <div class="panel" id="ecPanel">
+        <div class="bar">
+          <button class="btn" id="ecGo">▶ Lancer la comparaison</button>
+          <button class="btn" id="ecReset">↺</button>
+        </div>
+        <div class="tw">
+          <div class="twlab">t1 — élément courant en violet</div>
+          <div class="arr" id="ecA1"></div>
+        </div>
+        <div class="tw">
+          <div class="twlab">t2 — élément courant en ambre</div>
+          <div class="arr" id="ecA2"></div>
+        </div>
+        <div class="counters">
+          <div class="cnt a"><div class="cn">Comparaisons</div><div class="cv" id="ecOps">0</div></div>
+          <div class="cnt b"><div class="cn">Maximum possible</div><div class="cv" id="ecMax">—</div></div>
+        </div>
+        <p class="hint" id="ecHint">Chaque élément de t1 est confronté à chaque élément de t2, jusqu'à trouver une correspondance.</p>
+      </div>
+
+      <h3>Doublon dans un tableau — version naïve</h3>
+      <p>Pour détecter un doublon, on compare chaque case à toutes les autres. La condition <code class="inl">i != j</code> évite de comparer une case avec elle-même :</p>
+      <pre class="static"><span class="k">def</span> <span class="f">doublon</span>(t)<span class="k">:</span>
+    <span class="k">for</span> i <span class="k">in</span> range(len(t))<span class="k">:</span>
+        <span class="k">for</span> j <span class="k">in</span> range(len(t))<span class="k">:</span>
+            <span class="k">if</span> i != j <span class="k">and</span> t[i] == t[j]<span class="k">:</span>
+                <span class="k">return</span> <span class="n">True</span>
+    <span class="k">return</span> <span class="n">False</span></pre>
+      <p class="muted">Cette version fonctionne, mais elle est <strong>doublement inefficace</strong> : chaque couple est examiné deux fois — une fois comme (i, j), une fois comme (j, i) — et la diagonale est parcourue pour rien. La section suivante corrige ce défaut.</p>
+
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def element_commun(t1, t2):
+    for i1 in range(len(t1)):
+        for i2 in range(len(t2)):
+            if t1[i1] == t2[i2]:
+                return True
+    return False
+
+def doublon(t):
+    for i in range(len(t)):
+        for j in range(len(t)):
+            if i != j and t[i] == t[j]:
+                return True
+    return False
+
+print(element_commun([1, 2, 3], [7, 8, 2]))   # True
+print(element_commun([1, 2, 3], [7, 8, 9]))   # False
+print(doublon([4, 8, 15, 8, 23]))             # True
+print(doublon([4, 8, 15, 16, 23]))            # False</textarea>
+        <pre class="out"></pre>
+      </div>
+    </section>
+
+    <!-- ══ 04 ══ -->
+    <section id="dependantes">
+      <h2><span class="num">04</span> Boucles imbriquées dépendantes</h2>
+      <p>L'amplitude de la boucle interne peut être définie <strong>en fonction de la variable</strong> de la boucle externe. La boucle interne ne fait alors pas le même nombre de tours à chaque passage :</p>
+      <pre class="static"><span class="k">for</span> i <span class="k">in</span> range(<span class="n">1</span>, <span class="n">4</span>)<span class="k">:</span>
+    print(<span class="s">"i :"</span>, i)
+    <span class="k">for</span> j <span class="k">in</span> range(i)<span class="k">:</span>
+        print(<span class="s">"  | j :"</span>, j)</pre>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">for i in range(1, 4):
+    print("i :", i)
+    for j in range(i):
+        print("  | j :", j)</textarea>
+        <pre class="out"></pre>
+      </div>
+      <p class="muted">La boucle interne tourne 1 fois, puis 2 fois, puis 3 fois : au total 1 + 2 + 3 = 6 passages, et non 3 × 3 = 9.</p>
+
+      <h3>Retour au doublon — version optimisée</h3>
+      <p>En démarrant la boucle interne à <code class="inl">i + 1</code>, chaque paire n'est testée qu'une seule fois, et la condition <code class="inl">i != j</code> devient inutile :</p>
+      <pre class="static"><span class="k">def</span> <span class="f">doublon</span>(t)<span class="k">:</span>
+    <span class="k">for</span> i <span class="k">in</span> range(len(t))<span class="k">:</span>
+        <span class="k">for</span> j <span class="k">in</span> range(i + <span class="n">1</span>, len(t))<span class="k">:</span>
+            <span class="k">if</span> t[i] == t[j]<span class="k">:</span>
+                <span class="k">return</span> <span class="n">True</span>
+    <span class="k">return</span> <span class="n">False</span></pre>
+
+      <p>Visualise la différence : chaque case de la matrice représente un couple (i, j) testé.</p>
+      <div class="panel" id="matPanel">
+        <div class="bar">
+          <label for="matN">Taille du tableau n =</label>
+          <input type="number" id="matN" value="6" min="2" max="12">
+          <button class="btn on" id="matNaif">Version naïve</button>
+          <button class="btn" id="matOpt">Version optimisée</button>
+        </div>
+        <div style="display:flex; justify-content:center"><div id="matBox"></div></div>
+        <div class="matlegend">
+          <span><i style="background:rgba(139,92,246,.35); border:1px solid #8b5cf6"></i>couple testé</span>
+          <span><i style="background:rgba(255,255,255,.02); border:1px dashed rgba(255,255,255,.2)"></i>couple ignoré</span>
+        </div>
+        <div class="counters">
+          <div class="cnt a"><div class="cn">Version naïve (i ≠ j)</div><div class="cv" id="matC1">—</div></div>
+          <div class="cnt b"><div class="cn">Version optimisée (j &gt; i)</div><div class="cv" id="matC2">—</div></div>
+          <div class="cnt c"><div class="cn">Rapport</div><div class="cv" id="matR">—</div></div>
+        </div>
+        <p class="hint" id="matHint"></p>
+      </div>
+
+      <div class="note gold"><span class="ico">📐</span><p>La version optimisée teste <strong>n(n−1)/2</strong> couples au lieu de <strong>n²−n</strong> : exactement <strong>deux fois moins</strong>. Le gain est réel, mais l'ordre de grandeur reste le même — les deux versions restent quadratiques. Diviser par deux ne change pas la <em>nature</em> du problème.</p></div>
+    </section>
+
+    <!-- ══ 05 ══ -->
+    <section id="complexite">
+      <h2><span class="num">05</span> Estimer la complexité</h2>
+      <p>Une seule boucle peut déjà exécuter beaucoup d'instructions :</p>
+      <pre class="static">n = <span class="n">100_000</span>
+<span class="k">for</span> i <span class="k">in</span> range(n)<span class="k">:</span>
+    print(i)</pre>
+      <p>L'effet est <strong>démultiplié</strong> par l'imbrication :</p>
+      <pre class="static">n = <span class="n">100_000</span>
+<span class="k">for</span> i <span class="k">in</span> range(n)<span class="k">:</span>
+    <span class="k">for</span> j <span class="k">in</span> range(n)<span class="k">:</span>
+        print(i, j)          <span class="c"># 10 000 000 000 lignes</span></pre>
+      <p>Et à trois niveaux, le nombre devient astronomique :</p>
+      <pre class="static">n = <span class="n">100_000</span>
+<span class="k">for</span> i <span class="k">in</span> range(n)<span class="k">:</span>
+    <span class="k">for</span> j <span class="k">in</span> range(n)<span class="k">:</span>
+        <span class="k">for</span> k <span class="k">in</span> range(n)<span class="k">:</span>
+            print(i, j, k)   <span class="e"># 10^15 lignes — inexécutable</span></pre>
+
+      <p>Le test décisif : <strong>que se passe-t-il si on multiplie <code class="inl">n</code> par dix ?</strong> Le nombre de lignes est multiplié par dix dans le premier cas, par cent dans le deuxième, par mille dans le troisième. Manipule le curseur :</p>
+
+      <div class="panel" id="cxPanel">
+        <div class="bar">
+          <label for="cxN">n =</label>
+          <input type="range" id="cxN" min="0" max="5" step="1" value="2">
+          <span style="font-family:var(--mono); font-size:17px; color:var(--cyan)" id="cxVal">1 000</span>
+          <button class="btn" id="cxTimes10">× 10</button>
+          <button class="btn" id="cxReset">↺</button>
+        </div>
+        <div class="counters">
+          <div class="cnt b"><div class="cn">1 boucle · O(n)</div><div class="cv" id="cxL">—</div></div>
+          <div class="cnt a"><div class="cn">2 boucles · O(n²)</div><div class="cv" id="cxQ">—</div></div>
+          <div class="cnt c"><div class="cn">3 boucles · O(n³)</div><div class="cv" id="cxC">—</div></div>
+        </div>
+        <p class="hint" id="cxHint"></p>
+      </div>
+
+      <p>En informatique, la question de la <strong>performance</strong> est centrale. On s'intéresse à la <strong>complexité</strong> d'un algorithme : une estimation de la performance en fonction de la <strong>taille des données</strong> à traiter. Une estimation suffit — on cherche rarement à déterminer un temps exact.</p>
+      <ul>
+        <li>La <strong>complexité temporelle</strong> mesure le nombre d'opérations, donc le temps.</li>
+        <li>La <strong>complexité spatiale</strong> mesure l'espace mémoire occupé pendant l'exécution.</li>
+      </ul>
+      <p>Outre l'élaboration d'algorithmes qui résolvent un problème, l'un des grands défis de l'informatique est d'en proposer qui soient de <strong>faible complexité</strong>.</p>
+
+      <div class="scrollx">
+        <table class="data">
+          <tr><th>n</th><th>O(n) — linéaire</th><th>O(n²) — quadratique</th><th>O(n³) — cubique</th></tr>
+          <tr><td>10</td><td class="lin">10</td><td class="qua">100</td><td class="cub">1 000</td></tr>
+          <tr><td>100</td><td class="lin">100</td><td class="qua">10 000</td><td class="cub">1 000 000</td></tr>
+          <tr><td>1 000</td><td class="lin">1 000</td><td class="qua">1 000 000</td><td class="cub">1 000 000 000</td></tr>
+          <tr><td>10 000</td><td class="lin">10 000</td><td class="qua">100 000 000</td><td class="cub">10<sup>12</sup></td></tr>
+          <tr><td>100 000</td><td class="lin">100 000</td><td class="qua">10<sup>10</sup></td><td class="cub">10<sup>15</sup></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══ 06 ══ -->
+    <section id="observation">
+      <h2><span class="num">06</span> Observer la complexité</h2>
+      <p>Considérons trois fonctions qui ne font qu'incrémenter un compteur, mais dont la structure de boucles diffère :</p>
+      <pre class="static"><span class="k">def</span> <span class="f">f1</span>(n)<span class="k">:</span>              <span class="c"># une boucle</span>
+    s = <span class="n">0</span>
+    <span class="k">for</span> _ <span class="k">in</span> range(n)<span class="k">:</span>
+        s = s + <span class="n">1</span>
+    <span class="k">return</span> s
+
+<span class="k">def</span> <span class="f">f2</span>(n)<span class="k">:</span>              <span class="c"># deux boucles successives</span>
+    s = <span class="n">0</span>
+    <span class="k">for</span> _ <span class="k">in</span> range(n)<span class="k">:</span>
+        s = s + <span class="n">1</span>
+    <span class="k">for</span> _ <span class="k">in</span> range(n)<span class="k">:</span>
+        s = s + <span class="n">1</span>
+    <span class="k">return</span> s
+
+<span class="k">def</span> <span class="f">f3</span>(n)<span class="k">:</span>              <span class="c"># deux boucles imbriquees</span>
+    s = <span class="n">0</span>
+    <span class="k">for</span> _ <span class="k">in</span> range(n)<span class="k">:</span>
+        <span class="k">for</span> _ <span class="k">in</span> range(n)<span class="k">:</span>
+            s = s + <span class="n">1</span>
+    <span class="k">return</span> s</pre>
+
+      <p><code class="inl">f1</code> fait <strong>n</strong> incrémentations, <code class="inl">f2</code> en fait <strong>2n</strong>, et <code class="inl">f3</code> en fait <strong>n²</strong>. Vérifie-le :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def f1(n):
+    s = 0
+    for _ in range(n):
+        s = s + 1
+    return s
+
+def f2(n):
+    s = 0
+    for _ in range(n):
+        s = s + 1
+    for _ in range(n):
+        s = s + 1
+    return s
+
+def f3(n):
+    s = 0
+    for _ in range(n):
+        for _ in range(n):
+            s = s + 1
+    return s
+
+for n in [10, 100, 500]:
+    print("n =", n, "-> f1 =", f1(n), "| f2 =", f2(n), "| f3 =", f3(n))</textarea>
+        <pre class="out"></pre>
+      </div>
+
+      <h3>Mesurer le temps réel</h3>
+      <p>Le module <code class="inl">time</code> permet de chronométrer un bloc de code. Dans un notebook, la <em>magic command</em> <code class="inl">%timeit</code> fait la même chose en répétant la mesure plusieurs fois. Voici le schéma général — à exécuter dans Thonny ou un notebook :</p>
+      <pre class="static"><span class="k">from</span> time <span class="k">import</span> *
+
+debut = perf_counter()
+<span class="c"># Placer ici le code dont on souhaite mesurer le temps</span>
+fin = perf_counter()
+print(f<span class="s">"Temps passé : {fin - debut} s"</span>)</pre>
+
+      <pre class="static"><span class="c"># Complexite temporelle de f1</span>
+<span class="k">for</span> taille <span class="k">in</span> [<span class="n">1_000</span>, <span class="n">10_000</span>]<span class="k">:</span>
+    debut = perf_counter()
+    f1(taille)
+    fin = perf_counter()
+    print(f<span class="s">"Pour n = {taille}. Temps passé : {fin - debut} s"</span>)</pre>
+
+      <div class="note"><span class="ico">⏱️</span><p><code class="inl">perf_counter()</code> renvoie un instant de référence en secondes. La différence entre deux appels donne la durée écoulée. Ces mesures ne sont pas disponibles ici dans le navigateur — mais le banc d'essai ci-dessous mesure vraiment, en JavaScript, les trois mêmes fonctions.</p></div>
+    </section>
+
+    <!-- ══ 07 ══ -->
+    <section id="graphe">
+      <h2><span class="num">07</span> Représentation graphique</h2>
+      <p>Traçons les temps d'exécution en fonction de <code class="inl">n</code>. Le banc d'essai ci-dessous exécute réellement f1, f2 et f3 sur ta machine et reporte les mesures :</p>
+
+      <div class="panel" id="benchPanel">
+        <div class="bar">
+          <button class="btn" id="benchGo">▶ Lancer les mesures</button>
+          <button class="btn" id="benchAll">Afficher f3</button>
+          <button class="btn" id="benchZoom">Zoom sur f1 et f2</button>
+        </div>
+        <svg class="chart" id="benchChart" viewBox="0 0 700 300" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="legend">
+          <span><i style="background:#34d399"></i>f1 — une boucle</span>
+          <span><i style="background:#22d3ee"></i>f2 — deux boucles successives</span>
+          <span><i style="background:#fb7185"></i>f3 — deux boucles imbriquées</span>
+        </div>
+        <p class="hint" id="benchHint">Clique sur « Lancer les mesures » — le calcul prend une seconde ou deux.</p>
+      </div>
+
+      <div class="note"><span class="ico">🔎</span><p>Sur le premier tracé, les courbes de <code class="inl">f1</code> et <code class="inl">f2</code> semblent <strong>confondues et plates</strong>. Ce n'est pas qu'elles sont identiques : leurs temps sont simplement <strong>négligeables</strong> devant ceux de <code class="inl">f3</code>. Le bouton « Zoom » retire f3 du graphique et révèle que f2 est bien environ deux fois plus lente que f1.</p></div>
+
+      <p>C'est le code matplotlib correspondant, à utiliser hors du navigateur :</p>
+      <pre class="static"><span class="k">import</span> matplotlib.pyplot <span class="k">as</span> plt
+
+plt.figure(<span class="s">"Complexite temporelle"</span>)
+plt.title(<span class="s">"Comparaisons de complexite"</span>)
+plt.xlabel(<span class="s">"Entree n"</span>)
+plt.ylabel(<span class="s">"Temps d'execution (en s)"</span>)
+plt.plot(abscisses, ordonnees_f1, <span class="s">'r+'</span>, label=<span class="s">"f1"</span>)
+plt.plot(abscisses, ordonnees_f2, <span class="s">'g^'</span>, label=<span class="s">"f2"</span>)
+plt.plot(abscisses, ordonnees_f3, <span class="s">'bo'</span>, label=<span class="s">"f3"</span>)
+plt.legend()
+plt.show()</pre>
+      <p class="muted"><code class="inl">matplotlib</code> est le module de référence pour les représentations graphiques en sciences. Il ne fait pas partie de la bibliothèque standard : il doit être installé séparément.</p>
+
+      <div class="note gold"><span class="ico">📊</span><p>On dit que <code class="inl">f1</code> et <code class="inl">f2</code> ont une <strong>complexité linéaire</strong> — leur temps croît proportionnellement à n — et que <code class="inl">f3</code> a une <strong>complexité quadratique</strong>. Le facteur 2 qui sépare f1 de f2 ne change pas leur nature : ce qui compte, c'est la <em>forme</em> de la croissance.</p></div>
+    </section>
+
+    <!-- ══ 08 ══ -->
+    <section id="continue">
+      <h2><span class="num">08</span> L'instruction continue</h2>
+      <p>À l'intérieur d'une boucle, <code class="inl">continue</code> indique qu'on ne souhaite pas exécuter la fin du tour en cours : on passe <strong>directement au tour suivant</strong>.</p>
+      <pre class="static"><span class="k">for</span> i <span class="k">in</span> range(n)<span class="k">:</span>
+    <span class="k">if</span> c<span class="k">:</span>
+        <span class="k">continue</span>
+    {bloc}</pre>
+      <p>On obtient une boucle qui exécute <code class="inl">{bloc}</code> à chaque tour, <strong>sauf</strong> dans les cas particuliers où la condition <code class="inl">c</code> est vérifiée.</p>
+
+      <div class="panel" id="ctPanel">
+        <div class="bar">
+          <button class="btn" id="ctGo">▶ Dérouler la boucle</button>
+          <button class="btn" id="ctReset">↺</button>
+        </div>
+        <pre class="static" style="margin:0 0 12px"><span class="k">for</span> i <span class="k">in</span> range(<span class="n">12</span>)<span class="k">:</span>
+    <span class="k">if</span> i % <span class="n">3</span> == <span class="n">0</span><span class="k">:</span>
+        <span class="k">continue</span>          <span class="c"># on saute les multiples de 3</span>
+    print(i)</pre>
+        <div class="cloop" id="ctRow"></div>
+        <div class="counters">
+          <div class="cnt b"><div class="cn">Tours effectués</div><div class="cv" id="ctTours">0</div></div>
+          <div class="cnt c"><div class="cn">Sautés par continue</div><div class="cv" id="ctSkip">0</div></div>
+          <div class="cnt a"><div class="cn">Affichés</div><div class="cv" id="ctPrint">0</div></div>
+        </div>
+        <p class="hint" id="ctHint">Les cases rouges sont sautées avant le <code class="inl">print</code>, les vertes sont affichées.</p>
+      </div>
+
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">for i in range(12):
+    if i % 3 == 0:
+        continue
+    print(i)</textarea>
+        <pre class="out"></pre>
+      </div>
+
+      <div class="note"><span class="ico">↔️</span><p>Ne confonds pas les deux : <code class="inl">break</code> <strong>quitte</strong> la boucle définitivement, <code class="inl">continue</code> <strong>saute au tour suivant</strong> et la boucle se poursuit.</p></div>
+    </section>
+
+    <!-- ══ 09 ══ -->
+    <section id="quiz">
+      <h2><span class="num">09</span> Quiz bilan</h2>
+      <p class="muted">Huit questions pour vérifier l'essentiel.</p>
+
+      <div class="quiz" data-quiz data-answer="2">
+        <p class="q">Combien d'affichages produit <code class="inl">for i in range(4): for j in range(5): print(i,j)</code> ?</p>
+        <div class="opt" data-i="0">9</div>
+        <div class="opt" data-i="1">5</div>
+        <div class="opt" data-i="2">20</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Échanger la boucle externe et la boucle interne change :</p>
+        <div class="opt" data-i="0">le nombre d'opérations</div>
+        <div class="opt" data-i="1">l'ordre des opérations, mais pas leur nombre</div>
+        <div class="opt" data-i="2">rien du tout</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="0">
+        <p class="q">Combien de tours au total pour <code class="inl">for i in range(1,4): for j in range(i)</code> ?</p>
+        <div class="opt" data-i="0">6</div>
+        <div class="opt" data-i="1">9</div>
+        <div class="opt" data-i="2">3</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="2">
+        <p class="q">Pourquoi écrire <code class="inl">for j in range(i + 1, len(t))</code> dans la recherche de doublon ?</p>
+        <div class="opt" data-i="0">Pour éviter une IndexError</div>
+        <div class="opt" data-i="1">Parce que c'est obligatoire en Python</div>
+        <div class="opt" data-i="2">Pour ne tester chaque paire qu'une seule fois</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Si on multiplie n par 10 dans un algorithme quadratique, le temps est multiplié par :</p>
+        <div class="opt" data-i="0">10</div>
+        <div class="opt" data-i="1">100</div>
+        <div class="opt" data-i="2">1000</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="0">
+        <p class="q">Quelle est la complexité de <code class="inl">f2</code> (deux boucles <strong>successives</strong> sur n) ?</p>
+        <div class="opt" data-i="0">linéaire</div>
+        <div class="opt" data-i="1">quadratique</div>
+        <div class="opt" data-i="2">cubique</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="2">
+        <p class="q">Que fait <code class="inl">continue</code> ?</p>
+        <div class="opt" data-i="0">Il quitte définitivement la boucle</div>
+        <div class="opt" data-i="1">Il relance la boucle depuis le début</div>
+        <div class="opt" data-i="2">Il passe directement au tour suivant</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">La <strong>complexité spatiale</strong> mesure :</p>
+        <div class="opt" data-i="0">le nombre de lignes de code</div>
+        <div class="opt" data-i="1">l'espace mémoire occupé pendant l'exécution</div>
+        <div class="opt" data-i="2">le temps d'exécution</div>
+        <p class="feedback"></p>
+      </div>
+    </section>
+
+    <footer>
+      <p><strong>Pour aller plus loin :</strong> Interstices, « La théorie de la complexité algorithmique pour calculer efficacement » · le module matplotlib · les <em>magic commands</em> des notebooks (<code class="inl">%magic</code>).</p>
+      <p class="mono-n" style="font-size:18px; margin-top:14px"><span>N</span><span>a</span><span>dtech</span> · NSI · Chapitre 8 · Boucles avancées</p>
+    </footer>
+  </main>
+</div>
+
+<button id="themeBtn" title="Passer en mode jour">☀️</button>
+
+<script>
+/* ═══ Skulpt ═══ */
+function builtinRead(x){
+  if(Sk.builtinFiles===undefined||Sk.builtinFiles["files"][x]===undefined) throw "File not found: '"+x+"'";
+  return Sk.builtinFiles["files"][x];
+}
+function runCell(cell){
+  var code=cell.querySelector('textarea.code').value;
+  var out=cell.querySelector('.out'), btn=cell.querySelector('.run');
+  out.classList.remove('err'); out.textContent=''; out.classList.add('show');
+  if(typeof Sk==='undefined'){
+    out.classList.add('err');
+    out.textContent="Le moteur Python n'a pas pu se charger (connexion internet requise).";
+    return;
+  }
+  Sk.configure({
+    output:function(t){out.textContent+=t;},
+    read:builtinRead,
+    inputfun:function(p){return window.prompt(p||"Entrée :")||"";},
+    inputfunTakesPrompt:true, __future__:Sk.python3
+  });
+  btn.disabled=true; var lbl=btn.textContent; btn.textContent='…';
+  Sk.misceval.asyncToPromise(function(){
+    return Sk.importMainWithBody("<stdin>",false,code,true);
+  }).then(function(){
+    btn.disabled=false; btn.textContent=lbl;
+    if(!out.textContent) out.textContent="(aucune sortie — pense à print(...) )";
+  },function(err){
+    btn.disabled=false; btn.textContent=lbl;
+    out.classList.add('err'); out.textContent+="\n"+err.toString();
+  });
+}
+document.querySelectorAll('[data-cell]').forEach(function(cell){
+  var ta=cell.querySelector('textarea.code');
+  ta.rows=Math.min(Math.max(ta.value.split('\n').length,2),26);
+  cell.querySelector('.run').addEventListener('click',function(){runCell(cell);});
+  ta.addEventListener('keydown',function(e){
+    if(e.key==='Tab'){e.preventDefault();
+      var s=this.selectionStart,en=this.selectionEnd;
+      this.value=this.value.slice(0,s)+"    "+this.value.slice(en);
+      this.selectionStart=this.selectionEnd=s+4;
+    }
+  });
+});
+
+/* ═══ Quiz ═══ */
+document.querySelectorAll('[data-quiz]').forEach(function(q){
+  var ans=+q.dataset.answer, fb=q.querySelector('.feedback');
+  q.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      var i=+opt.dataset.i;
+      q.querySelectorAll('.opt').forEach(function(o){o.classList.add('lock');});
+      if(i===ans){opt.classList.add('good'); fb.textContent="Bravo, c'est exact !"; fb.className="feedback ok";}
+      else{
+        opt.classList.add('bad');
+        fb.textContent="Pas tout à fait — la bonne réponse est en vert.";
+        fb.className="feedback no";
+        q.querySelector('.opt[data-i="'+ans+'"]').classList.add('good');
+      }
+    });
+  });
+});
+
+/* ═══ Couverture : grille pulsante ═══ */
+(function(){
+  var g=document.getElementById('cvGrid');
+  if(!g) return;
+  var NS='http://www.w3.org/2000/svg', k=0;
+  for(var j=0;j<4;j++){
+    for(var i=0;i<8;i++){
+      var c=document.createElementNS(NS,'circle');
+      c.setAttribute('cx',48+i*29);
+      c.setAttribute('cy',24+j*20);
+      c.setAttribute('r',4.5);
+      c.setAttribute('fill', j%2===0 ? '#22d3ee' : '#8b5cf6');
+      c.setAttribute('class','cvdot');
+      c.style.animationDelay=(k*0.09).toFixed(2)+'s';
+      g.appendChild(c); k++;
+    }
+  }
+})();
+
+/* ═══ 02 · Ordre des boucles ═══ */
+(function(){
+  var grid=document.getElementById('ordGrid'), out=document.getElementById('ordOut');
+  var codeEl=document.getElementById('ordCode'), hint=document.getElementById('ordHint');
+  var bA=document.getElementById('ordA'), bB=document.getElementById('ordB');
+  var play=document.getElementById('ordPlay'), rst=document.getElementById('ordReset');
+  if(!grid) return;
+  var NI=3, NJ=2, modeA=true, timer=null;
+
+  var CODE_A='<span class="k">for</span> i <span class="k">in</span> range(<span class="n">3</span>)<span class="k">:</span>\n    <span class="k">for</span> j <span class="k">in</span> range(<span class="n">2</span>)<span class="k">:</span>\n        print(i, j)';
+  var CODE_B='<span class="k">for</span> j <span class="k">in</span> range(<span class="n">2</span>)<span class="k">:</span>\n    <span class="k">for</span> i <span class="k">in</span> range(<span class="n">3</span>)<span class="k">:</span>\n        print(i, j)';
+
+  function build(){
+    codeEl.innerHTML = modeA?CODE_A:CODE_B;
+    grid.innerHTML='';
+    var g=document.createElement('div');
+    g.className='igrid';
+    g.style.gridTemplateColumns='34px repeat('+NI+', 66px)';
+    // ligne d'entete i
+    g.appendChild(cellDiv('gaxis',''));
+    for(var i=0;i<NI;i++) g.appendChild(cellDiv('gaxis','i='+i));
+    for(var j=0;j<NJ;j++){
+      g.appendChild(cellDiv('gaxis','j='+j));
+      for(var i2=0;i2<NI;i2++){
+        var c=cellDiv('gcell',i2+', '+j);
+        c.dataset.k=i2+'-'+j;
+        g.appendChild(c);
+      }
+    }
+    grid.appendChild(g);
+    out.innerHTML='<span class="ph">(vide)</span>';
+  }
+  function cellDiv(cls,txt){
+    var d=document.createElement('div'); d.className=cls; d.textContent=txt; return d;
+  }
+  function order(){
+    var seq=[];
+    if(modeA){ for(var i=0;i<NI;i++) for(var j=0;j<NJ;j++) seq.push([i,j]); }
+    else { for(var j2=0;j2<NJ;j2++) for(var i2=0;i2<NI;i2++) seq.push([i2,j2]); }
+    return seq;
+  }
+  function run(){
+    if(timer) return;
+    build();
+    var seq=order(), k=0;
+    hint.textContent='Parcours en cours…';
+    timer=setInterval(function(){
+      grid.querySelectorAll('.gcell.act').forEach(function(c){
+        c.classList.remove('act'); c.classList.add('done');
+      });
+      if(k>=seq.length){
+        clearInterval(timer); timer=null;
+        hint.textContent = modeA
+          ? 'i externe : on épuise tous les j pour i=0, puis pour i=1, puis pour i=2. Le parcours se fait ligne par ligne… en colonnes ici.'
+          : 'j externe : on balaye tous les i pour j=0, puis pour j=1. Mêmes 6 couples, ordre différent.';
+        return;
+      }
+      var p=seq[k];
+      var c=grid.querySelector('.gcell[data-k="'+p[0]+'-'+p[1]+'"]');
+      if(c) c.classList.add('act');
+      if(out.querySelector('.ph')) out.innerHTML='';
+      var s=document.createElement('span');
+      s.textContent=p[0]+' '+p[1];
+      out.appendChild(s); out.scrollTop=out.scrollHeight;
+      k++;
+    },430);
+  }
+  bA.addEventListener('click',function(){
+    if(timer){clearInterval(timer); timer=null;}
+    modeA=true; bA.classList.add('on'); bB.classList.remove('on'); build();
+    hint.textContent='Ordre : i externe, j interne. Clique sur « Dérouler ».';
+  });
+  bB.addEventListener('click',function(){
+    if(timer){clearInterval(timer); timer=null;}
+    modeA=false; bB.classList.add('on'); bA.classList.remove('on'); build();
+    hint.textContent='Ordre : j externe, i interne. Clique sur « Dérouler ».';
+  });
+  play.addEventListener('click',run);
+  rst.addEventListener('click',function(){
+    if(timer){clearInterval(timer); timer=null;}
+    build();
+    hint.textContent='Choisis un ordre puis clique sur « Dérouler » pour voir le parcours.';
+  });
+  build();
+})();
+
+/* ═══ 03 · Élément commun ═══ */
+(function(){
+  var T1=[3,9,14,7], T2=[5,9,2,8,11];
+  var a1=document.getElementById('ecA1'), a2=document.getElementById('ecA2');
+  var ops=document.getElementById('ecOps'), mx=document.getElementById('ecMax');
+  var go=document.getElementById('ecGo'), rst=document.getElementById('ecReset');
+  var hint=document.getElementById('ecHint');
+  if(!a1) return;
+  var timer=null;
+
+  function draw(){
+    [[a1,T1],[a2,T2]].forEach(function(pair){
+      pair[0].innerHTML='';
+      pair[1].forEach(function(v){
+        var d=document.createElement('div'); d.className='acell'; d.textContent=v;
+        pair[0].appendChild(d);
+      });
+    });
+    ops.textContent='0';
+    mx.textContent=String(T1.length*T2.length);
+  }
+  function run(){
+    if(timer) return;
+    draw();
+    var seq=[];
+    for(var i=0;i<T1.length;i++) for(var j=0;j<T2.length;j++) seq.push([i,j]);
+    var k=0, count=0;
+    go.disabled=true;
+    timer=setInterval(function(){
+      a1.querySelectorAll('.acell').forEach(function(c){c.classList.remove('i1');});
+      a2.querySelectorAll('.acell').forEach(function(c){c.classList.remove('i2');});
+      if(k>=seq.length){
+        clearInterval(timer); timer=null; go.disabled=false;
+        hint.textContent='Aucun élément commun : les '+count+' comparaisons ont toutes échoué. Le maximum ('+(T1.length*T2.length)+') a été atteint.';
+        return;
+      }
+      var p=seq[k], i=p[0], j=p[1];
+      a1.children[i].classList.add('i1');
+      a2.children[j].classList.add('i2');
+      count++; ops.textContent=String(count);
+      if(T1[i]===T2[j]){
+        a1.children[i].classList.remove('i1'); a1.children[i].classList.add('hit');
+        a2.children[j].classList.remove('i2'); a2.children[j].classList.add('hit');
+        clearInterval(timer); timer=null; go.disabled=false;
+        hint.textContent='Trouvé ! La valeur '+T1[i]+' est commune. Le return sort immédiatement après '+count+' comparaisons, soit '+((T1.length*T2.length)-count)+' de moins que le maximum de '+(T1.length*T2.length)+'.';
+        return;
+      }
+      hint.textContent='Comparaison t1['+i+'] = '+T1[i]+' avec t2['+j+'] = '+T2[j]+' → différent.';
+      k++;
+    },300);
+  }
+  go.addEventListener('click',run);
+  rst.addEventListener('click',function(){
+    if(timer){clearInterval(timer); timer=null; go.disabled=false;}
+    draw();
+    hint.textContent='Chaque élément de t1 est confronté à chaque élément de t2, jusqu\'à trouver une correspondance.';
+  });
+  draw();
+})();
+
+/* ═══ 04 · Matrice des couples ═══ */
+(function(){
+  var box=document.getElementById('matBox'), inp=document.getElementById('matN');
+  var bN=document.getElementById('matNaif'), bO=document.getElementById('matOpt');
+  var c1=document.getElementById('matC1'), c2=document.getElementById('matC2'), r=document.getElementById('matR');
+  var hint=document.getElementById('matHint');
+  if(!box) return;
+  var naif=true;
+
+  function render(){
+    var n=Math.max(2,Math.min(12,parseInt(inp.value,10)||6));
+    inp.value=n;
+    var g=document.createElement('div');
+    g.className='mat';
+    g.style.gridTemplateColumns='26px repeat('+n+', 30px)';
+    g.appendChild(lab(''));
+    for(var j=0;j<n;j++) g.appendChild(lab(j));
+    for(var i=0;i<n;i++){
+      g.appendChild(lab(i));
+      for(var j2=0;j2<n;j2++){
+        var d=document.createElement('div');
+        var used = naif ? (i!==j2) : (j2>i);
+        d.className='mcell'+(used?' use':(i===j2?' diag':''));
+        g.appendChild(d);
+      }
+    }
+    box.innerHTML=''; box.appendChild(g);
+    var vN=n*n-n, vO=n*(n-1)/2;
+    c1.textContent=vN; c2.textContent=vO;
+    r.textContent=(vN/vO).toFixed(1)+' ×';
+    bN.classList.toggle('on',naif); bO.classList.toggle('on',!naif);
+    hint.textContent = naif
+      ? 'Version naïve : '+vN+' couples testés. Chaque paire apparaît deux fois — (i,j) et (j,i) — et la diagonale est traversée pour rien.'
+      : 'Version optimisée : '+vO+' couples testés, uniquement au-dessus de la diagonale. Exactement moitié moins de travail pour le même résultat.';
+  }
+  function lab(t){
+    var d=document.createElement('div'); d.className='mlabel'; d.textContent=t; return d;
+  }
+  bN.addEventListener('click',function(){naif=true; render();});
+  bO.addEventListener('click',function(){naif=false; render();});
+  inp.addEventListener('input',render);
+  render();
+})();
+
+/* ═══ 05 · Explorateur de complexité ═══ */
+(function(){
+  var sl=document.getElementById('cxN'), val=document.getElementById('cxVal');
+  var L=document.getElementById('cxL'), Q=document.getElementById('cxQ'), C=document.getElementById('cxC');
+  var t10=document.getElementById('cxTimes10'), rst=document.getElementById('cxReset');
+  var hint=document.getElementById('cxHint');
+  if(!sl) return;
+  var VALUES=[10,100,1000,10000,100000,1000000];
+
+  function fmt(x){
+    if(x<1e12) return x.toLocaleString('fr-FR');
+    var e=Math.round(Math.log10(x));
+    return '10^'+e;
+  }
+  function render(){
+    var n=VALUES[+sl.value];
+    val.textContent=n.toLocaleString('fr-FR');
+    L.textContent=fmt(n);
+    Q.textContent=fmt(n*n);
+    C.textContent=fmt(n*n*n);
+    var secs=n*n*n/1e9;
+    var d;
+    if(secs<1) d='moins d\'une seconde';
+    else if(secs<60) d=Math.round(secs)+' secondes';
+    else if(secs<3600) d=Math.round(secs/60)+' minutes';
+    else if(secs<86400) d=Math.round(secs/3600)+' heures';
+    else if(secs<31557600) d=Math.round(secs/86400)+' jours';
+    else d=Math.round(secs/31557600).toLocaleString('fr-FR')+' ans';
+    hint.textContent='Pour n = '+n.toLocaleString('fr-FR')+', la version cubique demanderait environ '+d+' à raison d\'un milliard d\'opérations par seconde.';
+  }
+  sl.addEventListener('input',render);
+  t10.addEventListener('click',function(){
+    var v=+sl.value;
+    sl.value=String(v>=VALUES.length-1?0:v+1);
+    render();
+  });
+  rst.addEventListener('click',function(){ sl.value='2'; render(); });
+  render();
+})();
+
+/* ═══ 07 · Banc d'essai + graphe ═══ */
+(function(){
+  var svg=document.getElementById('benchChart');
+  var go=document.getElementById('benchGo'), all=document.getElementById('benchAll'), zoom=document.getElementById('benchZoom');
+  var hint=document.getElementById('benchHint');
+  if(!svg) return;
+  var NS='http://www.w3.org/2000/svg';
+  var SIZES=[0,1000,2000,3000,4000,5000];
+  var data=null, showF3=true;
+
+  function f1(n){ var s=0; for(var i=0;i<n;i++) s=s+1; return s; }
+  function f2(n){ var s=0,i; for(i=0;i<n;i++) s=s+1; for(i=0;i<n;i++) s=s+1; return s; }
+  function f3(n){ var s=0; for(var i=0;i<n;i++){ for(var j=0;j<n;j++) s=s+1; } return s; }
+
+  function measure(fn,n){
+    var t0=performance.now();
+    fn(n);
+    return performance.now()-t0;
+  }
+  function bench(){
+    go.disabled=true;
+    hint.textContent='Mesures en cours…';
+    setTimeout(function(){
+      var d={x:SIZES.slice(), y1:[], y2:[], y3:[]};
+      SIZES.forEach(function(n){
+        d.y1.push(measure(f1,n));
+        d.y2.push(measure(f2,n));
+        d.y3.push(measure(f3,n));
+      });
+      data=d;
+      draw();
+      go.disabled=false;
+      var last=SIZES[SIZES.length-1];
+      var r=d.y1[d.y1.length-1]>0 ? (d.y3[d.y3.length-1]/d.y1[d.y1.length-1]).toFixed(0) : '—';
+      hint.textContent='Pour n = '+last.toLocaleString('fr-FR')+', f3 est environ '+r+' fois plus lente que f1. C\'est le rapport n entre n² et n opérations.';
+    },40);
+  }
+  function el(tag,attrs,txt){
+    var e=document.createElementNS(NS,tag);
+    for(var k in attrs) e.setAttribute(k,attrs[k]);
+    if(txt!=null) e.textContent=txt;
+    return e;
+  }
+  function draw(){
+    svg.innerHTML='';
+    var W=700,H=300,P={l:64,r:18,t:16,b:40};
+    var iw=W-P.l-P.r, ih=H-P.t-P.b;
+    if(!data){
+      svg.appendChild(el('text',{x:W/2,y:H/2,'text-anchor':'middle'},'Aucune mesure — clique sur « Lancer les mesures »'));
+      return;
+    }
+    var series=[{y:data.y1,c:'c1'},{y:data.y2,c:'c2'}];
+    if(showF3) series.push({y:data.y3,c:'c3'});
+    var ymax=0;
+    series.forEach(function(s){ s.y.forEach(function(v){ if(v>ymax) ymax=v; }); });
+    if(ymax<=0) ymax=1;
+    ymax=ymax*1.15;
+    var xmax=SIZES[SIZES.length-1];
+    function X(v){ return P.l + v/xmax*iw; }
+    function Y(v){ return P.t + ih - v/ymax*ih; }
+    // grille
+    for(var g=0;g<=4;g++){
+      var yy=P.t+ih-g/4*ih;
+      svg.appendChild(el('line',{class:'gl',x1:P.l,y1:yy,x2:P.l+iw,y2:yy}));
+      svg.appendChild(el('text',{x:P.l-8,y:yy+4,'text-anchor':'end'},(ymax*g/4).toFixed(1)));
+    }
+    svg.appendChild(el('line',{class:'ax',x1:P.l,y1:P.t,x2:P.l,y2:P.t+ih}));
+    svg.appendChild(el('line',{class:'ax',x1:P.l,y1:P.t+ih,x2:P.l+iw,y2:P.t+ih}));
+    SIZES.forEach(function(n){
+      svg.appendChild(el('text',{x:X(n),y:P.t+ih+20,'text-anchor':'middle'},n===0?'0':(n/1000)+'k'));
+    });
+    svg.appendChild(el('text',{x:P.l+iw/2,y:H-6,'text-anchor':'middle'},'Entrée n'));
+    svg.appendChild(el('text',{x:14,y:P.t+ih/2,'text-anchor':'middle',transform:'rotate(-90 14 '+(P.t+ih/2)+')'},'Temps (ms)'));
+    // courbes
+    series.forEach(function(s){
+      var dstr='';
+      for(var i=0;i<SIZES.length;i++){
+        dstr+=(i===0?'M':'L')+X(SIZES[i])+','+Y(s.y[i]);
+      }
+      svg.appendChild(el('path',{class:s.c,d:dstr}));
+      for(var i2=0;i2<SIZES.length;i2++){
+        var col = s.c==='c1'?'#34d399':(s.c==='c2'?'#22d3ee':'#fb7185');
+        svg.appendChild(el('circle',{cx:X(SIZES[i2]),cy:Y(s.y[i2]),r:3.5,fill:col}));
+      }
+    });
+  }
+  go.addEventListener('click',bench);
+  all.addEventListener('click',function(){
+    showF3=true; all.classList.add('on'); zoom.classList.remove('on'); draw();
+    if(data) hint.textContent='Avec f3 affichée, les courbes de f1 et f2 paraissent plates — leurs temps sont négligeables à cette échelle.';
+  });
+  zoom.addEventListener('click',function(){
+    showF3=false; zoom.classList.add('on'); all.classList.remove('on'); draw();
+    if(data){
+      var r=data.y1[data.y1.length-1]>0?(data.y2[data.y2.length-1]/data.y1[data.y1.length-1]).toFixed(1):'—';
+      hint.textContent='Sans f3, on voit que f2 est environ '+r+' fois plus lente que f1 — le facteur 2 attendu. Les deux restent linéaires.';
+    }
+  });
+  all.classList.add('on');
+  draw();
+})();
+
+/* ═══ 08 · continue ═══ */
+(function(){
+  var row=document.getElementById('ctRow');
+  var go=document.getElementById('ctGo'), rst=document.getElementById('ctReset');
+  var cT=document.getElementById('ctTours'), cS=document.getElementById('ctSkip'), cP=document.getElementById('ctPrint');
+  var hint=document.getElementById('ctHint');
+  if(!row) return;
+  var N=12, timer=null;
+
+  function draw(){
+    row.innerHTML='';
+    for(var i=0;i<N;i++){
+      var d=document.createElement('div');
+      d.className='citem'; d.textContent=i;
+      row.appendChild(d);
+    }
+    cT.textContent='0'; cS.textContent='0'; cP.textContent='0';
+  }
+  function run(){
+    if(timer) return;
+    draw();
+    var i=0, tours=0, skip=0, pr=0;
+    go.disabled=true;
+    timer=setInterval(function(){
+      row.querySelectorAll('.citem.act').forEach(function(c){c.classList.remove('act');});
+      if(i>=N){
+        clearInterval(timer); timer=null; go.disabled=false;
+        hint.textContent='Terminé : '+tours+' tours au total, dont '+skip+' interrompus par continue. Seules '+pr+' valeurs ont été affichées.';
+        return;
+      }
+      var c=row.children[i];
+      c.classList.add('act');
+      tours++; cT.textContent=String(tours);
+      if(i%3===0){
+        skip++; cS.textContent=String(skip);
+        setTimeout(function(cc){ return function(){ cc.classList.remove('act'); cc.classList.add('skip'); }; }(c),190);
+        hint.textContent='i = '+i+' est un multiple de 3 → continue : on saute le print et on passe au tour suivant.';
+      } else {
+        pr++; cP.textContent=String(pr);
+        setTimeout(function(cc){ return function(){ cc.classList.remove('act'); cc.classList.add('kept'); }; }(c),190);
+        hint.textContent='i = '+i+' n\'est pas un multiple de 3 → le print s\'exécute normalement.';
+      }
+      i++;
+    },420);
+  }
+  go.addEventListener('click',run);
+  rst.addEventListener('click',function(){
+    if(timer){clearInterval(timer); timer=null; go.disabled=false;}
+    draw();
+    hint.textContent='Les cases rouges sont sautées avant le print, les vertes sont affichées.';
+  });
+  draw();
+})();
+
+/* ═══ Mode Jour / Nuit ═══ */
+(function(){
+  var btn=document.getElementById('themeBtn');
+  function setTheme(t){
+    document.documentElement.setAttribute('data-theme',t);
+    btn.textContent=(t==='light')?'🌙':'☀️';
+    btn.title=(t==='light')?'Passer en mode nuit':'Passer en mode jour';
+    try{ localStorage.setItem('nadtech_theme',t); }catch(e){}
+  }
+  var saved=null;
+  try{ saved=localStorage.getItem('nadtech_theme'); }catch(e){}
+  if(saved==='light') setTheme('light');
+  btn.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    setTheme(cur==='light'?'dark':'light');
+  });
+})();
+</script>
+</body>
+</html>

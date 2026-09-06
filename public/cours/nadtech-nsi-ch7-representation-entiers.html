@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSI · Représentation des entiers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://skulpt.org/js/skulpt.min.js" type="text/javascript"></script>
+<script src="https://skulpt.org/js/skulpt-stdlib.js" type="text/javascript"></script>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a31; --code:#0e1526; --ink:#e9eefb; --muted:#9aa7c2;
+  --cyan:#22d3ee; --violet:#8b5cf6; --pink:#ec4899; --ok:#34d399; --err:#fb7185; --warn:#fbbf24;
+  --line:rgba(255,255,255,.09);
+  --glow:0 0 0 1px rgba(255,255,255,.04), 0 18px 40px -20px rgba(0,0,0,.7);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:
+    radial-gradient(1100px 600px at 80% -10%, rgba(139,92,246,.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.14), transparent 55%),
+    var(--bg);
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;
+}
+.wrap{max-width:1180px; margin:0 auto; padding:0 20px; display:grid; grid-template-columns:230px 1fr; gap:36px}
+@media(max-width:880px){ .wrap{grid-template-columns:1fr; gap:0} .toc{display:none!important} }
+
+/* Header */
+header.hero{padding:54px 0 26px; border-bottom:1px solid var(--line); margin-bottom:30px}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; color:var(--cyan);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(34,211,238,.06)}
+.mono-n{font-family:var(--mono); font-weight:700}
+.mono-n span:nth-child(1){color:var(--cyan)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--violet)}
+h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(28px,5vw,46px); line-height:1.08; margin:18px 0 10px}
+h1 .accent{background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.lede{color:var(--muted); max-width:62ch; font-size:18px}
+
+/* TOC */
+.toc{position:sticky; top:18px; align-self:start; padding-top:30px; max-height:96vh; overflow-y:auto}
+.toc h4{font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
+.toc a{display:block; color:var(--muted); text-decoration:none; font-size:13.5px; padding:5px 10px; border-left:2px solid transparent; border-radius:0 8px 8px 0; transition:.15s}
+.toc a:hover{color:var(--ink); background:rgba(255,255,255,.03); border-left-color:var(--violet)}
+
+/* Sections */
+section{padding:30px 0; border-bottom:1px solid var(--line)}
+h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; margin:0 0 6px; scroll-margin-top:20px;
+  display:flex; align-items:center; gap:12px}
+h2 .num{font-family:var(--mono); font-size:14px; color:var(--violet); border:1px solid var(--line); border-radius:8px; padding:3px 9px; background:rgba(139,92,246,.08)}
+h3{font-family:'Space Grotesk',sans-serif; font-size:18px; margin:26px 0 8px; color:#fff}
+p{margin:10px 0}
+.muted{color:var(--muted)}
+code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; color:#cfe6ff; border:1px solid var(--line)}
+strong{color:#fff}
+a.link{color:var(--cyan)}
+ul{margin:10px 0; padding-left:22px} li{margin:5px 0}
+
+/* Callout */
+.note{display:flex; gap:12px; padding:14px 16px; border-radius:12px; background:rgba(34,211,238,.06); border:1px solid rgba(34,211,238,.22); margin:16px 0}
+.note.warn{background:rgba(251,113,133,.07); border-color:rgba(251,113,133,.28)}
+.note.gold{background:rgba(251,191,36,.06); border-color:rgba(251,191,36,.25)}
+.note .ico{font-size:18px; line-height:1.4}
+.note p{margin:0}
+
+/* Runnable cell */
+.cell{background:var(--code); border:1px solid var(--line); border-radius:14px; margin:16px 0; overflow:hidden; box-shadow:var(--glow)}
+.cell-head{display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,.025); border-bottom:1px solid var(--line)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:7px}
+.dot{width:9px; height:9px; border-radius:50%; background:var(--violet); box-shadow:0 0 8px var(--violet)}
+.run{font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:#06121f; cursor:pointer;
+  border:0; border-radius:8px; padding:7px 16px; background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.15s}
+.run:hover{filter:brightness(1.08); transform:translateY(-1px)}
+.run:disabled{opacity:.5; cursor:wait; transform:none}
+textarea.code{width:100%; border:0; outline:0; resize:vertical; background:transparent; color:#e7f0ff;
+  font-family:var(--mono); font-size:14px; line-height:1.6; padding:14px 16px; display:block; tab-size:4}
+.out{margin:0; padding:0 16px; max-height:0; overflow:hidden; font-family:var(--mono); font-size:13.5px; color:#bfe6c9;
+  white-space:pre-wrap; border-top:1px solid transparent; transition:max-height .2s, padding .2s}
+.out.show{max-height:420px; overflow:auto; padding:12px 16px; border-top:1px solid var(--line); background:rgba(0,0,0,.25)}
+.out.err{color:var(--err)}
+
+/* Static code */
+pre.static{background:var(--code); border:1px solid var(--line); border-radius:14px; padding:14px 16px; overflow:auto;
+  font-family:var(--mono); font-size:13.5px; line-height:1.6; margin:16px 0; color:#e7f0ff}
+pre.static .c{color:#7c8aa6} pre.static .k{color:var(--violet)} pre.static .s{color:#7ee0a6} pre.static .e{color:var(--err)}
+
+/* Interactive panel (shared shell) */
+.panel{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px; margin:18px 0; box-shadow:var(--glow)}
+.panel .bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+.panel .step-code{font-family:var(--mono); font-size:14px; color:#cfe6ff; background:rgba(255,255,255,.05);
+  padding:6px 12px; border-radius:8px; border:1px solid var(--line); flex:1; min-width:150px}
+.btn{font-family:'Nunito',sans-serif; font-weight:700; border:1px solid var(--line); background:rgba(255,255,255,.04);
+  color:var(--ink); padding:7px 14px; border-radius:9px; cursor:pointer; transition:.15s}
+.btn:hover{border-color:var(--violet); background:rgba(139,92,246,.12)}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.btn.on{border-color:var(--cyan); background:rgba(34,211,238,.15); color:var(--cyan)}
+.hint{color:var(--muted); font-size:14px; margin:8px 2px 0}
+.panel input[type=number],.panel input[type=text]{
+  font-family:var(--mono); font-size:15px; background:rgba(0,0,0,.3); color:var(--cyan);
+  border:1px solid var(--line); border-radius:9px; padding:8px 12px; width:130px; outline:none}
+.panel input:focus{border-color:var(--cyan)}
+.panel label{font-size:13px; color:var(--muted); font-family:'Space Grotesk',sans-serif}
+
+/* Bit boxes */
+.bits{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin:6px 0}
+.bitcol{display:flex; flex-direction:column; align-items:center; gap:3px}
+.bit{width:46px; height:46px; border-radius:10px; border:1px solid var(--line); background:rgba(255,255,255,.04);
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-weight:700; font-size:19px;
+  color:var(--muted); cursor:pointer; transition:.18s; user-select:none}
+.bit:hover{border-color:var(--violet)}
+.bit.on{background:rgba(34,211,238,.16); border-color:var(--cyan); color:var(--cyan); box-shadow:0 0 12px -2px rgba(34,211,238,.5)}
+.bit.ro{cursor:default}
+.bit.ro:hover{border-color:var(--line)}
+.bitw{font-family:var(--mono); font-size:11px; color:var(--muted)}
+.bitw b{color:var(--violet); font-weight:700}
+.bitp{font-family:var(--mono); font-size:10px; color:rgba(255,255,255,.25)}
+.eqline{font-family:var(--mono); font-size:13.5px; color:var(--muted); text-align:center; margin:12px 0 4px;
+  line-height:2; word-break:break-word}
+.eqline .t{color:var(--cyan)}
+.eqline .z{color:rgba(255,255,255,.2)}
+.bigres{text-align:center; font-family:var(--mono); font-size:26px; font-weight:700; margin:6px 0 0}
+.bigres .v{color:var(--ok)}
+
+/* Division steps table */
+.divtab{margin:12px auto; font-family:var(--mono); font-size:14px; border-collapse:collapse}
+.divtab td{padding:6px 14px; border:1px solid var(--line); text-align:center; color:var(--muted); transition:.25s}
+.divtab tr.act td{background:rgba(139,92,246,.16); color:var(--ink)}
+.divtab tr.done td{opacity:.5}
+.divtab .q{color:var(--cyan)} .divtab .r{color:var(--pink); font-weight:700}
+.divtab th{padding:7px 14px; border:1px solid var(--line); background:rgba(139,92,246,.15); color:var(--violet); font-size:12.5px}
+.restack{display:flex; gap:5px; justify-content:center; align-items:center; margin:12px 0; flex-wrap:wrap; min-height:46px}
+.rebox{width:40px; height:40px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-weight:700; font-size:18px; border:1px solid rgba(236,72,153,.4);
+  background:rgba(236,72,153,.12); color:var(--pink); animation:pop .3s}
+@keyframes pop{from{opacity:0;transform:scale(.5) translateY(-8px)}to{opacity:1;transform:none}}
+
+/* Hex grouping */
+.nibrow{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin:14px 0}
+.nib{text-align:center; transition:.3s}
+.nibbits{display:flex; gap:3px}
+.nibbits span{width:26px; height:34px; border-radius:6px; display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-weight:700; font-size:15px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--muted)}
+.nib.hl .nibbits span{border-color:var(--violet); background:rgba(139,92,246,.16); color:var(--ink)}
+.nibval{font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:5px; min-height:18px}
+.nibhex{font-family:var(--mono); font-weight:700; font-size:22px; color:var(--muted); margin-top:2px; min-height:28px; opacity:.2; transition:.3s}
+.nib.rev .nibhex{opacity:1; color:var(--ok)}
+
+/* Live converter */
+.convgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin:8px 0}
+.convcard{background:rgba(0,0,0,.22); border:1px solid var(--line); border-radius:12px; padding:12px 14px}
+.convcard .lab{font-family:'Space Grotesk',sans-serif; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:6px}
+.convcard input{width:100%!important; font-size:16px!important}
+.convcard.b2 input{color:var(--violet)} .convcard.b16 input{color:var(--pink)} .convcard.b10 input{color:var(--cyan)}
+.convcard .sub{font-family:var(--mono); font-size:11px; color:rgba(255,255,255,.3); margin-top:5px; min-height:15px}
+
+/* Endian */
+.membar{display:flex; gap:0; justify-content:center; margin:16px 0; font-family:var(--mono)}
+.memcell{width:74px; padding:14px 0; text-align:center; border:1px solid var(--line); font-weight:700; font-size:17px;
+  transition:.45s cubic-bezier(.4,0,.2,1); background:rgba(255,255,255,.04)}
+.memcell.hi{background:rgba(139,92,246,.18); border-color:var(--violet); color:var(--violet)}
+.memcell.lo{background:rgba(34,211,238,.14); border-color:var(--cyan); color:var(--cyan)}
+.memaddr{display:flex; gap:0; justify-content:center; font-family:var(--mono); font-size:11px; color:var(--muted)}
+.memaddr span{width:74px; text-align:center}
+
+/* Overflow */
+.ovmeter{height:12px; border-radius:99px; background:rgba(255,255,255,.06); overflow:hidden; margin:14px 0 6px; border:1px solid var(--line)}
+.ovfill{height:100%; width:0%; background:linear-gradient(90deg,var(--ok),var(--warn),var(--err)); transition:width .25s}
+.ovval{font-family:var(--mono); font-size:30px; font-weight:700; text-align:center; color:var(--cyan); transition:.2s}
+.ovval.boom{color:var(--err); animation:shake .4s}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+
+/* C2 stepper */
+.c2row{display:flex; align-items:center; gap:12px; justify-content:center; margin:10px 0; flex-wrap:wrap}
+.c2lab{font-family:'Space Grotesk',sans-serif; font-size:12px; color:var(--muted); width:150px; text-align:right}
+.c2bits{display:flex; gap:4px}
+.c2bits span{width:34px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-weight:700; font-size:17px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--muted)}
+.c2bits span.one{color:var(--cyan); border-color:rgba(34,211,238,.4); background:rgba(34,211,238,.1)}
+.c2bits span.flip{animation:flipb .45s}
+@keyframes flipb{50%{transform:rotateX(90deg)}}
+.c2bits span.carry{border-color:var(--warn); background:rgba(251,191,36,.15); color:var(--warn)}
+.c2row.dim{opacity:.25}
+
+/* Data tables */
+table.data{border-collapse:collapse; margin:14px auto; font-family:var(--mono); font-size:13.5px}
+table.data th{background:rgba(139,92,246,.15); color:var(--violet); padding:8px 16px; border:1px solid var(--line); font-size:12.5px}
+table.data td{padding:6px 16px; border:1px solid var(--line); text-align:center; color:var(--muted)}
+table.data tr:nth-child(even) td{background:rgba(255,255,255,.025)}
+table.data td.neg{color:var(--err)} table.data td.pos{color:var(--ok)}
+table.data td.hl{color:var(--cyan); font-weight:700}
+.scrollx{overflow-x:auto}
+
+/* Weight table */
+.wtab{border-collapse:collapse; margin:14px auto; font-family:var(--mono); font-size:14px}
+.wtab td,.wtab th{border:1px solid var(--line); padding:7px 13px; text-align:center}
+.wtab th{color:var(--muted); font-size:12px; font-weight:400; background:rgba(255,255,255,.03); text-align:right; padding-right:16px}
+.wtab .d{color:var(--cyan); font-weight:700; font-size:17px}
+.wtab .p{color:var(--muted); font-size:12px}
+.wtab .w{color:var(--violet); font-size:13px}
+
+/* Wheel */
+.wheelwrap{display:flex; justify-content:center; margin:18px 0}
+.wheelwrap svg{max-width:100%; height:auto}
+
+/* Quiz */
+.quiz{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin:18px 0; box-shadow:var(--glow)}
+.quiz .q{font-weight:800; margin:0 0 12px; font-family:'Space Grotesk',sans-serif}
+.quiz .q::before{content:"?"; display:inline-grid; place-items:center; width:24px; height:24px; margin-right:10px; border-radius:7px;
+  background:linear-gradient(135deg,var(--violet),var(--pink)); color:#fff; font-family:var(--mono); font-weight:700; font-size:14px; vertical-align:middle}
+.opt{display:block; padding:11px 14px; margin:8px 0; border:1px solid var(--line); border-radius:10px; cursor:pointer; transition:.12s; font-family:var(--mono); font-size:14px}
+.opt:hover{border-color:var(--violet); background:rgba(139,92,246,.07)}
+.opt.good{border-color:var(--ok); background:rgba(52,211,153,.12)}
+.opt.bad{border-color:var(--err); background:rgba(251,113,133,.12)}
+.opt.lock{pointer-events:none; opacity:.85}
+.feedback{margin-top:10px; font-size:14px; min-height:20px; color:var(--muted)}
+.feedback.ok{color:var(--ok)} .feedback.no{color:var(--err)}
+
+footer{padding:40px 0 70px; color:var(--muted); font-size:14px}
+footer a{color:var(--cyan)}
+.tag-list{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+::selection{background:rgba(139,92,246,.4)}
+
+/* ══ COUVERTURE ══ */
+#cover{min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+  background:linear-gradient(155deg,#050817 0%,#0d0b2d 42%,#0b1020 100%); border-bottom:1px solid rgba(255,255,255,.06)}
+.cover-grid{position:absolute; inset:0; pointer-events:none;
+  background-image:linear-gradient(rgba(139,92,246,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.07) 1px,transparent 1px);
+  background-size:44px 44px}
+.cover-glow{position:absolute; width:900px; height:900px; border-radius:50%;
+  background:radial-gradient(circle,rgba(139,92,246,.16) 0%,transparent 65%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none}
+.cover-rain{position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:1}
+.cover-rain span{position:absolute; font-family:var(--mono); font-size:13px; color:rgba(34,211,238,.16);
+  white-space:pre; user-select:none; line-height:1.9; animation:drift 22s linear infinite}
+@keyframes drift{from{transform:translateY(-40%)}to{transform:translateY(115vh)}}
+@media(prefers-reduced-motion:reduce){.cover-rain span{animation:none}}
+.cover-content{position:relative; z-index:2; text-align:center; padding:48px 24px; max-width:720px}
+.cover-kicker{display:inline-block; font-family:'Space Grotesk',sans-serif; font-weight:600; letter-spacing:.18em;
+  text-transform:uppercase; font-size:12px; color:var(--cyan); border:1px solid rgba(34,211,238,.25);
+  padding:7px 16px; border-radius:999px; background:rgba(34,211,238,.06); margin-bottom:26px}
+.cover-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(44px,9vw,84px); line-height:1; margin:0 0 8px;
+  background:linear-gradient(120deg,#fff 0%,var(--cyan) 32%,var(--violet) 68%,var(--pink) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent}
+.cover-sub{font-family:'Nunito',sans-serif; font-size:clamp(15px,2.4vw,18px); color:rgba(255,255,255,.5); margin:0 0 28px}
+.cover-svg-wrap{margin-bottom:26px; display:flex; justify-content:center}
+.cover-pills{display:flex; gap:9px; justify-content:center; flex-wrap:wrap; margin-bottom:32px}
+.cover-pill{font-family:var(--mono); font-size:12px; padding:6px 14px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.5); background:rgba(255,255,255,.04)}
+.cover-pill.b2{border-color:rgba(139,92,246,.4); color:var(--violet)}
+.cover-pill.b10{border-color:rgba(34,211,238,.4); color:var(--cyan)}
+.cover-pill.b16{border-color:rgba(236,72,153,.4); color:var(--pink)}
+.cover-btn{display:inline-flex; align-items:center; gap:10px; text-decoration:none; font-family:'Space Grotesk',sans-serif;
+  font-weight:700; font-size:16px; color:#06121f; padding:14px 32px; border-radius:14px;
+  background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.2s}
+.cover-btn:hover{filter:brightness(1.08); transform:translateY(-2px); box-shadow:0 8px 28px rgba(34,211,238,.35)}
+
+/* ══ THEME BUTTON ══ */
+#themeBtn{position:fixed; top:18px; right:18px; z-index:1001; width:46px; height:46px; border-radius:50%;
+  border:1px solid var(--line); background:var(--bg2); cursor:pointer; font-size:19px; line-height:1;
+  display:flex; align-items:center; justify-content:center; box-shadow:var(--glow); transition:.2s}
+#themeBtn:hover{border-color:var(--cyan); transform:scale(1.1)}
+
+/* ══ MODE JOUR ══ */
+[data-theme="light"]{
+  --bg:#eef1ff; --bg2:#ffffff; --code:#e8ecfc; --ink:#1a1f3c; --muted:#5a6490;
+  --line:rgba(26,31,60,.1); --glow:0 0 0 1px rgba(0,0,0,.05),0 6px 20px -6px rgba(0,0,0,.12);
+}
+[data-theme="light"] body{background:
+  radial-gradient(1100px 600px at 80% -10%,rgba(139,92,246,.09),transparent 60%),
+  radial-gradient(900px 500px at -10% 10%,rgba(34,211,238,.07),transparent 55%),var(--bg)}
+[data-theme="light"] h1,[data-theme="light"] h2,[data-theme="light"] h3,[data-theme="light"] strong{color:#1a1f3c}
+[data-theme="light"] p,[data-theme="light"] li,[data-theme="light"] .lede,[data-theme="light"] .note p{color:#374151}
+[data-theme="light"] .toc a{color:#5a6490}
+[data-theme="light"] .toc a:hover{color:#1a1f3c; background:rgba(0,0,0,.04)}
+[data-theme="light"] textarea.code{color:#1a1f3c}
+[data-theme="light"] pre.static{color:#1a1f3c}
+[data-theme="light"] .out{color:#166534} [data-theme="light"] .out.err{color:#991b1b}
+[data-theme="light"] .bit{color:#6b7280} [data-theme="light"] .bit.on{color:#0e7490}
+[data-theme="light"] .bitp{color:rgba(26,31,60,.25)}
+[data-theme="light"] table.data td,[data-theme="light"] .divtab td{color:#4b5563}
+[data-theme="light"] table.data tr:nth-child(even) td{background:rgba(0,0,0,.03)}
+[data-theme="light"] .divtab tr.act td{background:rgba(139,92,246,.14); color:#1a1f3c}
+[data-theme="light"] .nibbits span{color:#4b5563}
+[data-theme="light"] .nib.hl .nibbits span{color:#1a1f3c}
+[data-theme="light"] .memcell{color:#4b5563}
+[data-theme="light"] .c2bits span{color:#4b5563}
+[data-theme="light"] .eqline{color:#4b5563}
+[data-theme="light"] .eqline .z{color:rgba(26,31,60,.25)}
+[data-theme="light"] .convcard .sub{color:rgba(26,31,60,.4)}
+[data-theme="light"] #themeBtn{background:#ffffff}
+[data-theme="light"] .wheelwrap svg text.wl{fill:#4b5563}
+</style>
+</head>
+<body>
+
+<!-- ══════════ COUVERTURE ══════════ -->
+<div id="cover">
+  <div class="cover-grid"></div>
+  <div class="cover-glow"></div>
+  <div class="cover-rain" id="rain"></div>
+
+  <div class="cover-content">
+    <div class="cover-kicker">NSI · Première · Représentation des données</div>
+
+    <div class="cover-svg-wrap">
+      <svg viewBox="0 0 420 96" width="420" height="96" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="cvA" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b5cf6"/></marker>
+          <marker id="cvB" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ec4899"/></marker>
+        </defs>
+        <rect x="0" y="28" width="104" height="42" rx="10" fill="rgba(34,211,238,.1)" stroke="rgba(34,211,238,.45)" stroke-width="1.5"/>
+        <text x="52" y="47" font-family="monospace" font-size="11" fill="rgba(34,211,238,.6)" text-anchor="middle">base 10</text>
+        <text x="52" y="63" font-family="monospace" font-size="16" fill="#22d3ee" text-anchor="middle" font-weight="700">77</text>
+        <line x1="108" y1="49" x2="146" y2="49" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#cvA)"/>
+        <rect x="150" y="28" width="132" height="42" rx="10" fill="rgba(139,92,246,.1)" stroke="rgba(139,92,246,.5)" stroke-width="1.5"/>
+        <text x="216" y="47" font-family="monospace" font-size="11" fill="rgba(139,92,246,.65)" text-anchor="middle">base 2</text>
+        <text x="216" y="63" font-family="monospace" font-size="16" fill="#8b5cf6" text-anchor="middle" font-weight="700">01001101</text>
+        <line x1="286" y1="49" x2="322" y2="49" stroke="#ec4899" stroke-width="1.5" marker-end="url(#cvB)"/>
+        <rect x="326" y="28" width="94" height="42" rx="10" fill="rgba(236,72,153,.1)" stroke="rgba(236,72,153,.45)" stroke-width="1.5"/>
+        <text x="373" y="47" font-family="monospace" font-size="11" fill="rgba(236,72,153,.6)" text-anchor="middle">base 16</text>
+        <text x="373" y="63" font-family="monospace" font-size="16" fill="#ec4899" text-anchor="middle" font-weight="700">4D</text>
+      </svg>
+    </div>
+
+    <h1 class="cover-title">Représentation<br>des entiers</h1>
+    <p class="cover-sub">Bases 2, 10 et 16 · Complément à 2 · Boutisme — M. Zaghdoudi · LFI Sousse</p>
+
+    <div class="cover-pills">
+      <span class="cover-pill b10">décimal</span>
+      <span class="cover-pill b2">binaire</span>
+      <span class="cover-pill b16">hexadécimal</span>
+      <span class="cover-pill">complément à 2</span>
+    </div>
+
+    <a href="#bits" class="cover-btn">Commencer le cours →</a>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- Sommaire -->
+  <nav class="toc">
+    <h4>Sommaire</h4>
+    <a href="#bits">Bits, octets, mots</a>
+    <a href="#base10">Écriture en base 10</a>
+    <a href="#base2">Écriture en base 2</a>
+    <a href="#conv2">Conversion → base 2</a>
+    <a href="#base16">Écriture en base 16</a>
+    <a href="#hexbin">Binaire ⇄ hexadécimal</a>
+    <a href="#convert">Convertisseur</a>
+    <a href="#python">Bases en Python</a>
+    <a href="#unites">Unités de mesure</a>
+    <a href="#boutisme">Boutisme</a>
+    <a href="#overflow">Dépassement d'entier</a>
+    <a href="#relatifs">Entiers relatifs</a>
+    <a href="#c2">Complément à 2</a>
+    <a href="#roue">Roue des entiers</a>
+    <a href="#quiz">Quiz bilan</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="kicker">NSI · Représentation des entiers</span>
+      <h1>Du décimal au binaire<br><span class="accent">et retour</span></h1>
+      <p class="lede">Un ordinateur ne connaît que des <strong>0</strong> et des <strong>1</strong>. Cette page explique comment ces deux chiffres suffisent à représenter n'importe quel nombre entier — positif ou négatif. Chaque mécanisme est <strong>animé</strong> et <strong>manipulable</strong>.</p>
+      <div class="tag-list">
+        <span class="chip">bit / octet</span><span class="chip">base 2</span><span class="chip">base 16</span>
+        <span class="chip">boutisme</span><span class="chip">complément à 2</span><span class="chip">overflow</span>
+      </div>
+    </header>
+
+    <!-- ══ 01 BITS ══ -->
+    <section id="bits">
+      <h2><span class="num">01</span> Bits, octets et mots machine</h2>
+      <p>Dans un ordinateur, <strong>toutes</strong> les informations — données comme programmes — sont représentées avec deux chiffres seulement : <code class="inl">0</code> et <code class="inl">1</code>. On les appelle <strong>chiffres binaires</strong>, ou <em>binary digits</em>, abrégé en <strong>bits</strong>.</p>
+      <p>Dans la mémoire (RAM, ROM, registres du processeur), ces bits sont regroupés :</p>
+      <ul>
+        <li>par paquets de 8 → un <strong>octet</strong> (<em>byte</em> en anglais)</li>
+        <li>en <strong>mots machine</strong> (<em>words</em>) de 2, 4 ou 8 octets</li>
+      </ul>
+      <p>Une machine dite « <strong>32 bits</strong> » manipule directement des mots de 4 octets (4 × 8 = 32 bits) lorsqu'elle effectue des opérations.</p>
+      <div class="note"><span class="ico">💡</span><p>Ce regroupement est ce qui permet de représenter autre chose que des 0 et des 1 : entiers, approximations de réels, caractères, textes, images… Mais il faut pour cela <strong>inventer des encodages</strong>. C'est l'objet de ce chapitre.</p></div>
+    </section>
+
+    <!-- ══ 02 BASE 10 ══ -->
+    <section id="base10">
+      <h2><span class="num">02</span> Écriture en base 10</h2>
+      <p>Un nombre en base 10 est une séquence de chiffres entre 0 et 9. Pour calculer sa valeur, on affecte à chaque chiffre un <strong>poids</strong> — une puissance de 10 qui dépend de sa <strong>position</strong> — puis on somme.</p>
+      <p>Prenons la séquence <code class="inl">61027</code> :</p>
+      <table class="wtab">
+        <tr><th>séquence</th><td class="d">6</td><td class="d">1</td><td class="d">0</td><td class="d">2</td><td class="d">7</td></tr>
+        <tr><th>position</th><td class="p">4</td><td class="p">3</td><td class="p">2</td><td class="p">1</td><td class="p">0</td></tr>
+        <tr><th>poids</th><td class="w">10⁴</td><td class="w">10³</td><td class="w">10²</td><td class="w">10¹</td><td class="w">10⁰</td></tr>
+      </table>
+      <p class="eqline" style="text-align:center">N = 6×10⁴ + 1×10³ + 0×10² + 2×10¹ + 7×10⁰ = <span class="t">61027</span></p>
+      <div class="note"><span class="ico">📐</span><p>Plus généralement, une séquence de <em>k</em> chiffres <code class="inl">d(k-1) … d1 d0</code> vaut :<br>
+      <strong>N = d(k-1)×10<sup>k-1</sup> + … + d1×10¹ + d0×10⁰</strong><br>
+      Le chiffre <code class="inl">d(k-1)</code> est celui de <strong>poids fort</strong>, <code class="inl">d0</code> celui de <strong>poids faible</strong>.</p></div>
+    </section>
+
+    <!-- ══ 03 BASE 2 ══ -->
+    <section id="base2">
+      <h2><span class="num">03</span> Écriture en base 2</h2>
+      <p>C'est exactement le même principe, mais avec des puissances de <strong>2</strong> au lieu de 10, et seulement deux chiffres possibles.</p>
+      <p><strong>Clique sur les bits</strong> ci-dessous pour les allumer ou les éteindre. La décomposition et la valeur décimale se mettent à jour en direct :</p>
+
+      <div class="panel" id="bitPanel">
+        <div class="bar">
+          <span class="step-code" id="bitCode">Octet : 01001101</span>
+          <button class="btn" data-preset="01001101">01001101</button>
+          <button class="btn" data-preset="11111111">11111111</button>
+          <button class="btn" data-preset="00000000">Effacer</button>
+        </div>
+        <div class="bits" id="bitRow"></div>
+        <p class="eqline" id="bitEq"></p>
+        <p class="bigres">N = <span class="v" id="bitVal">77</span></p>
+        <p class="hint">Chaque bit allumé ajoute son poids au total. Un octet représente donc les entiers de <strong>0</strong> à <strong>255</strong>.</p>
+      </div>
+
+      <div class="note"><span class="ico">🔢</span><p>Une séquence de <em>k</em> bits permet de représenter les entiers naturels de <strong>0</strong> à <strong>2<sup>k</sup> − 1</strong>. Un octet (8 bits) → 0 à 255. Un mot de 16 bits → 0 à 65 535.</p></div>
+    </section>
+
+    <!-- ══ 04 CONVERSION ══ -->
+    <section id="conv2">
+      <h2><span class="num">04</span> Convertir un décimal en binaire</h2>
+      <p>La méthode : effectuer des <strong>divisions entières successives par 2</strong> jusqu'à ce que le quotient devienne nul. Le résultat est la <strong>juxtaposition des restes, lus de bas en haut</strong>.</p>
+      <p>Le dernier reste obtenu est le <strong>bit de poids fort</strong>. Déroule l'algorithme pas à pas :</p>
+
+      <div class="panel" id="divPanel">
+        <div class="bar">
+          <label for="divInput">Nombre à convertir</label>
+          <input type="number" id="divInput" value="57" min="0" max="99999">
+          <button class="btn" id="divStart">Lancer</button>
+          <button class="btn" id="divNext">Étape suivante ▶</button>
+          <button class="btn" id="divAll">Tout dérouler</button>
+          <button class="btn" id="divReset">↺</button>
+        </div>
+        <div id="divTabWrap"></div>
+        <p class="hint" id="divHint">Clique sur « Lancer » pour commencer les divisions.</p>
+        <div class="restack" id="divStack"></div>
+        <p class="bigres" id="divRes"></p>
+      </div>
+
+      <div class="note gold"><span class="ico">⚠️</span><p>Attention au <strong>sens de lecture</strong> : les restes s'accumulent du <em>poids faible</em> (première division) vers le <em>poids fort</em> (dernière division). On lit donc la colonne des restes <strong>de bas en haut</strong>.</p></div>
+    </section>
+
+    <!-- ══ 05 BASE 16 ══ -->
+    <section id="base16">
+      <h2><span class="num">05</span> Écriture en base 16</h2>
+      <p>La base 16, dite <strong>hexadécimale</strong>, est très utilisée en informatique. Comme il faut 16 chiffres, on utilise <code class="inl">0</code> à <code class="inl">9</code> pour les dix premiers, puis les lettres <code class="inl">A</code> à <code class="inl">F</code> pour les six suivants :</p>
+      <table class="data">
+        <tr><th>lettre</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr>
+        <tr><th>valeur</th><td class="hl">10</td><td class="hl">11</td><td class="hl">12</td><td class="hl">13</td><td class="hl">14</td><td class="hl">15</td></tr>
+      </table>
+      <p>Le calcul de la valeur suit la même logique — avec des puissances de 16. Exemple avec <code class="inl">2A4D</code> :</p>
+      <table class="wtab">
+        <tr><th>séquence</th><td class="d">2</td><td class="d">A</td><td class="d">4</td><td class="d">D</td></tr>
+        <tr><th>position</th><td class="p">3</td><td class="p">2</td><td class="p">1</td><td class="p">0</td></tr>
+        <tr><th>poids</th><td class="w">16³</td><td class="w">16²</td><td class="w">16¹</td><td class="w">16⁰</td></tr>
+      </table>
+      <p class="eqline" style="text-align:center">N = 2×16³ + 10×16² + 4×16¹ + 13×16⁰ = <span class="t">10829</span></p>
+      <div class="note"><span class="ico">✏️</span><p>On note parfois la base en indice pour lever l'ambiguïté : <code class="inl">101₂</code> (qui vaut 5) et <code class="inl">101₁₆</code> (qui vaut 257) ne désignent pas le même nombre.</p></div>
+    </section>
+
+    <!-- ══ 06 HEX ⇄ BIN ══ -->
+    <section id="hexbin">
+      <h2><span class="num">06</span> Binaire ⇄ hexadécimal</h2>
+      <p>La base 16 sert surtout à <strong>raccourcir l'écriture des nombres binaires</strong>. La conversion est immédiate : il suffit de <strong>regrouper les bits par paquets de 4</strong>, chaque paquet donnant un chiffre hexadécimal.</p>
+      <p>Regarde l'animation sur la séquence <code class="inl">1010010111110011</code> :</p>
+
+      <div class="panel" id="nibPanel">
+        <div class="bar">
+          <span class="step-code" id="nibCode">1010010111110011</span>
+          <button class="btn" id="nibPlay">▶ Animer le regroupement</button>
+          <button class="btn" id="nibReset">↺</button>
+        </div>
+        <div class="nibrow" id="nibRow"></div>
+        <p class="bigres" id="nibRes" style="opacity:.25">= <span class="v">????</span></p>
+        <p class="hint" id="nibHint">Chaque paquet de 4 bits représente une valeur de 0 à 15 — soit exactement un chiffre hexadécimal.</p>
+      </div>
+
+      <p>La transformation inverse est tout aussi simple : chaque chiffre hexadécimal se traduit par 4 bits.</p>
+      <div class="scrollx">
+        <table class="data">
+          <tr><th>hex</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td></tr>
+          <tr><th>bits</th><td class="hl">0000</td><td class="hl">0001</td><td class="hl">0010</td><td class="hl">0011</td><td class="hl">0100</td><td class="hl">0101</td><td class="hl">0110</td><td class="hl">0111</td></tr>
+          <tr><th>hex</th><td>8</td><td>9</td><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td></tr>
+          <tr><th>bits</th><td class="hl">1000</td><td class="hl">1001</td><td class="hl">1010</td><td class="hl">1011</td><td class="hl">1100</td><td class="hl">1101</td><td class="hl">1110</td><td class="hl">1111</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══ 07 CONVERTISSEUR ══ -->
+    <section id="convert">
+      <h2><span class="num">07</span> Convertisseur des trois bases</h2>
+      <p>Tape une valeur dans <strong>n'importe laquelle</strong> des trois cases : les deux autres se recalculent instantanément.</p>
+
+      <div class="panel">
+        <div class="convgrid">
+          <div class="convcard b10">
+            <div class="lab">Base 10 · décimal</div>
+            <input type="text" id="cDec" value="77" autocomplete="off">
+            <div class="sub" id="sDec"></div>
+          </div>
+          <div class="convcard b2">
+            <div class="lab">Base 2 · binaire</div>
+            <input type="text" id="cBin" value="1001101" autocomplete="off">
+            <div class="sub" id="sBin"></div>
+          </div>
+          <div class="convcard b16">
+            <div class="lab">Base 16 · hexadécimal</div>
+            <input type="text" id="cHex" value="4D" autocomplete="off">
+            <div class="sub" id="sHex"></div>
+          </div>
+        </div>
+        <p class="hint" id="convHint">Essaie 255, 1024, ou FF pour observer les correspondances remarquables.</p>
+      </div>
+    </section>
+
+    <!-- ══ 08 PYTHON ══ -->
+    <section id="python">
+      <h2><span class="num">08</span> Les bases en Python</h2>
+      <p>Par défaut, Python saisit et affiche les nombres en base 10. Pour écrire directement en binaire, on utilise le préfixe <code class="inl">0b</code> ; en hexadécimal, le préfixe <code class="inl">0x</code>.</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">print(0b01001101)   # binaire  -> 77
+print(0xDF40E)      # hexa     -> 914446
+print(0x2A4D)       # hexa     -> 10829</textarea>
+        <pre class="out"></pre>
+      </div>
+
+      <p>Inversement, <code class="inl">bin(n)</code> et <code class="inl">hex(n)</code> convertissent un entier vers la base 2 ou 16. <strong>Ces fonctions renvoient une chaîne de caractères</strong>, pas un nombre.</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">print(bin(43))       # '0b101011'
+print(bin(0xA4F2))   # on peut mélanger les notations
+print(hex(1759))     # '0x6df'
+print(hex(0b10101))  # '0x15'
+
+print(type(bin(43)))  # <class 'str'>  -> c'est du texte !</textarea>
+        <pre class="out"></pre>
+      </div>
+
+      <p>On peut aussi utiliser les <strong>f-strings</strong> avec un format de conversion — pratique pour afficher sans le préfixe :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">nb = 42
+print(f"Representation binaire      : {nb:b}")
+print(f"Representation hexadecimale : {nb:x}")
+print(f"Representation octale       : {nb:o}")
+
+# Avec remplissage sur 8 bits :
+print(f"Sur 8 bits : {nb:08b}")</textarea>
+        <pre class="out"></pre>
+      </div>
+
+      <div class="note"><span class="ico">🧪</span><p>Modifie <code class="inl">nb</code> et réexécute. Essaie <code class="inl">255</code>, <code class="inl">256</code>, <code class="inl">1023</code> : observe comment le nombre de bits nécessaires évolue.</p></div>
+    </section>
+
+    <!-- ══ 09 UNITÉS ══ -->
+    <section id="unites">
+      <h2><span class="num">09</span> Unités de mesure</h2>
+      <p>On mesure couramment la capacité d'un disque, de la RAM ou un débit réseau en <strong>multiples d'octets</strong>. Traditionnellement, ces multiples sont des <strong>puissances de 10</strong> :</p>
+      <table class="data">
+        <tr><th>Nom</th><th>Symbole</th><th>Valeur</th></tr>
+        <tr><td>kilooctet</td><td class="hl">ko</td><td>10³ octets</td></tr>
+        <tr><td>megaoctet</td><td class="hl">Mo</td><td>10³ ko</td></tr>
+        <tr><td>gigaoctet</td><td class="hl">Go</td><td>10³ Mo</td></tr>
+        <tr><td>teraoctet</td><td class="hl">To</td><td>10³ Go</td></tr>
+      </table>
+
+      <p>Historiquement pourtant, les multiples utilisés en informatique étaient des <strong>puissances de 2</strong>. Pour lever la confusion, on emploie des symboles distincts :</p>
+      <table class="data">
+        <tr><th>Symbole</th><th>Valeur</th><th>Nombre d'octets</th></tr>
+        <tr><td class="hl">Kio</td><td>2¹⁰ octets</td><td>1 024</td></tr>
+        <tr><td class="hl">Mio</td><td>2¹⁰ Kio</td><td>1 048 576</td></tr>
+        <tr><td class="hl">Gio</td><td>2¹⁰ Mio</td><td>1 073 741 824</td></tr>
+        <tr><td class="hl">Tio</td><td>2¹⁰ Gio</td><td>1 099 511 627 776</td></tr>
+      </table>
+
+      <div class="note gold"><span class="ico">💾</span><p>C'est la raison pour laquelle un disque vendu « 1 To » affiche environ <strong>931 Gio</strong> dans le système : le fabricant compte en puissances de 10, le système d'exploitation en puissances de 2.</p></div>
+    </section>
+
+    <!-- ══ 10 BOUTISME ══ -->
+    <section id="boutisme">
+      <h2><span class="num">10</span> Boutisme (endianness)</h2>
+      <p>Quand un entier occupe plusieurs octets, une question se pose : <strong>dans quel ordre les ranger en mémoire ?</strong> C'est le problème du <strong>boutisme</strong> (<em>endianness</em>).</p>
+      <ul>
+        <li><strong>Gros boutisme</strong> (<em>big endian</em>) : l'octet de poids fort en premier, à l'adresse la plus petite.</li>
+        <li><strong>Petit boutisme</strong> (<em>little endian</em>) : l'octet de poids faible en premier.</li>
+      </ul>
+      <p>Bascule entre les deux organisations et observe le réarrangement :</p>
+
+      <div class="panel" id="endPanel">
+        <div class="bar">
+          <span class="step-code" id="endCode">Mot : 4CB6072F (4 octets)</span>
+          <button class="btn on" id="endBig">Gros boutisme</button>
+          <button class="btn" id="endLittle">Petit boutisme</button>
+          <button class="btn" id="endWord">Basculer 2 / 4 octets</button>
+        </div>
+        <div class="memaddr" id="endAddr"></div>
+        <div class="membar" id="endBar"></div>
+        <p class="hint" id="endHint">En gros boutisme, l'octet de poids fort (4C, en violet) occupe l'adresse mémoire la plus petite.</p>
+      </div>
+
+      <div class="note"><span class="ico">🔀</span><p>Le boutisme est en principe <strong>transparent</strong> pour l'utilisateur : le système d'exploitation s'en charge. Il devient visible quand on accède aux octets directement en mémoire, ou lors d'échanges sur un <strong>réseau</strong>. La lecture est plus naturelle en gros boutisme ; les opérations arithmétiques se font plus facilement en petit boutisme.</p></div>
+    </section>
+
+    <!-- ══ 11 OVERFLOW ══ -->
+    <section id="overflow">
+      <h2><span class="num">11</span> Dépassement d'entier</h2>
+      <p>Un <strong>dépassement d'entier</strong> (<em>integer overflow</em>) survient quand une opération produit une valeur supérieure à celle représentable dans l'espace de stockage disponible.</p>
+      <p>Dans beaucoup de langages, la taille allouée est <strong>finie</strong>. En C++, un <code class="inl">unsigned int</code> tient sur 4 octets : il représente les entiers de 0 à <strong>4 294 967 295</strong>. Ajouter 1 à ce maximum ne donne pas 4 294 967 296 — la valeur « repasse » à 0.</p>
+      <p>Voici la même chose sur 8 bits, pour que ce soit visible d'un coup d'œil :</p>
+
+      <div class="panel" id="ovPanel">
+        <div class="bar">
+          <span class="step-code">Compteur sur 8 bits · max = 255</span>
+          <button class="btn" id="ovInc">+ 1</button>
+          <button class="btn" id="ovJump">Aller à 250</button>
+          <button class="btn" id="ovReset">↺</button>
+        </div>
+        <p class="ovval" id="ovVal">0</p>
+        <div class="bits" id="ovBits" style="margin-top:4px"></div>
+        <div class="ovmeter"><div class="ovfill" id="ovFill"></div></div>
+        <p class="hint" id="ovHint">Clique sur « Aller à 250 » puis incrémente jusqu'à voir ce qui se passe après 255.</p>
+      </div>
+
+      <pre class="static"><span class="c">// C++ — dépassement sur unsigned int (4 octets)</span>
+<span class="k">unsigned int</span> x = <span class="s">4294967295</span>;
+cout &lt;&lt; x;      <span class="c">// 4294967295</span>
+x = x + <span class="s">1</span>;
+cout &lt;&lt; x;      <span class="e">// 0  ← dépassement !</span></pre>
+
+      <div class="note warn"><span class="ico">🚀</span><p>Ce n'est pas qu'un exercice d'école : le premier vol d'<strong>Ariane 5</strong> (1996) s'est terminé par l'autodestruction du lanceur 37 secondes après le décollage, à cause d'un dépassement lors de la conversion d'un flottant 64 bits vers un entier 16 bits.</p></div>
+    </section>
+
+    <!-- ══ 12 RELATIFS ══ -->
+    <section id="relatifs">
+      <h2><span class="num">12</span> Encoder les entiers relatifs</h2>
+      <p>Encoder les entiers <strong>négatifs</strong> est plus délicat. L'idée de départ : utiliser le <strong>bit de poids fort</strong> comme bit de signe.</p>
+      <ul>
+        <li><code class="inl">0</code> → entier positif</li>
+        <li><code class="inl">1</code> → entier négatif</li>
+      </ul>
+      <p>De cette manière, l'encodage des entiers naturels ne change pas.</p>
+
+      <h3>Une <em>mauvaise</em> idée</h3>
+      <p>Sur 4 bits, <code class="inl">0011</code> représenterait 3 et <code class="inl">1101</code> représenterait −5. Cet encodage couvre l'intervalle −(2<sup>n−1</sup>−1) à 2<sup>n−1</sup>−1, soit −7 à 7 sur 4 bits. Mais il souffre de <strong>deux défauts</strong> :</p>
+
+      <p><strong>Défaut 1 — le zéro a deux représentations.</strong> Sur 4 bits, <code class="inl">0000</code> et <code class="inl">1000</code> valent tous les deux 0 : un « zéro positif » et un « zéro négatif ». C'est une valeur gaspillée et une source de bugs (deux nombres égaux qui ne se comparent pas comme égaux).</p>
+
+      <p><strong>Défaut 2 — l'arithmétique se complique.</strong> Pour additionner, il faudrait d'abord examiner les signes et choisir entre addition et soustraction. Pire, l'addition binaire directe donne un résultat faux :</p>
+      <pre class="static">    0101      <span class="c">(5)</span>
+  + 1101      <span class="c">(-5 avec cet encodage)</span>
+  ────────
+  = <span class="e">0010</span>      <span class="c">(en ignorant la retenue)</span>
+
+  <span class="e">Or 0010 vaut 2, pas 0 !</span></pre>
+    </section>
+
+    <!-- ══ 13 COMPLÉMENT À 2 ══ -->
+    <section id="c2">
+      <h2><span class="num">13</span> Le complément à 2</h2>
+      <p>La solution universellement adoptée est l'encodage par <strong>complément à 2</strong>. Le bit de poids fort reste le bit de signe, la représentation des positifs est inchangée, mais les négatifs utilisent ce complément.</p>
+      <p>Le complément à 2 d'un mot binaire sur <em>k</em> bits s'obtient en deux temps : <strong>inverser tous les bits</strong> (complément à 1), puis <strong>ajouter 1</strong>, sans tenir compte de la retenue finale.</p>
+
+      <div class="panel" id="c2Panel">
+        <div class="bar">
+          <label for="c2Input">Entier positif</label>
+          <input type="number" id="c2Input" value="3" min="0" max="127">
+          <label for="c2Bits">sur</label>
+          <select id="c2Bits" class="btn" style="padding:7px 10px">
+            <option value="3">3 bits</option>
+            <option value="4" selected>4 bits</option>
+            <option value="8">8 bits</option>
+          </select>
+          <button class="btn" id="c2Next">Étape suivante ▶</button>
+          <button class="btn" id="c2Reset">↺</button>
+        </div>
+
+        <div class="c2row" id="c2r1">
+          <span class="c2lab">Valeur de départ</span>
+          <div class="c2bits" id="c2b1"></div>
+        </div>
+        <div class="c2row dim" id="c2r2">
+          <span class="c2lab">Complément à 1 (inversion)</span>
+          <div class="c2bits" id="c2b2"></div>
+        </div>
+        <div class="c2row dim" id="c2r3">
+          <span class="c2lab">+ 1</span>
+          <div class="c2bits" id="c2b3"></div>
+        </div>
+        <div class="c2row dim" id="c2r4">
+          <span class="c2lab">Résultat</span>
+          <div class="c2bits" id="c2b4"></div>
+        </div>
+        <p class="hint" id="c2Hint">Clique sur « Étape suivante » pour dérouler l'algorithme.</p>
+        <p class="bigres" id="c2Res"></p>
+      </div>
+
+      <p>L'intérêt est décisif : <strong>l'addition redevient une simple addition binaire</strong>, sans se soucier des signes. Sur 3 bits, additionner <code class="inl">011</code> (3) et <code class="inl">101</code> (−3) donne bien <code class="inl">000</code> :</p>
+      <pre class="static">    011      <span class="c">(3)</span>
+  + 101      <span class="c">(complément à 2 de 011, soit -3)</span>
+  ────────
+  = <span class="s">000</span>      <span class="c">(en ignorant la retenue) ✓</span></pre>
+
+      <h3>Table du complément à 2 sur 3 bits</h3>
+      <table class="data">
+        <tr><th>entier positif</th><th>binaire</th><th>complément à 2</th></tr>
+        <tr><td>0</td><td>000</td><td class="hl">000</td></tr>
+        <tr><td>1</td><td>001</td><td class="hl">111</td></tr>
+        <tr><td>2</td><td>010</td><td class="hl">110</td></tr>
+        <tr><td>3</td><td>011</td><td class="hl">101</td></tr>
+        <tr><td>4</td><td>100</td><td class="hl">100</td></tr>
+        <tr><td>5</td><td>101</td><td class="hl">011</td></tr>
+        <tr><td>6</td><td>110</td><td class="hl">010</td></tr>
+        <tr><td>7</td><td>111</td><td class="hl">001</td></tr>
+      </table>
+
+      <div class="note"><span class="ico">📏</span><p>Avec cet encodage, un mot de <em>n</em> bits représente les entiers relatifs de <strong>−2<sup>n−1</sup></strong> à <strong>2<sup>n−1</sup> − 1</strong>. L'intervalle est <em>asymétrique</em> : il y a un négatif de plus que de positifs, car le complément à 2 de 0 sert à représenter −2<sup>n−1</sup>. Sur 8 bits : −128 à 127. Sur 16 bits : −32 768 à 32 767.</p></div>
+
+      <h3>Table complète sur 4 bits</h3>
+      <div class="scrollx">
+        <table class="data">
+          <tr><th>mot</th><td>0000</td><td>0001</td><td>0010</td><td>0011</td><td>0100</td><td>0101</td><td>0110</td><td>0111</td></tr>
+          <tr><th>entier</th><td class="pos">0</td><td class="pos">1</td><td class="pos">2</td><td class="pos">3</td><td class="pos">4</td><td class="pos">5</td><td class="pos">6</td><td class="pos">7</td></tr>
+          <tr><th>mot</th><td>1000</td><td>1001</td><td>1010</td><td>1011</td><td>1100</td><td>1101</td><td>1110</td><td>1111</td></tr>
+          <tr><th>entier</th><td class="neg">-8</td><td class="neg">-7</td><td class="neg">-6</td><td class="neg">-5</td><td class="neg">-4</td><td class="neg">-3</td><td class="neg">-2</td><td class="neg">-1</td></tr>
+        </table>
+      </div>
+
+      <div class="note"><span class="ico">🔁</span><p>L'opération de complément à 2 est <strong>involutive</strong> : l'appliquer deux fois redonne le nombre de départ. <code class="inl">n → (−n) → n</code>. C'est ce qui permet de trouver facilement la représentation d'un négatif à partir de celle de son opposé.</p></div>
+
+      <h3>L'affichage particulier de Python</h3>
+      <p>Les entiers Python sont implémentés avec le complément à 2. Mais comme ils sont de <strong>taille arbitraire</strong>, la représentation binaire d'un négatif comporterait une infinité de <code class="inl">1</code> à gauche. Python a donc choisi d'afficher un signe suivi de la valeur absolue :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">print(bin(5))    # 0b101
+print(bin(-5))   # -0b101   (et non une suite de 1 !)
+
+# Pour voir le vrai complément a 2 sur 8 bits :
+n = -5
+print(format(n & 0xFF, "08b"))   # 11111011</textarea>
+        <pre class="out"></pre>
+      </div>
+    </section>
+
+    <!-- ══ 14 ROUE ══ -->
+    <section id="roue">
+      <h2><span class="num">14</span> La roue des entiers sur 8 bits</h2>
+      <p>Le complément à 2 se visualise bien comme un <strong>cercle</strong>. En partant de 0 et en avançant, on monte jusqu'à 127 ; le pas suivant bascule à −128, puis on remonte jusqu'à −1, qui touche à nouveau 0. C'est exactement le comportement d'un compteur qui déborde.</p>
+
+      <div class="wheelwrap">
+        <svg viewBox="0 0 460 460" width="460" height="460" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="230" cy="230" r="150" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1.5" stroke-dasharray="5 5"/>
+          <!-- rayons haut (0..3) -->
+          <line x1="230" y1="230" x2="230" y2="80" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/>
+          <line x1="230" y1="230" x2="269" y2="85" stroke="rgba(255,255,255,.25)" stroke-width="1.2"/>
+          <line x1="230" y1="230" x2="305" y2="100" stroke="rgba(255,255,255,.25)" stroke-width="1.2"/>
+          <line x1="230" y1="230" x2="191" y2="85" stroke="rgba(255,255,255,.25)" stroke-width="1.2"/>
+          <line x1="230" y1="230" x2="155" y2="100" stroke="rgba(255,255,255,.25)" stroke-width="1.2"/>
+          <!-- rayons bas (127/-128) -->
+          <line x1="230" y1="230" x2="230" y2="380" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/>
+          <line x1="230" y1="230" x2="269" y2="375" stroke="rgba(255,255,255,.25)" stroke-width="1.2"/>
+          <line x1="230" y1="230" x2="305" y2="360" stroke="rgba(255,255,255,.25)" stroke-width="1.2"/>
+          <line x1="230" y1="230" x2="191" y2="375" stroke="rgba(255,255,255,.25)" stroke-width="1.2"/>
+          <line x1="230" y1="230" x2="155" y2="360" stroke="rgba(255,255,255,.25)" stroke-width="1.2"/>
+
+          <!-- valeurs haut -->
+          <text class="wl" x="230" y="72" font-family="monospace" font-size="14" font-weight="700" fill="#e9eefb" text-anchor="middle">0</text>
+          <text x="230" y="52" font-family="monospace" font-size="11" fill="#8b5cf6" text-anchor="middle">00000000</text>
+          <text class="wl" x="274" y="78" font-family="monospace" font-size="13" fill="#34d399" text-anchor="middle">1</text>
+          <text x="300" y="58" font-family="monospace" font-size="11" fill="#8b5cf6" text-anchor="middle">00000001</text>
+          <text class="wl" x="312" y="94" font-family="monospace" font-size="13" fill="#34d399" text-anchor="middle">2</text>
+          <text x="360" y="78" font-family="monospace" font-size="11" fill="#8b5cf6" text-anchor="middle">00000010</text>
+          <text class="wl" x="186" y="78" font-family="monospace" font-size="13" fill="#fb7185" text-anchor="middle">-1</text>
+          <text x="158" y="58" font-family="monospace" font-size="11" fill="#8b5cf6" text-anchor="middle">11111111</text>
+          <text class="wl" x="148" y="94" font-family="monospace" font-size="13" fill="#fb7185" text-anchor="middle">-2</text>
+          <text x="100" y="78" font-family="monospace" font-size="11" fill="#8b5cf6" text-anchor="middle">11111110</text>
+
+          <!-- valeurs bas -->
+          <text class="wl" x="230" y="398" font-family="monospace" font-size="14" font-weight="700" fill="#e9eefb" text-anchor="middle">-128</text>
+          <text x="230" y="418" font-family="monospace" font-size="11" fill="#8b5cf6" text-anchor="middle">10000000</text>
+          <text class="wl" x="272" y="390" font-family="monospace" font-size="13" fill="#34d399" text-anchor="middle">127</text>
+          <text x="302" y="410" font-family="monospace" font-size="11" fill="#8b5cf6" text-anchor="middle">01111111</text>
+          <text class="wl" x="312" y="374" font-family="monospace" font-size="13" fill="#34d399" text-anchor="middle">126</text>
+          <text x="362" y="392" font-family="monospace" font-size="11" fill="#8b5cf6" text-anchor="middle">01111110</text>
+          <text class="wl" x="186" y="390" font-family="monospace" font-size="13" fill="#fb7185" text-anchor="middle">-127</text>
+          <text x="156" y="410" font-family="monospace" font-size="11" fill="#8b5cf6" text-anchor="middle">10000001</text>
+          <text class="wl" x="148" y="374" font-family="monospace" font-size="13" fill="#fb7185" text-anchor="middle">-126</text>
+          <text x="98" y="392" font-family="monospace" font-size="11" fill="#8b5cf6" text-anchor="middle">10000010</text>
+
+          <!-- centre -->
+          <circle cx="230" cy="230" r="4" fill="#22d3ee"/>
+          <text class="wl" x="230" y="205" font-family="'Space Grotesk',sans-serif" font-size="12" fill="#9aa7c2" text-anchor="middle">8 bits</text>
+          <text class="wl" x="230" y="258" font-family="'Space Grotesk',sans-serif" font-size="11" fill="#9aa7c2" text-anchor="middle">-128 … 127</text>
+        </svg>
+      </div>
+
+      <div class="note"><span class="ico">🎡</span><p>Remarque la <strong>frontière en bas du cercle</strong> : <code class="inl">01111111</code> (127) et <code class="inl">10000000</code> (−128) sont voisins. Ajouter 1 à 127 fait basculer le bit de signe — c'est le dépassement d'entier signé.</p></div>
+    </section>
+
+    <!-- ══ 15 QUIZ ══ -->
+    <section id="quiz">
+      <h2><span class="num">15</span> Quiz bilan</h2>
+      <p class="muted">Huit questions pour vérifier l'essentiel. Clique sur ta réponse.</p>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Combien d'entiers naturels différents un octet peut-il représenter ?</p>
+        <div class="opt" data-i="0">128</div>
+        <div class="opt" data-i="1">256</div>
+        <div class="opt" data-i="2">255</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="2">
+        <p class="q">Que vaut <code class="inl">1011₂</code> en base 10 ?</p>
+        <div class="opt" data-i="0">13</div>
+        <div class="opt" data-i="1">9</div>
+        <div class="opt" data-i="2">11</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="0">
+        <p class="q">Dans la conversion par divisions successives, le <strong>dernier</strong> reste obtenu est :</p>
+        <div class="opt" data-i="0">le bit de poids fort</div>
+        <div class="opt" data-i="1">le bit de poids faible</div>
+        <div class="opt" data-i="2">toujours 0</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Combien de bits faut-il pour écrire un chiffre hexadécimal ?</p>
+        <div class="opt" data-i="0">2</div>
+        <div class="opt" data-i="1">4</div>
+        <div class="opt" data-i="2">8</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="2">
+        <p class="q">En <strong>petit boutisme</strong>, quel octet est placé à l'adresse la plus petite ?</p>
+        <div class="opt" data-i="0">celui du milieu</div>
+        <div class="opt" data-i="1">l'octet de poids fort</div>
+        <div class="opt" data-i="2">l'octet de poids faible</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="0">
+        <p class="q">Le complément à 2 s'obtient en :</p>
+        <div class="opt" data-i="0">inversant tous les bits, puis en ajoutant 1</div>
+        <div class="opt" data-i="1">ajoutant 1, puis en inversant tous les bits</div>
+        <div class="opt" data-i="2">inversant seulement le bit de poids fort</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Sur 8 bits en complément à 2, quel est l'intervalle représentable ?</p>
+        <div class="opt" data-i="0">-127 à 127</div>
+        <div class="opt" data-i="1">-128 à 127</div>
+        <div class="opt" data-i="2">-128 à 128</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="2">
+        <p class="q">Pourquoi l'encodage « bit de signe simple » a-t-il été abandonné ?</p>
+        <div class="opt" data-i="0">Il utilisait trop de mémoire</div>
+        <div class="opt" data-i="1">Il ne permettait pas les négatifs</div>
+        <div class="opt" data-i="2">Le zéro avait deux représentations et l'addition ne marchait pas</div>
+        <p class="feedback"></p>
+      </div>
+    </section>
+
+    <footer>
+      <p><strong>Pour aller plus loin :</strong> Eduscol (représentation des entiers naturels et relatifs) · Documentation Python, types numériques · Interstices, « Nom de code : binaire » · Binary Game · Ariane 5 : un petit bogue, un grand boum.</p>
+      <p class="mono-n" style="font-size:18px; margin-top:14px"><span>N</span><span>a</span><span>dtech</span> · NSI · Représentation des entiers</p>
+    </footer>
+  </main>
+</div>
+
+<button id="themeBtn" title="Passer en mode jour">☀️</button>
+
+<script>
+/* ═══════════ Skulpt ═══════════ */
+function builtinRead(x){
+  if(Sk.builtinFiles===undefined||Sk.builtinFiles["files"][x]===undefined) throw "File not found: '"+x+"'";
+  return Sk.builtinFiles["files"][x];
+}
+function runCell(cell){
+  var code=cell.querySelector('textarea.code').value;
+  var out=cell.querySelector('.out');
+  var btn=cell.querySelector('.run');
+  out.classList.remove('err'); out.textContent=''; out.classList.add('show');
+  if(typeof Sk==='undefined'){
+    out.classList.add('err');
+    out.textContent="Le moteur Python n'a pas pu se charger (connexion internet requise).";
+    return;
+  }
+  Sk.configure({
+    output:function(t){out.textContent+=t;},
+    read:builtinRead,
+    inputfun:function(p){return window.prompt(p||"Entrée :")||"";},
+    inputfunTakesPrompt:true,
+    __future__:Sk.python3
+  });
+  btn.disabled=true; var lbl=btn.textContent; btn.textContent='…';
+  Sk.misceval.asyncToPromise(function(){
+    return Sk.importMainWithBody("<stdin>",false,code,true);
+  }).then(function(){
+    btn.disabled=false; btn.textContent=lbl;
+    if(!out.textContent) out.textContent="(aucune sortie — pense à print(...) )";
+  },function(err){
+    btn.disabled=false; btn.textContent=lbl;
+    out.classList.add('err'); out.textContent+="\n"+err.toString();
+  });
+}
+document.querySelectorAll('[data-cell]').forEach(function(cell){
+  var ta=cell.querySelector('textarea.code');
+  ta.rows=Math.min(Math.max(ta.value.split('\n').length,2),18);
+  cell.querySelector('.run').addEventListener('click',function(){runCell(cell);});
+  ta.addEventListener('keydown',function(e){
+    if(e.key==='Tab'){e.preventDefault();
+      var s=this.selectionStart,en=this.selectionEnd;
+      this.value=this.value.slice(0,s)+"    "+this.value.slice(en);
+      this.selectionStart=this.selectionEnd=s+4;
+    }
+  });
+});
+
+/* ═══════════ Quiz ═══════════ */
+document.querySelectorAll('[data-quiz]').forEach(function(q){
+  var ans=+q.dataset.answer;
+  var fb=q.querySelector('.feedback');
+  q.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      var i=+opt.dataset.i;
+      q.querySelectorAll('.opt').forEach(function(o){o.classList.add('lock');});
+      if(i===ans){opt.classList.add('good'); fb.textContent="Bravo, c'est exact !"; fb.className="feedback ok";}
+      else{
+        opt.classList.add('bad');
+        fb.textContent="Pas tout à fait — la bonne réponse est en vert.";
+        fb.className="feedback no";
+        q.querySelector('.opt[data-i="'+ans+'"]').classList.add('good');
+      }
+    });
+  });
+});
+
+/* ═══════════ Pluie de bits (couverture) ═══════════ */
+(function(){
+  var rain=document.getElementById('rain');
+  if(!rain) return;
+  for(var c=0;c<9;c++){
+    var col=document.createElement('span');
+    var txt='';
+    for(var r=0;r<34;r++){ txt+=(Math.random()<.5?'0':'1')+'\n'; }
+    col.textContent=txt;
+    col.style.left=(3+c*11.5)+'%';
+    col.style.animationDuration=(15+Math.random()*16).toFixed(1)+'s';
+    col.style.animationDelay=(-Math.random()*20).toFixed(1)+'s';
+    rain.appendChild(col);
+  }
+})();
+
+/* ═══════════ 03 · Octet interactif ═══════════ */
+(function(){
+  var row=document.getElementById('bitRow');
+  var eq=document.getElementById('bitEq');
+  var valEl=document.getElementById('bitVal');
+  var codeEl=document.getElementById('bitCode');
+  if(!row) return;
+  var bits=[0,1,0,0,1,1,0,1];
+
+  function build(){
+    row.innerHTML='';
+    for(var i=0;i<8;i++){
+      (function(i){
+        var col=document.createElement('div');
+        col.className='bitcol';
+        var w=document.createElement('div');
+        w.className='bitw';
+        w.innerHTML='2<b>'+(7-i)+'</b>';
+        var b=document.createElement('div');
+        b.className='bit'+(bits[i]?' on':'');
+        b.textContent=bits[i];
+        b.addEventListener('click',function(){
+          bits[i]=bits[i]?0:1;
+          b.textContent=bits[i];
+          b.classList.toggle('on',bits[i]===1);
+          render();
+        });
+        var p=document.createElement('div');
+        p.className='bitp';
+        p.textContent=Math.pow(2,7-i);
+        col.appendChild(w); col.appendChild(b); col.appendChild(p);
+        row.appendChild(col);
+      })(i);
+    }
+  }
+  function render(){
+    var total=0, parts=[];
+    for(var i=0;i<8;i++){
+      var w=Math.pow(2,7-i);
+      if(bits[i]){ total+=w; parts.push('<span class="t">'+bits[i]+'&times;2<sup>'+(7-i)+'</sup></span>'); }
+      else { parts.push('<span class="z">0&times;2<sup>'+(7-i)+'</sup></span>'); }
+    }
+    eq.innerHTML='N = '+parts.join(' + ');
+    valEl.textContent=total;
+    codeEl.textContent='Octet : '+bits.join('');
+  }
+  document.querySelectorAll('#bitPanel [data-preset]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var p=b.dataset.preset;
+      for(var i=0;i<8;i++) bits[i]=+p[i];
+      build(); render();
+    });
+  });
+  build(); render();
+})();
+
+/* ═══════════ 04 · Divisions successives ═══════════ */
+(function(){
+  var inp=document.getElementById('divInput');
+  var wrap=document.getElementById('divTabWrap');
+  var stack=document.getElementById('divStack');
+  var res=document.getElementById('divRes');
+  var hint=document.getElementById('divHint');
+  var bStart=document.getElementById('divStart');
+  var bNext=document.getElementById('divNext');
+  var bAll=document.getElementById('divAll');
+  var bReset=document.getElementById('divReset');
+  if(!wrap) return;
+  var steps=[], cur=-1, n0=0;
+
+  function compute(n){
+    var s=[];
+    if(n===0){ s.push({n:0,q:0,r:0}); return s; }
+    while(n>0){ s.push({n:n,q:Math.floor(n/2),r:n%2}); n=Math.floor(n/2); }
+    return s;
+  }
+  function buildTable(){
+    var h='<table class="divtab"><tr><th>nombre</th><th>÷ 2 = quotient</th><th>reste</th></tr>';
+    for(var i=0;i<steps.length;i++){
+      h+='<tr data-i="'+i+'"><td>'+steps[i].n+'</td><td class="q">'+steps[i].q+'</td><td class="r">'+steps[i].r+'</td></tr>';
+    }
+    h+='</table>';
+    wrap.innerHTML=h;
+    wrap.querySelectorAll('.divtab tr[data-i]').forEach(function(tr){ tr.style.visibility='hidden'; });
+  }
+  function reveal(i){
+    var tr=wrap.querySelector('.divtab tr[data-i="'+i+'"]');
+    if(!tr) return;
+    tr.style.visibility='visible';
+    wrap.querySelectorAll('.divtab tr').forEach(function(t){ t.classList.remove('act'); });
+    tr.classList.add('act');
+    for(var k=0;k<i;k++){
+      var p=wrap.querySelector('.divtab tr[data-i="'+k+'"]');
+      if(p) p.classList.add('done');
+    }
+    var box=document.createElement('div');
+    box.className='rebox';
+    box.textContent=steps[i].r;
+    stack.insertBefore(box,stack.firstChild);
+    hint.textContent=steps[i].n+' ÷ 2 = '+steps[i].q+' , reste '+steps[i].r
+      +(i===steps.length-1?' — dernier reste : bit de poids fort.':'');
+    if(i===steps.length-1){
+      var bin='';
+      for(var j=steps.length-1;j>=0;j--) bin+=steps[j].r;
+      res.innerHTML=n0+'<sub style="font-size:14px">10</sub> = <span class="v">'+bin+'</span><sub style="font-size:14px">2</sub>';
+      bNext.disabled=true; bAll.disabled=true;
+    }
+  }
+  function start(){
+    n0=Math.max(0,Math.min(99999,parseInt(inp.value,10)||0));
+    inp.value=n0;
+    steps=compute(n0); cur=-1;
+    stack.innerHTML=''; res.innerHTML='';
+    bNext.disabled=false; bAll.disabled=false;
+    buildTable();
+    hint.textContent='Divise par 2 tant que le quotient n\'est pas nul. Clique sur « Étape suivante ».';
+  }
+  bStart.addEventListener('click',start);
+  bReset.addEventListener('click',start);
+  inp.addEventListener('change',start);
+  bNext.addEventListener('click',function(){
+    if(cur<steps.length-1){ cur++; reveal(cur); }
+  });
+  bAll.addEventListener('click',function(){
+    var t=setInterval(function(){
+      if(cur<steps.length-1){ cur++; reveal(cur); }
+      else clearInterval(t);
+    },320);
+  });
+  start();
+})();
+
+/* ═══════════ 06 · Regroupement binaire → hexa ═══════════ */
+(function(){
+  var row=document.getElementById('nibRow');
+  var play=document.getElementById('nibPlay');
+  var reset=document.getElementById('nibReset');
+  var resEl=document.getElementById('nibRes');
+  var hint=document.getElementById('nibHint');
+  if(!row) return;
+  var BIN='1010010111110011';
+  var HEXD='0123456789ABCDEF';
+  var nibs=[];
+
+  function build(){
+    row.innerHTML=''; nibs=[];
+    for(var i=0;i<4;i++){
+      var part=BIN.substr(i*4,4);
+      var d=document.createElement('div');
+      d.className='nib';
+      var bb=document.createElement('div');
+      bb.className='nibbits';
+      for(var j=0;j<4;j++){
+        var s=document.createElement('span');
+        s.textContent=part[j];
+        bb.appendChild(s);
+      }
+      var v=document.createElement('div'); v.className='nibval'; v.textContent='';
+      var h=document.createElement('div'); h.className='nibhex'; h.textContent='?';
+      d.appendChild(bb); d.appendChild(v); d.appendChild(h);
+      row.appendChild(d);
+      nibs.push({el:d,part:part,val:v,hex:h});
+    }
+    resEl.style.opacity='.25';
+    resEl.innerHTML='= <span class="v">????</span>';
+    hint.textContent='Chaque paquet de 4 bits représente une valeur de 0 à 15 — soit exactement un chiffre hexadécimal.';
+  }
+  function animate(){
+    build();
+    var i=0;
+    var t=setInterval(function(){
+      if(i>0) nibs[i-1].el.classList.remove('hl');
+      if(i>=nibs.length){
+        clearInterval(t);
+        var hx='';
+        nibs.forEach(function(n){ hx+=HEXD[parseInt(n.part,2)]; });
+        resEl.style.opacity='1';
+        resEl.innerHTML='1010010111110011<sub style="font-size:14px">2</sub> = <span class="v">'+hx+'</span><sub style="font-size:14px">16</sub>';
+        hint.textContent='Quatre paquets de 4 bits → quatre chiffres hexadécimaux. L\'écriture est quatre fois plus courte.';
+        return;
+      }
+      var n=nibs[i];
+      var d=parseInt(n.part,2);
+      n.el.classList.add('hl');
+      n.val.textContent='= '+d;
+      n.hex.textContent=HEXD[d];
+      n.el.classList.add('rev');
+      i++;
+    },650);
+  }
+  play.addEventListener('click',animate);
+  reset.addEventListener('click',build);
+  build();
+})();
+
+/* ═══════════ 07 · Convertisseur 3 bases ═══════════ */
+(function(){
+  var dec=document.getElementById('cDec'), bin=document.getElementById('cBin'), hex=document.getElementById('cHex');
+  var sDec=document.getElementById('sDec'), sBin=document.getElementById('sBin'), sHex=document.getElementById('sHex');
+  var hint=document.getElementById('convHint');
+  if(!dec) return;
+  var lock=false;
+
+  function subs(n){
+    if(isNaN(n)){ sDec.textContent=''; sBin.textContent=''; sHex.textContent=''; return; }
+    sDec.textContent=n.toLocaleString('fr-FR');
+    var b=n.toString(2);
+    sBin.textContent=b.length+' bit'+(b.length>1?'s':'')+' · '+Math.ceil(b.length/8)+' octet(s)';
+    sHex.textContent=n.toString(16).length+' chiffre(s) hexa';
+  }
+  function spread(n,from){
+    if(isNaN(n)||n<0){ hint.textContent='Valeur invalide — saisis un entier naturel.'; return; }
+    if(n>Number.MAX_SAFE_INTEGER){ hint.textContent='Nombre trop grand.'; return; }
+    lock=true;
+    if(from!=='dec') dec.value=String(n);
+    if(from!=='bin') bin.value=n.toString(2);
+    if(from!=='hex') hex.value=n.toString(16).toUpperCase();
+    lock=false;
+    subs(n);
+    hint.textContent='Les trois écritures désignent le même nombre : '+n.toLocaleString('fr-FR')+'.';
+  }
+  dec.addEventListener('input',function(){
+    if(lock) return;
+    var v=dec.value.trim().replace(/\s/g,'');
+    if(v===''){return;}
+    if(!/^\d+$/.test(v)){ hint.textContent='En base 10, seuls les chiffres 0 à 9 sont autorisés.'; return; }
+    spread(parseInt(v,10),'dec');
+  });
+  bin.addEventListener('input',function(){
+    if(lock) return;
+    var v=bin.value.trim().replace(/\s/g,'');
+    if(v===''){return;}
+    if(!/^[01]+$/.test(v)){ hint.textContent='En base 2, seuls les chiffres 0 et 1 sont autorisés.'; return; }
+    spread(parseInt(v,2),'bin');
+  });
+  hex.addEventListener('input',function(){
+    if(lock) return;
+    var v=hex.value.trim().replace(/\s/g,'');
+    if(v===''){return;}
+    if(!/^[0-9a-fA-F]+$/.test(v)){ hint.textContent='En base 16, seuls 0-9 et A-F sont autorisés.'; return; }
+    spread(parseInt(v,16),'hex');
+  });
+  subs(77);
+})();
+
+/* ═══════════ 10 · Boutisme ═══════════ */
+(function(){
+  var bar=document.getElementById('endBar');
+  var addr=document.getElementById('endAddr');
+  var code=document.getElementById('endCode');
+  var hint=document.getElementById('endHint');
+  var bBig=document.getElementById('endBig'), bLit=document.getElementById('endLittle'), bWord=document.getElementById('endWord');
+  if(!bar) return;
+  var W4=['4C','B6','07','2F'], W2=['4C','B6'];
+  var big=true, four=true;
+
+  function render(){
+    var bytes=(four?W4:W2).slice();
+    var shown=big?bytes:bytes.slice().reverse();
+    bar.innerHTML=''; addr.innerHTML='';
+    shown.forEach(function(b,i){
+      var a=document.createElement('span');
+      a.textContent='@'+i;
+      addr.appendChild(a);
+      var c=document.createElement('div');
+      c.className='memcell';
+      if(b===bytes[0]) c.className+=' hi';
+      if(b===bytes[bytes.length-1]) c.className+=' lo';
+      c.textContent=b;
+      bar.appendChild(c);
+    });
+    code.textContent='Mot : '+bytes.join('')+' ('+bytes.length+' octets)';
+    bBig.classList.toggle('on',big);
+    bLit.classList.toggle('on',!big);
+    hint.textContent=big
+      ? "Gros boutisme : l'octet de poids fort ("+bytes[0]+", en violet) occupe l'adresse la plus petite. C'est l'ordre de lecture humain."
+      : "Petit boutisme : l'octet de poids faible ("+bytes[bytes.length-1]+", en cyan) occupe l'adresse la plus petite. L'ordre est inversé.";
+  }
+  bBig.addEventListener('click',function(){big=true; render();});
+  bLit.addEventListener('click',function(){big=false; render();});
+  bWord.addEventListener('click',function(){four=!four; render();});
+  render();
+})();
+
+/* ═══════════ 11 · Dépassement d'entier ═══════════ */
+(function(){
+  var val=document.getElementById('ovVal');
+  var bitsEl=document.getElementById('ovBits');
+  var fill=document.getElementById('ovFill');
+  var hint=document.getElementById('ovHint');
+  var inc=document.getElementById('ovInc'), jump=document.getElementById('ovJump'), rst=document.getElementById('ovReset');
+  if(!val) return;
+  var n=0;
+
+  function render(boom){
+    val.textContent=n;
+    val.classList.toggle('boom',!!boom);
+    fill.style.width=(n/255*100)+'%';
+    var b=n.toString(2);
+    while(b.length<8) b='0'+b;
+    bitsEl.innerHTML='';
+    for(var i=0;i<8;i++){
+      var col=document.createElement('div');
+      col.className='bitcol';
+      var d=document.createElement('div');
+      d.className='bit ro'+(b[i]==='1'?' on':'');
+      d.style.width='38px'; d.style.height='38px'; d.style.fontSize='16px';
+      d.textContent=b[i];
+      col.appendChild(d);
+      bitsEl.appendChild(col);
+    }
+    if(boom) hint.textContent='Dépassement ! 255 + 1 ne donne pas 256 : tous les bits repassent à 0. La valeur « boucle ».';
+    else if(n>=250) hint.textContent='Encore '+(255-n)+' incrémentation(s) avant le maximum de 255.';
+    else hint.textContent='Clique sur « Aller à 250 » puis incrémente jusqu\'à voir ce qui se passe après 255.';
+  }
+  inc.addEventListener('click',function(){
+    if(n===255){ n=0; render(true); }
+    else { n++; render(false); }
+  });
+  jump.addEventListener('click',function(){ n=250; render(false); });
+  rst.addEventListener('click',function(){ n=0; render(false); });
+  render(false);
+})();
+
+/* ═══════════ 13 · Complément à 2 ═══════════ */
+(function(){
+  var inp=document.getElementById('c2Input');
+  var sel=document.getElementById('c2Bits');
+  var bNext=document.getElementById('c2Next'), bReset=document.getElementById('c2Reset');
+  var hint=document.getElementById('c2Hint'), res=document.getElementById('c2Res');
+  var rows=[document.getElementById('c2r1'),document.getElementById('c2r2'),document.getElementById('c2r3'),document.getElementById('c2r4')];
+  var boxes=[document.getElementById('c2b1'),document.getElementById('c2b2'),document.getElementById('c2b3'),document.getElementById('c2b4')];
+  if(!inp) return;
+  var step=0, k=4, base='', inv='', out='';
+
+  function toBin(n,k){
+    var s=(n>>>0).toString(2);
+    while(s.length<k) s='0'+s;
+    return s.slice(-k);
+  }
+  function paint(el,str,cls){
+    el.innerHTML='';
+    for(var i=0;i<str.length;i++){
+      var s=document.createElement('span');
+      s.textContent=str[i];
+      if(str[i]==='1') s.className='one';
+      if(cls) s.className+=' '+cls;
+      el.appendChild(s);
+    }
+  }
+  function reset(){
+    k=parseInt(sel.value,10);
+    var max=Math.pow(2,k-1)-1;
+    inp.max=max;
+    var n=parseInt(inp.value,10)||0;
+    if(n>max){ n=max; inp.value=n; }
+    if(n<0){ n=0; inp.value=0; }
+    base=toBin(n,k);
+    inv=''; for(var i=0;i<k;i++) inv+=(base[i]==='1'?'0':'1');
+    out=toBin(parseInt(inv,2)+1,k);
+    step=0;
+    paint(boxes[0],base);
+    boxes[1].innerHTML=''; boxes[2].innerHTML=''; boxes[3].innerHTML='';
+    rows[1].classList.add('dim'); rows[2].classList.add('dim'); rows[3].classList.add('dim');
+    res.innerHTML='';
+    bNext.disabled=false;
+    hint.textContent='Le nombre '+n+' s\'écrit '+base+' sur '+k+' bits. Clique sur « Étape suivante ».';
+  }
+  function next(){
+    step++;
+    if(step===1){
+      rows[1].classList.remove('dim');
+      paint(boxes[1],inv,'flip');
+      hint.textContent='Complément à 1 : on inverse chaque bit (0 devient 1, 1 devient 0).';
+    } else if(step===2){
+      rows[2].classList.remove('dim');
+      var one=''; for(var i=0;i<k-1;i++) one+='0'; one+='1';
+      paint(boxes[2],one,'carry');
+      hint.textContent='On ajoute 1 au résultat, sans tenir compte d\'une éventuelle retenue finale.';
+    } else if(step===3){
+      rows[3].classList.remove('dim');
+      paint(boxes[3],out,'flip');
+      var n=parseInt(inp.value,10)||0;
+      res.innerHTML='<span style="color:var(--muted);font-size:19px">'+base+' ('+n+') → </span><span class="v">'+out+'</span><span style="color:var(--muted);font-size:19px"> (-'+n+')</span>';
+      hint.textContent='Le mot '+out+' représente donc -'+n+'. Vérifie : '+base+' + '+out+' = 0 (retenue ignorée).';
+      bNext.disabled=true;
+    }
+  }
+  bNext.addEventListener('click',next);
+  bReset.addEventListener('click',reset);
+  inp.addEventListener('change',reset);
+  sel.addEventListener('change',reset);
+  reset();
+})();
+
+/* ═══════════ Mode Jour / Nuit ═══════════ */
+(function(){
+  var btn=document.getElementById('themeBtn');
+  function setTheme(t){
+    document.documentElement.setAttribute('data-theme',t);
+    btn.textContent=(t==='light')?'🌙':'☀️';
+    btn.title=(t==='light')?'Passer en mode nuit':'Passer en mode jour';
+    try{ localStorage.setItem('nadtech_theme',t); }catch(e){}
+  }
+  var saved=null;
+  try{ saved=localStorage.getItem('nadtech_theme'); }catch(e){}
+  if(saved==='light') setTheme('light');
+  btn.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    setTheme(cur==='light'?'dark':'light');
+  });
+})();
+</script>
+</body>
+</html>

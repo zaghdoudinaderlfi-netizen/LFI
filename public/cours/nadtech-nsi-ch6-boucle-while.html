@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSI · Chapitre 6 — La boucle while</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://skulpt.org/js/skulpt.min.js" type="text/javascript"></script>
+<script src="https://skulpt.org/js/skulpt-stdlib.js" type="text/javascript"></script>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a31; --code:#0e1526; --ink:#e9eefb; --muted:#9aa7c2;
+  --cyan:#22d3ee; --violet:#8b5cf6; --pink:#ec4899; --ok:#34d399; --err:#fb7185; --warn:#fbbf24;
+  --line:rgba(255,255,255,.09);
+  --glow:0 0 0 1px rgba(255,255,255,.04), 0 18px 40px -20px rgba(0,0,0,.7);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:
+    radial-gradient(1100px 600px at 80% -10%, rgba(139,92,246,.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.14), transparent 55%),
+    var(--bg);
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;
+}
+.wrap{max-width:1180px; margin:0 auto; padding:0 20px; display:grid; grid-template-columns:230px 1fr; gap:36px}
+@media(max-width:880px){ .wrap{grid-template-columns:1fr; gap:0} .toc{display:none!important} }
+
+header.hero{padding:54px 0 26px; border-bottom:1px solid var(--line); margin-bottom:30px}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; color:var(--cyan);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(34,211,238,.06)}
+.mono-n{font-family:var(--mono); font-weight:700}
+.mono-n span:nth-child(1){color:var(--cyan)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--violet)}
+h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(28px,5vw,46px); line-height:1.08; margin:18px 0 10px}
+h1 .accent{background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.lede{color:var(--muted); max-width:62ch; font-size:18px}
+
+.toc{position:sticky; top:18px; align-self:start; padding-top:30px; max-height:96vh; overflow-y:auto}
+.toc h4{font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
+.toc a{display:block; color:var(--muted); text-decoration:none; font-size:13.5px; padding:5px 10px; border-left:2px solid transparent; border-radius:0 8px 8px 0; transition:.15s}
+.toc a:hover{color:var(--ink); background:rgba(255,255,255,.03); border-left-color:var(--violet)}
+
+section{padding:30px 0; border-bottom:1px solid var(--line)}
+h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; margin:0 0 6px; scroll-margin-top:20px;
+  display:flex; align-items:center; gap:12px}
+h2 .num{font-family:var(--mono); font-size:14px; color:var(--violet); border:1px solid var(--line); border-radius:8px; padding:3px 9px; background:rgba(139,92,246,.08)}
+h3{font-family:'Space Grotesk',sans-serif; font-size:18px; margin:26px 0 8px; color:#fff}
+p{margin:10px 0} .muted{color:var(--muted)}
+code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; color:#cfe6ff; border:1px solid var(--line)}
+strong{color:#fff} ul{margin:10px 0; padding-left:22px} li{margin:5px 0}
+
+.note{display:flex; gap:12px; padding:14px 16px; border-radius:12px; background:rgba(34,211,238,.06); border:1px solid rgba(34,211,238,.22); margin:16px 0}
+.note.warn{background:rgba(251,113,133,.07); border-color:rgba(251,113,133,.28)}
+.note.gold{background:rgba(251,191,36,.06); border-color:rgba(251,191,36,.25)}
+.note .ico{font-size:18px; line-height:1.4} .note p{margin:0}
+
+/* Cellules Python */
+.cell{background:var(--code); border:1px solid var(--line); border-radius:14px; margin:16px 0; overflow:hidden; box-shadow:var(--glow)}
+.cell-head{display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,.025); border-bottom:1px solid var(--line)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:7px}
+.dot{width:9px; height:9px; border-radius:50%; background:var(--violet); box-shadow:0 0 8px var(--violet)}
+.run{font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:#06121f; cursor:pointer;
+  border:0; border-radius:8px; padding:7px 16px; background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.15s}
+.run:hover{filter:brightness(1.08); transform:translateY(-1px)}
+.run:disabled{opacity:.5; cursor:wait; transform:none}
+textarea.code{width:100%; border:0; outline:0; resize:vertical; background:transparent; color:#e7f0ff;
+  font-family:var(--mono); font-size:14px; line-height:1.6; padding:14px 16px; display:block; tab-size:4}
+.out{margin:0; padding:0 16px; max-height:0; overflow:hidden; font-family:var(--mono); font-size:13.5px; color:#bfe6c9;
+  white-space:pre-wrap; border-top:1px solid transparent; transition:max-height .2s, padding .2s}
+.out.show{max-height:420px; overflow:auto; padding:12px 16px; border-top:1px solid var(--line); background:rgba(0,0,0,.25)}
+.out.err{color:var(--err)}
+
+pre.static{background:var(--code); border:1px solid var(--line); border-radius:14px; padding:14px 16px; overflow:auto;
+  font-family:var(--mono); font-size:13.5px; line-height:1.6; margin:16px 0; color:#e7f0ff}
+pre.static .c{color:#7c8aa6} pre.static .k{color:var(--violet)} pre.static .s{color:#7ee0a6} pre.static .e{color:var(--err)} pre.static .n{color:var(--cyan)}
+
+/* Panneau interactif */
+.panel{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px; margin:18px 0; box-shadow:var(--glow)}
+.panel .bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+.btn{font-family:'Nunito',sans-serif; font-weight:700; border:1px solid var(--line); background:rgba(255,255,255,.04);
+  color:var(--ink); padding:7px 14px; border-radius:9px; cursor:pointer; transition:.15s}
+.btn:hover{border-color:var(--violet); background:rgba(139,92,246,.12)}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.btn.on{border-color:var(--cyan); background:rgba(34,211,238,.15); color:var(--cyan)}
+.hint{color:var(--muted); font-size:14px; margin:10px 2px 0; min-height:22px}
+.panel input[type=number],.panel input[type=text]{font-family:var(--mono); font-size:15px; background:rgba(0,0,0,.3);
+  color:var(--cyan); border:1px solid var(--line); border-radius:9px; padding:8px 12px; width:110px; outline:none}
+.panel input:focus{border-color:var(--cyan)}
+.panel label{font-size:13px; color:var(--muted); font-family:'Space Grotesk',sans-serif}
+
+/* Stepper d'exécution */
+.runner{display:grid; grid-template-columns:1.25fr .95fr; gap:16px}
+@media(max-width:780px){.runner{grid-template-columns:1fr}}
+.codepane{background:rgba(0,0,0,.32); border:1px solid var(--line); border-radius:12px; padding:12px 0; overflow:hidden}
+.cline{display:flex; gap:12px; padding:4px 14px; font-family:var(--mono); font-size:14px; line-height:1.55;
+  border-left:3px solid transparent; transition:.22s; white-space:pre}
+.cline .ln{color:rgba(255,255,255,.22); width:16px; text-align:right; flex:none; user-select:none}
+.cline .tx{color:#cfe6ff}
+.cline.act{background:rgba(139,92,246,.2); border-left-color:var(--violet)}
+.cline.act .tx{color:#fff}
+.cline.test{background:rgba(251,191,36,.16); border-left-color:var(--warn)}
+.cline.pass{background:rgba(52,211,153,.14); border-left-color:var(--ok)}
+.cline.fail{background:rgba(251,113,133,.16); border-left-color:var(--err)}
+.kw{color:var(--violet); font-weight:700} .fn{color:var(--cyan)} .st{color:#7ee0a6} .nb{color:var(--pink)} .cm{color:#6b7a99}
+
+.statepane{display:flex; flex-direction:column; gap:12px}
+.vars{display:flex; gap:10px; flex-wrap:wrap}
+.vbox{background:rgba(34,211,238,.07); border:1px solid rgba(34,211,238,.3); border-radius:11px; padding:9px 14px; min-width:74px; text-align:center}
+.vbox .vn{font-family:var(--mono); font-size:12px; color:var(--muted)}
+.vbox .vv{font-family:var(--mono); font-size:22px; font-weight:700; color:var(--cyan); transition:.2s}
+.vbox.upd .vv{animation:bump .4s}
+@keyframes bump{0%{transform:scale(1)}45%{transform:scale(1.35); color:var(--pink)}100%{transform:scale(1)}}
+.testbox{border-radius:11px; padding:11px 14px; font-family:var(--mono); font-size:14px; border:1px solid var(--line);
+  background:rgba(255,255,255,.03); color:var(--muted); transition:.25s; min-height:44px; display:flex; align-items:center}
+.testbox.t{background:rgba(52,211,153,.12); border-color:rgba(52,211,153,.4); color:var(--ok)}
+.testbox.f{background:rgba(251,113,133,.12); border-color:rgba(251,113,133,.4); color:var(--err)}
+.console{background:rgba(0,0,0,.4); border:1px solid var(--line); border-radius:11px; padding:11px 14px;
+  font-family:var(--mono); font-size:14px; color:#bfe6c9; min-height:118px; max-height:180px; overflow:auto; white-space:pre-wrap}
+.console .ph{color:rgba(255,255,255,.2)}
+.console span{display:block; animation:slidein .3s}
+@keyframes slidein{from{opacity:0; transform:translateX(-8px)}to{opacity:1; transform:none}}
+.paneltitle{font-family:'Space Grotesk',sans-serif; font-size:11px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:6px}
+.counters{display:flex; gap:10px; flex-wrap:wrap}
+.cnt{flex:1; min-width:96px; background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:11px; padding:8px 12px; text-align:center}
+.cnt .cn{font-family:'Space Grotesk',sans-serif; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.cnt .cv{font-family:var(--mono); font-size:21px; font-weight:700}
+.cnt.tests .cv{color:var(--warn)} .cnt.body .cv{color:var(--ok)}
+
+/* Organigramme */
+.flowwrap{display:flex; justify-content:center; margin:16px 0}
+.flowwrap svg{max-width:100%; height:auto}
+.fnode rect,.fnode path{transition:.3s}
+.fnode.lit rect{fill:rgba(139,92,246,.3); stroke:#8b5cf6}
+.fnode.lit path{fill:rgba(251,191,36,.3); stroke:#fbbf24}
+
+/* Recherche tableau */
+.arr{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin:10px 0}
+.acell{width:52px; height:52px; border-radius:10px; border:1px solid var(--line); background:rgba(255,255,255,.04);
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-weight:700; font-size:17px;
+  color:var(--muted); transition:.2s}
+.acell.scan{border-color:var(--warn); background:rgba(251,191,36,.16); color:var(--warn); transform:translateY(-4px)}
+.acell.found{border-color:var(--ok); background:rgba(52,211,153,.2); color:var(--ok)}
+.acell.seen{opacity:.4}
+.arow{margin:14px 0}
+.arowlab{font-family:'Space Grotesk',sans-serif; font-size:13px; color:var(--muted); margin-bottom:4px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px}
+.arowlab b{color:var(--ink)}
+.opcount{font-family:var(--mono); font-size:13px; color:var(--cyan)}
+
+/* Variant */
+.vartab{border-collapse:collapse; margin:12px auto; font-family:var(--mono); font-size:13.5px}
+.vartab th{background:rgba(139,92,246,.15); color:var(--violet); padding:7px 15px; border:1px solid var(--line); font-size:12.5px}
+.vartab td{padding:6px 15px; border:1px solid var(--line); text-align:center; color:var(--muted)}
+.vartab tr:nth-child(even) td{background:rgba(255,255,255,.025)}
+.vartab td.v{color:var(--cyan); font-weight:700}
+.vartab td.z{color:var(--ok); font-weight:700}
+.varbar{display:flex; align-items:flex-end; gap:5px; height:96px; justify-content:center; margin:14px 0}
+.varbar div{width:38px; background:linear-gradient(180deg,var(--violet),rgba(139,92,246,.25)); border-radius:6px 6px 0 0;
+  display:flex; align-items:flex-start; justify-content:center; font-family:var(--mono); font-size:12px; color:#fff;
+  padding-top:3px; transition:height .4s}
+
+/* Divergence */
+.inflog{background:rgba(0,0,0,.4); border:1px solid rgba(251,113,133,.3); border-radius:11px; padding:11px 14px;
+  font-family:var(--mono); font-size:13px; color:var(--err); height:132px; overflow:hidden; margin:12px 0}
+.inflog span{display:block}
+
+/* Tables données */
+table.data{border-collapse:collapse; margin:14px auto; font-family:var(--mono); font-size:13.5px}
+table.data th{background:rgba(139,92,246,.15); color:var(--violet); padding:8px 16px; border:1px solid var(--line); font-size:12.5px}
+table.data td{padding:6px 16px; border:1px solid var(--line); text-align:center; color:var(--muted)}
+table.data tr:nth-child(even) td{background:rgba(255,255,255,.025)}
+table.data td.hl{color:var(--cyan); font-weight:700}
+.scrollx{overflow-x:auto}
+
+/* Quiz */
+.quiz{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin:18px 0; box-shadow:var(--glow)}
+.quiz .q{font-weight:800; margin:0 0 12px; font-family:'Space Grotesk',sans-serif}
+.quiz .q::before{content:"?"; display:inline-grid; place-items:center; width:24px; height:24px; margin-right:10px; border-radius:7px;
+  background:linear-gradient(135deg,var(--violet),var(--pink)); color:#fff; font-family:var(--mono); font-weight:700; font-size:14px; vertical-align:middle}
+.opt{display:block; padding:11px 14px; margin:8px 0; border:1px solid var(--line); border-radius:10px; cursor:pointer; transition:.12s; font-family:var(--mono); font-size:14px}
+.opt:hover{border-color:var(--violet); background:rgba(139,92,246,.07)}
+.opt.good{border-color:var(--ok); background:rgba(52,211,153,.12)}
+.opt.bad{border-color:var(--err); background:rgba(251,113,133,.12)}
+.opt.lock{pointer-events:none; opacity:.85}
+.feedback{margin-top:10px; font-size:14px; min-height:20px; color:var(--muted)}
+.feedback.ok{color:var(--ok)} .feedback.no{color:var(--err)}
+
+footer{padding:40px 0 70px; color:var(--muted); font-size:14px}
+.tag-list{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+::selection{background:rgba(139,92,246,.4)}
+
+/* ══ COUVERTURE ══ */
+#cover{min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+  background:linear-gradient(155deg,#050817 0%,#0d0b2d 42%,#0b1020 100%); border-bottom:1px solid rgba(255,255,255,.06)}
+.cover-grid{position:absolute; inset:0; pointer-events:none;
+  background-image:linear-gradient(rgba(139,92,246,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.07) 1px,transparent 1px);
+  background-size:44px 44px}
+.cover-glow{position:absolute; width:900px; height:900px; border-radius:50%;
+  background:radial-gradient(circle,rgba(139,92,246,.16) 0%,transparent 65%); top:50%; left:50%; transform:translate(-50%,-50%)}
+.cover-content{position:relative; z-index:2; text-align:center; padding:48px 24px; max-width:720px}
+.cover-kicker{display:inline-block; font-family:'Space Grotesk',sans-serif; font-weight:600; letter-spacing:.18em;
+  text-transform:uppercase; font-size:12px; color:var(--cyan); border:1px solid rgba(34,211,238,.25);
+  padding:7px 16px; border-radius:999px; background:rgba(34,211,238,.06); margin-bottom:26px}
+.cover-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(52px,10vw,92px); line-height:1; margin:0 0 10px;
+  background:linear-gradient(120deg,#fff 0%,var(--cyan) 32%,var(--violet) 68%,var(--pink) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent}
+.cover-sub{font-family:'Nunito',sans-serif; font-size:clamp(15px,2.4vw,18px); color:rgba(255,255,255,.5); margin:0 0 28px}
+.cover-svg-wrap{margin-bottom:26px; display:flex; justify-content:center}
+.cover-pills{display:flex; gap:9px; justify-content:center; flex-wrap:wrap; margin-bottom:32px}
+.cover-pill{font-family:var(--mono); font-size:12px; padding:6px 14px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.5); background:rgba(255,255,255,.04)}
+.cover-pill.g{border-color:rgba(52,211,153,.4); color:var(--ok)}
+.cover-pill.w{border-color:rgba(251,191,36,.4); color:var(--warn)}
+.cover-pill.r{border-color:rgba(251,113,133,.4); color:var(--err)}
+.cover-btn{display:inline-flex; align-items:center; gap:10px; text-decoration:none; font-family:'Space Grotesk',sans-serif;
+  font-weight:700; font-size:16px; color:#06121f; padding:14px 32px; border-radius:14px;
+  background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.2s}
+.cover-btn:hover{filter:brightness(1.08); transform:translateY(-2px); box-shadow:0 8px 28px rgba(34,211,238,.35)}
+#loopSpin{transform-origin:90px 62px; animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){#loopSpin{animation:none}}
+
+/* ══ THEME ══ */
+#themeBtn{position:fixed; top:18px; right:18px; z-index:1001; width:46px; height:46px; border-radius:50%;
+  border:1px solid var(--line); background:var(--bg2); cursor:pointer; font-size:19px; line-height:1;
+  display:flex; align-items:center; justify-content:center; box-shadow:var(--glow); transition:.2s}
+#themeBtn:hover{border-color:var(--cyan); transform:scale(1.1)}
+
+/* ══ MODE JOUR ══ */
+[data-theme="light"]{
+  --bg:#eef1ff; --bg2:#ffffff; --code:#e8ecfc; --ink:#1a1f3c; --muted:#5a6490;
+  --line:rgba(26,31,60,.1); --glow:0 0 0 1px rgba(0,0,0,.05),0 6px 20px -6px rgba(0,0,0,.12);
+}
+[data-theme="light"] body{background:
+  radial-gradient(1100px 600px at 80% -10%,rgba(139,92,246,.09),transparent 60%),
+  radial-gradient(900px 500px at -10% 10%,rgba(34,211,238,.07),transparent 55%),var(--bg)}
+[data-theme="light"] h1,[data-theme="light"] h2,[data-theme="light"] h3,[data-theme="light"] strong{color:#1a1f3c}
+[data-theme="light"] p,[data-theme="light"] li,[data-theme="light"] .lede,[data-theme="light"] .note p{color:#374151}
+[data-theme="light"] .toc a{color:#5a6490}
+[data-theme="light"] .toc a:hover{color:#1a1f3c; background:rgba(0,0,0,.04)}
+[data-theme="light"] textarea.code,[data-theme="light"] pre.static{color:#1a1f3c}
+[data-theme="light"] .out{color:#166534} [data-theme="light"] .out.err{color:#991b1b}
+[data-theme="light"] .codepane{background:rgba(0,0,0,.05)}
+[data-theme="light"] .cline .tx{color:#1a1f3c}
+[data-theme="light"] .cline .ln{color:rgba(26,31,60,.28)}
+[data-theme="light"] .console{background:rgba(0,0,0,.05); color:#166534}
+[data-theme="light"] .console .ph{color:rgba(26,31,60,.28)}
+[data-theme="light"] .acell,[data-theme="light"] table.data td,[data-theme="light"] .vartab td{color:#4b5563}
+[data-theme="light"] table.data tr:nth-child(even) td{background:rgba(0,0,0,.03)}
+[data-theme="light"] .inflog{background:rgba(0,0,0,.05)}
+[data-theme="light"] #themeBtn{background:#ffffff}
+[data-theme="light"] .flowwrap svg text.fl{fill:#374151}
+</style>
+</head>
+<body>
+
+<!-- ══════ COUVERTURE ══════ -->
+<div id="cover">
+  <div class="cover-grid"></div>
+  <div class="cover-glow"></div>
+  <div class="cover-content">
+    <div class="cover-kicker">NSI · Première · Chapitre 6</div>
+
+    <div class="cover-svg-wrap">
+      <svg viewBox="0 0 380 124" width="380" height="124" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="cvArr" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#8b5cf6"/></marker>
+          <marker id="cvArrG" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#34d399"/></marker>
+        </defs>
+        <!-- losange garde -->
+        <path d="M90 22 L142 62 L90 102 L38 62 Z" fill="rgba(251,191,36,.12)" stroke="#fbbf24" stroke-width="1.8"/>
+        <text x="90" y="59" font-family="monospace" font-size="12" fill="#fbbf24" text-anchor="middle">garde</text>
+        <text x="90" y="75" font-family="monospace" font-size="11" fill="rgba(251,191,36,.65)" text-anchor="middle">i &lt;= n</text>
+        <!-- vrai -> corps -->
+        <line x1="146" y1="62" x2="186" y2="62" stroke="#34d399" stroke-width="1.6" marker-end="url(#cvArrG)"/>
+        <text x="166" y="52" font-family="monospace" font-size="10" fill="#34d399" text-anchor="middle">vrai</text>
+        <rect x="190" y="40" width="112" height="44" rx="11" fill="rgba(139,92,246,.12)" stroke="#8b5cf6" stroke-width="1.8"/>
+        <text x="246" y="58" font-family="monospace" font-size="11" fill="rgba(139,92,246,.7)" text-anchor="middle">corps</text>
+        <text x="246" y="73" font-family="monospace" font-size="11" fill="#8b5cf6" text-anchor="middle">i = 2 * i</text>
+        <!-- retour boucle -->
+        <path d="M246 88 L246 112 L90 112 L90 106" fill="none" stroke="#8b5cf6" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#cvArr)"/>
+        <!-- faux -> sortie -->
+        <line x1="90" y1="18" x2="90" y2="6" stroke="#fb7185" stroke-width="1.6"/>
+        <text x="112" y="14" font-family="monospace" font-size="10" fill="#fb7185">faux → sortie</text>
+        <!-- anneau tournant -->
+        <g id="loopSpin">
+          <circle cx="90" cy="62" r="58" fill="none" stroke="rgba(34,211,238,.3)" stroke-width="1.4" stroke-dasharray="3 12"/>
+        </g>
+      </svg>
+    </div>
+
+    <h1 class="cover-title">La boucle while</h1>
+    <p class="cover-sub">Itérer tant qu'une condition reste vraie — M. Zaghdoudi · LFI Sousse</p>
+
+    <div class="cover-pills">
+      <span class="cover-pill w">garde</span>
+      <span class="cover-pill g">corps</span>
+      <span class="cover-pill">break</span>
+      <span class="cover-pill r">divergence</span>
+      <span class="cover-pill">variant</span>
+    </div>
+
+    <a href="#intro" class="cover-btn">Commencer le cours →</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="toc">
+    <h4>Sommaire</h4>
+    <a href="#intro">Pourquoi while ?</a>
+    <a href="#anatomie">Anatomie d'une boucle</a>
+    <a href="#pasapas">Exécution pas à pas</a>
+    <a href="#avant">Le test vient avant</a>
+    <a href="#whilefor">while ou for ?</a>
+    <a href="#divergence">Divergence</a>
+    <a href="#break">Sortir avec break</a>
+    <a href="#recherche">Chercher dans un tableau</a>
+    <a href="#terminaison">Terminaison & variant</a>
+    <a href="#heron">Méthode de Héron</a>
+    <a href="#quiz">Quiz bilan</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="kicker">NSI · Première · Chapitre 6</span>
+      <h1>Itérer sans savoir<br><span class="accent">combien de fois</span></h1>
+      <p class="lede">La boucle <code class="inl">for</code> exige de connaître le nombre de tours à l'avance. La boucle <code class="inl">while</code> remplace ce choix <em>a priori</em> par un <strong>critère de poursuite</strong> : on répète tant qu'une condition reste vraie.</p>
+      <div class="tag-list">
+        <span class="chip">while</span><span class="chip">garde</span><span class="chip">corps</span>
+        <span class="chip">break</span><span class="chip">divergence</span><span class="chip">variant</span>
+      </div>
+    </header>
+
+    <!-- ══ 01 ══ -->
+    <section id="intro">
+      <h2><span class="num">01</span> Pourquoi la boucle while ?</h2>
+      <p>Deux outils sont déjà connus :</p>
+      <ul>
+        <li>La boucle <code class="inl">for</code> effectue un nombre <strong>prédéfini</strong> d'itérations d'un bloc d'instructions.</li>
+        <li>Le branchement <code class="inl">if</code> exécute — ou non — un bloc selon un test effectué sur le moment.</li>
+      </ul>
+      <p>La boucle <code class="inl">while</code> <strong>combine ces deux principes</strong> : elle conditionne la poursuite des itérations à un test effectué avant chaque tour.</p>
+      <div class="note"><span class="ico">🎯</span><p>C'est indispensable dès qu'on ne peut pas prévoir le nombre de tours : lire des saisies jusqu'à obtenir une valeur valide, chercher un élément jusqu'à le trouver, approcher un résultat jusqu'à une précision donnée.</p></div>
+    </section>
+
+    <!-- ══ 02 ══ -->
+    <section id="anatomie">
+      <h2><span class="num">02</span> Anatomie d'une boucle while</h2>
+      <pre class="static"><span class="k">while</span> i &lt;= n<span class="k">:</span>
+    print(i)
+    i = <span class="nb">2</span> * i</pre>
+      <p>Trois éléments composent la construction :</p>
+      <ul>
+        <li>Le mot-clef <code class="inl">while</code> introduit la boucle.</li>
+        <li>Il est suivi d'une condition appelée <strong>garde</strong> — une expression produisant une valeur booléenne.</li>
+        <li>Le symbole <code class="inl">:</code> termine l'introduction ; suit un bloc indenté, le <strong>corps</strong> de la boucle.</li>
+      </ul>
+      <p>Le corps n'est exécuté que si la garde est évaluée à <strong>vrai</strong>. Chaque fois que le corps se termine, la garde est <strong>testée à nouveau</strong>, et le corps réexécuté tant que ces tests successifs sont vrais.</p>
+
+      <div class="panel">
+        <div class="bar">
+          <button class="btn on" id="flowPlay">▶ Animer le cycle</button>
+          <button class="btn" id="flowStop">■ Arrêter</button>
+        </div>
+        <div class="flowwrap">
+          <svg viewBox="0 0 560 300" width="560" height="300" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="fa" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#9aa7c2"/></marker>
+            </defs>
+            <g class="fnode" id="fInit">
+              <rect x="200" y="12" width="160" height="42" rx="11" fill="rgba(34,211,238,.1)" stroke="#22d3ee" stroke-width="1.6"/>
+              <text class="fl" x="280" y="39" font-family="monospace" font-size="14" fill="#22d3ee" text-anchor="middle">initialisation</text>
+            </g>
+            <line x1="280" y1="56" x2="280" y2="82" stroke="#9aa7c2" stroke-width="1.5" marker-end="url(#fa)"/>
+            <g class="fnode" id="fTest">
+              <path d="M280 86 L392 143 L280 200 L168 143 Z" fill="rgba(251,191,36,.1)" stroke="#fbbf24" stroke-width="1.8"/>
+              <text class="fl" x="280" y="138" font-family="monospace" font-size="14" fill="#fbbf24" text-anchor="middle">garde</text>
+              <text class="fl" x="280" y="158" font-family="monospace" font-size="12" fill="rgba(251,191,36,.7)" text-anchor="middle">vraie ?</text>
+            </g>
+            <text class="fl" x="330" y="212" font-family="monospace" font-size="12" fill="#34d399">vrai</text>
+            <line x1="280" y1="203" x2="280" y2="228" stroke="#34d399" stroke-width="1.5" marker-end="url(#fa)"/>
+            <g class="fnode" id="fBody">
+              <rect x="196" y="232" width="168" height="46" rx="11" fill="rgba(139,92,246,.1)" stroke="#8b5cf6" stroke-width="1.8"/>
+              <text class="fl" x="280" y="261" font-family="monospace" font-size="14" fill="#8b5cf6" text-anchor="middle">corps de la boucle</text>
+            </g>
+            <path d="M196 255 L110 255 L110 143 L164 143" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="5 5" marker-end="url(#fa)"/>
+            <text class="fl" x="112" y="200" font-family="monospace" font-size="11" fill="#8b5cf6" text-anchor="middle">retour</text>
+            <line x1="396" y1="143" x2="452" y2="143" stroke="#fb7185" stroke-width="1.5" marker-end="url(#fa)"/>
+            <text class="fl" x="424" y="133" font-family="monospace" font-size="12" fill="#fb7185" text-anchor="middle">faux</text>
+            <g class="fnode" id="fEnd">
+              <rect x="456" y="122" width="94" height="42" rx="11" fill="rgba(251,113,133,.1)" stroke="#fb7185" stroke-width="1.6"/>
+              <text class="fl" x="503" y="149" font-family="monospace" font-size="13" fill="#fb7185" text-anchor="middle">suite</text>
+            </g>
+          </svg>
+        </div>
+        <p class="hint" id="flowHint">Le cycle garde → corps → garde se répète tant que la condition tient.</p>
+      </div>
+    </section>
+
+    <!-- ══ 03 STEPPER ══ -->
+    <section id="pasapas">
+      <h2><span class="num">03</span> Exécution pas à pas</h2>
+      <p>Déroulons ce programme instruction par instruction. Observe l'état des variables, le résultat de chaque test, et ce qui s'affiche :</p>
+
+      <div class="panel" id="runPanel">
+        <div class="bar">
+          <label for="runN">n =</label>
+          <input type="number" id="runN" value="11" min="1" max="500">
+          <button class="btn" id="runNext">Étape suivante ▶</button>
+          <button class="btn" id="runAuto">▶▶ Tout dérouler</button>
+          <button class="btn" id="runReset">↺</button>
+        </div>
+
+        <div class="runner">
+          <div>
+            <div class="paneltitle">Programme</div>
+            <div class="codepane" id="runCode"></div>
+          </div>
+          <div class="statepane">
+            <div>
+              <div class="paneltitle">État des variables</div>
+              <div class="vars" id="runVars"></div>
+            </div>
+            <div>
+              <div class="paneltitle">Test de la garde</div>
+              <div class="testbox" id="runTest">— en attente —</div>
+            </div>
+            <div>
+              <div class="paneltitle">Sortie</div>
+              <div class="console" id="runOut"><span class="ph">(vide)</span></div>
+            </div>
+            <div class="counters">
+              <div class="cnt tests"><div class="cn">Tests</div><div class="cv" id="runCT">0</div></div>
+              <div class="cnt body"><div class="cn">Tours de corps</div><div class="cv" id="runCB">0</div></div>
+            </div>
+          </div>
+        </div>
+        <p class="hint" id="runHint">Clique sur « Étape suivante » pour exécuter la première ligne.</p>
+      </div>
+
+      <p>Le même programme, à exécuter toi-même — change <code class="inl">n</code> et observe :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">n = 11
+i = 2
+while i <= n:
+    print(i)
+    i = 2 * i
+print("Fin")</textarea>
+        <pre class="out"></pre>
+      </div>
+    </section>
+
+    <!-- ══ 04 ══ -->
+    <section id="avant">
+      <h2><span class="num">04</span> Le test vient avant chaque tour</h2>
+      <p>Le test de poursuite est effectué <strong>avant</strong> chaque tour de boucle potentiel. Cela entraîne deux conséquences importantes :</p>
+      <ul>
+        <li>Si le corps est exécuté <em>n</em> fois, alors le test est effectué <strong>n + 1 fois</strong> — le dernier test étant celui qui échoue et fait sortir.</li>
+        <li>Le corps peut <strong>n'être jamais exécuté</strong>, si le test est faux avant même la première itération.</li>
+      </ul>
+      <p>Les deux compteurs de l'animation ci-dessus le montrent : à la fin, le nombre de tests dépasse toujours d'exactement 1 le nombre de tours.</p>
+
+      <p>Vérifie le cas limite — ici la garde est fausse dès le départ, donc rien ne s'affiche entre les deux messages :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">print("Avant la boucle")
+
+i = 100
+while i < 10:        # faux des le premier test
+    print("Jamais affiche !")
+    i = i + 1
+
+print("Apres la boucle")</textarea>
+        <pre class="out"></pre>
+      </div>
+
+      <div class="note"><span class="ico">🔍</span><p>Le mode <strong>débogage pas à pas</strong> d'un IDE comme Thonny permet de reproduire exactement cette décomposition sur ta propre machine. C'est l'outil de référence quand une boucle ne fait pas ce qu'on attend.</p></div>
+    </section>
+
+    <!-- ══ 05 ══ -->
+    <section id="whilefor">
+      <h2><span class="num">05</span> while ou for ?</h2>
+      <p>Le comportement de certaines boucles <code class="inl">while</code> est parfaitement prévisible :</p>
+      <pre class="static">i = <span class="nb">0</span>
+<span class="k">while</span> i &lt; n<span class="k">:</span>
+    print(i)
+    i = i + <span class="nb">1</span>
+print(<span class="s">"Fin"</span>)</pre>
+      <p>Dans ce cas, on <strong>préférera une boucle <code class="inl">for</code></strong>, plus courte et sans risque d'oublier l'incrémentation :</p>
+      <pre class="static"><span class="k">for</span> i <span class="k">in</span> range(n)<span class="k">:</span>
+    print(i)
+print(<span class="s">"Fin"</span>)</pre>
+
+      <h3>Attention à la variable de boucle</h3>
+      <p>Les deux versions ne laissent pas <code class="inl">i</code> dans le même état à la sortie :</p>
+      <ul>
+        <li>Avec <code class="inl">while</code> : après <em>n</em> tours, <code class="inl">i</code> vaut <code class="inl">n</code> — c'est justement ce qui cause l'arrêt.</li>
+        <li>Avec <code class="inl">for</code> : la variable <code class="inl">i</code> ne prend que les valeurs de <code class="inl">0</code> à <code class="inl">n - 1</code>.</li>
+      </ul>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">n = 5
+
+i = 0
+while i < n:
+    i = i + 1
+print("Apres while, i vaut :", i)   # 5
+
+for i in range(n):
+    pass
+print("Apres for, i vaut   :", i)   # 4</textarea>
+        <pre class="out"></pre>
+      </div>
+      <div class="note gold"><span class="ico">⚖️</span><p><strong>Règle pratique :</strong> si tu sais compter les tours à l'avance, utilise <code class="inl">for</code>. Si l'arrêt dépend d'une condition découverte en cours de route, utilise <code class="inl">while</code>.</p></div>
+    </section>
+
+    <!-- ══ 06 ══ -->
+    <section id="divergence">
+      <h2><span class="num">06</span> Divergence : quand la boucle ne s'arrête jamais</h2>
+      <p>L'arrêt d'une boucle <code class="inl">while</code> est conditionné à l'<strong>échec</strong> d'un test. Il est donc possible d'écrire un programme qui ne s'arrête jamais, parce que sa condition reste éternellement vraie.</p>
+      <p>On parle de <strong>divergence</strong>, de <strong>non terminaison</strong>, d'un <strong>programme qui boucle</strong> ou qui <strong>part en boucle infinie</strong>.</p>
+
+      <div class="panel" id="infPanel">
+        <div class="bar">
+          <button class="btn" id="infStart">▶ Lancer while True</button>
+          <button class="btn" id="infStop">■ Interrompre</button>
+        </div>
+        <pre class="static" style="margin:0 0 12px"><span class="k">while</span> <span class="nb">True</span><span class="k">:</span>
+    print(<span class="s">"Ma quête du mouvement perpétuel progresse"</span>)</pre>
+        <div class="inflog" id="infLog"></div>
+        <p class="hint" id="infHint">Ici l'arrêt est simulé par un bouton. Dans un vrai interprète, il faut interrompre le programme à la main (Ctrl+C).</p>
+      </div>
+
+      <div class="note warn"><span class="ico">⚠️</span><p>N'exécute <strong>pas</strong> <code class="inl">while True</code> sans <code class="inl">break</code> dans une cellule Python de cette page : elle figerait l'onglet du navigateur. Le simulateur ci-dessus est là pour ça.</p></div>
+
+      <h3>Le piège du test d'inégalité</h3>
+      <p>Ce programme semble anodin :</p>
+      <pre class="static"><span class="k">while</span> i != <span class="nb">0</span><span class="k">:</span>
+    print(i)
+    i = i - <span class="nb">1</span></pre>
+      <p>Il ne s'arrête <strong>jamais</strong> si <code class="inl">i</code> est initialement <strong>négatif</strong> : en décrémentant, on s'éloigne de 0 au lieu de s'en approcher. Écrire <code class="inl">while i > 0</code> aurait évité le problème.</p>
+    </section>
+
+    <!-- ══ 07 ══ -->
+    <section id="break">
+      <h2><span class="num">07</span> Sortir d'une boucle avec break</h2>
+      <p>La garde est évaluée <strong>avant même le premier tour</strong>. On ne peut donc pas écrire ceci pour valider une saisie — <code class="inl">n</code> n'existe pas encore au moment du test :</p>
+      <pre class="static"><span class="e"># Ne fonctionne pas : n n'est pas defini</span>
+<span class="k">while</span> n &lt; <span class="nb">0</span><span class="k">:</span>
+    n = int(input(<span class="s">"Entrer un nombre positif ou nul : "</span>))</pre>
+
+      <p>Il faudrait dupliquer la saisie avant la boucle :</p>
+      <pre class="static">n = int(input(<span class="s">"Entrer un nombre positif ou nul : "</span>))
+<span class="k">while</span> n &lt; <span class="nb">0</span><span class="k">:</span>
+    n = int(input(<span class="s">"Entrer un nombre positif ou nul : "</span>))   <span class="c"># duplique !</span></pre>
+      <p class="muted">Ce n'est pas satisfaisant : le corps de la boucle est recopié, et toute modification devrait être faite à deux endroits.</p>
+
+      <p>L'instruction <code class="inl">break</code> résout le problème. Elle ne peut s'écrire qu'à l'intérieur d'une boucle et provoque son <strong>interruption immédiate</strong> :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python · saisie</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">while True:
+    n = int(input("Entrer un nombre positif ou nul : "))
+    if n >= 0:
+        break
+
+print("Merci, tu as saisi :", n)</textarea>
+        <pre class="out"></pre>
+      </div>
+
+      <h3>La boucle do…while des autres langages</h3>
+      <p>Certains langages proposent <code class="inl">do</code> ou <code class="inl">do … while</code> : la condition est examinée <strong>après</strong> chaque tour, donc le corps est toujours exécuté <strong>au moins une fois</strong>. Python n'a pas cette construction — <code class="inl">while True</code> + <code class="inl">break</code> en tient lieu.</p>
+      <pre class="static"><span class="c">// Java</span>
+<span class="k">public class</span> DoWhileDemo {
+    <span class="k">public static void</span> main(String[] args) {
+        <span class="k">int</span> count = <span class="nb">1</span>;
+        <span class="k">do</span> {
+            System.out.println(<span class="s">"Count is: "</span> + count);
+            count++;
+        } <span class="k">while</span> (count &lt; <span class="nb">11</span>);
+    }
+}</pre>
+    </section>
+
+    <!-- ══ 08 ══ -->
+    <section id="recherche">
+      <h2><span class="num">08</span> Chercher dans un tableau</h2>
+      <p>Écrivons une fonction <code class="inl">appartient(v, t)</code> qui renvoie <code class="inl">True</code> si la valeur <code class="inl">v</code> apparaît au moins une fois dans le tableau <code class="inl">t</code>, et <code class="inl">False</code> sinon. Plusieurs solutions existent — elles ne se valent pas.</p>
+
+      <p>Compare le nombre de comparaisons effectuées par chaque version :</p>
+      <div class="panel" id="searchPanel">
+        <div class="bar">
+          <label for="searchV">Chercher</label>
+          <input type="number" id="searchV" value="15">
+          <button class="btn" id="searchGo">▶ Lancer la recherche</button>
+          <button class="btn" id="searchReset">↺</button>
+        </div>
+
+        <div class="arow">
+          <div class="arowlab"><b>Version 1 — parcours complet (drapeau)</b><span class="opcount" id="op1">0 comparaison</span></div>
+          <div class="arr" id="arr1"></div>
+        </div>
+        <div class="arow">
+          <div class="arowlab"><b>Version 2 — while paresseux (arrêt anticipé)</b><span class="opcount" id="op2">0 comparaison</span></div>
+          <div class="arr" id="arr2"></div>
+        </div>
+        <p class="hint" id="searchHint">Le tableau contient [4, 8, 15, 16, 23, 42]. Essaie de chercher 4, puis 42, puis 99.</p>
+      </div>
+
+      <h3>Version 1 — le drapeau</h3>
+      <pre class="static"><span class="k">def</span> <span class="fn">appartient</span>(v, t)<span class="k">:</span>
+    trouvee = <span class="nb">False</span>
+    <span class="k">for</span> i <span class="k">in</span> range(len(t))<span class="k">:</span>
+        <span class="k">if</span> t[i] == v<span class="k">:</span>
+            trouvee = <span class="nb">True</span>
+    <span class="k">return</span> trouvee</pre>
+      <p class="muted">Le défaut : le tableau est parcouru <strong>intégralement</strong>, même si la valeur est trouvée dès la première case.</p>
+
+      <h3>Version 2 — while avec garde composée</h3>
+      <pre class="static"><span class="k">def</span> <span class="fn">appartient</span>(v, t)<span class="k">:</span>
+    i = <span class="nb">0</span>
+    <span class="k">while</span> i &lt; len(t) <span class="k">and</span> t[i] != v<span class="k">:</span>
+        i = i + <span class="nb">1</span>
+    <span class="k">return</span> i &lt; len(t)</pre>
+      <p>Deux points méritent attention :</p>
+      <ul>
+        <li>La garde contient la condition <code class="inl">i &lt; len(t)</code>, qui protège l'accès au tableau.</li>
+        <li>On exploite le <strong>comportement paresseux</strong> de l'opérateur <code class="inl">and</code> : dès que <code class="inl">i</code> atteint <code class="inl">len(t)</code>, la partie gauche est fausse et <code class="inl">t[i] != v</code> n'est <strong>pas évaluée</strong>. Sans cela, on obtiendrait une <code class="inl">IndexError</code>.</li>
+      </ul>
+      <p>À la sortie, <code class="inl">i</code> vaut <code class="inl">len(t)</code> si la valeur n'a pas été trouvée, et une valeur strictement inférieure sinon — d'où le <code class="inl">return i &lt; len(t)</code>.</p>
+
+      <h3>Version 3 — while avec break</h3>
+      <pre class="static"><span class="k">def</span> <span class="fn">appartient</span>(v, t)<span class="k">:</span>
+    i = <span class="nb">0</span>
+    <span class="k">while</span> i &lt; len(t)<span class="k">:</span>
+        <span class="k">if</span> t[i] == v<span class="k">:</span>
+            <span class="k">break</span>
+        i = i + <span class="nb">1</span>
+    <span class="k">return</span> i &lt; len(t)</pre>
+
+      <h3>Version 4 — return direct</h3>
+      <pre class="static"><span class="k">def</span> <span class="fn">appartient</span>(v, t)<span class="k">:</span>
+    <span class="k">for</span> i <span class="k">in</span> range(len(t))<span class="k">:</span>
+        <span class="k">if</span> t[i] == v<span class="k">:</span>
+            <span class="k">return</span> <span class="nb">True</span>
+    <span class="k">return</span> <span class="nb">False</span></pre>
+      <p class="muted">La plus lisible : <code class="inl">return</code> sort immédiatement de la fonction, ce qui rend le drapeau inutile.</p>
+
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python · les 4 versions</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">t = [4, 8, 15, 16, 23, 42]
+
+def appartient_1(v, t):        # drapeau, parcours complet
+    trouvee = False
+    for i in range(len(t)):
+        if t[i] == v:
+            trouvee = True
+    return trouvee
+
+def appartient_2(v, t):        # while + and paresseux
+    i = 0
+    while i < len(t) and t[i] != v:
+        i = i + 1
+    return i < len(t)
+
+def appartient_3(v, t):        # while + break
+    i = 0
+    while i < len(t):
+        if t[i] == v:
+            break
+        i = i + 1
+    return i < len(t)
+
+def appartient_4(v, t):        # return direct
+    for i in range(len(t)):
+        if t[i] == v:
+            return True
+    return False
+
+for v in [4, 23, 99]:
+    print(v, ":", appartient_1(v,t), appartient_2(v,t),
+                 appartient_3(v,t), appartient_4(v,t))</textarea>
+        <pre class="out"></pre>
+      </div>
+    </section>
+
+    <!-- ══ 09 ══ -->
+    <section id="terminaison">
+      <h2><span class="num">09</span> Terminaison et technique du variant</h2>
+      <p>Puisqu'une boucle <code class="inl">while</code> peut diverger, il faut savoir <strong>justifier</strong> qu'un programme s'arrête. Considérons :</p>
+      <pre class="static">q = <span class="nb">0</span>
+<span class="k">while</span> n &gt;= <span class="nb">3</span><span class="k">:</span>
+    n -= <span class="nb">3</span>
+    q += <span class="nb">1</span>
+print(q)</pre>
+      <p>La terminaison dépend de <code class="inl">n</code>. Or à chaque tour, la nouvelle valeur de <code class="inl">n</code> est <strong>strictement inférieure</strong> à la précédente. Cette valeur finira donc par devenir inférieure ou égale à 2, et la boucle s'arrêtera.</p>
+
+      <div class="note"><span class="ico">📉</span><p>Ce raisonnement s'appelle la <strong>technique du variant</strong>. Elle consiste à identifier une quantité — le <strong>variant</strong> de la boucle — qui est <strong>entière</strong>, <strong>positive</strong>, et qui <strong>décroît strictement</strong> à chaque tour. Une telle quantité ne peut pas décroître indéfiniment : la boucle termine forcément.</p></div>
+
+      <h3>Trouver le variant d'une recherche</h3>
+      <pre class="static">i = <span class="nb">0</span>
+<span class="k">while</span> i &lt; len(t)<span class="k">:</span>
+    <span class="k">if</span> t[i] == v<span class="k">:</span>
+        <span class="k">break</span>
+    i = i + <span class="nb">1</span></pre>
+      <p>Ici <code class="inl">i</code> <em>augmente</em> — ce n'est donc pas le variant. Ce qui <strong>diminue</strong> à chaque tour jusqu'à s'annuler, c'est l'écart entre <code class="inl">i</code> et <code class="inl">len(t)</code>. Le variant est donc <code class="inl">len(t) - i</code> :</p>
+
+      <div class="panel" id="varPanel">
+        <div class="bar">
+          <span style="font-family:var(--mono); font-size:14px; color:var(--muted)">Variant = len(t) − i , avec len(t) = 6</span>
+          <button class="btn" id="varStep">Tour suivant ▶</button>
+          <button class="btn" id="varReset">↺</button>
+        </div>
+        <div class="varbar" id="varBar"></div>
+        <div id="varTabWrap"></div>
+        <p class="hint" id="varHint">Le variant part de 6 et décroît strictement de 1 à chaque tour. Arrivé à 0, la garde devient fausse.</p>
+      </div>
+
+      <h3>Deux erreurs classiques</h3>
+      <p><strong>Erreur 1 — la condition d'arrêt ne permet pas de conclure.</strong> Une quantité peut décroître sans que cela suffise :</p>
+      <pre class="static">q = <span class="nb">0</span>
+<span class="k">while</span> n != <span class="nb">3</span><span class="k">:</span>
+    n -= <span class="nb">3</span>
+    q += <span class="nb">1</span>
+print(q)</pre>
+      <p class="muted"><code class="inl">n</code> décroît bien, mais la boucle ne s'arrête <strong>que</strong> si <code class="inl">n</code> vaut exactement 3. Si <code class="inl">n</code> n'est pas initialement un multiple de 3, on saute par-dessus la valeur d'arrêt et la boucle diverge.</p>
+
+      <p><strong>Erreur 2 — la décroissance n'est pas stricte.</strong></p>
+      <pre class="static">q = <span class="nb">0</span>
+<span class="k">while</span> n &gt;= d<span class="k">:</span>
+    n -= d
+    q += <span class="nb">1</span>
+print(q)</pre>
+      <p class="muted">Si <code class="inl">d</code> vaut <code class="inl">0</code>, alors <code class="inl">n</code> ne change pas d'un tour à l'autre : la décroissance n'est pas stricte, et la boucle tourne indéfiniment.</p>
+    </section>
+
+    <!-- ══ 10 ══ -->
+    <section id="heron">
+      <h2><span class="num">10</span> Exemple : la méthode de Héron</h2>
+      <p>Voici un cas où <code class="inl">while</code> est réellement indispensable : approcher une racine carrée avec une précision donnée. On ne sait pas d'avance combien d'itérations seront nécessaires — cela dépend du nombre et de la précision demandée.</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python · Héron</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def heron(nb, err):
+    racine = 1
+    while abs(racine * racine - nb) >= err:
+        racine = (racine + nb / racine) / 2
+    return racine
+
+print(heron(2, 0.0001))     # environ 1.4142
+print(heron(16, 0.0001))    # environ 4.0
+print(heron(100, 0.0001))   # environ 10.0</textarea>
+        <pre class="out"></pre>
+      </div>
+
+      <p>Ajoutons un compteur pour voir la convergence — remarquable de rapidité :</p>
+      <div class="cell" data-cell>
+        <div class="cell-head"><span class="tag"><span class="dot"></span>Python · convergence</span><button class="run">Exécuter</button></div>
+        <textarea class="code" spellcheck="false">def heron_trace(nb, err):
+    racine = 1
+    tour = 0
+    while abs(racine * racine - nb) >= err:
+        racine = (racine + nb / racine) / 2
+        tour = tour + 1
+        print("tour", tour, ":", racine)
+    return racine
+
+print("Racine de 2 :", heron_trace(2, 0.0001))</textarea>
+        <pre class="out"></pre>
+      </div>
+
+      <div class="note gold"><span class="ico">🧮</span><p>Le variant n'est pas ici une quantité entière, mais l'écart <code class="inl">|racine² − nb|</code> qui décroît très vite. Attention : avec une précision <code class="inl">err</code> trop petite, les limites des flottants peuvent empêcher la boucle de s'arrêter. La terminaison d'une boucle sur des flottants demande toujours de la prudence.</p></div>
+    </section>
+
+    <!-- ══ 11 QUIZ ══ -->
+    <section id="quiz">
+      <h2><span class="num">11</span> Quiz bilan</h2>
+      <p class="muted">Huit questions pour vérifier l'essentiel. Clique sur ta réponse.</p>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Comment s'appelle la condition qui contrôle une boucle <code class="inl">while</code> ?</p>
+        <div class="opt" data-i="0">le corps</div>
+        <div class="opt" data-i="1">la garde</div>
+        <div class="opt" data-i="2">le variant</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="2">
+        <p class="q">Si le corps d'une boucle est exécuté 5 fois, combien de fois le test est-il effectué ?</p>
+        <div class="opt" data-i="0">4</div>
+        <div class="opt" data-i="1">5</div>
+        <div class="opt" data-i="2">6</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="0">
+        <p class="q">Le corps d'une boucle <code class="inl">while</code> peut-il n'être jamais exécuté ?</p>
+        <div class="opt" data-i="0">Oui, si la garde est fausse dès le premier test</div>
+        <div class="opt" data-i="1">Non, il tourne toujours au moins une fois</div>
+        <div class="opt" data-i="2">Seulement avec break</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Après <code class="inl">i = 0</code> puis <code class="inl">while i &lt; n: i = i + 1</code>, que vaut <code class="inl">i</code> à la sortie ?</p>
+        <div class="opt" data-i="0">n - 1</div>
+        <div class="opt" data-i="1">n</div>
+        <div class="opt" data-i="2">0</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="2">
+        <p class="q">Dans <code class="inl">while i &lt; len(t) and t[i] != v:</code>, à quoi sert l'ordre des deux conditions ?</p>
+        <div class="opt" data-i="0">À rien, l'ordre est indifférent</div>
+        <div class="opt" data-i="1">À accélérer le programme</div>
+        <div class="opt" data-i="2">À éviter une IndexError grâce à l'évaluation paresseuse du and</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="0">
+        <p class="q">Un <strong>variant</strong> de boucle doit être :</p>
+        <div class="opt" data-i="0">entier, positif, et strictement décroissant</div>
+        <div class="opt" data-i="1">un booléen qui devient faux</div>
+        <div class="opt" data-i="2">une quantité qui augmente jusqu'à une limite</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="1">
+        <p class="q">Pourquoi <code class="inl">while i != 0: i = i - 1</code> peut-il diverger ?</p>
+        <div class="opt" data-i="0">Parce que i n'est jamais modifié</div>
+        <div class="opt" data-i="1">Parce que si i est négatif, on s'éloigne de 0</div>
+        <div class="opt" data-i="2">Parce qu'il manque un break</div>
+        <p class="feedback"></p>
+      </div>
+
+      <div class="quiz" data-quiz data-answer="2">
+        <p class="q">Quel est le rôle de <code class="inl">break</code> ?</p>
+        <div class="opt" data-i="0">Passer au tour suivant</div>
+        <div class="opt" data-i="1">Remettre la garde à vrai</div>
+        <div class="opt" data-i="2">Interrompre immédiatement la boucle</div>
+        <p class="feedback"></p>
+      </div>
+    </section>
+
+    <footer>
+      <p><strong>Pour aller plus loin :</strong> Python Tutor (visualiser l'exécution pas à pas) · Documentation Python, « Premiers pas vers la programmation » · le mode débogage de Thonny.</p>
+      <p class="mono-n" style="font-size:18px; margin-top:14px"><span>N</span><span>a</span><span>dtech</span> · NSI · Chapitre 6 · Boucle while</p>
+    </footer>
+  </main>
+</div>
+
+<button id="themeBtn" title="Passer en mode jour">☀️</button>
+
+<script>
+/* ═══ Skulpt ═══ */
+function builtinRead(x){
+  if(Sk.builtinFiles===undefined||Sk.builtinFiles["files"][x]===undefined) throw "File not found: '"+x+"'";
+  return Sk.builtinFiles["files"][x];
+}
+function runCell(cell){
+  var code=cell.querySelector('textarea.code').value;
+  var out=cell.querySelector('.out');
+  var btn=cell.querySelector('.run');
+  out.classList.remove('err'); out.textContent=''; out.classList.add('show');
+  if(typeof Sk==='undefined'){
+    out.classList.add('err');
+    out.textContent="Le moteur Python n'a pas pu se charger (connexion internet requise).";
+    return;
+  }
+  Sk.configure({
+    output:function(t){out.textContent+=t;},
+    read:builtinRead,
+    inputfun:function(p){return window.prompt(p||"Entrée :")||"";},
+    inputfunTakesPrompt:true,
+    __future__:Sk.python3
+  });
+  btn.disabled=true; var lbl=btn.textContent; btn.textContent='…';
+  Sk.misceval.asyncToPromise(function(){
+    return Sk.importMainWithBody("<stdin>",false,code,true);
+  }).then(function(){
+    btn.disabled=false; btn.textContent=lbl;
+    if(!out.textContent) out.textContent="(aucune sortie — pense à print(...) )";
+  },function(err){
+    btn.disabled=false; btn.textContent=lbl;
+    out.classList.add('err'); out.textContent+="\n"+err.toString();
+  });
+}
+document.querySelectorAll('[data-cell]').forEach(function(cell){
+  var ta=cell.querySelector('textarea.code');
+  ta.rows=Math.min(Math.max(ta.value.split('\n').length,2),24);
+  cell.querySelector('.run').addEventListener('click',function(){runCell(cell);});
+  ta.addEventListener('keydown',function(e){
+    if(e.key==='Tab'){e.preventDefault();
+      var s=this.selectionStart,en=this.selectionEnd;
+      this.value=this.value.slice(0,s)+"    "+this.value.slice(en);
+      this.selectionStart=this.selectionEnd=s+4;
+    }
+  });
+});
+
+/* ═══ Quiz ═══ */
+document.querySelectorAll('[data-quiz]').forEach(function(q){
+  var ans=+q.dataset.answer, fb=q.querySelector('.feedback');
+  q.querySelectorAll('.opt').forEach(function(opt){
+    opt.addEventListener('click',function(){
+      var i=+opt.dataset.i;
+      q.querySelectorAll('.opt').forEach(function(o){o.classList.add('lock');});
+      if(i===ans){opt.classList.add('good'); fb.textContent="Bravo, c'est exact !"; fb.className="feedback ok";}
+      else{
+        opt.classList.add('bad');
+        fb.textContent="Pas tout à fait — la bonne réponse est en vert.";
+        fb.className="feedback no";
+        q.querySelector('.opt[data-i="'+ans+'"]').classList.add('good');
+      }
+    });
+  });
+});
+
+/* ═══ 02 · Organigramme animé ═══ */
+(function(){
+  var play=document.getElementById('flowPlay'), stop=document.getElementById('flowStop');
+  var hint=document.getElementById('flowHint');
+  if(!play) return;
+  var ids=['fInit','fTest','fBody','fTest','fBody','fTest','fEnd'];
+  var msgs=['Initialisation des variables avant la boucle.',
+            'La garde est testée : vraie → on entre dans le corps.',
+            'Le corps s\'exécute, puis on retourne au test.',
+            'Nouveau test de la garde : toujours vraie.',
+            'Le corps s\'exécute une nouvelle fois.',
+            'Test de la garde : cette fois elle est fausse.',
+            'La boucle est terminée, le programme continue après.'];
+  var t=null, k=0;
+  function clear(){ ['fInit','fTest','fBody','fEnd'].forEach(function(id){
+    document.getElementById(id).classList.remove('lit'); }); }
+  function tick(){
+    clear();
+    document.getElementById(ids[k]).classList.add('lit');
+    hint.textContent=msgs[k];
+    k=(k+1)%ids.length;
+  }
+  play.addEventListener('click',function(){
+    if(t) return;
+    play.classList.add('on'); k=0; tick();
+    t=setInterval(tick,1150);
+  });
+  stop.addEventListener('click',function(){
+    if(t){ clearInterval(t); t=null; }
+    play.classList.remove('on'); clear();
+    hint.textContent='Le cycle garde → corps → garde se répète tant que la condition tient.';
+  });
+})();
+
+/* ═══ 03 · Stepper d'exécution ═══ */
+(function(){
+  var codeEl=document.getElementById('runCode');
+  var varsEl=document.getElementById('runVars');
+  var testEl=document.getElementById('runTest');
+  var outEl=document.getElementById('runOut');
+  var ctEl=document.getElementById('runCT'), cbEl=document.getElementById('runCB');
+  var hint=document.getElementById('runHint');
+  var inp=document.getElementById('runN');
+  var bNext=document.getElementById('runNext'), bAuto=document.getElementById('runAuto'), bReset=document.getElementById('runReset');
+  if(!codeEl) return;
+
+  var LINES=[
+    '<span class="nb">n</span> = <span class="nb">N</span>',
+    '<span class="nb">i</span> = <span class="nb">2</span>',
+    '<span class="kw">while</span> i &lt;= n<span class="kw">:</span>',
+    '    <span class="fn">print</span>(i)',
+    '    i = <span class="nb">2</span> * i',
+    '<span class="fn">print</span>(<span class="st">"Fin"</span>)'
+  ];
+  var steps=[], cur=-1, auto=null, N=11;
+
+  function build(){
+    N=Math.max(1,Math.min(500,parseInt(inp.value,10)||11));
+    inp.value=N;
+    codeEl.innerHTML='';
+    for(var l=0;l<LINES.length;l++){
+      var d=document.createElement('div');
+      d.className='cline'; d.dataset.l=l;
+      d.innerHTML='<span class="ln">'+(l+1)+'</span><span class="tx">'+LINES[l].replace('<span class="nb">N</span>','<span class="nb">'+N+'</span>')+'</span>';
+      codeEl.appendChild(d);
+    }
+    // construction de la trace
+    steps=[];
+    steps.push({l:0, n:N, i:null, msg:'La variable n reçoit '+N+'.'});
+    var i=2;
+    steps.push({l:1, n:N, i:2, upd:'i', msg:'La variable i est initialisée à 2.'});
+    var guard=true;
+    while(true){
+      guard=(i<=N);
+      steps.push({l:2, n:N, i:i, test:guard, expr:i+' <= '+N, tc:1,
+        msg: guard ? 'Test : '+i+' <= '+N+' → vrai, on entre dans le corps.'
+                   : 'Test : '+i+' <= '+N+' → faux, la boucle se termine.'});
+      if(!guard) break;
+      steps.push({l:3, n:N, i:i, print:String(i), bc:1, msg:'Affichage de la valeur de i : '+i+'.'});
+      var ni=2*i;
+      steps.push({l:4, n:N, i:ni, upd:'i', msg:'i devient 2 × '+i+' = '+ni+'.'});
+      i=ni;
+      if(steps.length>600) break;
+    }
+    steps.push({l:5, n:N, i:i, print:'Fin', msg:'La boucle est finie : affichage de « Fin ».'});
+    cur=-1;
+    render(null);
+    outEl.innerHTML='<span class="ph">(vide)</span>';
+    testEl.className='testbox'; testEl.textContent='— en attente —';
+    ctEl.textContent='0'; cbEl.textContent='0';
+    bNext.disabled=false; bAuto.disabled=false;
+    hint.textContent='Clique sur « Étape suivante » pour exécuter la première ligne.';
+  }
+
+  function render(st){
+    codeEl.querySelectorAll('.cline').forEach(function(d){ d.className='cline'; });
+    varsEl.innerHTML='';
+    var n=st?st.n:null, i=st?st.i:null;
+    function vbox(name,val,upd){
+      var b=document.createElement('div');
+      b.className='vbox'+(upd?' upd':'');
+      b.innerHTML='<div class="vn">'+name+'</div><div class="vv">'+(val===null?'—':val)+'</div>';
+      varsEl.appendChild(b);
+    }
+    vbox('n', n===null?null:n, st&&st.upd==='n');
+    vbox('i', i===null?null:i, st&&st.upd==='i');
+    if(st){
+      var line=codeEl.querySelector('.cline[data-l="'+st.l+'"]');
+      if(st.test===true) line.className='cline pass';
+      else if(st.test===false) line.className='cline fail';
+      else line.className='cline act';
+    }
+  }
+
+  function step(){
+    if(cur>=steps.length-1) return;
+    cur++;
+    var st=steps[cur];
+    render(st);
+    hint.textContent=st.msg;
+    if(st.test!==undefined){
+      testEl.className='testbox '+(st.test?'t':'f');
+      testEl.textContent=st.expr+'  →  '+(st.test?'vrai · nouveau tour':'faux · fin de la boucle');
+      ctEl.textContent=String(parseInt(ctEl.textContent,10)+1);
+    }
+    if(st.bc){ cbEl.textContent=String(parseInt(cbEl.textContent,10)+1); }
+    if(st.print!==undefined){
+      if(outEl.querySelector('.ph')) outEl.innerHTML='';
+      var s=document.createElement('span');
+      s.textContent=st.print;
+      outEl.appendChild(s);
+      outEl.scrollTop=outEl.scrollHeight;
+    }
+    if(cur>=steps.length-1){
+      bNext.disabled=true; bAuto.disabled=true;
+      hint.textContent='Terminé. Remarque les compteurs : '+ctEl.textContent+' tests pour '+cbEl.textContent+' tours de corps — un test de plus, celui qui fait sortir.';
+      if(auto){ clearInterval(auto); auto=null; }
+    }
+  }
+
+  bNext.addEventListener('click',step);
+  bAuto.addEventListener('click',function(){
+    if(auto) return;
+    auto=setInterval(function(){
+      if(cur>=steps.length-1){ clearInterval(auto); auto=null; }
+      else step();
+    },520);
+  });
+  bReset.addEventListener('click',function(){
+    if(auto){ clearInterval(auto); auto=null; }
+    build();
+  });
+  inp.addEventListener('change',function(){
+    if(auto){ clearInterval(auto); auto=null; }
+    build();
+  });
+  build();
+})();
+
+/* ═══ 06 · Simulateur de divergence ═══ */
+(function(){
+  var start=document.getElementById('infStart'), stop=document.getElementById('infStop');
+  var log=document.getElementById('infLog'), hint=document.getElementById('infHint');
+  if(!start) return;
+  var t=null, k=0;
+  start.addEventListener('click',function(){
+    if(t) return;
+    start.classList.add('on');
+    t=setInterval(function(){
+      k++;
+      var s=document.createElement('span');
+      s.textContent='Ma quête du mouvement perpétuel progresse';
+      log.appendChild(s);
+      log.scrollTop=log.scrollHeight;
+      while(log.childNodes.length>60) log.removeChild(log.firstChild);
+      hint.textContent='Tour n° '+k+' — et ça continue. La garde True ne devient jamais fausse.';
+    },140);
+  });
+  stop.addEventListener('click',function(){
+    if(t){ clearInterval(t); t=null; }
+    start.classList.remove('on');
+    if(k>0) hint.textContent='Interrompu après '+k+' tours. Sans intervention extérieure, le programme n\'aurait jamais fini.';
+    k=0; log.innerHTML='';
+  });
+})();
+
+/* ═══ 08 · Comparateur de recherche ═══ */
+(function(){
+  var T=[4,8,15,16,23,42];
+  var a1=document.getElementById('arr1'), a2=document.getElementById('arr2');
+  var o1=document.getElementById('op1'), o2=document.getElementById('op2');
+  var go=document.getElementById('searchGo'), rst=document.getElementById('searchReset');
+  var inp=document.getElementById('searchV'), hint=document.getElementById('searchHint');
+  if(!a1) return;
+  var busy=false;
+
+  function draw(){
+    [a1,a2].forEach(function(box){
+      box.innerHTML='';
+      T.forEach(function(v){
+        var d=document.createElement('div');
+        d.className='acell'; d.textContent=v;
+        box.appendChild(d);
+      });
+    });
+    o1.textContent='0 comparaison'; o2.textContent='0 comparaison';
+  }
+
+  function scan(box,counter,stopEarly,v,done){
+    var cells=box.querySelectorAll('.acell');
+    var i=0, ops=0, found=false;
+    var t=setInterval(function(){
+      if(i>0) cells[i-1].classList.remove('scan');
+      if(i>=T.length){
+        clearInterval(t);
+        done(ops,found);
+        return;
+      }
+      cells[i].classList.add('scan');
+      ops++;
+      counter.textContent=ops+' comparaison'+(ops>1?'s':'');
+      if(T[i]===v){
+        found=true;
+        cells[i].classList.remove('scan');
+        cells[i].classList.add('found');
+        if(stopEarly){
+          clearInterval(t);
+          for(var k=i+1;k<cells.length;k++) cells[k].classList.add('seen');
+          done(ops,true);
+          return;
+        }
+      } else {
+        cells[i].classList.add('seen');
+      }
+      i++;
+    },260);
+  }
+
+  function launch(){
+    if(busy) return;
+    busy=true; go.disabled=true;
+    var v=parseInt(inp.value,10);
+    draw();
+    hint.textContent='Recherche de '+v+' en cours…';
+    var r1=null, r2=null;
+    function finish(){
+      if(r1===null||r2===null) return;
+      busy=false; go.disabled=false;
+      var verdict=r1.found?('La valeur '+v+' est présente.'):('La valeur '+v+' est absente.');
+      if(r1.found&&r2.ops<r1.ops){
+        hint.textContent=verdict+' La version 1 a fait '+r1.ops+' comparaisons, la version 2 seulement '+r2.ops+' — soit '+(r1.ops-r2.ops)+' de moins grâce à l\'arrêt anticipé.';
+      } else if(!r1.found){
+        hint.textContent=verdict+' Les deux versions parcourent tout le tableau ('+r1.ops+' comparaisons) : sans trouver, impossible de s\'arrêter plus tôt.';
+      } else {
+        hint.textContent=verdict+' Les deux versions ont fait '+r1.ops+' comparaisons : la valeur était en dernière position.';
+      }
+    }
+    scan(a1,o1,false,v,function(ops,found){ r1={ops:ops,found:found}; finish(); });
+    scan(a2,o2,true,v,function(ops,found){ r2={ops:ops,found:found}; finish(); });
+  }
+
+  go.addEventListener('click',launch);
+  rst.addEventListener('click',function(){
+    if(busy) return;
+    draw();
+    hint.textContent='Le tableau contient [4, 8, 15, 16, 23, 42]. Essaie de chercher 4, puis 42, puis 99.';
+  });
+  draw();
+})();
+
+/* ═══ 09 · Variant ═══ */
+(function(){
+  var bar=document.getElementById('varBar'), wrap=document.getElementById('varTabWrap');
+  var step=document.getElementById('varStep'), rst=document.getElementById('varReset');
+  var hint=document.getElementById('varHint');
+  if(!bar) return;
+  var LEN=6, i=0;
+
+  function render(){
+    bar.innerHTML='';
+    for(var k=0;k<=i;k++){
+      var d=document.createElement('div');
+      var val=LEN-k;
+      d.style.height=Math.max(14,val/LEN*92)+'px';
+      d.textContent=val;
+      if(val===0){ d.style.background='linear-gradient(180deg,#34d399,rgba(52,211,153,.25))'; }
+      bar.appendChild(d);
+    }
+    var h='<table class="vartab"><tr><th>tour</th><th>i</th><th>len(t) − i</th><th>garde i &lt; 6</th></tr>';
+    for(var k2=0;k2<=i;k2++){
+      var v=LEN-k2;
+      h+='<tr><td>'+k2+'</td><td>'+k2+'</td><td class="'+(v===0?'z':'v')+'">'+v+'</td><td>'
+        +(k2<LEN?'<span style="color:var(--ok)">vraie</span>':'<span style="color:var(--err)">fausse → sortie</span>')+'</td></tr>';
+    }
+    h+='</table>';
+    wrap.innerHTML=h;
+    step.disabled=(i>=LEN);
+    if(i>=LEN) hint.textContent='Le variant a atteint 0 : la garde devient fausse et la boucle s\'arrête. La terminaison est donc démontrée.';
+    else hint.textContent='Tour '+i+' : le variant vaut '+(LEN-i)+'. Il décroît strictement de 1 à chaque tour.';
+  }
+  step.addEventListener('click',function(){ if(i<LEN){ i++; render(); } });
+  rst.addEventListener('click',function(){ i=0; render(); });
+  render();
+})();
+
+/* ═══ Mode Jour / Nuit ═══ */
+(function(){
+  var btn=document.getElementById('themeBtn');
+  function setTheme(t){
+    document.documentElement.setAttribute('data-theme',t);
+    btn.textContent=(t==='light')?'🌙':'☀️';
+    btn.title=(t==='light')?'Passer en mode nuit':'Passer en mode jour';
+    try{ localStorage.setItem('nadtech_theme',t); }catch(e){}
+  }
+  var saved=null;
+  try{ saved=localStorage.getItem('nadtech_theme'); }catch(e){}
+  if(saved==='light') setTheme('light');
+  btn.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    setTheme(cur==='light'?'dark':'light');
+  });
+})();
+</script>
+</body>
+</html>
