@@ -56,6 +56,20 @@ li{margin:4px 0}
 .doc-img img{display:block; width:100%; height:auto; border-radius:6px}
 .doc-img .cap{margin:10px 2px 0; font-family:var(--mono); font-size:12px; color:var(--muted); text-align:center}
 
+/* Schéma avec zones de saisie superposées directement sur l'image */
+.overlay-wrap{position:relative; width:100%; line-height:0; border-radius:6px; overflow:hidden}
+.overlay-wrap img{display:block; width:100%; height:auto}
+.overlay-field{position:absolute; box-sizing:border-box; padding:1.5%}
+.overlay-field input{
+  width:100%; height:100%; box-sizing:border-box; text-align:center;
+  font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; line-height:1.2;
+  border:2px dashed rgba(139,92,246,.65); border-radius:8px;
+  background:rgba(255,255,255,.82); color:#141833; padding:2px 6px;
+}
+.overlay-field input:focus{outline:none; border-color:#0891b2; background:#fff; border-style:solid}
+.overlay-field input::placeholder{color:rgba(20,24,45,.4); font-weight:600; font-size:12px}
+@media(max-width:560px){ .overlay-field input{font-size:11px; border-width:1.5px} }
+
 /* Champs de réponse */
 .champ{margin:14px 0}
 .champ label{display:block; font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:#fff; margin-bottom:6px}
@@ -205,30 +219,26 @@ body.light .doc-img{ background:#fff; }
   <!-- EX 1 -->
   <section id="ex1">
     <h2><span class="num">EX 1</span> La bête à cornes du baladeur MP4</h2>
-    <div class="enonce"><p>Voici l'exemple <strong>entièrement corrigé</strong>, tiré du document de cours. Étudie-le une minute, puis <strong>cache-le</strong> (avec ta main ou un cahier) et essaie de le reconstituer de mémoire dans les trois bulles ci-dessous.</p></div>
+    <div class="enonce"><p>Ce schéma est tiré du document de cours, mais ses <strong>trois bulles ont été vidées</strong>. Lis la phrase de description du baladeur MP4, puis <strong>écris directement dans les blocs</strong> du schéma.</p></div>
 
     <div class="doc-img">
-      <img src="/cours/img/techno-ch1-ex2-bete-a-cornes.png" alt="La bête à cornes du baladeur MP4 : à qui rend-il service, sur quoi agit-il, dans quel but ?" loading="lazy">
-      <p class="cap">Document de cours — LFI Sousse</p>
+      <div class="overlay-wrap">
+        <img src="/cours/img/techno-ch1-ex2-bete-a-cornes.png" alt="La bête à cornes du baladeur MP4 : trois blocs vides à compléter, à qui rend-il service, sur quoi agit-il, dans quel but" loading="lazy">
+        <div class="overlay-field" style="left:15.17%; top:42.97%; width:21.66%; height:13.25%">
+          <input type="text" data-reponse data-question="EX1 · Bête à cornes — à qui rend-il service ?" placeholder="À qui ?" autocomplete="off">
+        </div>
+        <div class="overlay-field" style="left:41.78%; top:40.94%; width:26.76%; height:13.25%">
+          <input type="text" data-reponse data-question="EX1 · Bête à cornes — sur quoi agit-il ?" placeholder="Sur quoi ?" autocomplete="off">
+        </div>
+        <div class="overlay-field" style="left:30.38%; top:85.25%; width:22.85%; height:11.56%">
+          <input type="text" data-reponse data-question="EX1 · Bête à cornes — dans quel but ?" placeholder="Dans quel but ?" autocomplete="off">
+        </div>
+      </div>
+      <p class="cap">Document de cours — LFI Sousse · les 3 blocs vides sont à compléter</p>
     </div>
 
     <div class="hints">
       <details class="hint"><summary><span class="htag">Indice</span> Tu ne te souviens plus ?</summary><div class="hbody"><p>Relis simplement la phrase du document : « Le baladeur MP4 permet à <strong>l'utilisateur</strong> d'écouter de la musique ou de regarder des clips vidéos dans le but de <strong>se détendre</strong>. »</p></div></details>
-    </div>
-
-    <div class="cornes">
-      <div class="bulle">
-        <p class="q">À qui rend-il service ?</p>
-        <input class="rep" type="text" data-reponse data-question="EX1 · Bête à cornes — à qui rend-il service ?" placeholder="Ta réponse…" autocomplete="off">
-      </div>
-      <div class="bulle">
-        <p class="q">Sur quoi agit-il ?</p>
-        <input class="rep" type="text" data-reponse data-question="EX1 · Bête à cornes — sur quoi agit-il ?" placeholder="Ta réponse…" autocomplete="off">
-      </div>
-      <div class="bulle large">
-        <p class="q">Dans quel but ?</p>
-        <input class="rep" type="text" data-reponse data-question="EX1 · Bête à cornes — dans quel but ?" placeholder="Ta réponse…" autocomplete="off">
-      </div>
     </div>
 
     <div class="correction" data-correction>
@@ -249,67 +259,51 @@ body.light .doc-img{ background:#fff; }
   <!-- EX 2 -->
   <section id="ex2">
     <h2><span class="num">EX 2</span> Le diagramme pieuvre du baladeur MP4</h2>
-    <div class="enonce"><p>Sur ce diagramme, <strong>certaines bulles et certaines contraintes ont été effacées</strong>. Retrouve-les à l'aide des indices et du reste du diagramme, puis complète le tableau.</p></div>
+    <div class="enonce"><p>Sur ce diagramme, <strong>certaines bulles et certaines contraintes ont été effacées</strong> (cases blanches et pointillés). Retrouve-les et écris directement dans les zones prévues sur le schéma.</p></div>
 
     <div class="doc-img">
-      <img src="/cours/img/techno-ch1-ex2-pieuvre.png" alt="Diagramme pieuvre du baladeur MP4, avec plusieurs bulles vides à compléter" loading="lazy">
-      <p class="cap">Document de cours — les cases blanches et les pointillés sont à compléter</p>
+      <div class="overlay-wrap">
+        <img src="/cours/img/techno-ch1-ex2-pieuvre.png" alt="Diagramme pieuvre du baladeur MP4 avec son tableau de contraintes ; 5 bulles et 3 textes de contraintes à compléter" loading="lazy">
+        <!-- Bulle FP1/FP2 (haut gauche) -->
+        <div class="overlay-field" style="left:14.37%; top:14.45%; width:24.07%; height:7.95%">
+          <input type="text" data-reponse data-question="EX2 · Bulle FP1/FP2 (haut gauche)" placeholder="Bulle…" autocomplete="off">
+        </div>
+        <!-- C6 -->
+        <div class="overlay-field" style="left:4.82%; top:26.81%; width:24.07%; height:7.92%">
+          <input type="text" data-reponse data-question="EX2 · C6 — nom de la bulle" placeholder="C6 : bulle…" autocomplete="off">
+        </div>
+        <!-- C5 -->
+        <div class="overlay-field" style="left:4.82%; top:40.03%; width:24.07%; height:7.94%">
+          <input type="text" data-reponse data-question="EX2 · C5 — nom de la bulle" placeholder="C5 : bulle…" autocomplete="off">
+        </div>
+        <!-- C1 -->
+        <div class="overlay-field" style="left:74.44%; top:27.89%; width:24.07%; height:7.94%">
+          <input type="text" data-reponse data-question="EX2 · C1 — nom de la bulle" placeholder="C1 : bulle…" autocomplete="off">
+        </div>
+        <!-- C3 -->
+        <div class="overlay-field" style="left:74.44%; top:51.02%; width:24.07%; height:7.94%">
+          <input type="text" data-reponse data-question="EX2 · C3 — nom de la bulle" placeholder="C3 : bulle…" autocomplete="off">
+        </div>
+        <!-- FP1 (ligne pointillee du tableau) -->
+        <div class="overlay-field" style="left:12.82%; top:64.47%; width:84.61%; height:2.67%">
+          <input type="text" data-reponse data-question="EX2 · FP1 — phrase manquante" placeholder="Permettre à l'utilisateur de …" autocomplete="off">
+        </div>
+        <!-- C2 -->
+        <div class="overlay-field" style="left:12.82%; top:74.32%; width:84.61%; height:4.09%">
+          <input type="text" data-reponse data-question="EX2 · C2 — texte de la contrainte" placeholder="Quelle contrainte concerne les yeux (Œil) ?" autocomplete="off">
+        </div>
+        <!-- C4 -->
+        <div class="overlay-field" style="left:12.82%; top:82.49%; width:84.61%; height:4.09%">
+          <input type="text" data-reponse data-question="EX2 · C4 — texte de la contrainte" placeholder="Quelle contrainte concerne l'énergie ?" autocomplete="off">
+        </div>
+      </div>
+      <p class="cap">Document de cours — les cases blanches et les pointillés sont à compléter directement ici</p>
     </div>
 
     <div class="hints">
-      <details class="hint"><summary><span class="htag">Indice 1</span> Comment lire une bulle vide</summary><div class="hbody"><p>Chaque trait qui part d'une bulle porte un nom (<strong>C1</strong>, <strong>C2</strong>… ou <strong>FP</strong>). Le tableau ci-dessous te donne, pour chaque repère, soit le <strong>nom de la bulle</strong>, soit le <strong>texte de la contrainte</strong> — à toi de retrouver l'élément manquant.</p></div></details>
+      <details class="hint"><summary><span class="htag">Indice 1</span> Comment lire une bulle vide</summary><div class="hbody"><p>Chaque trait qui part d'une bulle porte un nom (<strong>C1</strong>, <strong>C2</strong>… ou <strong>FP</strong>). Le tableau, sous le schéma, te donne pour chaque repère soit le <strong>nom de la bulle</strong>, soit le <strong>texte de la contrainte</strong> — à toi de retrouver l'élément manquant, et de l'écrire dans la zone correspondante.</p></div></details>
       <details class="hint"><summary><span class="htag">Indice 2</span> Les fonctions principales (FP1 et FP2)</summary><div class="hbody"><p>La bulle en haut à gauche est reliée à <strong>deux</strong> autres bulles par les arcs rouges <strong>FP1</strong> (vers Musique) et <strong>FP2</strong> (vers Vidéo). C'est elle qui « utilise » le baladeur pour ces deux fonctions.</p></div></details>
       <details class="hint"><summary><span class="htag">Indice 3</span> Associer une bulle vide à sa contrainte</summary><div class="hbody"><p><strong>C1</strong> parle du <em>volume sonore</em> → quelle partie du corps est concernée ? <strong>C3</strong> parle de « prise en main » → quelle partie du corps saisit l'objet ? <strong>C5</strong> parle de « se connecter » → à quel appareil ? <strong>C6</strong> parle de « relier » → quel accessoire audio ?</p></div></details>
-    </div>
-
-    <div class="tableau-wrap">
-      <table class="cdc">
-        <thead>
-          <tr><th>Repère</th><th>Ce qui est déjà donné</th><th>Ta réponse</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="fonction">FP1</td>
-            <td>« Permettre à l'utilisateur de <u>……………</u> » (FP2 est déjà donnée : « … de regarder des vidéos »)</td>
-            <td><input class="rep" type="text" data-reponse data-question="EX2 · FP1 — phrase manquante" placeholder="Complète : « Permettre à l'utilisateur de … »" autocomplete="off"></td>
-          </tr>
-          <tr>
-            <td class="fonction">Bulle FP1/FP2</td>
-            <td>Bulle en haut à gauche, reliée à « Musique » (FP1) et « Vidéo » (FP2)</td>
-            <td><input class="rep" type="text" data-reponse data-question="EX2 · Bulle FP1/FP2 (haut gauche)" placeholder="Nom de la bulle…" autocomplete="off"></td>
-          </tr>
-          <tr>
-            <td class="fonction">C1</td>
-            <td>Contrainte donnée : « Respecter la sécurité du volume sonore »</td>
-            <td><input class="rep" type="text" data-reponse data-question="EX2 · C1 — nom de la bulle" placeholder="Nom de la bulle…" autocomplete="off"></td>
-          </tr>
-          <tr>
-            <td class="fonction">C2</td>
-            <td>Bulle donnée : « Œil »</td>
-            <td><input class="rep" type="text" data-reponse data-question="EX2 · C2 — texte de la contrainte" placeholder="Quelle contrainte concerne les yeux ?" autocomplete="off"></td>
-          </tr>
-          <tr>
-            <td class="fonction">C3</td>
-            <td>Contrainte donnée : « Être de prise en main facile »</td>
-            <td><input class="rep" type="text" data-reponse data-question="EX2 · C3 — nom de la bulle" placeholder="Nom de la bulle…" autocomplete="off"></td>
-          </tr>
-          <tr>
-            <td class="fonction">C4</td>
-            <td>Bulle donnée : « Energie »</td>
-            <td><input class="rep" type="text" data-reponse data-question="EX2 · C4 — texte de la contrainte" placeholder="Quelle contrainte concerne l'énergie ?" autocomplete="off"></td>
-          </tr>
-          <tr>
-            <td class="fonction">C5</td>
-            <td>Contrainte donnée : « Pouvoir se connecter à un ordinateur pour échanger des données »</td>
-            <td><input class="rep" type="text" data-reponse data-question="EX2 · C5 — nom de la bulle" placeholder="Nom de la bulle…" autocomplete="off"></td>
-          </tr>
-          <tr>
-            <td class="fonction">C6</td>
-            <td>Contrainte donnée : « Doit permettre de relier un casque »</td>
-            <td><input class="rep" type="text" data-reponse data-question="EX2 · C6 — nom de la bulle" placeholder="Nom de la bulle…" autocomplete="off"></td>
-          </tr>
-        </tbody>
-      </table>
     </div>
 
     <div class="correction" data-correction>
