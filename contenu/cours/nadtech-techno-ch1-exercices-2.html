@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technologie · Chapitre 1 — Bête à cornes et diagramme pieuvre (exercice)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a31; --code:#0e1526; --ink:#e9eefb; --muted:#9aa7c2;
+  --cyan:#22d3ee; --violet:#8b5cf6; --pink:#ec4899; --ok:#34d399; --err:#fb7185; --amber:#f59e0b;
+  --line:rgba(255,255,255,.09); --glow:0 0 0 1px rgba(255,255,255,.04), 0 18px 40px -20px rgba(0,0,0,.7);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; background:
+    radial-gradient(1100px 600px at 80% -10%, rgba(139,92,246,.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.14), transparent 55%),
+    var(--bg);
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;}
+.wrap{max-width:920px; margin:0 auto; padding:0 20px}
+header.hero{padding:48px 0 24px; border-bottom:1px solid var(--line); margin-bottom:20px}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; color:var(--cyan);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(34,211,238,.06)}
+h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(26px,5vw,40px); line-height:1.1; margin:16px 0 8px}
+h1 .accent{background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.lede{color:var(--muted); max-width:62ch; font-size:17px}
+.meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+.chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+section{padding:26px 0; border-bottom:1px solid var(--line)}
+h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:23px; margin:0 0 6px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; scroll-margin-top:16px}
+h2 .num{font-family:var(--mono); font-size:13px; color:var(--violet); border:1px solid var(--line); border-radius:8px; padding:3px 9px; background:rgba(139,92,246,.08)}
+h3{font-family:'Space Grotesk',sans-serif; font-size:17px; margin:22px 0 8px; color:#fff}
+p{margin:10px 0}
+.muted{color:var(--muted)}
+strong{color:#fff}
+code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; color:#cfe6ff; border:1px solid var(--line)}
+ul{margin:10px 0; padding-left:22px}
+li{margin:4px 0}
+.enonce{background:rgba(255,255,255,.03); border:1px solid var(--line); border-left:3px solid var(--cyan); border-radius:0 10px 10px 0; padding:12px 16px; margin:14px 0}
+.note{display:flex; gap:12px; padding:13px 16px; border-radius:12px; background:rgba(245,158,11,.07); border:1px solid rgba(245,158,11,.25); margin:14px 0}
+.note .ico{font-size:18px} .note p{margin:0}
+
+/* Compétences */
+.competences{background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:6px 18px 14px; margin:16px 0; box-shadow:var(--glow)}
+.competences dl{margin:0}
+.competences dt{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--cyan); margin-top:12px}
+.competences dd{margin:2px 0 0; color:var(--muted); font-size:14px}
+
+/* Image de référence (schéma authentique du document) */
+.doc-img{background:#fff; border-radius:14px; padding:14px; margin:16px 0; box-shadow:var(--glow); border:1px solid var(--line)}
+.doc-img img{display:block; width:100%; height:auto; border-radius:6px}
+.doc-img .cap{margin:10px 2px 0; font-family:var(--mono); font-size:12px; color:var(--muted); text-align:center}
+
+/* Champs de réponse */
+.champ{margin:14px 0}
+.champ label{display:block; font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:#fff; margin-bottom:6px}
+input.rep, textarea.rep{width:100%; padding:11px 14px; border-radius:10px; border:1px solid var(--line);
+  background:var(--code); color:var(--ink); font:inherit; font-size:15px; line-height:1.6}
+textarea.rep{resize:vertical; min-height:80px}
+input.rep:focus, textarea.rep:focus{outline:2px solid var(--cyan); outline-offset:1px; border-color:transparent}
+input.rep::placeholder, textarea.rep::placeholder{color:rgba(154,167,194,.55)}
+
+/* Bête à cornes (bulles de mémorisation) */
+.cornes{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0}
+.cornes .bulle{background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:14px 16px; box-shadow:var(--glow)}
+.cornes .bulle.large{grid-column:1 / -1}
+.cornes .q{font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; color:var(--cyan); margin:0 0 8px}
+@media(max-width:640px){ .cornes{grid-template-columns:1fr} }
+
+/* Tableau pieuvre à compléter */
+.tableau-wrap{overflow-x:auto; margin:16px 0; border:1px solid var(--line); border-radius:14px; background:var(--bg2)}
+table.cdc{border-collapse:collapse; width:100%; min-width:640px; font-size:14px}
+table.cdc th{background:rgba(255,255,255,.05); font-family:'Space Grotesk',sans-serif; font-size:13px; text-align:left; padding:10px 12px; border:1px solid var(--line); color:#fff}
+table.cdc td{padding:10px 12px; border:1px solid var(--line); vertical-align:top; color:var(--muted)}
+table.cdc td.fonction{font-family:var(--mono); font-weight:700; color:var(--amber); background:rgba(245,158,11,.08); text-align:center; white-space:nowrap}
+table.cdc input.rep{padding:8px 10px; font-size:14px}
+
+/* Correction */
+.correction{margin:14px 0}
+.reveal-btn{font-family:'Nunito'; font-weight:800; border:1px solid rgba(52,211,153,.4); background:rgba(52,211,153,.1); color:var(--ok); padding:9px 16px; border-radius:10px; cursor:pointer; transition:.15s}
+.reveal-btn:hover{background:rgba(52,211,153,.18)}
+.lock-note{display:flex; gap:10px; align-items:center; font-size:14px; color:var(--muted); border:1px dashed var(--line); border-radius:10px; padding:11px 14px}
+.correction-body{display:none; margin-top:12px; background:rgba(52,211,153,.05); border:1px solid rgba(52,211,153,.25); border-radius:12px; padding:4px 18px 14px}
+.correction-body.show{display:block}
+.correction-body h4{font-family:'Space Grotesk',sans-serif; color:var(--ok); margin:16px 0 6px}
+.correction-body .rep-ok{background:var(--code); border:1px solid rgba(52,211,153,.3); border-radius:10px; padding:10px 14px; margin:8px 0; color:#dff5e9}
+
+/* Rappel méthode + indices progressifs */
+.method-mini{background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:14px 18px; margin:18px 0}
+.method-mini h3{font-family:'Space Grotesk',sans-serif; font-size:15px; margin:0 0 8px; color:#fff; display:flex; align-items:center; gap:8px}
+.method-mini ol{margin:0; padding-left:20px; color:var(--muted); font-size:14px}
+.method-mini li{margin:3px 0}
+.method-mini .tip{margin-top:10px; font-size:13px; color:var(--muted)}
+.hints{margin:12px 0}
+.hint{border:1px solid var(--line); border-radius:12px; margin:8px 0; overflow:hidden; background:rgba(139,92,246,.05)}
+.hint summary{cursor:pointer; padding:11px 14px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; color:#fff; list-style:none; display:flex; align-items:center; gap:10px}
+.hint summary::-webkit-details-marker{display:none}
+.hint summary .htag{font-family:var(--mono); font-size:11px; color:var(--violet); border:1px solid var(--line); border-radius:7px; padding:3px 8px; background:rgba(139,92,246,.1)}
+.hint summary:hover{background:rgba(139,92,246,.08)}
+.hint .hbody{padding:0 14px 12px; color:var(--muted); font-size:14px}
+
+/* Badge ludique de progression */
+.badges{display:flex; gap:10px; flex-wrap:wrap; margin:14px 0}
+.badge{display:flex; align-items:center; gap:8px; background:var(--bg2); border:1px solid var(--line); border-radius:999px; padding:8px 14px; font-size:13px; color:var(--muted); transition:.2s}
+.badge .ico{font-size:16px; filter:grayscale(1); opacity:.5; transition:.2s}
+.badge.done{color:var(--ok); border-color:rgba(52,211,153,.4); background:rgba(52,211,153,.08)}
+.badge.done .ico{filter:none; opacity:1}
+
+/* Dépôt de compte-rendu */
+.cr-depot{margin:40px 0 20px; padding:20px 22px; background:var(--bg2); border:1px solid var(--line); border-radius:14px; box-shadow:var(--glow)}
+.cr-depot h3{margin:0 0 8px; font-family:'Space Grotesk',sans-serif; color:var(--ink)}
+.cr-depot-desc{margin:0 0 14px; color:var(--muted); font-size:14px; line-height:1.6}
+.cr-depot-row{display:flex; gap:10px; flex-wrap:wrap}
+.cr-depot-row input{flex:1 1 260px; padding:10px 14px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font:inherit}
+.cr-depot-row input:focus{outline:2px solid var(--cyan); outline-offset:1px}
+.cr-depot-btn{margin-top:4px; padding:10px 18px; border-radius:10px; border:1px solid var(--violet); background:rgba(139,92,246,.15); color:var(--ink); font:inherit; cursor:pointer; transition:.15s; white-space:nowrap}
+.cr-depot-btn:hover{background:rgba(139,92,246,.28)}
+.cr-depot-btn:disabled{opacity:.5; cursor:not-allowed}
+.cr-depot-msg{margin:12px 0 0; font-size:14px; min-height:20px}
+.cr-depot-msg.ok{color:var(--ok)}
+.cr-depot-msg.err{color:var(--err)}
+.cr-depot-auth{margin-bottom:14px}
+.cr-camarades{position:relative}
+.cr-camarades input{width:100%; box-sizing:border-box; padding:10px 14px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font:inherit}
+.cr-camarades input:focus{outline:2px solid var(--cyan); outline-offset:1px}
+.cr-camarade-liste{position:absolute; z-index:5; top:calc(100% + 4px); left:0; right:0; max-height:200px; overflow-y:auto; background:var(--bg); border:1px solid var(--line); border-radius:10px; box-shadow:var(--glow)}
+.cr-camarade-liste button{display:block; width:100%; text-align:left; padding:9px 14px; background:none; border:none; color:var(--ink); font:inherit; cursor:pointer}
+.cr-camarade-liste button:hover{background:rgba(139,92,246,.15)}
+.cr-camarade-chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+.cr-chip{display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; background:rgba(139,92,246,.15); border:1px solid var(--violet); color:var(--ink); font-size:13px}
+.cr-chip button{background:none; border:none; color:var(--ink); cursor:pointer; font-size:14px; line-height:1; padding:0}
+
+footer{padding:36px 0 70px; color:var(--muted); font-size:14px}
+.mono-n{font-family:var(--mono); font-weight:700; font-size:18px; margin-top:12px}
+.mono-n span:nth-child(1){color:var(--cyan)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--violet)}
+::selection{background:rgba(139,92,246,.4)}
+
+/* Bouton et thème clair (jour) */
+.theme-toggle{position:fixed; top:16px; right:16px; z-index:60; width:46px; height:46px; border-radius:12px;
+  border:1px solid var(--line); background:var(--bg2); color:var(--ink); font-size:20px; cursor:pointer;
+  box-shadow:0 8px 24px -12px rgba(0,0,0,.5); transition:.15s; display:grid; place-items:center}
+.theme-toggle:hover{border-color:var(--violet); transform:translateY(-1px)}
+body.light{
+  --bg:#eef1fb; --bg2:#ffffff; --code:#f6f7fd; --ink:#1a1f36; --muted:#5b6478; --line:rgba(20,24,45,.12);
+  --glow:0 0 0 1px rgba(20,24,45,.04), 0 18px 40px -24px rgba(20,24,45,.25);
+}
+body.light h3, body.light strong, body.light .method-mini h3, body.light .hint summary,
+body.light table.cdc th, body.light .cornes .q{ color:#141833; }
+body.light code.inl{ background:rgba(20,24,45,.06); color:#3730a3; border-color:rgba(20,24,45,.14); }
+body.light .enonce{ background:rgba(20,24,45,.03); }
+body.light .correction-body .rep-ok{ color:#14532d; }
+body.light .theme-toggle{ box-shadow:0 8px 24px -14px rgba(20,24,45,.4); }
+body.light .doc-img{ background:#fff; }
+</style>
+</head>
+<body>
+<button id="themeToggle" class="theme-toggle" title="Basculer jour / nuit" aria-label="Basculer jour / nuit">🌙</button>
+
+<div class="wrap">
+  <header class="hero">
+    <span class="kicker">Technologie · 3ème · Chapitre 1</span>
+    <h1>La bête à cornes & <span class="accent">le diagramme pieuvre</span></h1>
+    <p class="lede">Deux schémas à connaître par cœur en Technologie : ils servent à analyser <strong>tout</strong> objet technique, du robot au baladeur MP4. Étudie l'exemple, puis complète les éléments manquants du diagramme.</p>
+    <div class="meta">
+      <span class="chip">🐮 bête à cornes</span>
+      <span class="chip">🐙 diagramme pieuvre</span>
+      <span class="chip">📱 baladeur MP4</span>
+      <span class="chip">analyse fonctionnelle</span>
+    </div>
+  </header>
+
+  <section id="competences">
+    <h2><span class="num">00</span> Ce que tu travailles</h2>
+    <div class="competences">
+      <dl>
+        <dt>Concevoir, créer, réaliser (2.1)</dt>
+        <dd>Identifier un besoin et énoncer un problème technique.</dd>
+        <dt>Concevoir, créer, réaliser (2.2)</dt>
+        <dd>Identifier les fonctions techniques d'un objet et ses relations avec le milieu extérieur.</dd>
+      </dl>
+    </div>
+
+    <div class="method-mini">
+      <h3>🧭 Pourquoi ces deux schémas sont incontournables</h3>
+      <ol>
+        <li>La <strong>bête à cornes</strong> répond à la toute première question d'un projet : <em>pourquoi cet objet existe-t-il ?</em></li>
+        <li>Le <strong>diagramme pieuvre</strong> va plus loin : il détaille <em>toutes</em> les relations entre l'objet et son environnement (utilisateur, milieu, autres objets…).</li>
+        <li>Ce sont les <strong>deux premières étapes obligatoires</strong> de toute analyse fonctionnelle — tu les retrouveras à chaque nouveau chapitre.</li>
+      </ol>
+      <p class="tip">Les <strong>indices</strong> sont toujours disponibles. La <strong>correction</strong> s'affiche quand ton professeur l'autorise.</p>
+    </div>
+
+    <div class="badges" id="badges">
+      <span class="badge" data-badge="ex1"><span class="ico">🐮</span> Bête à cornes</span>
+      <span class="badge" data-badge="ex2"><span class="ico">🐙</span> Diagramme pieuvre</span>
+      <span class="badge" data-badge="depot"><span class="ico">📤</span> Compte-rendu déposé</span>
+    </div>
+  </section>
+
+  <!-- EX 1 -->
+  <section id="ex1">
+    <h2><span class="num">EX 1</span> La bête à cornes du baladeur MP4</h2>
+    <div class="enonce"><p>Voici l'exemple <strong>entièrement corrigé</strong>, tiré du document de cours. Étudie-le une minute, puis <strong>cache-le</strong> (avec ta main ou un cahier) et essaie de le reconstituer de mémoire dans les trois bulles ci-dessous.</p></div>
+
+    <div class="doc-img">
+      <img src="/cours/img/techno-ch1-ex2-bete-a-cornes.png" alt="La bête à cornes du baladeur MP4 : à qui rend-il service, sur quoi agit-il, dans quel but ?" loading="lazy">
+      <p class="cap">Document de cours — LFI Sousse</p>
+    </div>
+
+    <div class="hints">
+      <details class="hint"><summary><span class="htag">Indice</span> Tu ne te souviens plus ?</summary><div class="hbody"><p>Relis simplement la phrase du document : « Le baladeur MP4 permet à <strong>l'utilisateur</strong> d'écouter de la musique ou de regarder des clips vidéos dans le but de <strong>se détendre</strong>. »</p></div></details>
+    </div>
+
+    <div class="cornes">
+      <div class="bulle">
+        <p class="q">À qui rend-il service ?</p>
+        <input class="rep" type="text" data-reponse data-question="EX1 · Bête à cornes — à qui rend-il service ?" placeholder="Ta réponse…" autocomplete="off">
+      </div>
+      <div class="bulle">
+        <p class="q">Sur quoi agit-il ?</p>
+        <input class="rep" type="text" data-reponse data-question="EX1 · Bête à cornes — sur quoi agit-il ?" placeholder="Ta réponse…" autocomplete="off">
+      </div>
+      <div class="bulle large">
+        <p class="q">Dans quel but ?</p>
+        <input class="rep" type="text" data-reponse data-question="EX1 · Bête à cornes — dans quel but ?" placeholder="Ta réponse…" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="correction" data-correction>
+      <button class="reveal-btn">Voir la correction</button>
+      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
+      <div class="correction-body">
+        <h4>Correction</h4>
+        <p><strong>À qui rend-il service ?</strong></p>
+        <div class="rep-ok">À l'utilisateur.</div>
+        <p><strong>Sur quoi agit-il ?</strong></p>
+        <div class="rep-ok">Sur de la musique et des clips vidéos (les contenus multimédias).</div>
+        <p><strong>Dans quel but ?</strong></p>
+        <div class="rep-ok">Se détendre.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EX 2 -->
+  <section id="ex2">
+    <h2><span class="num">EX 2</span> Le diagramme pieuvre du baladeur MP4</h2>
+    <div class="enonce"><p>Sur ce diagramme, <strong>certaines bulles et certaines contraintes ont été effacées</strong>. Retrouve-les à l'aide des indices et du reste du diagramme, puis complète le tableau.</p></div>
+
+    <div class="doc-img">
+      <img src="/cours/img/techno-ch1-ex2-pieuvre.png" alt="Diagramme pieuvre du baladeur MP4, avec plusieurs bulles vides à compléter" loading="lazy">
+      <p class="cap">Document de cours — les cases blanches et les pointillés sont à compléter</p>
+    </div>
+
+    <div class="hints">
+      <details class="hint"><summary><span class="htag">Indice 1</span> Comment lire une bulle vide</summary><div class="hbody"><p>Chaque trait qui part d'une bulle porte un nom (<strong>C1</strong>, <strong>C2</strong>… ou <strong>FP</strong>). Le tableau ci-dessous te donne, pour chaque repère, soit le <strong>nom de la bulle</strong>, soit le <strong>texte de la contrainte</strong> — à toi de retrouver l'élément manquant.</p></div></details>
+      <details class="hint"><summary><span class="htag">Indice 2</span> Les fonctions principales (FP1 et FP2)</summary><div class="hbody"><p>La bulle en haut à gauche est reliée à <strong>deux</strong> autres bulles par les arcs rouges <strong>FP1</strong> (vers Musique) et <strong>FP2</strong> (vers Vidéo). C'est elle qui « utilise » le baladeur pour ces deux fonctions.</p></div></details>
+      <details class="hint"><summary><span class="htag">Indice 3</span> Associer une bulle vide à sa contrainte</summary><div class="hbody"><p><strong>C1</strong> parle du <em>volume sonore</em> → quelle partie du corps est concernée ? <strong>C3</strong> parle de « prise en main » → quelle partie du corps saisit l'objet ? <strong>C5</strong> parle de « se connecter » → à quel appareil ? <strong>C6</strong> parle de « relier » → quel accessoire audio ?</p></div></details>
+    </div>
+
+    <div class="tableau-wrap">
+      <table class="cdc">
+        <thead>
+          <tr><th>Repère</th><th>Ce qui est déjà donné</th><th>Ta réponse</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fonction">FP1</td>
+            <td>« Permettre à l'utilisateur de <u>……………</u> » (FP2 est déjà donnée : « … de regarder des vidéos »)</td>
+            <td><input class="rep" type="text" data-reponse data-question="EX2 · FP1 — phrase manquante" placeholder="Complète : « Permettre à l'utilisateur de … »" autocomplete="off"></td>
+          </tr>
+          <tr>
+            <td class="fonction">Bulle FP1/FP2</td>
+            <td>Bulle en haut à gauche, reliée à « Musique » (FP1) et « Vidéo » (FP2)</td>
+            <td><input class="rep" type="text" data-reponse data-question="EX2 · Bulle FP1/FP2 (haut gauche)" placeholder="Nom de la bulle…" autocomplete="off"></td>
+          </tr>
+          <tr>
+            <td class="fonction">C1</td>
+            <td>Contrainte donnée : « Respecter la sécurité du volume sonore »</td>
+            <td><input class="rep" type="text" data-reponse data-question="EX2 · C1 — nom de la bulle" placeholder="Nom de la bulle…" autocomplete="off"></td>
+          </tr>
+          <tr>
+            <td class="fonction">C2</td>
+            <td>Bulle donnée : « Œil »</td>
+            <td><input class="rep" type="text" data-reponse data-question="EX2 · C2 — texte de la contrainte" placeholder="Quelle contrainte concerne les yeux ?" autocomplete="off"></td>
+          </tr>
+          <tr>
+            <td class="fonction">C3</td>
+            <td>Contrainte donnée : « Être de prise en main facile »</td>
+            <td><input class="rep" type="text" data-reponse data-question="EX2 · C3 — nom de la bulle" placeholder="Nom de la bulle…" autocomplete="off"></td>
+          </tr>
+          <tr>
+            <td class="fonction">C4</td>
+            <td>Bulle donnée : « Energie »</td>
+            <td><input class="rep" type="text" data-reponse data-question="EX2 · C4 — texte de la contrainte" placeholder="Quelle contrainte concerne l'énergie ?" autocomplete="off"></td>
+          </tr>
+          <tr>
+            <td class="fonction">C5</td>
+            <td>Contrainte donnée : « Pouvoir se connecter à un ordinateur pour échanger des données »</td>
+            <td><input class="rep" type="text" data-reponse data-question="EX2 · C5 — nom de la bulle" placeholder="Nom de la bulle…" autocomplete="off"></td>
+          </tr>
+          <tr>
+            <td class="fonction">C6</td>
+            <td>Contrainte donnée : « Doit permettre de relier un casque »</td>
+            <td><input class="rep" type="text" data-reponse data-question="EX2 · C6 — nom de la bulle" placeholder="Nom de la bulle…" autocomplete="off"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="correction" data-correction>
+      <button class="reveal-btn">Voir la correction</button>
+      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
+      <div class="correction-body">
+        <h4>Correction</h4>
+        <div class="rep-ok">
+          <strong>FP1</strong> : « Permettre à l'utilisateur d'écouter de la musique »<br>
+          <strong>Bulle FP1/FP2</strong> : Utilisateur<br>
+          <strong>C1</strong> : Oreille<br>
+          <strong>C3</strong> : Main<br>
+          <strong>C5</strong> : Ordinateur<br>
+          <strong>C6</strong> : Casque
+        </div>
+        <p class="muted"><strong>C2</strong> et <strong>C4</strong> sont des questions ouvertes — plusieurs formulations sont acceptées :</p>
+        <div class="rep-ok">
+          <strong>C2</strong> (bulle Œil) — exemple de réponse : « Ne pas fatiguer les yeux de l'utilisateur (écran lisible et confortable) ».<br>
+          <strong>C4</strong> (bulle Energie) — exemple de réponse : « Posséder une autonomie suffisante grâce à une batterie rechargeable ».
+        </div>
+        <p class="muted">Méthode : une bulle où le <strong>texte</strong> de la contrainte est donné mais pas le <strong>nom</strong> de la bulle (C1, C3, C5, C6) se déduit en se demandant « à quel élément du milieu extérieur cette contrainte fait-elle penser ? ». Inversement, une bulle déjà nommée (Œil, Energie) mais sans texte (C2, C4) se complète en imaginant la contrainte logique liée à cet élément.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cr-depot" id="depotCompteRendu">
+    <h3>📤 Déposer ton compte-rendu</h3>
+    <div id="crAuth" class="cr-depot-auth" hidden>
+      <p class="cr-depot-desc">Tu déposes en tant que <strong id="crMoi"></strong>. Si vous avez travaillé en groupe, cherche tes camarades :</p>
+      <div class="cr-camarades">
+        <input type="text" id="crCamaradeInput" placeholder="Nom d'un camarade de la classe..." autocomplete="off">
+        <div id="crCamaradeListe" class="cr-camarade-liste" hidden></div>
+      </div>
+      <div id="crCamaradeChips" class="cr-camarade-chips"></div>
+    </div>
+    <div id="crAnonyme">
+      <p class="cr-depot-desc">Indique ton nom (ou plusieurs noms séparés par une virgule si vous travaillez en groupe), puis clique sur le bouton. Tes réponses sont envoyées avec le dépôt.</p>
+      <div class="cr-depot-row">
+        <input type="text" id="crNoms" placeholder="Ton nom (ou noms séparés par une virgule)" maxlength="300" autocomplete="off">
+      </div>
+    </div>
+    <button id="crBtn" type="button" class="cr-depot-btn">📤 Déposer mon compte-rendu</button>
+    <p id="crMsg" class="cr-depot-msg" role="status"></p>
+  </section>
+
+  <footer>
+    <p class="mono-n"><span>N</span><span>a</span><span>dtech</span> · Technologie · 3ème · Chapitre 1 — Bête à cornes & diagramme pieuvre</p>
+  </footer>
+</div>
+
+<script>
+/* Corrections : autorisation decidee par le serveur (voir
+   app/cours/[fichier]/route.ts) — sans elle, les corrections ne sont meme
+   pas envoyees au navigateur. */
+(function(){
+  var autorise = window.__CORRECTION_ACTIVE__ === true;
+  document.querySelectorAll('[data-correction]').forEach(function(wrap){
+    var btn  = wrap.querySelector('.reveal-btn');
+    var body = wrap.querySelector('.correction-body');
+    var lock = wrap.querySelector('.lock-note');
+    if (autorise){
+      lock.style.display = 'none';
+      btn.style.display  = 'inline-block';
+      btn.addEventListener('click', function(){
+        var open = body.classList.toggle('show');
+        btn.textContent = open ? 'Masquer la correction' : 'Voir la correction';
+      });
+    } else {
+      btn.style.display = 'none';
+      lock.style.display = 'flex';
+      body.classList.remove('show');
+    }
+  });
+})();
+</script>
+<script>
+/* Theme jour / nuit */
+(function(){
+  var b=document.getElementById('themeToggle'); if(!b) return;
+  function apply(mode){
+    if(mode==='light'){ document.body.classList.add('light'); b.textContent='☀️'; }
+    else { document.body.classList.remove('light'); b.textContent='🌙'; }
+  }
+  var saved=null; try{ saved=localStorage.getItem('nadtech-theme'); }catch(e){}
+  apply(saved==='light' ? 'light' : 'dark');
+  b.addEventListener('click', function(){
+    var light=!document.body.classList.contains('light');
+    apply(light?'light':'dark');
+    try{ localStorage.setItem('nadtech-theme', light?'light':'dark'); }catch(e){}
+  });
+})();
+</script>
+<script>
+/* Badges ludiques : s'allument des qu'on a commence a repondre a la section */
+(function(){
+  function marquer(id){
+    var b = document.querySelector('[data-badge="'+id+'"]');
+    if (b) b.classList.add('done');
+  }
+  ['ex1','ex2'].forEach(function(id){
+    var section = document.getElementById(id);
+    if (!section) return;
+    section.querySelectorAll('[data-reponse]').forEach(function(champ){
+      champ.addEventListener('input', function(){
+        if (champ.value.trim()) marquer(id);
+      });
+    });
+  });
+})();
+</script>
+<script>
+/* Depot de compte-rendu */
+(function(){
+  var COURS_ID = "cmtq20rpq00000m5q8e2bq3ek";
+  var input = document.getElementById('crNoms');
+  var btn = document.getElementById('crBtn');
+  var msg = document.getElementById('crMsg');
+  if (!input || !btn || !msg) return;
+
+  /* Capture les reponses saisies par l'eleve, question par question. */
+  function collecterTravail(){
+    var travail = [];
+    document.querySelectorAll('[data-reponse]').forEach(function(champ){
+      travail.push({
+        exercice: champ.getAttribute('data-question') || 'Réponse',
+        code: champ.value
+      });
+    });
+    return JSON.stringify(travail);
+  }
+
+  /* ---- Identité auto-détectée + recherche de camarades (élève connecté) ---- */
+  var contexte = window.__CONTEXTE_ELEVE__ || null;
+  var camaradesSelectionnes = [];
+
+  var authBox = document.getElementById('crAuth');
+  var anonBox = document.getElementById('crAnonyme');
+  var moiSpan = document.getElementById('crMoi');
+  var camaradeInput = document.getElementById('crCamaradeInput');
+  var camaradeListe = document.getElementById('crCamaradeListe');
+  var camaradeChips = document.getElementById('crCamaradeChips');
+
+  function normaliser(txt){
+    var s = (txt || '').toLowerCase().normalize('NFD');
+    var out = '';
+    for (var i = 0; i < s.length; i++){
+      var code = s.charCodeAt(i);
+      if (code < 0x0300 || code > 0x036f) out += s[i];
+    }
+    return out;
+  }
+
+  function renderChips(){
+    if (!camaradeChips) return;
+    camaradeChips.innerHTML = '';
+    camaradesSelectionnes.forEach(function(c){
+      var chip = document.createElement('span');
+      chip.className = 'cr-chip';
+      var texte = document.createElement('span');
+      texte.textContent = c.nom;
+      var retirer = document.createElement('button');
+      retirer.type = 'button';
+      retirer.setAttribute('aria-label', 'Retirer ' + c.nom);
+      retirer.textContent = '✕';
+      retirer.addEventListener('click', function(){
+        camaradesSelectionnes = camaradesSelectionnes.filter(function(x){ return x.id !== c.id; });
+        renderChips();
+      });
+      chip.appendChild(texte);
+      chip.appendChild(retirer);
+      camaradeChips.appendChild(chip);
+    });
+  }
+
+  function fermerListe(){
+    if (camaradeListe){ camaradeListe.hidden = true; camaradeListe.innerHTML = ''; }
+  }
+
+  if (contexte && authBox && anonBox){
+    authBox.hidden = false;
+    anonBox.style.display = 'none';
+    if (moiSpan) moiSpan.textContent = contexte.moi.nom;
+
+    if (camaradeInput){
+      camaradeInput.addEventListener('input', function(){
+        var q = normaliser(camaradeInput.value);
+        fermerListe();
+        if (!q) return;
+        var dejaPris = camaradesSelectionnes.map(function(c){ return c.id; });
+        var resultats = (contexte.camarades || []).filter(function(c){
+          return dejaPris.indexOf(c.id) === -1 && normaliser(c.nom).indexOf(q) !== -1;
+        }).slice(0, 8);
+        if (!resultats.length) return;
+        resultats.forEach(function(c){
+          var opt = document.createElement('button');
+          opt.type = 'button';
+          opt.textContent = c.nom;
+          opt.addEventListener('click', function(){
+            camaradesSelectionnes.push(c);
+            renderChips();
+            camaradeInput.value = '';
+            fermerListe();
+            camaradeInput.focus();
+          });
+          camaradeListe.appendChild(opt);
+        });
+        camaradeListe.hidden = false;
+      });
+      document.addEventListener('click', function(e){
+        if (e.target !== camaradeInput && camaradeListe && !camaradeListe.contains(e.target)) fermerListe();
+      });
+    }
+  }
+
+  btn.addEventListener('click', function(){
+    msg.textContent = '';
+    msg.className = 'cr-depot-msg';
+
+    var payload = { coursId: COURS_ID, travail: collecterTravail() };
+
+    if (contexte){
+      payload.camaradesIds = camaradesSelectionnes.map(function(c){ return c.id; });
+    } else {
+      var noms = input.value.trim();
+      if (!noms){
+        msg.textContent = '⚠️ Indique ton nom (ou les noms du groupe) avant de déposer.';
+        msg.classList.add('err');
+        return;
+      }
+      payload.noms = noms;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Envoi…';
+
+    fetch('/api/comptes-rendus', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(res){
+      return res.json().then(function(data){ return { ok: res.ok, data: data }; });
+    })
+    .then(function(result){
+      if (result.ok){
+        msg.textContent = '✅ Compte-rendu déposé !';
+        msg.classList.add('ok');
+        if (input) input.value = '';
+        var b = document.querySelector('[data-badge="depot"]');
+        if (b) b.classList.add('done');
+        if (contexte){ camaradesSelectionnes = []; renderChips(); }
+      } else {
+        msg.textContent = '❌ ' + (result.data && result.data.error ? result.data.error : 'Le dépôt a échoué.');
+        msg.classList.add('err');
+      }
+    })
+    .catch(function(){
+      msg.textContent = "❌ Impossible de contacter le serveur — ouvre cette page depuis le site (pas en local) et vérifie ta connexion.";
+      msg.classList.add('err');
+    })
+    .finally(function(){
+      btn.disabled = false;
+      btn.textContent = '📤 Déposer mon compte-rendu';
+    });
+  });
+
+  input.addEventListener('keydown', function(e){ if (e.key === 'Enter') btn.click(); });
+})();
+</script>
+</body>
+</html>
