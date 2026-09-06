@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Download, Megaphone, Paperclip } from "lucide-react";
 import { jouerSonAnnonce } from "@/lib/notification-sound";
 import { formaterTaille } from "@/lib/fichiers";
@@ -13,9 +13,24 @@ export type AnnonceEleve = {
 };
 
 const CLE_STOCKAGE = "nadtech-annonce-vue";
+const INTERVALLE_MS = 8_000;
 
-export function AnnonceBulle({ annonce }: { annonce: AnnonceEleve | null }) {
-  const [secousse, setSecousse] = useState(false);
+/** Secoue tout l'écran (pas juste la bulle) en ajoutant brièvement une
+ * classe d'animation sur <body> — visible même si l'élève est en train de
+ * lire une autre section de la page. */
+function secouerEcran() {
+  const { body } = document;
+  body.classList.remove("animate-shake-screen");
+  // Force un reflow pour pouvoir rejouer l'animation même si la classe
+  // vient d'être retirée (ex. deux annonces rapprochées).
+  void body.offsetWidth;
+  body.classList.add("animate-shake-screen");
+  setTimeout(() => body.classList.remove("animate-shake-screen"), 600);
+}
+
+export function AnnonceBulle({ initial }: { initial: AnnonceEleve | null }) {
+  const [annonce, setAnnonce] = useState(initial);
+  const [pulse, setPulse] = useState(false);
 
   useEffect(() => {
     if (!annonce) return;
@@ -33,8 +48,9 @@ export function AnnonceBulle({ annonce }: { annonce: AnnonceEleve | null }) {
       if (typeof navigator !== "undefined" && navigator.vibrate) {
         navigator.vibrate([180, 90, 180]);
       }
-      setSecousse(true);
-      const timeout = setTimeout(() => setSecousse(false), 550);
+      secouerEcran();
+      setPulse(true);
+      const timeout = setTimeout(() => setPulse(false), 900);
       try {
         localStorage.setItem(CLE_STOCKAGE, annonce.id);
       } catch {
@@ -44,12 +60,40 @@ export function AnnonceBulle({ annonce }: { annonce: AnnonceEleve | null }) {
     }
   }, [annonce]);
 
+  // Interroge régulièrement le serveur pour détecter une nouvelle annonce
+  // (ou sa disparition) sans que l'élève ait besoin de recharger la page.
+  const annonceRef = useRef(annonce);
+  annonceRef.current = annonce;
+
+  useEffect(() => {
+    let annule = false;
+
+    const id = setInterval(async () => {
+      try {
+        const res = await fetch("/api/annonces/active", { cache: "no-store" });
+        if (!res.ok || annule) return;
+        const fraiche: AnnonceEleve | null = await res.json();
+        const actuelle = annonceRef.current;
+        if (fraiche?.id !== actuelle?.id) {
+          setAnnonce(fraiche);
+        }
+      } catch {
+        // Tick raté (réseau, etc.) — sans conséquence, on réessaiera au prochain intervalle.
+      }
+    }, INTERVALLE_MS);
+
+    return () => {
+      annule = true;
+      clearInterval(id);
+    };
+  }, []);
+
   if (!annonce) return null;
 
   return (
     <div
-      className={`animate-fade-in-up relative overflow-hidden rounded-2xl border-2 p-6 shadow-lg ${
-        secousse ? "animate-shake-screen" : ""
+      className={`animate-fade-in-up relative overflow-hidden rounded-2xl border-2 p-6 shadow-lg transition-transform ${
+        pulse ? "scale-[1.015]" : ""
       }`}
       style={{
         borderColor: "rgb(var(--neon-violet))",

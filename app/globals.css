@@ -93,6 +93,10 @@
 
 html {
   scroll-behavior: smooth;
+  /* Empêche une barre de défilement horizontale fugitive pendant
+     l'animation .animate-shake-screen (translateX de quelques px sur
+     <body>, déclenchée par la bulle d'annonce). */
+  overflow-x: hidden;
 }
 
 body {

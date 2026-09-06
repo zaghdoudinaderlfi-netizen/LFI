@@ -86,16 +86,18 @@ export default async function ElevePage() {
         </div>
       </div>
 
-      {annonce && (
-        <AnnonceBulle
-          annonce={{
+      {/* Toujours monté : même sans annonce au chargement, le polling
+          interne détecte une diffusion lancée par le prof en direct. */}
+      <AnnonceBulle
+        initial={
+          annonce && {
             id: annonce.id,
             message: annonce.message,
             fichierNom: annonce.fichierNom,
             fichierTaille: annonce.fichierTaille,
-          }}
-        />
-      )}
+          }
+        }
+      />
 
       {!user?.classe ? (
         <div className="card-hard animate-fade-in-up p-6 text-center">
