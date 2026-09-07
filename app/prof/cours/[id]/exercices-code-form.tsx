@@ -10,11 +10,13 @@ export function ExerciceCodeForm({ coursId }: { coursId: string }) {
   const formRef = useRef<HTMLFormElement>(null);
   const ajoute = message === "Exercice ajouté.";
   const [type, setType] = useState<(typeof TYPES_EXERCICE_CODE)[number]>(TypeExercice.PYTHON);
+  const [modeExamen, setModeExamen] = useState(false);
 
   useEffect(() => {
     if (ajoute) {
       formRef.current?.reset();
       setType(TypeExercice.PYTHON);
+      setModeExamen(false);
     }
   }, [ajoute]);
 
@@ -131,7 +133,55 @@ export function ExerciceCodeForm({ coursId }: { coursId: string }) {
             Date limite (optionnel)
           </label>
           <input id="dateLimite-exercice-code" name="dateLimite" type="date" className="input" />
+          <p className="text-xs text-ink-muted">Passé cette date, le dépôt se ferme automatiquement.</p>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-2 rounded-xl border border-space-border bg-space-surface p-3">
+        <label className="flex items-center gap-2 text-sm font-medium text-ink-primary">
+          <input
+            type="checkbox"
+            name="modeExamen"
+            checked={modeExamen}
+            onChange={(e) => setModeExamen(e.target.checked)}
+            className="h-4 w-4"
+          />
+          Mode examen (chrono + anti-triche)
+        </label>
+        <p className="text-xs text-ink-muted">
+          Pendant le créneau choisi, les élèves ne peuvent pas copier-coller et sont automatiquement bloqués
+          s&apos;ils quittent l&apos;écran (changement d&apos;onglet, minimisation) — seul toi pourras les
+          débloquer.
+        </p>
+
+        {modeExamen && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="examenDebut-exercice-code" className="field-label">
+                Début de l&apos;épreuve
+              </label>
+              <input
+                id="examenDebut-exercice-code"
+                name="examenDebut"
+                type="datetime-local"
+                required={modeExamen}
+                className="input"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="examenFin-exercice-code" className="field-label">
+                Fin de l&apos;épreuve
+              </label>
+              <input
+                id="examenFin-exercice-code"
+                name="examenFin"
+                type="datetime-local"
+                required={modeExamen}
+                className="input"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <button type="submit" disabled={isPending} className="btn-primary self-start">

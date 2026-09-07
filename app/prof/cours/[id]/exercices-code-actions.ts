@@ -5,6 +5,7 @@ import { TypeExercice } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { creerExerciceCode, supprimerExerciceCode, ExerciceCodeError } from "@/lib/exercices-code";
+import { debloquerEleve } from "@/lib/examen";
 
 async function revaliderCours(coursId: string) {
   revalidatePath(`/prof/cours/${coursId}`);
@@ -33,6 +34,9 @@ export async function creerExerciceCodeAction(
   const sortieAttendue = formData.get("sortieAttendue");
   const points = formData.get("points");
   const dateLimite = formData.get("dateLimite");
+  const modeExamen = formData.get("modeExamen") === "on";
+  const examenDebut = formData.get("examenDebut");
+  const examenFin = formData.get("examenFin");
 
   if (
     typeof coursId !== "string" ||
@@ -57,6 +61,9 @@ export async function creerExerciceCodeAction(
       sortieAttendue: typeof sortieAttendue === "string" ? sortieAttendue : undefined,
       points: Number(points),
       dateLimite: typeof dateLimite === "string" && dateLimite ? new Date(dateLimite) : null,
+      modeExamen,
+      examenDebut: typeof examenDebut === "string" && examenDebut ? new Date(examenDebut) : null,
+      examenFin: typeof examenFin === "string" && examenFin ? new Date(examenFin) : null,
     });
   } catch (error) {
     if (error instanceof ExerciceCodeError) return error.message;
@@ -76,6 +83,20 @@ export async function supprimerExerciceCodeAction(formData: FormData): Promise<v
   if (typeof id !== "string" || typeof coursId !== "string") return;
 
   await supprimerExerciceCode(id);
+
+  await revaliderCours(coursId);
+}
+
+export async function debloquerEleveAction(formData: FormData): Promise<void> {
+  const session = await auth();
+  if (session?.user?.role !== "PROF") return;
+
+  const exerciceId = formData.get("exerciceId");
+  const eleveId = formData.get("eleveId");
+  const coursId = formData.get("coursId");
+  if (typeof exerciceId !== "string" || typeof eleveId !== "string" || typeof coursId !== "string") return;
+
+  await debloquerEleve(exerciceId, eleveId, session.user.id);
 
   await revaliderCours(coursId);
 }

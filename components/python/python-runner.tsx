@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 
@@ -53,14 +53,26 @@ export type ResultatSoumissionCode = {
   erreur?: boolean;
 };
 
+function formaterChrono(secondes: number): string {
+  const m = Math.floor(secondes / 60);
+  const s = secondes % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 export function PythonRunner({
   codeInitial,
   onSoumettre,
   soumissionLabel = "Soumettre",
+  antiTriche = false,
+  finChrono,
 }: {
   codeInitial: string;
   onSoumettre?: (code: string, sortie: string, capture: string | null) => Promise<ResultatSoumissionCode>;
   soumissionLabel?: string;
+  /** Mode examen : bloque le copier-coller/clic-droit sur l'éditeur. */
+  antiTriche?: boolean;
+  /** Mode examen : compte à rebours partagé, soumission auto puis lecture seule à 0. */
+  finChrono?: Date;
 }) {
   const [code, setCode] = useState(codeInitial);
   const [sortie, setSortie] = useState("");
@@ -70,6 +82,33 @@ export function PythonRunner({
   const [resultat, setResultat] = useState<ResultatSoumissionCode | null>(null);
   const turtleRef = useRef<HTMLDivElement>(null);
   const turtleId = `turtle-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
+
+  const [tempsRestant, setTempsRestant] = useState<number | null>(
+    finChrono ? Math.max(0, Math.round((finChrono.getTime() - Date.now()) / 1000)) : null
+  );
+  const tempsEcoule = finChrono ? (tempsRestant ?? 0) <= 0 : false;
+  const autoSoumisRef = useRef(false);
+
+  useEffect(() => {
+    if (!finChrono) return;
+
+    const id = setInterval(() => {
+      setTempsRestant(Math.max(0, Math.round((finChrono.getTime() - Date.now()) / 1000)));
+    }, 1000);
+
+    return () => clearInterval(id);
+  }, [finChrono]);
+
+  useEffect(() => {
+    if (!tempsEcoule || autoSoumisRef.current || !onSoumettre) return;
+    autoSoumisRef.current = true;
+    gererSoumettre();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tempsEcoule]);
+
+  function bloquerCopierColler(e: React.ClipboardEvent | React.MouseEvent) {
+    if (antiTriche) e.preventDefault();
+  }
 
   async function executer(): Promise<{ sortie: string; capture: string | null }> {
     setErreur(null);
@@ -146,7 +185,27 @@ export function PythonRunner({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="overflow-hidden rounded-xl border border-space-border">
+      {finChrono && (
+        <p
+          className={`self-start rounded-lg px-3 py-1 text-sm font-bold ${
+            tempsEcoule
+              ? "bg-red-500/10 text-red-400"
+              : (tempsRestant ?? 0) < 60
+                ? "bg-amber-500/10 text-amber-400"
+                : "bg-space-surface2 text-ink-primary"
+          }`}
+        >
+          ⏱ {tempsEcoule ? "Temps écoulé" : formaterChrono(tempsRestant ?? 0)}
+        </p>
+      )}
+
+      <div
+        className="overflow-hidden rounded-xl border border-space-border"
+        onCopy={bloquerCopierColler}
+        onCut={bloquerCopierColler}
+        onPaste={bloquerCopierColler}
+        onContextMenu={bloquerCopierColler}
+      >
         <CodeMirror
           value={code}
           height="220px"
@@ -154,11 +213,12 @@ export function PythonRunner({
           onChange={setCode}
           basicSetup={{ tabSize: 4 }}
           style={{ fontSize: 13 }}
+          editable={!tempsEcoule}
         />
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={gererExecuter} disabled={enCours} className="btn-secondary">
+        <button type="button" onClick={gererExecuter} disabled={enCours || tempsEcoule} className="btn-secondary">
           ▶ {enCours ? "Exécution..." : "Exécuter"}
         </button>
 
@@ -166,7 +226,7 @@ export function PythonRunner({
           <button
             type="button"
             onClick={gererSoumettre}
-            disabled={enCours}
+            disabled={enCours || tempsEcoule}
             className="btn border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
           >
             {enCours ? "..." : soumissionLabel}

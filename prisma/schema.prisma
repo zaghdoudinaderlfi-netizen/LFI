@@ -117,16 +117,22 @@ model User {
   classe   Classe? @relation(fields: [classeId], references: [id])
   classeId String?
 
-  soumissions    Soumission[]
-  groupesMembre  MembreGroupe[]
-  quizCrees      Quiz[]           @relation("AuteurQuiz")
-  tentativesQuiz TentativeQuiz[]
-  notifications  Notification[]
-  tokensReinit   TokenReinitMdp[]
-  entreesSuivi   EntreeSuivi[]
-  comptesRendus         CompteRendu[]       @relation("AuteurCompteRendu")
-  comptesRendusMembre   MembreCompteRendu[]
-  annoncesCreees        Annonce[]
+  // Présence en ligne (élèves) : mise à jour par un battement de coeur
+  // client toutes les ~20s (voir components/eleve/presence-heartbeat.tsx).
+  // Null = jamais connecté depuis l'ajout de cette fonctionnalité.
+  derniereActivite DateTime?
+
+  soumissions         Soumission[]
+  groupesMembre       MembreGroupe[]
+  quizCrees           Quiz[]              @relation("AuteurQuiz")
+  tentativesQuiz      TentativeQuiz[]
+  notifications       Notification[]
+  tokensReinit        TokenReinitMdp[]
+  entreesSuivi        EntreeSuivi[]
+  comptesRendus       CompteRendu[]       @relation("AuteurCompteRendu")
+  comptesRendusMembre MembreCompteRendu[]
+  annoncesCreees      Annonce[]
+  verrousExamen       VerrouExamen[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -399,7 +405,41 @@ model Exercice {
   // DEVOIR_PDF_FORMULAIRE uniquement : mode de remise choisi par le prof.
   modeRemise ModeRemiseFormulaire @default(EN_LIGNE)
 
+  // ── Mode examen (PYTHON/TURTLE uniquement) : chrono partagé pour toute la
+  // classe + anti-triche (copier-coller bloqué, verrouillage si l'élève
+  // quitte l'écran — voir VerrouExamen). Quand modeExamen est faux,
+  // examenDebut/examenFin restent toujours null (voir validerExerciceCodeInput).
+  modeExamen  Boolean   @default(false)
+  examenDebut DateTime?
+  examenFin   DateTime?
+
   soumissions Soumission[]
+  verrous     VerrouExamen[]
+}
+
+// Verrouillage "dur" d'un élève sur un exercice en mode examen, déclenché
+// côté client dès qu'il quitte l'écran (changement d'onglet, minimisation).
+// Un élève ne peut reprendre l'épreuve que si un prof le débloque
+// explicitement (debloqueAt) — jamais automatiquement.
+model VerrouExamen {
+  id         String   @id @default(cuid())
+  exercice   Exercice @relation(fields: [exerciceId], references: [id], onDelete: Cascade)
+  exerciceId String
+  eleve      User     @relation(fields: [eleveId], references: [id], onDelete: Cascade)
+  eleveId    String
+
+  verrouilleAt DateTime @default(now())
+  motif        String?
+
+  // Null tant que le verrou est actif. Renseigné par debloquerEleve() ;
+  // verrouillerEleve() les remet à null si l'élève ressort de nouveau après
+  // un déblocage (un même exercice peut être verrouillé/débloqué plusieurs
+  // fois, on garde une seule ligne par élève grâce à l'unicité ci-dessous).
+  debloqueAt    DateTime?
+  debloqueParId String?
+
+  @@unique([exerciceId, eleveId])
+  @@index([eleveId])
 }
 
 model Soumission {

@@ -15,6 +15,7 @@ import { listerPiecesJointes } from "@/lib/pieces-jointes";
 import { listerDevoirsCours, obtenirChampsFormulaireDevoir, ModeRemiseFormulaire } from "@/lib/devoirs";
 import { listerExercicesCodeCours } from "@/lib/exercices-code";
 import { obtenirSoumissionEleve, listerCamaradesClasse } from "@/lib/soumissions";
+import { obtenirVerrouActif } from "@/lib/examen";
 import { CODE_PYTHON_DEFAUT } from "@/lib/python";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { formaterNomComplet } from "@/lib/utilisateurs";
@@ -101,7 +102,26 @@ export default async function CoursLecturePage({
         }
       }
 
-      return { exercice, soumission, donnees };
+      // Fenêtre de dépôt : mode examen (verrou + créneau partagé) ou simple
+      // date limite. Calculé ici (côté serveur) car c'est la seule source
+      // fiable après un rechargement — voir ExerciceCodeRunner pour le
+      // verrouillage déclenché côté client.
+      const maintenant = new Date();
+      let blocage: "verrouille" | "avant" | "termine" | "delaiDepasse" | null = null;
+      if (exercice.modeExamen) {
+        const verrou = await obtenirVerrouActif(exercice.id, user.id);
+        if (verrou) {
+          blocage = "verrouille";
+        } else if (exercice.examenDebut && maintenant < exercice.examenDebut) {
+          blocage = "avant";
+        } else if (exercice.examenFin && maintenant > exercice.examenFin) {
+          blocage = "termine";
+        }
+      } else if (exercice.dateLimite && maintenant > exercice.dateLimite) {
+        blocage = "delaiDepasse";
+      }
+
+      return { exercice, soumission, donnees, blocage };
     })
   );
 
@@ -317,7 +337,7 @@ export default async function CoursLecturePage({
             </h2>
 
             <ul className="flex flex-col gap-6">
-              {exercicesCodeAvecSoumission.map(({ exercice, soumission, donnees }) => (
+              {exercicesCodeAvecSoumission.map(({ exercice, soumission, donnees, blocage }) => (
                 <li key={exercice.id} className="flex flex-col gap-3 rounded-xl border border-l-4 border-neon-cyan border-space-border bg-space-surface2/40 p-4">
                   <div>
                     <p className="font-semibold text-base text-ink-primary">{exercice.titre}</p>
@@ -330,14 +350,44 @@ export default async function CoursLecturePage({
                           avant le {exercice.dateLimite.toLocaleDateString("fr-FR")}
                         </span>
                       )}
+                      {exercice.modeExamen && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-red-400 ring-1 ring-red-500/20">
+                          🔒 Mode examen — pas de copier-coller, pas de changement d&apos;onglet
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  <ExerciceCodeRunner
-                    exerciceId={exercice.id}
-                    slug={cours.slug}
-                    codeInitial={donnees.code || exercice.codeDepart || CODE_PYTHON_DEFAUT}
-                  />
+                  {blocage === "verrouille" && (
+                    <div className="flex flex-col items-center gap-2 rounded-xl border-2 border-red-500/40 bg-red-500/5 p-6 text-center">
+                      <p className="text-2xl">🔒</p>
+                      <p className="font-bold text-red-400">Tu as quitté l&apos;écran pendant l&apos;épreuve.</p>
+                      <p className="text-sm text-ink-secondary">Ton professeur doit te débloquer pour continuer.</p>
+                    </div>
+                  )}
+
+                  {blocage === "avant" && exercice.examenDebut && (
+                    <p className="rounded-xl border border-space-border bg-space-surface2/60 p-4 text-sm text-ink-secondary">
+                      L&apos;épreuve n&apos;a pas encore commencé — elle débute le{" "}
+                      {exercice.examenDebut.toLocaleString("fr-FR")}.
+                    </p>
+                  )}
+
+                  {(blocage === "termine" || blocage === "delaiDepasse") && (
+                    <p className="rounded-xl border border-space-border bg-space-surface2/60 p-4 text-sm text-ink-secondary">
+                      {blocage === "termine" ? "Temps écoulé — " : ""}Le dépôt est fermé.
+                    </p>
+                  )}
+
+                  {blocage === null && (
+                    <ExerciceCodeRunner
+                      exerciceId={exercice.id}
+                      slug={cours.slug}
+                      codeInitial={donnees.code || exercice.codeDepart || CODE_PYTHON_DEFAUT}
+                      modeExamen={exercice.modeExamen}
+                      examenFin={exercice.examenFin?.toISOString()}
+                    />
+                  )}
 
                   {soumission && (
                     <div className="flex flex-col gap-1 text-sm">

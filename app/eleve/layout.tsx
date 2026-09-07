@@ -4,6 +4,7 @@ import { compterNotificationsNonLues, compterNotificationsNonLuesParType } from 
 import { obtenirProgressionEleve } from "@/lib/suivi-oral";
 import { AppShell } from "@/components/nav/app-shell";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
+import { PresenceHeartbeat } from "@/components/eleve/presence-heartbeat";
 
 export default async function EleveLayout({
   children,
@@ -43,6 +44,7 @@ export default async function EleveLayout({
         {children}
       </AppShell>
       <PWAInstallPrompt />
+      <PresenceHeartbeat />
     </>
   );
 }

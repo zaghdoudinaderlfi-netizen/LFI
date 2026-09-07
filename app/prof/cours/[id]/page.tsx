@@ -16,6 +16,7 @@ import {
   ModeRemiseFormulaire,
 } from "@/lib/devoirs";
 import { listerExercicesCodeCours, TYPE_EXERCICE_CODE_LABELS } from "@/lib/exercices-code";
+import { listerVerrousActifs } from "@/lib/examen";
 import { listerBlocsCours } from "@/lib/blocs";
 import { listerQuizProf } from "@/lib/quiz";
 import { BlocListeProf } from "@/components/blocs/bloc-liste-prof";
@@ -30,7 +31,7 @@ import { DevoirModeForm } from "./devoir-mode-form";
 import { DevoirSujetForm } from "./devoir-sujet-form";
 import { supprimerDevoirAction, supprimerSujetDevoirAction } from "./devoirs-actions";
 import { ExerciceCodeForm } from "./exercices-code-form";
-import { supprimerExerciceCodeAction } from "./exercices-code-actions";
+import { supprimerExerciceCodeAction, debloquerEleveAction } from "./exercices-code-actions";
 import { PageInteractiveForm } from "./page-interactive-form";
 import { ImageCouvertureForm } from "./image-couverture-form";
 import { ContenuSimpleForm } from "./contenu-simple-form";
@@ -78,6 +79,13 @@ export default async function ModifierCoursPage({
   const blocs = await listerBlocsCours(id);
   const devoirs = await listerDevoirsCours(id);
   const exercicesCode = await listerExercicesCodeCours(id);
+  const verrousParExercice = new Map(
+    await Promise.all(
+      exercicesCode
+        .filter((exercice) => exercice.modeExamen)
+        .map(async (exercice) => [exercice.id, await listerVerrousActifs(exercice.id)] as const)
+    )
+  );
   const quizzesDisponibles =
     cours.typeSimple === "QCM"
       ? (await listerQuizProf()).map((q) => ({ id: q.id, titre: q.titre, niveau: q.niveau, matiere: q.matiere }))
@@ -401,33 +409,73 @@ export default async function ModifierCoursPage({
 
           {exercicesCode.length > 0 ? (
             <ul className="flex flex-col gap-3">
-              {exercicesCode.map((exercice) => (
-                <li
-                  key={exercice.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-space-border bg-space-surface2/60 p-3"
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="truncate text-sm font-medium text-ink-primary">{exercice.titre}</p>
-                      <span className="badge bg-space-surface2 px-2 text-ink-secondary ring-1 ring-space-border">
-                        {TYPE_EXERCICE_CODE_LABELS[exercice.type as keyof typeof TYPE_EXERCICE_CODE_LABELS]}
-                      </span>
+              {exercicesCode.map((exercice) => {
+                const verrousActifs = verrousParExercice.get(exercice.id) ?? [];
+                return (
+                  <li
+                    key={exercice.id}
+                    className="flex flex-col gap-2 rounded-xl border border-space-border bg-space-surface2/60 p-3"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate text-sm font-medium text-ink-primary">{exercice.titre}</p>
+                          <span className="badge bg-space-surface2 px-2 text-ink-secondary ring-1 ring-space-border">
+                            {TYPE_EXERCICE_CODE_LABELS[exercice.type as keyof typeof TYPE_EXERCICE_CODE_LABELS]}
+                          </span>
+                          {exercice.modeExamen && (
+                            <span className="badge bg-amber-500/10 px-2 text-amber-400 ring-1 ring-amber-500/30">
+                              Mode examen
+                            </span>
+                          )}
+                        </div>
+                        <p className="truncate text-xs text-ink-muted">
+                          {exercice.points} pts
+                          {exercice.dateLimite &&
+                            ` · à rendre avant le ${exercice.dateLimite.toLocaleDateString("fr-FR")}`}
+                          {exercice.modeExamen && exercice.examenDebut && exercice.examenFin &&
+                            ` · du ${exercice.examenDebut.toLocaleString("fr-FR")} au ${exercice.examenFin.toLocaleString("fr-FR")}`}
+                        </p>
+                      </div>
+                      <form action={supprimerExerciceCodeAction}>
+                        <input type="hidden" name="id" value={exercice.id} />
+                        <input type="hidden" name="coursId" value={cours.id} />
+                        <button type="submit" className="text-sm font-medium text-red-400 hover:underline">
+                          Supprimer
+                        </button>
+                      </form>
                     </div>
-                    <p className="truncate text-xs text-ink-muted">
-                      {exercice.points} pts
-                      {exercice.dateLimite &&
-                        ` · à rendre avant le ${exercice.dateLimite.toLocaleDateString("fr-FR")}`}
-                    </p>
-                  </div>
-                  <form action={supprimerExerciceCodeAction}>
-                    <input type="hidden" name="id" value={exercice.id} />
-                    <input type="hidden" name="coursId" value={cours.id} />
-                    <button type="submit" className="text-sm font-medium text-red-400 hover:underline">
-                      Supprimer
-                    </button>
-                  </form>
-                </li>
-              ))}
+
+                    {verrousActifs.length > 0 && (
+                      <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-2">
+                        <p className="mb-1 text-xs font-bold text-red-400">
+                          🔒 {verrousActifs.length} élève{verrousActifs.length > 1 ? "s" : ""} bloqué
+                          {verrousActifs.length > 1 ? "s" : ""}
+                        </p>
+                        <ul className="flex flex-col gap-1">
+                          {verrousActifs.map((verrou) => (
+                            <li key={verrou.id} className="flex items-center justify-between gap-2 text-xs">
+                              <span className="text-ink-secondary">
+                                {verrou.eleve.prenom ? `${verrou.eleve.prenom} ${verrou.eleve.nom}` : verrou.eleve.nom}
+                                {" · sorti à "}
+                                {verrou.verrouilleAt.toLocaleTimeString("fr-FR")}
+                              </span>
+                              <form action={debloquerEleveAction}>
+                                <input type="hidden" name="exerciceId" value={exercice.id} />
+                                <input type="hidden" name="eleveId" value={verrou.eleveId} />
+                                <input type="hidden" name="coursId" value={cours.id} />
+                                <button type="submit" className="font-medium text-neon-cyan hover:underline">
+                                  Débloquer
+                                </button>
+                              </form>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className="text-sm text-ink-muted">Aucun exercice de code pour ce cours.</p>

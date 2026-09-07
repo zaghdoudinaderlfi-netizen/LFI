@@ -13,9 +13,21 @@ type ExerciceCodeInput = {
   sortieAttendue?: string;
   points: number;
   dateLimite?: Date | null;
+  modeExamen?: boolean;
+  examenDebut?: Date | null;
+  examenFin?: Date | null;
 };
 
-function validerExerciceCodeInput({ titre, consigne, type, points, sortieAttendue }: ExerciceCodeInput) {
+function validerExerciceCodeInput({
+  titre,
+  consigne,
+  type,
+  points,
+  sortieAttendue,
+  modeExamen,
+  examenDebut,
+  examenFin,
+}: ExerciceCodeInput) {
   if (!titre.trim()) {
     throw new ExerciceCodeError("Le titre est obligatoire.");
   }
@@ -37,6 +49,15 @@ function validerExerciceCodeInput({ titre, consigne, type, points, sortieAttendu
       "La sortie attendue est obligatoire pour un exercice Python (correction automatique)."
     );
   }
+
+  if (modeExamen) {
+    if (!examenDebut || !examenFin) {
+      throw new ExerciceCodeError("Le mode examen exige une date de début et une date de fin.");
+    }
+    if (examenFin <= examenDebut) {
+      throw new ExerciceCodeError("La fin de l'épreuve doit être après son début.");
+    }
+  }
 }
 
 export async function creerExerciceCode(coursId: string, data: ExerciceCodeInput) {
@@ -57,6 +78,9 @@ export async function creerExerciceCode(coursId: string, data: ExerciceCodeInput
       dateLimite: data.dateLimite ?? null,
       codeDepart: data.codeDepart?.trim() || null,
       sortieAttendue: data.type === TypeExercice.PYTHON ? data.sortieAttendue!.trim() : null,
+      modeExamen: data.modeExamen ?? false,
+      examenDebut: data.modeExamen ? data.examenDebut ?? null : null,
+      examenFin: data.modeExamen ? data.examenFin ?? null : null,
     },
   });
 
