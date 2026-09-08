@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { LegalLinks } from "@/components/legal-links";
 import { validerToken } from "../../actions";
 import { ReinitialiserMdpForm } from "./reinitialiser-mdp-form";
 
@@ -45,6 +46,8 @@ export default async function ReinitialiserMdpPage({
           </Link>
         </p>
       </div>
+
+      <LegalLinks className="mt-6 justify-center text-xs text-ink-muted" />
     </main>
   );
 }

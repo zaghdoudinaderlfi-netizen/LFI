@@ -8,6 +8,7 @@ import { obtenirCoursPublicParId, MATIERE_LABELS, urlImageCouverture } from "@/l
 import { listerBlocsCours } from "@/lib/blocs";
 import { listerPiecesJointes } from "@/lib/pieces-jointes";
 import { NIVEAU_LABELS } from "@/lib/classes";
+import { LegalLinks } from "@/components/legal-links";
 
 export default async function CoursDecouvertePage({
   params,
@@ -131,6 +132,8 @@ export default async function CoursDecouvertePage({
           Se connecter
         </Link>
       </div>
+
+      <LegalLinks className="justify-center text-xs text-ink-muted" />
     </div>
   );
 }

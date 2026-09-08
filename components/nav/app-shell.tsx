@@ -28,6 +28,7 @@ import { NotificationSon } from "@/components/nav/notification-son";
 import { PageTransition } from "@/components/ui/page-transition";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { InstallAppButton } from "@/components/install-app-button";
+import { LegalLinks } from "@/components/legal-links";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 import type { PalierBouclier } from "@/lib/suivi-oral-constants";
 
@@ -254,6 +255,9 @@ export function AppShell({
         <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
           <NavLinks />
         </div>
+        <div className="border-t-2 border-space-border px-4 py-3">
+          <LegalLinks className="text-[11px] text-ink-muted" />
+        </div>
       </aside>
 
       <div className="flex min-h-screen flex-1 flex-col">
@@ -339,6 +343,7 @@ export function AppShell({
                     Se déconnecter
                   </button>
                 </form>
+                <LegalLinks className="mt-3 text-[11px] text-ink-muted" />
               </div>
             </div>
           </div>

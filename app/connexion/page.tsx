@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { LegalLinks } from "@/components/legal-links";
 import { LoginForm } from "./login-form";
 
 export default async function ConnexionPage() {
@@ -26,46 +27,50 @@ export default async function ConnexionPage() {
         }}
       />
 
-      <div className="arcade-screen w-full max-w-sm animate-fade-in-up">
-        {/* Chrome fenêtre */}
-        <div className="arcade-topbar">
-          <div className="flex gap-[6px]">
-            <span style={{ width: 13, height: 13, borderRadius: "50%", background: "rgb(var(--arcade-nsi))", display: "block" }} />
-            <span style={{ width: 13, height: 13, borderRadius: "50%", background: "rgb(var(--arcade-techno))", display: "block" }} />
-            <span style={{ width: 13, height: 13, borderRadius: "50%", background: "rgb(var(--arcade-snt))", display: "block" }} />
+      <div className="flex w-full max-w-sm flex-col items-center gap-6">
+        <div className="arcade-screen w-full animate-fade-in-up">
+          {/* Chrome fenêtre */}
+          <div className="arcade-topbar">
+            <div className="flex gap-[6px]">
+              <span style={{ width: 13, height: 13, borderRadius: "50%", background: "rgb(var(--arcade-nsi))", display: "block" }} />
+              <span style={{ width: 13, height: 13, borderRadius: "50%", background: "rgb(var(--arcade-techno))", display: "block" }} />
+              <span style={{ width: 13, height: 13, borderRadius: "50%", background: "rgb(var(--arcade-snt))", display: "block" }} />
+            </div>
+            <span className="arcade-winname">connexion.nadtech</span>
+            <div className="ml-auto">
+              <ThemeToggle />
+            </div>
           </div>
-          <span className="arcade-winname">connexion.nadtech</span>
-          <div className="ml-auto">
-            <ThemeToggle />
-          </div>
-        </div>
 
-        {/* Contenu */}
-        <div className="p-6">
-          <Link href="/" className="mb-6 inline-block">
-            <img src="/nadtech-logo.svg" alt="Nadtech" className="h-10 w-auto" />
-          </Link>
-
-          <h1 className="font-heading mb-1 text-2xl font-bold text-ink-primary">
-            Connexion
-          </h1>
-          <p className="mb-6 text-sm text-ink-secondary">
-            Accède à ton espace Nadtech.
-          </p>
-
-          <LoginForm />
-
-          <p className="mt-6 text-center text-sm text-ink-secondary">
-            Pas encore de compte ?{" "}
-            <Link
-              href="/inscription"
-              className="font-medium hover:underline"
-              style={{ color: "rgb(var(--snt-txt))" }}
-            >
-              Inscription élève
+          {/* Contenu */}
+          <div className="p-6">
+            <Link href="/" className="mb-6 inline-block">
+              <img src="/nadtech-logo.svg" alt="Nadtech" className="h-10 w-auto" />
             </Link>
-          </p>
+
+            <h1 className="font-heading mb-1 text-2xl font-bold text-ink-primary">
+              Connexion
+            </h1>
+            <p className="mb-6 text-sm text-ink-secondary">
+              Accède à ton espace Nadtech.
+            </p>
+
+            <LoginForm />
+
+            <p className="mt-6 text-center text-sm text-ink-secondary">
+              Pas encore de compte ?{" "}
+              <Link
+                href="/inscription"
+                className="font-medium hover:underline"
+                style={{ color: "rgb(var(--snt-txt))" }}
+              >
+                Inscription élève
+              </Link>
+            </p>
+          </div>
         </div>
+
+        <LegalLinks className="justify-center text-xs text-ink-muted" />
       </div>
     </main>
   );
