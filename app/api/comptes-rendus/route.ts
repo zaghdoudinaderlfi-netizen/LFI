@@ -1,14 +1,34 @@
 import { NextResponse } from "next/server";
 import { deposerCompteRendu, CompteRenduError } from "@/lib/comptes-rendus";
+import { adresseIpAppelant, limiterFrequence } from "@/lib/limite-acces";
+
+const LIMITE_DEPOTS = 5;
+const FENETRE_DEPOTS_MS = 60_000;
 
 export async function POST(request: Request) {
+  const ip = await adresseIpAppelant();
+  const autorise = await limiterFrequence(`cr:${ip}`, LIMITE_DEPOTS, FENETRE_DEPOTS_MS);
+  if (!autorise) {
+    return NextResponse.json(
+      { error: "Trop de dépôts en peu de temps, réessaie dans une minute." },
+      { status: 429 }
+    );
+  }
+
   const body = await request.json().catch(() => null);
 
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 });
   }
 
-  const { coursId, noms, camaradesIds, travail } = body as Record<string, unknown>;
+  const { coursId, noms, camaradesIds, travail, site } = body as Record<string, unknown>;
+
+  // Honeypot : un champ invisible pour un humain, que les robots de spam
+  // remplissent automatiquement. On répond succès sans rien enregistrer,
+  // pour ne pas leur signaler que la requête a été détectée.
+  if (typeof site === "string" && site.trim() !== "") {
+    return NextResponse.json({ id: "ignore", dateDepot: new Date() }, { status: 201 });
+  }
 
   if (typeof coursId !== "string") {
     return NextResponse.json({ error: "Champs manquants ou invalides." }, { status: 400 });

@@ -471,6 +471,10 @@ body.light .theme-toggle{ box-shadow:0 8px 24px -14px rgba(20,24,45,.4); }
         <input type="text" id="crNoms" placeholder="Ton nom (ou noms séparés par une virgule)" maxlength="300" autocomplete="off">
       </div>
     </div>
+    <div style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+      <label for="crSite">Site web (laisser vide)</label>
+      <input type="text" id="crSite" name="site" tabindex="-1" autocomplete="off">
+    </div>
     <button id="crBtn" type="button" class="cr-depot-btn">📤 Déposer mon compte-rendu</button>
     <p id="crMsg" class="cr-depot-msg" role="status"></p>
   </section>
@@ -630,7 +634,8 @@ body.light .theme-toggle{ box-shadow:0 8px 24px -14px rgba(20,24,45,.4); }
     msg.textContent = '';
     msg.className = 'cr-depot-msg';
 
-    var payload = { coursId: COURS_ID, travail: collecterTravail() };
+    var hp = document.getElementById('crSite');
+    var payload = { coursId: COURS_ID, travail: collecterTravail(), site: hp ? hp.value : '' };
 
     if (contexte){
       payload.camaradesIds = camaradesSelectionnes.map(function(c){ return c.id; });

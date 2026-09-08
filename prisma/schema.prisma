@@ -703,3 +703,17 @@ model MainLevee {
 
   @@index([actif])
 }
+
+// Compteur générique à fenêtre glissante, partagé par les différents
+// limiteurs de fréquence (dépôt de compte-rendu, tentatives de connexion).
+// Nécessaire car les fonctions serverless (Vercel) n'ont pas de mémoire
+// partagée entre invocations — voir lib/limite-acces.ts. `cle` encode à la
+// fois l'usage et l'identifiant limité, ex: "cr:ip:1.2.3.4" ou
+// "connexion-echec:email:a@b.com".
+model LimiteAcces {
+  cle      String   @id
+  compteur Int      @default(1)
+  expireA  DateTime
+
+  @@index([expireA])
+}
