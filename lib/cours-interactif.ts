@@ -1,5 +1,6 @@
 import { readFile } from "fs/promises";
 import path from "path";
+import * as cheerio from "cheerio";
 
 // Les pages d'exercices vivent hors de public/ : elles passent par la route
 // /cours/[fichier], qui décide côté serveur si les corrections partent dans
@@ -15,56 +16,21 @@ export async function lirePageInteractive(fichier: string): Promise<string> {
   return readFile(path.join(DOSSIER_PAGES, fichier), "utf-8");
 }
 
-/** Ouvertures des blocs qui contiennent les solutions. */
-const BLOCS_CORRECTION = [
-  '<div class="correction-body">', // ch1 / ch2 / ch3
-  '<div class="correction">', // ch4 (le conteneur de ch1-3 porte `data-correction`)
-];
-
 /**
  * Vide les blocs de correction : les solutions ne sont pas envoyées au
  * navigateur tant que le professeur ne les a pas activées. L'habillage
  * (bouton, cadenas) reste en place.
+ *
+ * `.correction-body` (ch1/ch2/ch3) est le contenu de la solution, imbriqué
+ * dans un conteneur `.correction[data-correction]` qui porte le bouton et
+ * le cadenas — seul le contenu doit être vidé. `.correction` sans
+ * `data-correction` (ch4) EST directement la solution : c'est lui qu'on vide.
  */
 export function retirerCorrections(html: string): string {
-  let resultat = html;
-
-  for (const ouverture of BLOCS_CORRECTION) {
-    let index = resultat.indexOf(ouverture);
-    while (index !== -1) {
-      const debutContenu = index + ouverture.length;
-      const finContenu = trouverFermetureDiv(resultat, debutContenu);
-      if (finContenu === -1) break;
-      resultat = resultat.slice(0, debutContenu) + resultat.slice(finContenu);
-      index = resultat.indexOf(ouverture, debutContenu);
-    }
-  }
-
-  return resultat;
-}
-
-/** Position du `</div>` fermant le div déjà ouvert avant `depuis`. */
-function trouverFermetureDiv(html: string, depuis: number): number {
-  let profondeur = 1;
-  let position = depuis;
-
-  while (position < html.length) {
-    const ouvrant = html.indexOf("<div", position);
-    const fermant = html.indexOf("</div>", position);
-
-    if (fermant === -1) return -1;
-
-    if (ouvrant !== -1 && ouvrant < fermant) {
-      profondeur++;
-      position = ouvrant + 4;
-    } else {
-      profondeur--;
-      if (profondeur === 0) return fermant;
-      position = fermant + 6;
-    }
-  }
-
-  return -1;
+  const $ = cheerio.load(html);
+  $(".correction-body").empty();
+  $(".correction:not([data-correction])").empty();
+  return $.html();
 }
 
 /** Signale à la page que les corrections sont autorisées. */
