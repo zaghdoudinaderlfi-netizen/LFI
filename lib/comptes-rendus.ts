@@ -1,22 +1,21 @@
 import { Matiere } from "@prisma/client";
-import { auth } from "@/auth";
 import { prisma } from "./prisma";
 import { notifierProfs, notifierEleve } from "./notifications";
 import { formaterNomComplet } from "./utilisateurs";
 
 export class CompteRenduError extends Error {}
 
-const NOMS_LONGUEUR_MAX = 300;
 const TRAVAIL_LONGUEUR_MAX = 200_000;
 export const NOTE_ETOILES_MAX = 5;
 
 export type DeposerCompteRenduInput = {
   coursId: string;
-  // Repli "hors connexion" : texte libre saisi par l'élève. Ignoré si une
-  // session élève avec classe est active (le nom vient alors du compte).
-  noms?: string;
-  // Coéquipiers choisis dans le widget de recherche — uniquement pris en
-  // compte pour un dépôt authentifié, doivent appartenir à la même classe.
+  // Identité vérifiée côté serveur (session), jamais une saisie libre : un
+  // dépôt sans compte permettrait à n'importe qui possédant le lien du
+  // cours de déposer sous un nom usurpé.
+  eleveId: string;
+  // Coéquipiers choisis dans le widget de recherche — doivent appartenir à
+  // la même classe que l'auteur.
   camaradesIds?: string[];
   travail?: string;
 };
@@ -58,13 +57,13 @@ export async function listerCamaradesClasse(eleveId: string) {
 
 /**
  * Enregistre le dépôt d'un compte-rendu par un élève (ou un groupe) depuis
- * la page HTML statique d'un cours interactif. Si une session élève est
- * active, l'auteur et ses coéquipiers viennent du compte (pas d'une saisie
- * libre) ; sinon `noms` reste la seule trace, en texte libre.
+ * la page HTML statique d'un cours interactif. `eleveId` doit être une
+ * session vérifiée par l'appelant (route API) — l'identité et la classe
+ * viennent toujours du compte, jamais d'une saisie libre.
  */
 export async function deposerCompteRendu({
   coursId,
-  noms,
+  eleveId: idAuteur,
   camaradesIds,
   travail,
 }: DeposerCompteRenduInput) {
@@ -80,50 +79,33 @@ export async function deposerCompteRendu({
     throw new CompteRenduError("Cours introuvable.");
   }
 
-  // La classe et l'identité viennent du compte connecté, pas d'une saisie
-  // de l'élève : c'est ce qui permet au prof de filtrer et noter sans
-  // dépendre de l'orthographe ni d'un nom usurpé.
-  const session = await auth();
-  const eleve = session?.user?.id
-    ? await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { id: true, nom: true, prenom: true, classeId: true },
-      })
-    : null;
+  const eleve = await prisma.user.findUnique({
+    where: { id: idAuteur },
+    select: { id: true, nom: true, prenom: true, classeId: true },
+  });
+  if (!eleve?.classeId) {
+    throw new CompteRenduError("Ton compte n'est rattaché à aucune classe.");
+  }
 
+  const eleveId = eleve.id;
+  const classeId = eleve.classeId;
   let nomsFinal: string;
-  let eleveId: string | null = null;
-  let classeId: string | null = null;
   let camaradesValides: string[] = [];
 
-  if (eleve?.classeId) {
-    eleveId = eleve.id;
-    classeId = eleve.classeId;
-
-    if (camaradesIds?.length) {
-      const camarades = await prisma.user.findMany({
-        where: {
-          id: { in: [...new Set(camaradesIds)] },
-          classeId: eleve.classeId,
-          role: "ELEVE",
-          NOT: { id: eleve.id },
-        },
-        select: { id: true, nom: true, prenom: true },
-      });
-      camaradesValides = camarades.map((c) => c.id);
-      nomsFinal = [eleve, ...camarades].map(formaterNomComplet).join(", ");
-    } else {
-      nomsFinal = formaterNomComplet(eleve);
-    }
+  if (camaradesIds?.length) {
+    const camarades = await prisma.user.findMany({
+      where: {
+        id: { in: [...new Set(camaradesIds)] },
+        classeId: eleve.classeId,
+        role: "ELEVE",
+        NOT: { id: eleve.id },
+      },
+      select: { id: true, nom: true, prenom: true },
+    });
+    camaradesValides = camarades.map((c) => c.id);
+    nomsFinal = [eleve, ...camarades].map(formaterNomComplet).join(", ");
   } else {
-    const nomsNettoyes = (noms ?? "").trim();
-    if (!nomsNettoyes) {
-      throw new CompteRenduError("Le nom (ou les noms) du groupe est obligatoire.");
-    }
-    if (nomsNettoyes.length > NOMS_LONGUEUR_MAX) {
-      throw new CompteRenduError(`Le champ noms est trop long (${NOMS_LONGUEUR_MAX} caractères maximum).`);
-    }
-    nomsFinal = nomsNettoyes;
+    nomsFinal = formaterNomComplet(eleve);
   }
 
   const compteRendu = await prisma.compteRendu.create({

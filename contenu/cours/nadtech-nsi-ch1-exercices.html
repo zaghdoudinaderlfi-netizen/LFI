@@ -862,6 +862,9 @@ document.querySelectorAll('[data-cell]').forEach(function(cell){
         if (e.target !== camaradeInput && camaradeListe && !camaradeListe.contains(e.target)) fermerListe();
       });
     }
+  } else if (anonBox) {
+    anonBox.innerHTML = '<p class="cr-depot-desc">🔒 Connecte-toi pour déposer ton compte-rendu.</p>';
+    btn.disabled = true;
   }
 
   btn.addEventListener('click', function(){
@@ -874,13 +877,9 @@ document.querySelectorAll('[data-cell]').forEach(function(cell){
     if (contexte){
       payload.camaradesIds = camaradesSelectionnes.map(function(c){ return c.id; });
     } else {
-      var noms = input.value.trim();
-      if (!noms){
-        msg.textContent = '⚠️ Indique ton nom (ou les noms du groupe) avant de déposer.';
-        msg.classList.add('err');
-        return;
-      }
-      payload.noms = noms;
+      msg.textContent = '🔒 Connecte-toi pour déposer un compte-rendu.';
+      msg.classList.add('err');
+      return;
     }
 
     btn.disabled = true;
