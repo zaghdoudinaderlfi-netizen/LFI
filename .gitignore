@@ -6,3 +6,5 @@ node_modules
 /generated/prisma
 *.tsbuildinfo
 .tmp-pdf-test/
+.vercel
+.env*
