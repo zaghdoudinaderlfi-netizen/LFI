@@ -336,6 +336,16 @@ export async function obtenirCoursPublieParSlug(slug: string, niveau: Niveau) {
   });
 }
 
+// Variante sans filtre de niveau — réservée à la « vue élève » du prof
+// (app/prof/cours/vue-eleve) : il peut prévisualiser n'importe quel niveau
+// sans y être rattaché, tant que le cours est bien publié et visible côté
+// élève (sinon la prévisualisation ne reflèterait pas ce qu'ils voient).
+export async function obtenirCoursPublieParSlugPourProf(slug: string) {
+  return prisma.cours.findFirst({
+    where: { slug, publie: true, visibleEleves: true },
+  });
+}
+
 export async function listerDerniersCoursPublies(niveau: Niveau, limit = 5) {
   return prisma.cours.findMany({
     where: { niveau, matiere: MATIERE_PAR_NIVEAU[niveau], publie: true, visibleEleves: true },

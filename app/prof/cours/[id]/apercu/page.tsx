@@ -55,7 +55,7 @@ export default async function ApercuCoursPage({
           </div>
           <h1 className="page-title mb-6">{cours.titre}</h1>
           <PiecesJointesListe pieces={piecesJointes} />
-          <CoursContenu cours={cours} />
+          <CoursContenu cours={cours} estProf />
           {blocs.length > 0 && (
             <div className="mt-8">
               <BlocsAffichage blocs={blocs} />

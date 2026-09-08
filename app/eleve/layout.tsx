@@ -2,9 +2,11 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { compterNotificationsNonLues, compterNotificationsNonLuesParType } from "@/lib/notifications";
 import { obtenirProgressionEleve } from "@/lib/suivi-oral";
+import { mainEstLevee } from "@/lib/mains-levees";
 import { AppShell } from "@/components/nav/app-shell";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 import { PresenceHeartbeat } from "@/components/eleve/presence-heartbeat";
+import { LeverMainBouton } from "@/components/eleve/lever-main-bouton";
 
 export default async function EleveLayout({
   children,
@@ -13,7 +15,7 @@ export default async function EleveLayout({
 }) {
   const session = await auth();
 
-  const [user, notificationsNonLues, notificationsParType, progression] = session?.user?.id
+  const [user, notificationsNonLues, notificationsParType, progression, mainLevee] = session?.user?.id
     ? await Promise.all([
         prisma.user.findUnique({
           where: { id: session.user.id },
@@ -29,8 +31,9 @@ export default async function EleveLayout({
         compterNotificationsNonLues(session.user.id),
         compterNotificationsNonLuesParType(session.user.id),
         obtenirProgressionEleve(session.user.id),
+        mainEstLevee(session.user.id),
       ])
-    : [null, 0, undefined, null];
+    : [null, 0, undefined, null, false];
 
   return (
     <>
@@ -45,6 +48,7 @@ export default async function EleveLayout({
       </AppShell>
       <PWAInstallPrompt />
       <PresenceHeartbeat />
+      {session?.user?.id && <LeverMainBouton initial={mainLevee} />}
     </>
   );
 }

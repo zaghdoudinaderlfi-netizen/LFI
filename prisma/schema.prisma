@@ -133,6 +133,7 @@ model User {
   comptesRendusMembre MembreCompteRendu[]
   annoncesCreees      Annonce[]
   verrousExamen       VerrouExamen[]
+  mainLevee           MainLevee?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -163,6 +164,7 @@ model Classe {
   eleves        User[]
   comptesRendus CompteRendu[]
   entreesSuivi  EntreeSuivi[]
+  mainsLevees   MainLevee[]
 
   createdAt DateTime @default(now())
 }
@@ -671,6 +673,30 @@ model Annonce {
 
   auteur   User   @relation(fields: [auteurId], references: [id])
   auteurId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([actif])
+}
+
+// Main levée par un élève pour participer à l'oral — une seule ligne par
+// élève (réutilisée à chaque levée/baisse, pas d'historique). `actif` piloté
+// par l'élève (bouton "Lever la main") ou par le prof (popup, bouton
+// "Baisser" / "Tout baisser"). `updatedAt` sert de date de levée pour trier
+// la liste côté prof (premier levé, premier interrogé) puisqu'on ne garde
+// qu'une ligne par élève.
+model MainLevee {
+  id      String @id @default(cuid())
+  eleve   User   @relation(fields: [eleveId], references: [id], onDelete: Cascade)
+  eleveId String @unique
+
+  // Classe de l'élève au moment de la levée (relevée côté serveur, comme
+  // pour EntreeSuivi/CompteRendu) — affichée dans la liste côté prof.
+  classe   Classe? @relation(fields: [classeId], references: [id], onDelete: SetNull)
+  classeId String?
+
+  actif Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -15,9 +15,14 @@ type CoursContenuProps = {
     quizId: string | null;
     correctionVisible: boolean;
   };
+  // Le prof voit toujours le corrigé, même quand `correctionVisible` est
+  // désactivé côté élève — il peut ainsi le projeter sans le publier (voir
+  // app/prof/cours/[id]/apercu et app/prof/cours/vue-eleve).
+  estProf?: boolean;
 };
 
-export function CoursContenu({ cours }: CoursContenuProps) {
+export function CoursContenu({ cours, estProf = false }: CoursContenuProps) {
+  const corrigeAutorise = cours.correctionVisible || estProf;
   // Mode de création simplifié (5 boutons) : contenu stocké dans des champs
   // dédiés (fichierUrl/videoUrl/quizId), indépendants de typeContenu/contenu
   // utilisés par l'éditeur avancé.
@@ -53,7 +58,7 @@ export function CoursContenu({ cours }: CoursContenuProps) {
     // Passe par notre propre route plutôt que par l'URL publique Supabase :
     // celle-ci force Content-Type: text/plain + une CSP sandbox sur les
     // fichiers HTML, ce qui affiche le code source au lieu de la page.
-    const src = `/api/cours/${cours.id}/html${cours.correctionVisible ? "?corrige=1" : ""}`;
+    const src = `/api/cours/${cours.id}/html${corrigeAutorise ? "?corrige=1" : ""}`;
     return (
       <iframe
         src={src}

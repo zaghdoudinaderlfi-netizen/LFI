@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { compterNotificationsNonLues, compterNotificationsNonLuesParType } from "@/lib/notifications";
 import { AppShell } from "@/components/nav/app-shell";
 import { BullePresence } from "@/components/prof/bulle-presence";
+import { MainsLeveesBulle } from "@/components/prof/mains-levees-bulle";
 
 export default async function ProfLayout({
   children,
@@ -33,6 +34,7 @@ export default async function ProfLayout({
         {children}
       </AppShell>
       <BullePresence />
+      <MainsLeveesBulle />
     </>
   );
 }

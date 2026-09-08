@@ -77,6 +77,10 @@ const config: Config = {
           "10%, 30%, 50%, 70%, 90%": { transform: "translateX(-6px) rotate(-0.5deg)" },
           "20%, 40%, 60%, 80%": { transform: "translateX(6px) rotate(0.5deg)" },
         },
+        "wiggle": {
+          "0%, 100%": { transform: "rotate(-8deg)" },
+          "50%": { transform: "rotate(8deg)" },
+        },
       },
       animation: {
         "blink": "blink 1s steps(2) infinite",
@@ -85,6 +89,7 @@ const config: Config = {
         "glow-pulse": "glow-pulse 2.4s ease-in-out infinite",
         "twinkle": "twinkle 4s ease-in-out infinite",
         "shake-screen": "shake-screen 0.5s ease-in-out 1",
+        "wiggle": "wiggle 0.6s ease-in-out infinite",
       },
     },
   },

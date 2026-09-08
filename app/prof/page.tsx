@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { FileText, ListPlus, Megaphone, PlusCircle } from "lucide-react";
+import { Eye, FileText, ListPlus, Megaphone, PlusCircle } from "lucide-react";
 import { Matiere } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -85,6 +85,22 @@ export default async function ProfPage({
           </p>
         </Link>
       </div>
+
+      {/* Vue élève — pour projeter les cours et leur corrigé en classe */}
+      <Link
+        href="/prof/cours/vue-eleve"
+        className="card-hard card-hard-snt flex items-center gap-3 p-6 animate-fade-in-up [animation-delay:75ms]"
+      >
+        <span className="icon-badge-snt">
+          <Eye className="h-5 w-5" />
+        </span>
+        <div>
+          <h2 className="section-title">Voir les cours comme un élève</h2>
+          <p className="text-sm text-ink-secondary">
+            Aperçu à projeter en classe — le corrigé t&apos;est toujours affiché, même quand il reste masqué aux élèves.
+          </p>
+        </div>
+      </Link>
 
       {/* Annonce aux élèves */}
       <Link

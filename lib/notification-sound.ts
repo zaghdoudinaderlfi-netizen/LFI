@@ -62,3 +62,12 @@ export function jouerSonAnnonce() {
   jouerTonalite(987.77, 0.1, 0.12, contexte); // Si5
   jouerTonalite(1318.5, 0.2, 0.32, contexte); // Mi6
 }
+
+/** Un élève lève la main — deux notes courtes et distinctes de l'annonce,
+ * pour que le prof reconnaisse le son sans regarder l'écran. */
+export function jouerSonMainLevee() {
+  const contexte = obtenirContexte();
+  if (!contexte) return;
+  jouerTonalite(659.25, 0, 0.1, contexte); // Mi5
+  jouerTonalite(880, 0.09, 0.2, contexte); // La5
+}
