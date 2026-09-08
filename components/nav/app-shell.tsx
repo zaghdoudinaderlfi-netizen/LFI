@@ -27,6 +27,7 @@ import { BadgeBouclierAvatar } from "@/components/suivi/bouclier";
 import { NotificationSon } from "@/components/nav/notification-son";
 import { PageTransition } from "@/components/ui/page-transition";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { InstallAppButton } from "@/components/install-app-button";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 import type { PalierBouclier } from "@/lib/suivi-oral-constants";
 
@@ -242,7 +243,10 @@ export function AppShell({
       <aside className="hidden lg:flex lg:w-64 lg:flex-col arcade-sidebar-desktop">
         <div className="flex h-16 items-center justify-between border-b-2 border-space-border px-6">
           <Logo />
-          <ThemeToggle />
+          <div className="flex items-center gap-1">
+            <InstallAppButton compact />
+            <ThemeToggle />
+          </div>
         </div>
         <div className="border-b-2 border-space-border px-3 py-2">
           <UserMenu />
@@ -275,6 +279,7 @@ export function AppShell({
                 </span>
               )}
             </Link>
+            <InstallAppButton compact />
             <ThemeToggle />
             <button
               type="button"
@@ -310,6 +315,7 @@ export function AppShell({
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto">
+                <InstallAppButton className="mb-3 w-full" />
                 <NavLinks onNavigate={() => setMenuOuvert(false)} />
               </div>
 

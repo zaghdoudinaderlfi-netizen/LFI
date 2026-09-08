@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { InstallAppButton } from "@/components/install-app-button";
 
 const NAV_LINKS = [
   { href: "#fonctionnalites", label: "Fonctionnalités" },
@@ -30,6 +31,7 @@ export function LandingHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
+          <InstallAppButton compact />
           <ThemeToggle />
           <Link href="/connexion" className="btn-secondary">
             Se connecter
@@ -40,6 +42,7 @@ export function LandingHeader() {
         </div>
 
         <div className="flex items-center gap-1 lg:hidden">
+          <InstallAppButton compact />
           <ThemeToggle />
           <button
             type="button"
@@ -68,6 +71,7 @@ export function LandingHeader() {
             ))}
           </nav>
           <div className="mt-3 flex flex-col gap-2">
+            <InstallAppButton className="w-full" />
             <Link href="/connexion" className="btn-secondary w-full" onClick={() => setOuvert(false)}>
               Se connecter
             </Link>
