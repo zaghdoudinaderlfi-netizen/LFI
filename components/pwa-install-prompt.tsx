@@ -2,46 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { X, Download } from "lucide-react";
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
+import { usePwaInstall } from "@/lib/use-pwa-install";
 
 export function PWAInstallPrompt() {
-  const [promptEvent, setPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
+  const { canInstallNative, isStandalone, promptInstall } = usePwaInstall();
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    // Ne pas afficher si déjà installée (mode standalone)
-    if (window.matchMedia("(display-mode: standalone)").matches) return;
-    // Ne pas afficher si l'utilisateur a déjà fermé le bandeau
-    if (sessionStorage.getItem("pwa-install-dismissed")) return;
-
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setPromptEvent(e as BeforeInstallPromptEvent);
-    };
-
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    if (sessionStorage.getItem("pwa-install-dismissed")) setDismissed(true);
   }, []);
-
-  const handleInstall = async () => {
-    if (!promptEvent) return;
-    await promptEvent.prompt();
-    const { outcome } = await promptEvent.userChoice;
-    if (outcome === "accepted" || outcome === "dismissed") {
-      setPromptEvent(null);
-    }
-  };
 
   const handleDismiss = () => {
     sessionStorage.setItem("pwa-install-dismissed", "1");
     setDismissed(true);
   };
 
-  if (!promptEvent || dismissed) return null;
+  if (isStandalone || !canInstallNative || dismissed) return null;
 
   return (
     <div className="fixed bottom-4 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center gap-3 rounded-xl border border-neon-cyan/30 bg-space-surface px-4 py-3 shadow-glow-cyan">
@@ -52,7 +28,7 @@ export function PWAInstallPrompt() {
         Installer Nadtech sur votre appareil
       </p>
       <button
-        onClick={handleInstall}
+        onClick={promptInstall}
         className="rounded-lg bg-neon-cyan px-3 py-1.5 text-xs font-semibold text-space-bg transition-opacity hover:opacity-80"
       >
         Installer

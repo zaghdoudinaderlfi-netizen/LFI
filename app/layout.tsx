@@ -58,6 +58,29 @@ try {
 } catch (e) {}
 `;
 
+// Capture "beforeinstallprompt" le plus tôt possible. Cet événement ne se
+// déclenche qu'une fois, et le composant React qui affiche le bouton
+// d'installation ne s'hydrate qu'après un aller-retour serveur (session +
+// requêtes Prisma) sur TOUTES les pages du site — pour un visiteur qui
+// revient (service worker déjà en cache), Chrome peut évaluer
+// l'installabilité et déclencher l'événement avant que ce composant existe.
+// Un script bloquant dans <head> le stocke donc sur `window` avant que la
+// moindre ligne de React ne s'exécute ; lib/use-pwa-install.ts le relit.
+const PWA_INSTALL_CAPTURE_SCRIPT = `
+window.__pwaDeferredPrompt = null;
+window.__pwaInstalled = false;
+window.addEventListener("beforeinstallprompt", function (e) {
+  e.preventDefault();
+  window.__pwaDeferredPrompt = e;
+  window.dispatchEvent(new Event("__pwaDeferredPromptReady"));
+});
+window.addEventListener("appinstalled", function () {
+  window.__pwaDeferredPrompt = null;
+  window.__pwaInstalled = true;
+  window.dispatchEvent(new Event("__pwaInstalledEvent"));
+});
+`;
+
 export default function RootLayout({
   children,
 }: {
@@ -75,6 +98,9 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <Script id="theme-init" strategy="beforeInteractive">
           {THEME_INIT_SCRIPT}
+        </Script>
+        <Script id="pwa-install-capture" strategy="beforeInteractive">
+          {PWA_INSTALL_CAPTURE_SCRIPT}
         </Script>
         <AuthSessionProvider>
           <ToastProvider>{children}</ToastProvider>

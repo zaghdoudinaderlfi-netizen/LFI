@@ -7,6 +7,13 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+declare global {
+  interface Window {
+    __pwaDeferredPrompt?: BeforeInstallPromptEvent | null;
+    __pwaInstalled?: boolean;
+  }
+}
+
 /**
  * Détecte iOS/iPadOS. Depuis iOS 13, l'iPad s'annonce comme "MacIntel" dans
  * navigator.platform : on le distingue d'un vrai Mac par le support tactile.
@@ -20,6 +27,12 @@ function detecterIOS(): boolean {
 /**
  * État partagé de l'installabilité PWA, utilisé par le bouton d'installation
  * présent dans les différents en-têtes du site (landing + espaces élève/prof).
+ *
+ * "beforeinstallprompt" ne se déclenche qu'une fois, tôt — potentiellement
+ * avant que ce hook (dans un composant client hydraté après un aller-retour
+ * serveur) ne soit monté. Un script inline dans <head> (voir app/layout.tsx)
+ * le capture donc en amont sur `window` ; ce hook lit cette valeur au
+ * montage (au cas où déjà capturée) puis écoute les mises à jour futures.
  */
 export function usePwaInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -27,23 +40,28 @@ export function usePwaInstall() {
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    setIsStandalone(window.matchMedia("(display-mode: standalone)").matches);
+    setIsStandalone(
+      window.matchMedia("(display-mode: standalone)").matches || window.__pwaInstalled === true
+    );
     setIsIOS(detecterIOS());
 
-    const onBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    if (window.__pwaDeferredPrompt) {
+      setDeferredPrompt(window.__pwaDeferredPrompt);
+    }
+
+    const onReady = () => {
+      if (window.__pwaDeferredPrompt) setDeferredPrompt(window.__pwaDeferredPrompt);
     };
-    const onAppInstalled = () => {
+    const onInstalled = () => {
       setDeferredPrompt(null);
       setIsStandalone(true);
     };
 
-    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-    window.addEventListener("appinstalled", onAppInstalled);
+    window.addEventListener("__pwaDeferredPromptReady", onReady);
+    window.addEventListener("__pwaInstalledEvent", onInstalled);
     return () => {
-      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-      window.removeEventListener("appinstalled", onAppInstalled);
+      window.removeEventListener("__pwaDeferredPromptReady", onReady);
+      window.removeEventListener("__pwaInstalledEvent", onInstalled);
     };
   }, []);
 
@@ -51,6 +69,7 @@ export function usePwaInstall() {
     if (!deferredPrompt) return;
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
+    window.__pwaDeferredPrompt = null;
     if (outcome === "accepted") setIsStandalone(true);
     setDeferredPrompt(null);
   }
