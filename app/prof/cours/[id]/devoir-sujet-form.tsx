@@ -43,13 +43,13 @@ export function DevoirSujetForm({
               : "Ajouter le PDF-formulaire"
             : aDejaSujet
               ? "Remplacer le sujet"
-              : "Ajouter un sujet (PDF ou image)"}
+              : "Ajouter un sujet (PDF, image ou PowerPoint)"}
         </label>
         <input
           id={`sujet-${devoirId}`}
           name="sujet"
           type="file"
-          accept={estFormulaire ? ".pdf" : ".pdf,.jpg,.jpeg,.png,.webp"}
+          accept={estFormulaire ? ".pdf" : ".pdf,.jpg,.jpeg,.png,.webp,.pptx"}
           required
           className="input file:mr-3 file:rounded file:border-0 file:bg-space-surface file:px-3 file:py-1 file:text-sm file:text-ink-primary"
         />

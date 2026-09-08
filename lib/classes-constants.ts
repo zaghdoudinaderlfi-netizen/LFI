@@ -23,6 +23,16 @@ export const NIVEAU_PAR_MATIERE: Record<string, Niveau> = {
   NSI: "PREMIERE",
 };
 
+// Inverse de NIVEAU_PAR_MATIERE : la matière d'un élève se déduit du niveau
+// de sa classe. Sert à borner tout ce qu'un élève peut voir (cours, quiz,
+// devoirs, notifications) à sa propre section, même si un contenu est
+// mal étiqueté côté prof (matiere ne correspondant pas à son niveau).
+export const MATIERE_PAR_NIVEAU: Record<Niveau, Matiere> = {
+  TROISIEME: "TECHNOLOGIE",
+  SECONDE: "SNT",
+  PREMIERE: "NSI",
+};
+
 export const MATIERES_VALIDES = new Set<string>(["TECHNOLOGIE", "SNT", "NSI"]);
 
 export function estMatiereValide(m: string | null | undefined): m is Matiere {

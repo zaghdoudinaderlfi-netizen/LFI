@@ -5,6 +5,7 @@ import { supabaseAdmin, BUCKET_PIECES_JOINTES } from "./supabase";
 import { EXTENSIONS_DOCUMENTS, TAILLE_MAX_OCTETS, extensionDe, nomFichierSur } from "./fichiers";
 import { notifierElevesDuNiveau } from "./notifications";
 import { lireChampsFormulaire, ChampFormulaire, FormulaireError } from "./formulaires";
+import { MATIERE_PAR_NIVEAU } from "./classes-constants";
 
 export class DevoirError extends Error {}
 
@@ -101,11 +102,13 @@ export async function listerDevoirsCours(coursId: string) {
   });
 }
 
+// Un devoir n'est proposé que s'il appartient à un cours de la propre
+// section de l'élève (déduite de son niveau), jamais d'une autre matière.
 export async function listerDevoirsAFaire(eleveId: string, niveau: Niveau) {
   const devoirs = await prisma.exercice.findMany({
     where: {
       type: { in: [...TYPES_DEVOIR] },
-      cours: { niveau, publie: true },
+      cours: { niveau, matiere: MATIERE_PAR_NIVEAU[niveau], publie: true },
     },
     include: {
       cours: { select: { id: true, titre: true, slug: true } },
@@ -159,7 +162,7 @@ export async function definirSujetDevoir(devoirId: string, fichier: File) {
 
   const extension = extensionDe(fichier.name);
   if (!EXTENSIONS_DOCUMENTS.has(extension)) {
-    throw new DevoirError("Type de fichier non autorisé (PDF ou image uniquement).");
+    throw new DevoirError("Type de fichier non autorisé (PDF, image ou présentation PowerPoint uniquement).");
   }
 
   const nomNettoye = nomFichierSur(fichier.name);

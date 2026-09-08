@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNT · Projet de recherche — Réseaux sociaux, identité numérique & intox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a31; --code:#0e1526; --ink:#e9eefb; --muted:#9aa7c2;
+  --cyan:#22d3ee; --violet:#8b5cf6; --pink:#ec4899; --ok:#34d399; --err:#fb7185; --warn:#fbbf24;
+  --line:rgba(255,255,255,.09);
+  --glow:0 0 0 1px rgba(255,255,255,.04), 0 18px 40px -20px rgba(0,0,0,.7);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; background:
+  radial-gradient(1100px 600px at 80% -10%, rgba(139,92,246,.18), transparent 60%),
+  radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.14), transparent 55%), var(--bg);
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65}
+.wrap{max-width:1180px; margin:0 auto; padding:0 20px; display:grid; grid-template-columns:238px 1fr; gap:36px}
+@media(max-width:880px){.wrap{grid-template-columns:1fr; gap:0} .toc{display:none!important}}
+
+header.hero{padding:54px 0 26px; border-bottom:1px solid var(--line); margin-bottom:30px}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; color:var(--cyan);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(34,211,238,.06)}
+.mono-n{font-family:var(--mono); font-weight:700}
+.mono-n span:nth-child(1){color:var(--cyan)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--violet)}
+h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(28px,5vw,44px); line-height:1.08; margin:18px 0 10px}
+h1 .accent{background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.lede{color:var(--muted); max-width:62ch; font-size:18px}
+
+.toc{position:sticky; top:18px; align-self:start; padding-top:30px; max-height:96vh; overflow-y:auto}
+.toc h4{font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 12px}
+.toc a{display:flex; align-items:center; gap:8px; color:var(--muted); text-decoration:none; font-size:13.5px; padding:5px 10px;
+  border-left:2px solid transparent; border-radius:0 8px 8px 0; transition:.15s}
+.toc a:hover{color:var(--ink); background:rgba(255,255,255,.03); border-left-color:var(--violet)}
+.toc .tick{width:15px; height:15px; border-radius:4px; border:1px solid var(--line); flex:none; font-size:10px;
+  display:flex; align-items:center; justify-content:center; color:transparent; transition:.2s}
+.toc a.done .tick{background:var(--ok); border-color:var(--ok); color:#06121f}
+.toc a.done{color:var(--ok)}
+
+section{padding:30px 0; border-bottom:1px solid var(--line)}
+h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:25px; margin:0 0 6px; scroll-margin-top:20px;
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+h2 .num{font-family:var(--mono); font-size:13px; color:var(--violet); border:1px solid var(--line); border-radius:8px;
+  padding:3px 9px; background:rgba(139,92,246,.08); white-space:nowrap}
+h3{font-family:'Space Grotesk',sans-serif; font-size:17px; margin:24px 0 8px; color:#fff}
+p{margin:10px 0} .muted{color:var(--muted)}
+code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; color:#cfe6ff; border:1px solid var(--line)}
+strong{color:#fff} ul{margin:10px 0; padding-left:22px} li{margin:6px 0}
+a.link{color:var(--cyan)}
+
+.note{display:flex; gap:12px; padding:14px 16px; border-radius:12px; background:rgba(34,211,238,.06); border:1px solid rgba(34,211,238,.22); margin:16px 0}
+.note.warn{background:rgba(251,113,133,.07); border-color:rgba(251,113,133,.28)}
+.note.gold{background:rgba(251,191,36,.06); border-color:rgba(251,191,36,.25)}
+.note.ok{background:rgba(52,211,153,.06); border-color:rgba(52,211,153,.25)}
+.note .ico{font-size:18px; line-height:1.4} .note p{margin:0}
+
+.panel{background:var(--bg2); border:1px solid var(--line); border-radius:16px; padding:18px; margin:18px 0; box-shadow:var(--glow)}
+.btn{font-family:'Nunito',sans-serif; font-weight:700; border:1px solid var(--line); background:rgba(255,255,255,.04);
+  color:var(--ink); padding:8px 15px; border-radius:9px; cursor:pointer; transition:.15s; font-size:14px}
+.btn:hover{border-color:var(--violet); background:rgba(139,92,246,.12)}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.btn.on{border-color:var(--cyan); background:rgba(34,211,238,.15); color:var(--cyan)}
+.btn.pri{background:linear-gradient(90deg,var(--cyan),#5ee7ff); color:#06121f; border:0; font-weight:800; padding:11px 22px; font-size:15px}
+.btn.pri:hover{filter:brightness(1.08); transform:translateY(-1px)}
+.hint{color:var(--muted); font-size:14px; margin:10px 2px 0; min-height:20px}
+.paneltitle{font-family:'Space Grotesk',sans-serif; font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin-bottom:8px}
+
+/* Progression */
+#progressBar{position:sticky; top:0; z-index:150; height:4px; background:rgba(255,255,255,.05)}
+#progressFill{height:100%; width:0%; background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink)); transition:width .35s}
+.progbox{display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.progring{font-family:var(--mono); font-size:26px; font-weight:700; color:var(--cyan)}
+
+/* Choix du réseau */
+.netgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:11px; margin:14px 0}
+.netcard{border:1px solid var(--line); background:rgba(255,255,255,.03); border-radius:13px; padding:13px 14px;
+  cursor:pointer; transition:.18s; text-align:left}
+.netcard:hover{border-color:var(--violet); background:rgba(139,92,246,.1); transform:translateY(-2px)}
+.netcard.sel{border-color:var(--cyan); background:rgba(34,211,238,.13); box-shadow:0 0 0 2px rgba(34,211,238,.18)}
+.netcard .nn{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px}
+.netcard .nd{font-size:12.5px; color:var(--muted); margin-top:5px; line-height:1.5}
+.netdot{width:10px; height:10px; border-radius:50%; flex:none}
+
+/* Étapes */
+.step{background:var(--bg2); border:1px solid var(--line); border-radius:16px; margin:16px 0; overflow:hidden; box-shadow:var(--glow)}
+.step-head{display:flex; align-items:center; gap:12px; padding:13px 18px; border-bottom:1px solid var(--line);
+  background:rgba(255,255,255,.018); flex-wrap:wrap}
+.step-num{font-family:var(--mono); font-size:12px; font-weight:700; color:#06121f; padding:4px 11px; border-radius:8px;
+  background:linear-gradient(135deg,var(--violet),var(--pink)); white-space:nowrap}
+.step-title{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; flex:1; min-width:150px}
+.step-pts{font-family:var(--mono); font-size:11.5px; padding:3px 10px; border-radius:999px;
+  background:rgba(52,211,153,.1); color:var(--ok); border:1px solid rgba(52,211,153,.28); white-space:nowrap}
+.step-body{padding:16px 18px}
+
+/* Cases à cocher */
+.qlist{list-style:none; padding:0; margin:0}
+.qlist li{display:flex; gap:11px; align-items:flex-start; padding:9px 11px; border-radius:10px; margin:5px 0;
+  border:1px solid transparent; transition:.15s; cursor:pointer}
+.qlist li:hover{background:rgba(255,255,255,.03); border-color:var(--line)}
+.qlist li.ck{background:rgba(52,211,153,.07); border-color:rgba(52,211,153,.22)}
+.qbox{width:19px; height:19px; border-radius:5px; border:1.5px solid var(--muted); flex:none; margin-top:2px;
+  display:flex; align-items:center; justify-content:center; font-size:12px; color:transparent; transition:.2s}
+.qlist li.ck .qbox{background:var(--ok); border-color:var(--ok); color:#06121f}
+.qlist li.ck .qtxt{color:var(--muted)}
+.qtxt{font-size:14.5px; line-height:1.6}
+.qtip{display:block; font-size:12.5px; color:var(--muted); margin-top:3px; font-style:italic}
+
+/* Sources fiables */
+.srcgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:11px; margin:12px 0}
+.src{border:1px solid var(--line); border-radius:11px; padding:11px 13px; background:rgba(0,0,0,.2)}
+.src .sn{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; color:var(--cyan)}
+.src .sd{font-size:12.5px; color:var(--muted); margin-top:4px; line-height:1.5}
+
+/* Aide */
+.helpgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:14px 0}
+.help{border:1px solid rgba(52,211,153,.3); background:rgba(52,211,153,.07); border-radius:13px; padding:14px}
+.help .hn{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; color:var(--ok)}
+.help .hnum{font-family:var(--mono); font-size:26px; font-weight:700; color:var(--ok); margin:5px 0}
+.help .hd{font-size:13px; color:var(--muted); line-height:1.55}
+
+/* Exercice intox */
+.intox{border:1px solid var(--line); border-radius:14px; padding:15px 17px; margin:13px 0; background:rgba(0,0,0,.22)}
+.intox .post{font-family:var(--mono); font-size:14px; line-height:1.65; color:#cfe6ff; margin-bottom:6px}
+.intox .meta{font-size:12.5px; color:var(--muted); margin-bottom:12px; font-style:italic}
+.ibtns{display:flex; gap:10px; flex-wrap:wrap}
+.ibtn{font-family:'Nunito',sans-serif; font-weight:700; font-size:14px; padding:8px 18px; border-radius:9px;
+  border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--ink); cursor:pointer; transition:.15s}
+.ibtn:hover{border-color:var(--violet)}
+.ibtn.good{border-color:var(--ok); background:rgba(52,211,153,.16); color:var(--ok)}
+.ibtn.bad{border-color:var(--err); background:rgba(251,113,133,.16); color:var(--err)}
+.ibtn.lock{pointer-events:none; opacity:.75}
+.iexp{margin-top:11px; font-size:13.5px; color:var(--muted); display:none; padding:10px 13px; border-radius:9px;
+  background:rgba(255,255,255,.03); border-left:3px solid var(--violet); line-height:1.6}
+.iexp.show{display:block; animation:fi .3s}
+@keyframes fi{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* Barème */
+table.bar{width:100%; border-collapse:collapse; margin:14px 0; font-size:14px}
+table.bar th{background:rgba(139,92,246,.15); color:var(--violet); padding:9px 13px; border:1px solid var(--line);
+  font-family:'Space Grotesk',sans-serif; font-size:12.5px; text-align:left}
+table.bar td{padding:9px 13px; border:1px solid var(--line); color:var(--muted)}
+table.bar td.pt{text-align:center; font-family:var(--mono); font-weight:700; color:var(--cyan); width:74px}
+table.bar tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+table.bar tfoot td{color:var(--ink); font-weight:700; background:rgba(52,211,153,.08)}
+
+/* Formulaire de dépôt */
+.form{display:grid; gap:14px}
+.frow{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px}
+.field label{display:block; font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:5px}
+.field input,.field select,.field textarea{
+  width:100%; font-family:'Nunito',sans-serif; font-size:15px; background:rgba(0,0,0,.3); color:var(--ink);
+  border:1px solid var(--line); border-radius:10px; padding:10px 13px; outline:none; transition:.15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--cyan); background:rgba(0,0,0,.4)}
+.field input.bad{border-color:var(--err)}
+.field input.good{border-color:var(--ok)}
+.field textarea{resize:vertical; min-height:74px; font-family:'Nunito',sans-serif}
+.field .fh{font-size:12px; color:var(--muted); margin-top:5px; min-height:16px}
+.field .fh.err{color:var(--err)} .field .fh.ok{color:var(--ok)}
+.members{display:grid; gap:9px}
+.member{display:flex; gap:9px; align-items:center}
+.member input{flex:1}
+.mdel{width:36px; height:36px; flex:none; border-radius:9px; border:1px solid var(--line); background:rgba(251,113,133,.08);
+  color:var(--err); cursor:pointer; font-size:16px; line-height:1}
+.mdel:hover{background:rgba(251,113,133,.2)}
+.formfoot{display:flex; gap:12px; align-items:center; flex-wrap:wrap; padding-top:6px}
+#depotOut{margin-top:14px; display:none}
+#depotOut.show{display:block; animation:fi .35s}
+.receipt{background:rgba(52,211,153,.07); border:1px solid rgba(52,211,153,.3); border-radius:13px; padding:16px}
+.receipt h4{font-family:'Space Grotesk',sans-serif; margin:0 0 10px; color:var(--ok); font-size:16px}
+.receipt pre{font-family:var(--mono); font-size:12.5px; color:#bfe6c9; background:rgba(0,0,0,.35);
+  border:1px solid var(--line); border-radius:9px; padding:12px 14px; overflow:auto; margin:10px 0; white-space:pre-wrap; line-height:1.6}
+.rcode{font-family:var(--mono); font-size:22px; font-weight:700; color:var(--ok); letter-spacing:2px}
+
+footer{padding:40px 0 70px; color:var(--muted); font-size:14px}
+.tag-list{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+::selection{background:rgba(139,92,246,.4)}
+
+/* COUVERTURE */
+#cover{min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+  background:linear-gradient(155deg,#050817 0%,#0d0b2d 42%,#0b1020 100%); border-bottom:1px solid rgba(255,255,255,.06)}
+.cover-grid{position:absolute; inset:0; pointer-events:none;
+  background-image:linear-gradient(rgba(139,92,246,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.07) 1px,transparent 1px);
+  background-size:44px 44px}
+.cover-glow{position:absolute; width:900px; height:900px; border-radius:50%;
+  background:radial-gradient(circle,rgba(139,92,246,.16) 0%,transparent 65%); top:50%; left:50%; transform:translate(-50%,-50%)}
+.cover-content{position:relative; z-index:2; text-align:center; padding:48px 24px; max-width:760px}
+.cover-kicker{display:inline-block; font-family:'Space Grotesk',sans-serif; font-weight:600; letter-spacing:.18em;
+  text-transform:uppercase; font-size:12px; color:var(--cyan); border:1px solid rgba(34,211,238,.25);
+  padding:7px 16px; border-radius:999px; background:rgba(34,211,238,.06); margin-bottom:26px}
+.cover-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(40px,7.5vw,70px); line-height:1.05; margin:0 0 12px;
+  background:linear-gradient(120deg,#fff 0%,var(--cyan) 32%,var(--violet) 68%,var(--pink) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent}
+.cover-sub{font-family:'Nunito',sans-serif; font-size:clamp(15px,2.4vw,18px); color:rgba(255,255,255,.5); margin:0 0 30px}
+.cover-svg-wrap{margin-bottom:26px; display:flex; justify-content:center}
+.cover-pills{display:flex; gap:9px; justify-content:center; flex-wrap:wrap; margin-bottom:32px}
+.cover-pill{font-family:var(--mono); font-size:12px; padding:6px 14px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.5); background:rgba(255,255,255,.04)}
+.cover-pill.c{border-color:rgba(34,211,238,.4); color:var(--cyan)}
+.cover-pill.w{border-color:rgba(251,191,36,.4); color:var(--warn)}
+.cover-pill.r{border-color:rgba(251,113,133,.4); color:var(--err)}
+.cover-btn{display:inline-flex; align-items:center; gap:10px; text-decoration:none; font-family:'Space Grotesk',sans-serif;
+  font-weight:700; font-size:16px; color:#06121f; padding:14px 32px; border-radius:14px;
+  background:linear-gradient(90deg,var(--cyan),#5ee7ff); transition:.2s}
+.cover-btn:hover{filter:brightness(1.08); transform:translateY(-2px); box-shadow:0 8px 28px rgba(34,211,238,.35)}
+.nodep{opacity:.3; animation:np 3.4s ease-in-out infinite}
+@keyframes np{0%,100%{opacity:.22}50%{opacity:.95}}
+@media(prefers-reduced-motion:reduce){.nodep{animation:none; opacity:.6}}
+
+#themeBtn{position:fixed; top:18px; right:18px; z-index:1001; width:46px; height:46px; border-radius:50%;
+  border:1px solid var(--line); background:var(--bg2); cursor:pointer; font-size:19px; line-height:1;
+  display:flex; align-items:center; justify-content:center; box-shadow:var(--glow); transition:.2s}
+#themeBtn:hover{border-color:var(--cyan); transform:scale(1.1)}
+
+/* MODE JOUR */
+[data-theme="light"]{
+  --bg:#eef1ff; --bg2:#ffffff; --code:#e8ecfc; --ink:#1a1f3c; --muted:#5a6490;
+  --line:rgba(26,31,60,.1); --glow:0 0 0 1px rgba(0,0,0,.05),0 6px 20px -6px rgba(0,0,0,.12);
+}
+[data-theme="light"] body{background:
+  radial-gradient(1100px 600px at 80% -10%,rgba(139,92,246,.09),transparent 60%),
+  radial-gradient(900px 500px at -10% 10%,rgba(34,211,238,.07),transparent 55%),var(--bg)}
+[data-theme="light"] h1,[data-theme="light"] h2,[data-theme="light"] h3,[data-theme="light"] strong{color:#1a1f3c}
+[data-theme="light"] p,[data-theme="light"] li,[data-theme="light"] .lede,[data-theme="light"] .note p{color:#374151}
+[data-theme="light"] .toc a{color:#5a6490}
+[data-theme="light"] .toc a:hover{color:#1a1f3c; background:rgba(0,0,0,.04)}
+[data-theme="light"] .qtxt{color:#1a1f3c}
+[data-theme="light"] .intox .post{color:#1a1f3c}
+[data-theme="light"] .field input,[data-theme="light"] .field select,[data-theme="light"] .field textarea{
+  background:rgba(0,0,0,.04); color:#1a1f3c}
+[data-theme="light"] .receipt pre{background:rgba(0,0,0,.05); color:#166534}
+[data-theme="light"] table.bar td{color:#4b5563}
+[data-theme="light"] #themeBtn{background:#ffffff}
+</style>
+</head>
+<body>
+
+<!-- ══════ COUVERTURE ══════ -->
+<div id="cover">
+  <div class="cover-grid"></div>
+  <div class="cover-glow"></div>
+  <div class="cover-content">
+    <div class="cover-kicker">SNT · Seconde · Projet de recherche</div>
+
+    <div class="cover-svg-wrap">
+      <svg viewBox="0 0 340 150" width="340" height="150" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="rgba(139,92,246,.45)" stroke-width="1.3" fill="none">
+          <line x1="170" y1="75" x2="72" y2="34"/><line x1="170" y1="75" x2="268" y2="34"/>
+          <line x1="170" y1="75" x2="46" y2="104"/><line x1="170" y1="75" x2="294" y2="104"/>
+          <line x1="170" y1="75" x2="118" y2="130"/><line x1="170" y1="75" x2="222" y2="130"/>
+          <line x1="72" y1="34" x2="268" y2="34" stroke-opacity=".4"/>
+          <line x1="46" y1="104" x2="118" y2="130" stroke-opacity=".4"/>
+          <line x1="294" y1="104" x2="222" y2="130" stroke-opacity=".4"/>
+        </g>
+        <circle cx="170" cy="75" r="19" fill="rgba(34,211,238,.18)" stroke="#22d3ee" stroke-width="2"/>
+        <text x="170" y="81" font-family="monospace" font-size="15" fill="#22d3ee" text-anchor="middle" font-weight="700">moi</text>
+        <g>
+          <circle class="nodep" cx="72"  cy="34"  r="11" fill="rgba(139,92,246,.35)" stroke="#8b5cf6" stroke-width="1.6" style="animation-delay:0s"/>
+          <circle class="nodep" cx="268" cy="34"  r="11" fill="rgba(139,92,246,.35)" stroke="#8b5cf6" stroke-width="1.6" style="animation-delay:.45s"/>
+          <circle class="nodep" cx="46"  cy="104" r="11" fill="rgba(236,72,153,.35)" stroke="#ec4899" stroke-width="1.6" style="animation-delay:.9s"/>
+          <circle class="nodep" cx="294" cy="104" r="11" fill="rgba(139,92,246,.35)" stroke="#8b5cf6" stroke-width="1.6" style="animation-delay:1.35s"/>
+          <circle class="nodep" cx="118" cy="130" r="11" fill="rgba(251,113,133,.4)" stroke="#fb7185" stroke-width="1.6" style="animation-delay:1.8s"/>
+          <circle class="nodep" cx="222" cy="130" r="11" fill="rgba(139,92,246,.35)" stroke="#8b5cf6" stroke-width="1.6" style="animation-delay:2.25s"/>
+        </g>
+      </svg>
+    </div>
+
+    <h1 class="cover-title">Réseaux sociaux,<br>identité numérique &amp; intox</h1>
+    <p class="cover-sub">Projet de recherche — SNT Seconde · M. Zaghdoudi · LFI Sousse</p>
+
+    <div class="cover-pills">
+      <span class="cover-pill c">7 étapes</span>
+      <span class="cover-pill">groupes de 2 à 4</span>
+      <span class="cover-pill w">confidentialité</span>
+      <span class="cover-pill r">cyberharcèlement</span>
+      <span class="cover-pill">capsule vidéo</span>
+    </div>
+
+    <a href="#objectif" class="cover-btn">Commencer le projet →</a>
+  </div>
+</div>
+
+<div id="progressBar"><div id="progressFill"></div></div>
+
+<div class="wrap">
+  <nav class="toc">
+    <h4>Étapes</h4>
+    <a href="#objectif" data-nav="objectif"><span class="tick">✓</span>Objectif</a>
+    <a href="#e1" data-nav="e1"><span class="tick">✓</span>1 · Choisir un réseau</a>
+    <a href="#e2" data-nav="e2"><span class="tick">✓</span>2 · Rechercher</a>
+    <a href="#e3" data-nav="e3"><span class="tick">✓</span>3 · Confidentialité</a>
+    <a href="#e4" data-nav="e4"><span class="tick">✓</span>4 · Cyberharcèlement</a>
+    <a href="#e5" data-nav="e5"><span class="tick">✓</span>5 · Intox</a>
+    <a href="#e6" data-nav="e6"><span class="tick">✓</span>6 · Revenus</a>
+    <a href="#e7" data-nav="e7"><span class="tick">✓</span>7 · Capsule vidéo</a>
+    <a href="#bareme" data-nav="bareme"><span class="tick">✓</span>Barème</a>
+    <a href="#depot" data-nav="depot"><span class="tick">✓</span>Déposer mon travail</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <span class="kicker">SNT · Seconde · Projet de recherche</span>
+      <h1>Enquête sur un<br><span class="accent">réseau social</span></h1>
+      <p class="lede">Tu vas explorer le fonctionnement d'un réseau social de ton choix, comprendre ce qu'il fait de tes données, comment il lutte (ou non) contre les fausses informations, et comment il gagne de l'argent. Le projet se termine par une <strong>capsule vidéo de sensibilisation</strong>.</p>
+      <div class="tag-list">
+        <span class="chip">identité numérique</span><span class="chip">RGPD</span>
+        <span class="chip">fact-checking</span><span class="chip">modèle économique</span><span class="chip">anglais</span>
+      </div>
+    </header>
+
+    <!-- OBJECTIF -->
+    <section id="objectif">
+      <h2><span class="num">00</span> Objectif et organisation</h2>
+      <p>Explorer le fonctionnement d'un réseau social, comprendre les enjeux liés à <strong>l'identité numérique</strong>, aux <strong>intox</strong> (fausses informations) et au <strong>cyberharcèlement</strong>.</p>
+
+      <div class="panel">
+        <div class="progbox">
+          <span class="progring" id="progPct">0 %</span>
+          <div style="flex:1; min-width:180px">
+            <div class="paneltitle">Ta progression</div>
+            <div class="hint" id="progTxt" style="margin:0">Coche les questions au fur et à mesure que tu y réponds dans ta présentation.</div>
+          </div>
+          <button class="btn" id="progReset">↺ Tout décocher</button>
+        </div>
+      </div>
+
+      <div class="note"><span class="ico">👥</span><p><strong>Organisation :</strong> travail en groupe de <strong>2 à 4 élèves</strong>. Chaque groupe choisit un réseau social différent — ainsi la classe couvre l'ensemble du paysage. Le rendu se fait en deux parties : un <strong>dossier de recherche</strong> (étapes 1 à 6) et une <strong>capsule vidéo</strong> (étape 7).</p></div>
+
+      <h3>Formats de rendu acceptés</h3>
+      <ul>
+        <li><strong>Présentation dynamique</strong> — PowerPoint, Google Slides, Canva, Prezi (lien de partage)</li>
+        <li><strong>Document</strong> — Word ou PDF</li>
+        <li><strong>Capsule vidéo</strong> — 1 à 3 minutes, avec une partie en anglais</li>
+      </ul>
+      <p class="muted">Le dépôt se fait en bas de cette page, dans la section « Déposer mon travail ».</p>
+    </section>
+
+    <!-- ÉTAPE 1 -->
+    <section id="e1">
+      <h2><span class="num">Étape 1</span> Choisir un réseau social</h2>
+      <p>Choisis un réseau dans la liste ci-dessous, puis <strong>explique brièvement son principe de fonctionnement</strong> : à quoi sert-il, qui l'utilise, qu'est-ce qui le distingue des autres ?</p>
+
+      <div class="panel">
+        <div class="paneltitle">Ton choix — il sera repris dans tout le projet</div>
+        <div class="netgrid" id="netGrid"></div>
+        <p class="hint" id="netHint">Clique sur le réseau que ton groupe va étudier.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">É1</span>
+          <span class="step-title">Ce qu'il faut expliquer</span>
+        </div>
+        <div class="step-body">
+          <ul class="qlist" data-group="e1">
+            <li data-q="e1a"><span class="qbox">✓</span><span class="qtxt">Le principe de fonctionnement du réseau en quelques phrases<span class="qtip">Que publie-t-on ? Comment se connecte-t-on aux autres ? Qu'est-ce qui apparaît dans le fil ?</span></span></li>
+            <li data-q="e1b"><span class="qbox">✓</span><span class="qtxt">Ce qui le distingue des autres réseaux<span class="qtip">Format dominant, durée de vie des contenus, public visé…</span></span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 2 -->
+    <section id="e2">
+      <h2><span class="num">Étape 2</span> Rechercher des informations</h2>
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">É2</span>
+          <span class="step-title">Carte d'identité du réseau <span id="netName2" class="muted"></span></span>
+          <span class="step-pts">6 questions</span>
+        </div>
+        <div class="step-body">
+          <ul class="qlist" data-group="e2">
+            <li data-q="e2a"><span class="qbox">✓</span><span class="qtxt">En quelle année le réseau a-t-il été créé ? Par qui ?</span></li>
+            <li data-q="e2b"><span class="qbox">✓</span><span class="qtxt">Combien d'utilisateurs actifs compte-t-il aujourd'hui ?<span class="qtip">Précise toujours la date et la source du chiffre — un nombre sans date ne vaut rien.</span></span></li>
+            <li data-q="e2c"><span class="qbox">✓</span><span class="qtxt">Ce nombre est-il en hausse, en baisse ou stable ?<span class="qtip">Compare avec le chiffre d'il y a 2 ou 3 ans pour justifier ta réponse.</span></span></li>
+            <li data-q="e2d"><span class="qbox">✓</span><span class="qtxt">Quels sont les principaux pays d'utilisation ?</span></li>
+            <li data-q="e2e"><span class="qbox">✓</span><span class="qtxt">Quelles sont les principales fonctionnalités ? (texte, photo, vidéo, live, stories, messagerie…)</span></li>
+            <li data-q="e2f"><span class="qbox">✓</span><span class="qtxt">Quels symboles ou emoji servent à réagir aux contenus ?</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Sources fiables à privilégier</h3>
+      <div class="srcgrid">
+        <div class="src"><div class="sn">We Are Social / Meltwater</div><div class="sd">Rapport « Digital » annuel : chiffres d'audience réseau par réseau, pays par pays.</div></div>
+        <div class="src"><div class="sn">Statista</div><div class="sd">Statistiques d'usage. Attention : une partie du contenu est payante.</div></div>
+        <div class="src"><div class="sn">Rapports officiels</div><div class="sd">Les entreprises cotées publient leurs chiffres d'utilisateurs — c'est la source primaire.</div></div>
+        <div class="src"><div class="sn">CNIL</div><div class="sd">Pour tout ce qui touche aux données personnelles et aux droits des utilisateurs.</div></div>
+      </div>
+
+      <div class="note gold"><span class="ico">🔎</span><p><strong>Réflexe à prendre :</strong> pour chaque chiffre que tu écris, note <em>d'où il vient</em> et <em>de quand il date</em>. Une bibliographie en fin de présentation fait partie du barème — c'est ce qui distingue une recherche d'un copier-coller.</p></div>
+    </section>
+
+    <!-- ÉTAPE 3 -->
+    <section id="e3">
+      <h2><span class="num">Étape 3</span> Confidentialité et vie privée</h2>
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">É3</span>
+          <span class="step-title">Ce que le réseau fait de tes données</span>
+          <span class="step-pts">5 questions</span>
+        </div>
+        <div class="step-body">
+          <ul class="qlist" data-group="e3">
+            <li data-q="e3a"><span class="qbox">✓</span><span class="qtxt">Quels paramètres de confidentialité existent pour protéger ses données ?<span class="qtip">Compte privé, contrôle des mentions, historique de localisation, personnalisation des publicités…</span></span></li>
+            <li data-q="e3b"><span class="qbox">✓</span><span class="qtxt">Ces paramètres sont-ils faciles à trouver et à activer ?<span class="qtip">Compte le nombre de clics nécessaires depuis l'écran d'accueil, et fais une capture du chemin.</span></span></li>
+            <li data-q="e3c"><span class="qbox">✓</span><span class="qtxt">Est-il possible d'obtenir une copie de ses données personnelles ? Comment ?<span class="qtip">C'est le droit à la portabilité, garanti par le RGPD en Europe.</span></span></li>
+            <li data-q="e3d"><span class="qbox">✓</span><span class="qtxt">Est-il facile de supprimer son compte ?<span class="qtip">Distingue « désactiver » — réversible — et « supprimer » — définitif.</span></span></li>
+            <li data-q="e3e"><span class="qbox">✓</span><span class="qtxt">Quand un compte est supprimé, les données sont-elles vraiment effacées ?<span class="qtip">Cherche le délai de conservation annoncé dans la politique de confidentialité.</span></span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="note"><span class="ico">📄</span><p>La réponse à ces questions se trouve presque toujours dans la <strong>politique de confidentialité</strong> du réseau. C'est long, mais utilise la recherche dans la page (<code class="inl">Ctrl+F</code>) avec des mots-clés comme « suppression », « conservation », « télécharger vos données ».</p></div>
+    </section>
+
+    <!-- ÉTAPE 4 -->
+    <section id="e4">
+      <h2><span class="num">Étape 4</span> Cyberharcèlement et risques</h2>
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">É4</span>
+          <span class="step-title">Comprendre et savoir réagir</span>
+          <span class="step-pts">3 questions</span>
+        </div>
+        <div class="step-body">
+          <ul class="qlist" data-group="e4">
+            <li data-q="e4a"><span class="qbox">✓</span><span class="qtxt">Quelles formes de cyberviolence existent sur ce réseau ?<span class="qtip">Insultes, usurpation d'identité, moqueries répétées, diffusion d'images sans accord, exclusion d'un groupe…</span></span></li>
+            <li data-q="e4b"><span class="qbox">✓</span><span class="qtxt">Quelles sanctions la loi prévoit-elle en cas de cyberharcèlement ?<span class="qtip">Le harcèlement en ligne est un délit puni par le code pénal, avec des circonstances aggravantes quand la victime est mineure.</span></span></li>
+            <li data-q="e4c"><span class="qbox">✓</span><span class="qtxt">Quels numéros, associations ou sites peuvent aider une victime ?</span></li>
+          </ul>
+
+          <h3>Ressources d'aide en France</h3>
+          <div class="helpgrid">
+            <div class="help">
+              <div class="hn">Cyberharcèlement</div>
+              <div class="hnum">3018</div>
+              <div class="hd">Numéro national, gratuit et confidentiel. Ouvert 7j/7. Application et tchat disponibles sur 3018.fr.</div>
+            </div>
+            <div class="help">
+              <div class="hn">e-Enfance</div>
+              <div class="hnum">3018</div>
+              <div class="hd">L'association qui gère le 3018. Elle peut demander le retrait rapide de contenus auprès des plateformes.</div>
+            </div>
+            <div class="help">
+              <div class="hn">Enfance en danger</div>
+              <div class="hnum">119</div>
+              <div class="hd">Numéro d'urgence national pour toute situation d'enfant en danger.</div>
+            </div>
+          </div>
+
+          <div class="note ok"><span class="ico">💬</span><p>Ces numéros ne servent pas qu'à l'exposé. Si toi ou quelqu'un que tu connais vit une situation de ce genre, tu peux les appeler — et en parler à un adulte de confiance : un parent, un professeur, l'infirmière ou le CPE de l'établissement.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 5 -->
+    <section id="e5">
+      <h2><span class="num">Étape 5</span> Intox et désinformation</h2>
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">É5</span>
+          <span class="step-title">Comment le réseau lutte — et comment repérer</span>
+          <span class="step-pts">4 questions</span>
+        </div>
+        <div class="step-body">
+          <ul class="qlist" data-group="e5">
+            <li data-q="e5a"><span class="qbox">✓</span><span class="qtxt">Comment ce réseau lutte-t-il contre la diffusion de fake news ?<span class="qtip">Signalement, étiquettes d'avertissement, réduction de la portée, notes contextuelles rédigées par les utilisateurs…</span></span></li>
+            <li data-q="e5b"><span class="qbox">✓</span><span class="qtxt">Y a-t-il des partenariats avec des journalistes ou des organisations de fact-checking ?</span></li>
+            <li data-q="e5c"><span class="qbox">✓</span><span class="qtxt">Quels indices permettent de reconnaître une intox sur ce réseau ?</span></li>
+            <li data-q="e5d"><span class="qbox">✓</span><span class="qtxt">Trouve un exemple récent d'intox qui a circulé, et explique ses conséquences.<span class="qtip">Les rubriques de vérification des grands médias recensent les cas documentés.</span></span></li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Entraînement : info ou intox ?</h3>
+      <p>Quatre publications fictives. Pour chacune, décide s'il s'agit d'une information fiable ou d'une intox, puis lis l'explication.</p>
+
+      <div class="intox" data-intox data-answer="intox">
+        <p class="post">🚨 PARTAGEZ VITE AVANT SUPPRESSION 🚨<br>Un requin nage dans les rues inondées du centre-ville ! Les autorités cachent la vérité !!!</p>
+        <p class="meta">Compte créé il y a 3 jours · photo floue · aucun lien vers un article</p>
+        <div class="ibtns">
+          <button class="ibtn" data-v="info">Information fiable</button>
+          <button class="ibtn" data-v="intox">Intox</button>
+        </div>
+        <div class="iexp"><strong>Intox.</strong> Tous les signaux d'alerte sont réunis : urgence artificielle (« partagez vite »), majuscules et emoji d'alarme, accusation de dissimulation sans preuve, compte très récent, aucune source. Cette photo de requin est un grand classique : la même image ressort à chaque inondation depuis plus de dix ans. Le réflexe utile est la <strong>recherche d'image inversée</strong> — elle révèle immédiatement où la photo est déjà apparue.</div>
+      </div>
+
+      <div class="intox" data-intox data-answer="info">
+        <p class="post">L'institut national de la statistique publie ce matin les chiffres du chômage pour le trimestre écoulé. Détail par région et méthodologie dans le communiqué complet. 🔗 lien vers le site officiel</p>
+        <p class="meta">Compte institutionnel vérifié · lien vers un document consultable · méthodologie précisée</p>
+        <div class="ibtns">
+          <button class="ibtn" data-v="info">Information fiable</button>
+          <button class="ibtn" data-v="intox">Intox</button>
+        </div>
+        <div class="iexp"><strong>Information fiable.</strong> La source est primaire et identifiable, le lien mène au document original, la méthode de calcul est indiquée, et le ton reste neutre. Un chiffre accompagné de sa méthodologie est vérifiable — c'est précisément ce qui manque aux intox.</div>
+      </div>
+
+      <div class="intox" data-intox data-answer="intox">
+        <p class="post">Ce remède naturel que les médecins ne veulent SURTOUT pas que vous connaissiez... Les laboratoires perdraient des milliards ! 😱 Lien en bio 👇</p>
+        <p class="meta">Aucune source citée · renvoie vers une boutique en ligne</p>
+        <div class="ibtns">
+          <button class="ibtn" data-v="info">Information fiable</button>
+          <button class="ibtn" data-v="intox">Intox</button>
+        </div>
+        <div class="iexp"><strong>Intox.</strong> Le schéma est reconnaissable : un savoir « caché » par un groupe puissant, aucune étude citée, et un lien commercial au bout. Quand une publication cherche à te faire acheter quelque chose <em>et</em> désigne un coupable qui « ne veut pas que tu saches », le doute est de rigueur.</div>
+      </div>
+
+      <div class="intox" data-intox data-answer="info">
+        <p class="post">Correction : notre article publié hier annonçait un chiffre erroné. Après vérification auprès de la mairie, le montant exact est différent. L'article a été mis à jour et la correction signalée en bas de page.</p>
+        <p class="meta">Média identifié · correction datée et expliquée · source de la vérification citée</p>
+        <div class="ibtns">
+          <button class="ibtn" data-v="info">Information fiable</button>
+          <button class="ibtn" data-v="intox">Intox</button>
+        </div>
+        <div class="iexp"><strong>Information fiable.</strong> C'est peut-être le signal le plus fort de tous. Un média qui corrige publiquement son erreur, la date et l'explique montre qu'il a un processus de vérification. Les sources d'intox, elles, ne se corrigent jamais : elles suppriment discrètement, ou ne font rien.</div>
+      </div>
+
+      <div class="note gold"><span class="ico">🧭</span><p>Les quatre réflexes à retenir : <strong>qui</strong> publie ? <strong>quand</strong> ? <strong>quelle source</strong> le dit ? et <strong>que ressens-tu</strong> en lisant ? Une publication conçue pour te mettre en colère ou en panique cherche le partage réflexe — c'est le moment de ralentir, pas d'appuyer sur « partager ».</p></div>
+    </section>
+
+    <!-- ÉTAPE 6 -->
+    <section id="e6">
+      <h2><span class="num">Étape 6</span> Sources de revenus</h2>
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">É6</span>
+          <span class="step-title">Le modèle économique</span>
+          <span class="step-pts">2 questions</span>
+        </div>
+        <div class="step-body">
+          <ul class="qlist" data-group="e6">
+            <li data-q="e6a"><span class="qbox">✓</span><span class="qtxt">Comment ce réseau gagne-t-il de l'argent ?<span class="qtip">Publicité ciblée, abonnements payants, commissions sur les ventes, partenariats avec des créateurs…</span></span></li>
+            <li data-q="e6b"><span class="qbox">✓</span><span class="qtxt">Pourquoi les données personnelles ont-elles une grande valeur économique ?<span class="qtip">Essaie de trouver le revenu annuel du réseau divisé par son nombre d'utilisateurs : cela donne ce que « vaut » un utilisateur.</span></span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="note"><span class="ico">💰</span><p>La formule à garder en tête : quand un service est gratuit, il faut chercher <strong>d'où vient l'argent</strong>. Sur la plupart des réseaux, ce ne sont pas les utilisateurs qui paient — ce sont les annonceurs, qui achètent la possibilité de leur adresser des publicités très précisément ciblées.</p></div>
+    </section>
+
+    <!-- ÉTAPE 7 -->
+    <section id="e7">
+      <h2><span class="num">Étape 7</span> Capsule vidéo sur le cyberharcèlement</h2>
+      <p><strong>Objectif :</strong> sensibiliser vos camarades aux dangers du cyberharcèlement et proposer des conseils pour s'en protéger, <strong>en intégrant une partie en anglais</strong>.</p>
+
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">É7</span>
+          <span class="step-title">Contenu attendu</span>
+          <span class="step-pts">1 à 3 min</span>
+        </div>
+        <div class="step-body">
+          <ul class="qlist" data-group="e7">
+            <li data-q="e7a"><span class="qbox">✓</span><span class="qtxt">Définir le cyberharcèlement, avec des exemples concrets</span></li>
+            <li data-q="e7b"><span class="qbox">✓</span><span class="qtxt">Montrer ses conséquences : émotionnelles, sociales, légales</span></li>
+            <li data-q="e7c"><span class="qbox">✓</span><span class="qtxt">Proposer des solutions et donner les numéros d'aide (3018, e-Enfance)</span></li>
+            <li data-q="e7d"><span class="qbox">✓</span><span class="qtxt">Inclure une partie en anglais : un message ou une recommandation simple<span class="qtip">Possibilité de travailler avec le professeur d'anglais sur cette partie.</span></span></li>
+            <li data-q="e7e"><span class="qbox">✓</span><span class="qtxt">Rédiger un résumé écrit expliquant le message de la vidéo</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Storyboard suggéré — 6 plans</h3>
+      <table class="bar">
+        <tr><th style="width:80px">Durée</th><th>Plan</th><th>Contenu</th></tr>
+        <tr><td class="pt">0:00–0:20</td><td>Accroche</td><td>Une scène courte : un message blessant reçu, un groupe qui exclut quelqu'un. Sans dialogue, ou une seule phrase.</td></tr>
+        <tr><td class="pt">0:20–0:50</td><td>Définition</td><td>Voix off ou texte à l'écran : qu'est-ce que le cyberharcèlement, et ce qui le distingue d'une dispute isolée (répétition, groupe, impossibilité d'échapper).</td></tr>
+        <tr><td class="pt">0:50–1:20</td><td>Conséquences</td><td>Émotionnelles, scolaires, sociales — et le fait que c'est un délit puni par la loi.</td></tr>
+        <tr><td class="pt">1:20–1:50</td><td>Que faire</td><td>Ne pas répondre, conserver les preuves (captures), signaler, bloquer, et surtout en parler à un adulte.</td></tr>
+        <tr><td class="pt">1:50–2:20</td><td>Partie anglais</td><td>Un message court et clair : <em>« You are not alone. Talk to someone you trust. »</em></td></tr>
+        <tr><td class="pt">2:20–2:40</td><td>Ressources</td><td>Les numéros à l'écran, bien lisibles, pendant plusieurs secondes.</td></tr>
+      </table>
+
+      <div class="note warn"><span class="ico">🔒</span><p><strong>Règles à respecter absolument :</strong> ne filmez pas de personnes réelles sans leur accord écrit. Utilisez des scénarios ou témoignages <strong>fictifs</strong>, jamais une situation vécue par un camarade identifiable. Ne montrez aucun compte, pseudo ou message réel — floutez ou reconstituez.</p></div>
+
+      <h3>Outils de montage</h3>
+      <p class="muted">CapCut, iMovie, InShot, Clipchamp — tous gratuits et utilisables sur téléphone. Un micro-cravate à quelques euros améliore davantage une vidéo qu'une meilleure caméra : le son compte plus que l'image.</p>
+    </section>
+
+    <!-- BARÈME -->
+    <section id="bareme">
+      <h2><span class="num">Éval</span> Barème d'évaluation</h2>
+      <p class="muted">Le projet est noté sur deux évaluations distinctes.</p>
+
+      <h3>Dossier de recherche — sur 20</h3>
+      <table class="bar">
+        <thead><tr><th>Critère</th><th style="width:90px">Points</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Étapes 1–2</strong> — Présentation du réseau, chiffres exacts, sources citées et datées</td><td class="pt">5</td></tr>
+          <tr><td><strong>Étape 3</strong> — Confidentialité : paramètres, portabilité, suppression, conservation</td><td class="pt">4</td></tr>
+          <tr><td><strong>Étape 4</strong> — Cyberviolences, cadre légal, ressources d'aide</td><td class="pt">3</td></tr>
+          <tr><td><strong>Étape 5</strong> — Lutte contre les intox, exemple documenté et conséquences</td><td class="pt">3</td></tr>
+          <tr><td><strong>Étape 6</strong> — Modèle économique et valeur des données</td><td class="pt">2</td></tr>
+          <tr><td><strong>Qualité de la présentation</strong> — clarté, illustrations, orthographe, bibliographie</td><td class="pt">3</td></tr>
+        </tbody>
+        <tfoot><tr><td>Total dossier</td><td class="pt">20</td></tr></tfoot>
+      </table>
+
+      <h3>Capsule vidéo — sur 20</h3>
+      <table class="bar">
+        <thead><tr><th>Critère</th><th style="width:90px">Points</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Contenu</strong> — définition juste, conséquences, solutions et numéros d'aide</td><td class="pt">7</td></tr>
+          <tr><td><strong>Partie en anglais</strong> — message clair, correct et compréhensible</td><td class="pt">4</td></tr>
+          <tr><td><strong>Qualité technique</strong> — son audible, image stable, montage soigné, durée respectée</td><td class="pt">4</td></tr>
+          <tr><td><strong>Créativité</strong> — scénario, mise en scène, originalité du traitement</td><td class="pt">3</td></tr>
+          <tr><td><strong>Résumé écrit</strong> et respect des règles de vie privée</td><td class="pt">2</td></tr>
+        </tbody>
+        <tfoot><tr><td>Total capsule</td><td class="pt">20</td></tr></tfoot>
+      </table>
+
+      <div class="note"><span class="ico">📌</span><p>Deux points sont retirés du dossier si les <strong>sources ne sont pas citées</strong> : sur ce projet précisément, savoir d'où vient une information fait partie de ce qui est évalué.</p></div>
+    </section>
+
+    <!-- DÉPÔT -->
+    <section id="depot">
+      <h2><span class="num">Rendu</span> Déposer mon travail</h2>
+      <p>Renseigne les informations ci-dessous, puis dépose le <strong>lien de partage</strong> de ta présentation. Vérifie bien que le lien est <strong>accessible en lecture</strong> avant de l'envoyer.</p>
+
+      <div class="note gold"><span class="ico">🔗</span><p><strong>Avant de déposer :</strong> ouvre ton lien dans une fenêtre de navigation privée. Si la présentation s'affiche, c'est bon. Si on te demande de te connecter, les droits de partage ne sont pas ouverts — corrige-les d'abord (Canva : « Partager » → « Toute personne disposant du lien » ; Google Slides : « Général » → « Tout le monde avec le lien »).</p></div>
+
+      <div class="panel">
+        <div class="form">
+          <div class="field">
+            <label>Membres du groupe (2 à 4 élèves)</label>
+            <div class="members" id="members"></div>
+            <button class="btn" id="addMember" style="margin-top:9px">+ Ajouter un membre</button>
+            <div class="fh" id="fhMembers"></div>
+          </div>
+
+          <div class="frow">
+            <div class="field">
+              <label for="dClasse">Classe</label>
+              <input type="text" id="dClasse" placeholder="ex : 2nde A" autocomplete="off">
+              <div class="fh" id="fhClasse"></div>
+            </div>
+            <div class="field">
+              <label for="dReseau">Réseau social étudié</label>
+              <select id="dReseau">
+                <option value="">— choisir —</option>
+              </select>
+              <div class="fh" id="fhReseau"></div>
+            </div>
+          </div>
+
+          <div class="frow">
+            <div class="field">
+              <label for="dType">Format du dossier</label>
+              <select id="dType">
+                <option value="">— choisir —</option>
+                <option>PowerPoint</option>
+                <option>Google Slides</option>
+                <option>Canva</option>
+                <option>Prezi</option>
+                <option>PDF</option>
+                <option>Word</option>
+              </select>
+              <div class="fh" id="fhType"></div>
+            </div>
+            <div class="field">
+              <label for="dLien">Lien de la présentation</label>
+              <input type="url" id="dLien" placeholder="https://…" autocomplete="off">
+              <div class="fh" id="fhLien"></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="dVideo">Lien de la capsule vidéo <span style="text-transform:none; font-size:11px">(étape 7 — facultatif si déposée séparément)</span></label>
+            <input type="url" id="dVideo" placeholder="https://… (YouTube non répertorié, Drive, etc.)" autocomplete="off">
+            <div class="fh" id="fhVideo"></div>
+          </div>
+
+          <div class="field">
+            <label for="dComm">Message pour le professeur <span style="text-transform:none; font-size:11px">(facultatif)</span></label>
+            <textarea id="dComm" placeholder="Difficultés rencontrées, répartition du travail dans le groupe, précisions…"></textarea>
+          </div>
+
+          <div class="formfoot">
+            <button class="btn pri" id="dSend">Déposer mon travail</button>
+            <span class="hint" id="dHint" style="margin:0">Tous les champs sauf le message sont obligatoires.</span>
+          </div>
+        </div>
+
+        <div id="depotOut">
+          <div class="receipt">
+            <h4>✅ Dépôt enregistré</h4>
+            <p style="margin:0 0 4px" class="muted">Code de dépôt à conserver :</p>
+            <p class="rcode" id="rCode"></p>
+            <p class="muted" style="font-size:13.5px">Récapitulatif — copie-le et envoie-le à ton professeur si le dépôt automatique n'est pas actif :</p>
+            <pre id="rText"></pre>
+            <div class="formfoot">
+              <button class="btn" id="rCopy">📋 Copier le récapitulatif</button>
+              <button class="btn" id="rMail">✉️ Envoyer par email</button>
+              <button class="btn" id="rEdit">✏️ Modifier le dépôt</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="note"><span class="ico">🕒</span><p>Ton dépôt est conservé dans ce navigateur : si tu reviens sur cette page depuis le même appareil, tes informations seront préchargées et tu pourras les modifier.</p></div>
+    </section>
+
+    <footer>
+      <p><strong>Ressources :</strong> 3018 (cyberharcèlement, gratuit et confidentiel) · 119 (enfance en danger) · e-Enfance · CNIL (données personnelles) · rapports We Are Social et Statista pour les chiffres d'audience.</p>
+      <p class="mono-n" style="font-size:18px; margin-top:14px"><span>N</span><span>a</span><span>dtech</span> · SNT · Projet réseaux sociaux</p>
+    </footer>
+  </main>
+</div>
+
+<button id="themeBtn" title="Passer en mode jour">☀️</button>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CONFIGURATION
+   ═══════════════════════════════════════════════════════════
+   Le dépôt part directement dans le tableau de bord du prof
+   (section « Comptes-rendus »), via l'API du site. */
+var CONFIG = {
+  API_URL: "/api/comptes-rendus",
+  COURS_ID: "cmtrshgzq000004jzd1u8ixib",
+  EMAIL_PROF: "",                // ex : "nzaghdoudi@lfisousse.tn" — repli si l'envoi échoue
+  STORAGE_KEY: "snt_rs_projet"
+};
+
+/* ═══ Données des réseaux ═══ */
+var RESEAUX = [
+  {n:"Facebook",  c:"#1877f2", d:"Profils, groupes et pages. Le réseau le plus large en nombre d'utilisateurs, avec un public plutôt âgé."},
+  {n:"Instagram", c:"#e1306c", d:"Photo et vidéo courte. Stories éphémères, Reels, forte présence des marques et créateurs."},
+  {n:"TikTok",    c:"#25f4ee", d:"Vidéo courte verticale. Fil alimenté par un algorithme de recommandation plutôt que par les abonnements."},
+  {n:"X (Twitter)",c:"#8899a6", d:"Messages courts en temps réel. Très utilisé pour l'actualité, la politique et les débats publics."},
+  {n:"LinkedIn",  c:"#0a66c2", d:"Réseau professionnel : CV en ligne, recrutement, publications liées au travail."},
+  {n:"WhatsApp",  c:"#25d366", d:"Messagerie chiffrée de bout en bout. Conversations privées et groupes, peu de contenu public."},
+  {n:"Snapchat",  c:"#fffc00", d:"Messages et photos éphémères, filtres en réalité augmentée, carte de localisation entre amis."},
+  {n:"Pinterest", c:"#e60023", d:"Tableaux d'images thématiques. Sert surtout à l'inspiration et à la découverte de produits."}
+];
+
+/* ═══ État persistant ═══ */
+var STATE = {net:null, checks:{}, depot:null};
+
+function save(){
+  try{ localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(STATE)); }catch(e){}
+}
+function load(){
+  try{
+    var raw=localStorage.getItem(CONFIG.STORAGE_KEY);
+    if(raw){
+      var o=JSON.parse(raw);
+      if(o&&typeof o==='object'){
+        STATE.net=o.net||null;
+        STATE.checks=o.checks||{};
+        STATE.depot=o.depot||null;
+      }
+    }
+  }catch(e){}
+}
+load();
+
+/* ═══ Choix du réseau ═══ */
+(function(){
+  var grid=document.getElementById('netGrid');
+  var hint=document.getElementById('netHint');
+  var sel=document.getElementById('dReseau');
+  var nm2=document.getElementById('netName2');
+  if(!grid) return;
+
+  RESEAUX.forEach(function(r){
+    var o=document.createElement('option');
+    o.value=r.n; o.textContent=r.n;
+    sel.appendChild(o);
+
+    var d=document.createElement('div');
+    d.className='netcard';
+    d.dataset.n=r.n;
+    d.innerHTML='<div class="nn"><span class="netdot" style="background:'+r.c+'"></span>'+r.n+'</div><div class="nd">'+r.d+'</div>';
+    d.addEventListener('click',function(){ pick(r.n); });
+    grid.appendChild(d);
+  });
+
+  function pick(n){
+    STATE.net=n; save();
+    grid.querySelectorAll('.netcard').forEach(function(c){
+      c.classList.toggle('sel', c.dataset.n===n);
+    });
+    sel.value=n;
+    nm2.textContent='— '+n;
+    hint.textContent='Ton groupe étudie '+n+'. Toutes les questions du projet portent sur ce réseau.';
+  }
+  sel.addEventListener('change',function(){ if(sel.value) pick(sel.value); });
+  if(STATE.net) pick(STATE.net);
+})();
+
+/* ═══ Cases à cocher + progression ═══ */
+(function(){
+  var items=document.querySelectorAll('.qlist li[data-q]');
+  var fill=document.getElementById('progressFill');
+  var pct=document.getElementById('progPct');
+  var txt=document.getElementById('progTxt');
+  var rst=document.getElementById('progReset');
+
+  function refresh(){
+    var total=items.length, done=0;
+    items.forEach(function(li){
+      var on=!!STATE.checks[li.dataset.q];
+      li.classList.toggle('ck',on);
+      if(on) done++;
+    });
+    var p=total?Math.round(done/total*100):0;
+    fill.style.width=p+'%';
+    pct.textContent=p+' %';
+    if(p===0) txt.textContent='Coche les questions au fur et à mesure que tu y réponds dans ta présentation.';
+    else if(p<100) txt.textContent=done+' question'+(done>1?'s':'')+' traitée'+(done>1?'s':'')+' sur '+total+'. Continue !';
+    else txt.textContent='Toutes les questions sont traitées. Relis ta présentation, puis dépose-la en bas de page.';
+
+    // ticks du sommaire
+    document.querySelectorAll('.qlist[data-group]').forEach(function(g){
+      var ls=g.querySelectorAll('li[data-q]');
+      var all=true;
+      ls.forEach(function(l){ if(!STATE.checks[l.dataset.q]) all=false; });
+      var nav=document.querySelector('.toc a[data-nav="'+g.dataset.group+'"]');
+      if(nav) nav.classList.toggle('done',all);
+    });
+  }
+  items.forEach(function(li){
+    li.addEventListener('click',function(){
+      STATE.checks[li.dataset.q]=!STATE.checks[li.dataset.q];
+      save(); refresh();
+    });
+  });
+  rst.addEventListener('click',function(){
+    STATE.checks={}; save(); refresh();
+  });
+  refresh();
+})();
+
+/* ═══ Exercice info / intox ═══ */
+document.querySelectorAll('[data-intox]').forEach(function(box){
+  var ans=box.dataset.answer;
+  var exp=box.querySelector('.iexp');
+  box.querySelectorAll('.ibtn').forEach(function(b){
+    b.addEventListener('click',function(){
+      box.querySelectorAll('.ibtn').forEach(function(x){ x.classList.add('lock'); });
+      if(b.dataset.v===ans) b.classList.add('good');
+      else{
+        b.classList.add('bad');
+        box.querySelector('.ibtn[data-v="'+ans+'"]').classList.add('good');
+      }
+      exp.classList.add('show');
+    });
+  });
+});
+
+/* ═══ Formulaire de dépôt ═══ */
+(function(){
+  var membersBox=document.getElementById('members');
+  var addBtn=document.getElementById('addMember');
+  var send=document.getElementById('dSend');
+  var out=document.getElementById('depotOut');
+  var hint=document.getElementById('dHint');
+  if(!membersBox) return;
+
+  var F={
+    classe:document.getElementById('dClasse'),
+    reseau:document.getElementById('dReseau'),
+    type:document.getElementById('dType'),
+    lien:document.getElementById('dLien'),
+    video:document.getElementById('dVideo'),
+    comm:document.getElementById('dComm')
+  };
+
+  function addMember(val){
+    var rows=membersBox.querySelectorAll('.member');
+    if(rows.length>=4) return;
+    var d=document.createElement('div');
+    d.className='member';
+    var i=document.createElement('input');
+    i.type='text'; i.placeholder='Prénom NOM';
+    i.autocomplete='off';
+    if(val) i.value=val;
+    var b=document.createElement('button');
+    b.className='mdel'; b.type='button'; b.textContent='×';
+    b.title='Retirer';
+    b.addEventListener('click',function(){
+      if(membersBox.querySelectorAll('.member').length>2) d.remove();
+      updAdd();
+    });
+    d.appendChild(i); d.appendChild(b);
+    membersBox.appendChild(d);
+    updAdd();
+  }
+  function updAdd(){
+    addBtn.disabled = membersBox.querySelectorAll('.member').length>=4;
+  }
+  function getMembers(){
+    var out=[];
+    membersBox.querySelectorAll('.member input').forEach(function(i){
+      var v=i.value.trim();
+      if(v) out.push(v);
+    });
+    return out;
+  }
+  addBtn.addEventListener('click',function(){ addMember(''); });
+
+  function validUrl(u){
+    if(!u) return false;
+    try{
+      var x=new URL(u);
+      return x.protocol==='http:'||x.protocol==='https:';
+    }catch(e){ return false; }
+  }
+  function setFh(id,msg,cls){
+    var e=document.getElementById(id);
+    if(!e) return;
+    e.textContent=msg||'';
+    e.className='fh'+(cls?' '+cls:'');
+  }
+
+  F.lien.addEventListener('input',function(){
+    if(!F.lien.value.trim()){ setFh('fhLien',''); F.lien.className=''; return; }
+    if(validUrl(F.lien.value.trim())){ setFh('fhLien','Lien valide ✓','ok'); F.lien.className='good'; }
+    else { setFh('fhLien','Le lien doit commencer par https://','err'); F.lien.className='bad'; }
+  });
+  F.video.addEventListener('input',function(){
+    if(!F.video.value.trim()){ setFh('fhVideo',''); F.video.className=''; return; }
+    if(validUrl(F.video.value.trim())){ setFh('fhVideo','Lien valide ✓','ok'); F.video.className='good'; }
+    else { setFh('fhVideo','Le lien doit commencer par https://','err'); F.video.className='bad'; }
+  });
+
+  function makeCode(members, classe){
+    var base=(classe+members.join('')).toUpperCase().replace(/[^A-Z0-9]/g,'');
+    var h=0;
+    for(var i=0;i<base.length;i++){ h=(h*31+base.charCodeAt(i))>>>0; }
+    var d=new Date();
+    var ymd=String(d.getFullYear()).slice(2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+    return 'RS-'+ymd+'-'+h.toString(36).toUpperCase().slice(0,5);
+  }
+
+  function recap(p){
+    var L=[];
+    L.push('PROJET SNT — RESEAUX SOCIAUX, IDENTITE NUMERIQUE & INTOX');
+    L.push('Code de depot : '+p.code);
+    L.push('Depose le     : '+p.date);
+    L.push('');
+    L.push('Groupe        : '+p.membres.join(', '));
+    L.push('Classe        : '+p.classe);
+    L.push('Reseau etudie : '+p.reseau);
+    L.push('Format        : '+p.type);
+    L.push('Presentation  : '+p.lien);
+    if(p.video) L.push('Capsule video : '+p.video);
+    if(p.comm){ L.push(''); L.push('Message :'); L.push(p.comm); }
+    return L.join('\n');
+  }
+
+  function show(p){
+    document.getElementById('rCode').textContent=p.code;
+    document.getElementById('rText').textContent=recap(p);
+    out.classList.add('show');
+    send.textContent='Dépôt enregistré ✓';
+    send.disabled=true;
+  }
+
+  send.addEventListener('click',function(){
+    var members=getMembers();
+    var errs=[];
+    setFh('fhMembers',''); setFh('fhClasse',''); setFh('fhReseau',''); setFh('fhType','');
+
+    if(members.length<2){ setFh('fhMembers','Indique au moins 2 membres.','err'); errs.push('membres'); }
+    if(!F.classe.value.trim()){ setFh('fhClasse','Champ obligatoire.','err'); errs.push('classe'); }
+    if(!F.reseau.value){ setFh('fhReseau','Choisis le réseau étudié.','err'); errs.push('reseau'); }
+    if(!F.type.value){ setFh('fhType','Choisis un format.','err'); errs.push('type'); }
+    if(!validUrl(F.lien.value.trim())){ setFh('fhLien','Lien obligatoire et valide (https://…).','err'); F.lien.className='bad'; errs.push('lien'); }
+    if(F.video.value.trim() && !validUrl(F.video.value.trim())){ setFh('fhVideo','Lien vidéo invalide.','err'); errs.push('video'); }
+
+    if(errs.length){
+      hint.textContent='Il manque '+errs.length+' information'+(errs.length>1?'s':'')+' — voir les champs en rouge.';
+      return;
+    }
+
+    var p={
+      coursId: CONFIG.COURS_ID,
+      code: makeCode(members, F.classe.value.trim()),
+      date: new Date().toLocaleString('fr-FR'),
+      membres: members,
+      classe: F.classe.value.trim(),
+      reseau: F.reseau.value,
+      type: F.type.value,
+      lien: F.lien.value.trim(),
+      video: F.video.value.trim(),
+      comm: F.comm.value.trim()
+    };
+    STATE.depot=p; save();
+    show(p);
+
+    if(CONFIG.API_URL){
+      hint.textContent='Envoi au professeur en cours…';
+      var travail=[
+        {exercice:'Groupe', code:p.membres.join(', ')},
+        {exercice:'Classe', code:p.classe},
+        {exercice:'Réseau social étudié', code:p.reseau},
+        {exercice:'Format du dossier', code:p.type},
+        {exercice:'Lien de la présentation', code:p.lien}
+      ];
+      if(p.video) travail.push({exercice:'Lien de la capsule vidéo', code:p.video});
+      if(p.comm) travail.push({exercice:'Message pour le professeur', code:p.comm});
+
+      var contexte=window.__CONTEXTE_ELEVE__ || null;
+      var apiPayload={coursId:CONFIG.COURS_ID, travail:JSON.stringify(travail)};
+      if(!contexte) apiPayload.noms=p.membres.join(', ');
+
+      fetch(CONFIG.API_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(apiPayload)
+      }).then(function(r){
+        hint.textContent = r.ok
+          ? 'Dépôt transmis au professeur ✓ Conserve ton code.'
+          : 'Le dépôt est enregistré localement, mais l\'envoi a échoué. Copie le récapitulatif et transmets-le.';
+      }).catch(function(){
+        hint.textContent='Le dépôt est enregistré localement, mais l\'envoi a échoué. Copie le récapitulatif et transmets-le.';
+      });
+    } else {
+      hint.textContent='Dépôt enregistré. Copie le récapitulatif ou envoie-le par email à ton professeur.';
+    }
+  });
+
+  document.getElementById('rCopy').addEventListener('click',function(){
+    var t=document.getElementById('rText').textContent;
+    var btn=this;
+    function ok(){ btn.textContent='✓ Copié'; setTimeout(function(){ btn.textContent='📋 Copier le récapitulatif'; },1800); }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t).then(ok,function(){ fallback(t,ok); });
+    } else fallback(t,ok);
+  });
+  function fallback(t,cb){
+    var ta=document.createElement('textarea');
+    ta.value=t; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); cb(); }catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  document.getElementById('rMail').addEventListener('click',function(){
+    var p=STATE.depot; if(!p) return;
+    var sujet='[SNT] Depot projet reseaux sociaux - '+p.classe+' - '+p.code;
+    var url='mailto:'+encodeURIComponent(CONFIG.EMAIL_PROF)
+      +'?subject='+encodeURIComponent(sujet)
+      +'&body='+encodeURIComponent(recap(p));
+    window.location.href=url;
+  });
+
+  document.getElementById('rEdit').addEventListener('click',function(){
+    out.classList.remove('show');
+    send.disabled=false;
+    send.textContent='Déposer mon travail';
+    hint.textContent='Modifie ce que tu veux, puis dépose à nouveau.';
+    document.getElementById('depot').scrollIntoView({behavior:'smooth'});
+  });
+
+  // Restauration
+  var d=STATE.depot;
+  if(d){
+    d.membres.forEach(function(m){ addMember(m); });
+    while(membersBox.querySelectorAll('.member').length<2) addMember('');
+    F.classe.value=d.classe||'';
+    F.reseau.value=d.reseau||'';
+    F.type.value=d.type||'';
+    F.lien.value=d.lien||'';
+    F.video.value=d.video||'';
+    F.comm.value=d.comm||'';
+    show(d);
+    hint.textContent='Dépôt précédent retrouvé. Tu peux le modifier si besoin.';
+  } else {
+    addMember(''); addMember('');
+  }
+})();
+
+/* ═══ Mode Jour / Nuit ═══ */
+(function(){
+  var btn=document.getElementById('themeBtn');
+  function setTheme(t){
+    document.documentElement.setAttribute('data-theme',t);
+    btn.textContent=(t==='light')?'🌙':'☀️';
+    btn.title=(t==='light')?'Passer en mode nuit':'Passer en mode jour';
+    try{ localStorage.setItem('nadtech_theme',t); }catch(e){}
+  }
+  var saved=null;
+  try{ saved=localStorage.getItem('nadtech_theme'); }catch(e){}
+  if(saved==='light') setTheme('light');
+  btn.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    setTheme(cur==='light'?'dark':'light');
+  });
+})();
+</script>
+</body>
+</html>

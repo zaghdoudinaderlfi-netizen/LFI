@@ -14,7 +14,7 @@ export const TAILLE_MAX_OCTETS = 10 * 1024 * 1024; // 10 Mo
 
 export { MAX_COEQUIPIERS };
 
-const EXTENSIONS_AUTORISEES = new Set(["pdf", "jpg", "jpeg", "png", "webp"]);
+const EXTENSIONS_AUTORISEES = new Set(["pdf", "jpg", "jpeg", "png", "webp", "pptx"]);
 
 function extensionDe(nomFichier: string): string {
   const parts = nomFichier.split(".");
@@ -165,7 +165,7 @@ export async function deposerSoumission(
 
   const extension = extensionDe(fichier.name);
   if (!EXTENSIONS_AUTORISEES.has(extension)) {
-    throw new SoumissionError("Type de fichier non autorisé (PDF ou image uniquement).");
+    throw new SoumissionError("Type de fichier non autorisé (PDF, image ou présentation PowerPoint uniquement).");
   }
 
   const eleve = await prisma.user.findUnique({

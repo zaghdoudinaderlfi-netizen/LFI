@@ -1,6 +1,7 @@
 import { Matiere, Niveau, QuestionQuiz } from "@prisma/client";
 import { prisma } from "./prisma";
 import { formaterNomComplet } from "./utilisateurs";
+import { MATIERE_PAR_NIVEAU } from "./classes-constants";
 
 export class QuizError extends Error {}
 export class TentativeError extends Error {}
@@ -284,9 +285,11 @@ export async function importerQuestions(quizId: string, lignes: LigneImportValid
 //  CÔTÉ ÉLÈVE — LISTE ET PARTIE (mode solo)
 // ───────────────────────────────────────────────
 
+// Comme pour les cours : un élève ne doit voir que les quiz de sa propre
+// section, déduite de son niveau — pas ceux d'une autre matière.
 export async function listerQuizVisiblesEleve(niveau: Niveau) {
   return prisma.quiz.findMany({
-    where: { niveau, visibleEleves: true },
+    where: { niveau, matiere: MATIERE_PAR_NIVEAU[niveau], visibleEleves: true },
     include: { _count: { select: { questions: true } } },
     orderBy: [{ matiere: "asc" }, { chapitre: "asc" }, { createdAt: "asc" }],
   });
@@ -297,7 +300,9 @@ export async function obtenirQuizVisibleEleve(quizId: string, niveau: Niveau) {
     where: { id: quizId },
     include: { _count: { select: { questions: true } } },
   });
-  if (!quiz || !quiz.visibleEleves || quiz.niveau !== niveau) return null;
+  if (!quiz || !quiz.visibleEleves || quiz.niveau !== niveau || quiz.matiere !== MATIERE_PAR_NIVEAU[niveau]) {
+    return null;
+  }
   return quiz;
 }
 

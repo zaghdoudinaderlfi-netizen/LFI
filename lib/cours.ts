@@ -12,6 +12,7 @@ import {
 } from "./supabase";
 import { convertirDocxEnHtml, supprimerImagesCours } from "./docx";
 import { supprimerFichierCoursSimple } from "./cours-simple";
+import { MATIERE_PAR_NIVEAU } from "./classes-constants";
 
 const PREFIX_COUVERTURE = "couvertures";
 const EXTENSIONS_IMAGE_COUVERTURE = new Set(["png", "jpg", "jpeg", "gif", "webp"]);
@@ -319,22 +320,25 @@ export async function obtenirCoursParId(id: string) {
   return prisma.cours.findUnique({ where: { id } });
 }
 
+// Un élève ne doit voir que les cours de sa propre section (NSI/SNT/Techno),
+// déduite de son niveau — jamais les cours des autres sections, même si un
+// cours est mal étiqueté (matiere ne correspondant pas à son niveau).
 export async function listerCoursPublies(niveau: Niveau) {
   return prisma.cours.findMany({
-    where: { niveau, publie: true, visibleEleves: true },
+    where: { niveau, matiere: MATIERE_PAR_NIVEAU[niveau], publie: true, visibleEleves: true },
     orderBy: [{ matiere: "asc" }, { chapitre: "asc" }, { ordre: "asc" }, { createdAt: "asc" }],
   });
 }
 
 export async function obtenirCoursPublieParSlug(slug: string, niveau: Niveau) {
   return prisma.cours.findFirst({
-    where: { slug, niveau, publie: true, visibleEleves: true },
+    where: { slug, niveau, matiere: MATIERE_PAR_NIVEAU[niveau], publie: true, visibleEleves: true },
   });
 }
 
 export async function listerDerniersCoursPublies(niveau: Niveau, limit = 5) {
   return prisma.cours.findMany({
-    where: { niveau, publie: true, visibleEleves: true },
+    where: { niveau, matiere: MATIERE_PAR_NIVEAU[niveau], publie: true, visibleEleves: true },
     orderBy: { updatedAt: "desc" },
     take: limit,
   });

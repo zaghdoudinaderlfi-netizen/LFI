@@ -2,7 +2,7 @@
 
 export const TAILLE_MAX_OCTETS = 10 * 1024 * 1024; // 10 Mo
 
-export const EXTENSIONS_DOCUMENTS = new Set(["pdf", "jpg", "jpeg", "png", "webp"]);
+export const EXTENSIONS_DOCUMENTS = new Set(["pdf", "jpg", "jpeg", "png", "webp", "pptx"]);
 
 export function extensionDe(nomFichier: string): string {
   const parts = nomFichier.split(".");

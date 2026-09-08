@@ -54,11 +54,11 @@ export function DevoirSoumissionForm({
           id={`fichier-${exerciceId}`}
           name="fichier"
           type="file"
-          accept=".pdf,.jpg,.jpeg,.png,.webp"
+          accept=".pdf,.jpg,.jpeg,.png,.webp,.pptx"
           required
           className="input file:mr-3 file:rounded file:border-0 file:bg-space-surface file:px-3 file:py-1 file:text-sm file:text-ink-primary"
         />
-        <p className="text-xs text-ink-muted">PDF ou photo (jpg, png, webp), 10 Mo maximum.</p>
+        <p className="text-xs text-ink-muted">PDF, photo (jpg, png, webp) ou présentation PowerPoint (pptx), 10 Mo maximum.</p>
       </div>
       <div className="sm:basis-full">
         <CoequipierSelecteur camarades={camarades} defautCoequipiers={coequipiers} />
