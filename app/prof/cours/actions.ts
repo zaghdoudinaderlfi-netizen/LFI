@@ -17,6 +17,7 @@ import {
   basculerVitrine,
   basculerCorrectionVisible,
   basculerDepotActive,
+  renommerCours,
   televerserImageCouverture,
 } from "@/lib/cours";
 import {
@@ -240,6 +241,25 @@ export async function remplacerContenuAction(
   revalidatePath(`/prof/cours/${id}/apercu`);
 
   return "Contenu remplacé.";
+}
+
+export async function renommerCoursAction(
+  coursId: string,
+  titre: string,
+): Promise<{ ok: boolean; erreur?: string }> {
+  const session = await auth();
+  if (session?.user?.role !== "PROF") return { ok: false, erreur: "Accès refusé." };
+
+  try {
+    await renommerCours(coursId, titre);
+  } catch (error) {
+    if (error instanceof CoursError) return { ok: false, erreur: error.message };
+    throw error;
+  }
+
+  revalidatePath("/prof/cours");
+  revalidatePath("/eleve/cours");
+  return { ok: true };
 }
 
 export async function basculerVisibiliteElevesAction(formData: FormData): Promise<void> {

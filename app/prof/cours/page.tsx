@@ -13,6 +13,7 @@ import { VitrineButton } from "./vitrine-button";
 import { CorrectionToggle } from "./correction-toggle";
 import { DepotToggle } from "./depot-toggle";
 import { CoursTriables } from "./cours-triables";
+import { TitreCoursEditable } from "./titre-cours-editable";
 
 export default async function ProfCoursPage({
   searchParams,
@@ -94,7 +95,7 @@ export default async function ProfCoursPage({
                               </span>
                             )}
                           </p>
-                          <p className="font-medium text-ink-primary">{c.titre}</p>
+                          <TitreCoursEditable coursId={c.id} titre={c.titre} />
                           <p className="text-sm text-ink-secondary">{NIVEAU_LABELS[c.niveau]}</p>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">

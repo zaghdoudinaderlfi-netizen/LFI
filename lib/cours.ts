@@ -382,6 +382,18 @@ export async function basculerDepotActive(id: string, depotActive: boolean) {
   });
 }
 
+export async function renommerCours(id: string, titre: string) {
+  const titreNettoye = titre.trim();
+  if (!titreNettoye) {
+    throw new CoursError("Le titre est obligatoire.");
+  }
+
+  return prisma.cours.update({
+    where: { id },
+    data: { titre: titreNettoye },
+  });
+}
+
 // Un seul cours à la fois est en vitrine : le désactiver ne demande qu'une
 // mise à jour, mais l'activer doit d'abord retirer le badge de l'ancien.
 // Mettre un cours en vitrine le rend aussi public (sinon /decouvrir et
