@@ -11,6 +11,7 @@ import { VisibiliteToggle } from "./visibilite-toggle";
 import { EstPublicToggle } from "./estpublic-toggle";
 import { VitrineButton } from "./vitrine-button";
 import { CorrectionToggle } from "./correction-toggle";
+import { DepotToggle } from "./depot-toggle";
 
 export default async function ProfCoursPage({
   searchParams,
@@ -110,6 +111,9 @@ export default async function ProfCoursPage({
                         <VitrineButton coursId={c.id} enVitrine={c.enVitrine} />
                         {(c.pageInteractive || c.typeSimple === "HTML") && (
                           <CorrectionToggle coursId={c.id} correctionVisible={c.correctionVisible} />
+                        )}
+                        {c.pageInteractive && (
+                          <DepotToggle coursId={c.id} depotActive={c.depotActive} />
                         )}
                         <Link href={`/prof/cours/${c.id}`} className="btn-secondary">
                           Modifier

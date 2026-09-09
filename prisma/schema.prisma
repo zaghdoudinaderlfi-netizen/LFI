@@ -210,6 +210,12 @@ model Cours {
   // Quand true, le cours est accessible sans connexion via /decouvrir/[id].
   estPublic Boolean @default(false)
 
+  // Quand true (cours "page interactive" uniquement), la route qui sert le
+  // HTML (voir app/cours/[fichier]/route.ts) injecte automatiquement le
+  // widget de dépôt de compte-rendu juste avant </body> — plus besoin de le
+  // coller à la main dans le fichier (voir lib/depot-compte-rendu.ts).
+  depotActive Boolean @default(false)
+
   // Un seul cours à la fois peut être mis en avant sur la page d'accueil
   // publique (unicité gérée côté serveur, pas de contrainte DB : voir la
   // route qui bascule ce champ).

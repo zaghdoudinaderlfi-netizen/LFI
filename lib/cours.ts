@@ -375,6 +375,13 @@ export async function basculerCorrectionVisible(id: string, correctionVisible: b
   });
 }
 
+export async function basculerDepotActive(id: string, depotActive: boolean) {
+  return prisma.cours.update({
+    where: { id },
+    data: { depotActive },
+  });
+}
+
 // Un seul cours à la fois est en vitrine : le désactiver ne demande qu'une
 // mise à jour, mais l'activer doit d'abord retirer le badge de l'ancien.
 // Mettre un cours en vitrine le rend aussi public (sinon /decouvrir et

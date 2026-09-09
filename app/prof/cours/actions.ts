@@ -16,6 +16,7 @@ import {
   basculerEstPublic,
   basculerVitrine,
   basculerCorrectionVisible,
+  basculerDepotActive,
   televerserImageCouverture,
 } from "@/lib/cours";
 import {
@@ -307,6 +308,25 @@ export async function basculerCorrectionVisibleAction(formData: FormData): Promi
 
   try {
     await basculerCorrectionVisible(id, correctionVisible);
+  } catch (error) {
+    if (error instanceof CoursError) return;
+    throw error;
+  }
+
+  revalidatePath("/prof/cours");
+  revalidatePath("/eleve/cours");
+}
+
+export async function basculerDepotActiveAction(formData: FormData): Promise<void> {
+  const session = await auth();
+  if (session?.user?.role !== "PROF") return;
+
+  const id = formData.get("coursId");
+  const depotActive = formData.get("depotActive") === "true";
+  if (typeof id !== "string") return;
+
+  try {
+    await basculerDepotActive(id, depotActive);
   } catch (error) {
     if (error instanceof CoursError) return;
     throw error;
