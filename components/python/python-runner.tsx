@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
+import { Maximize2, Minimize2 } from "lucide-react";
 
 const SKULPT_BASE = "https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist";
 
@@ -83,11 +84,36 @@ export function PythonRunner({
   const turtleRef = useRef<HTMLDivElement>(null);
   const turtleId = `turtle-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
 
+  // Plein écran : superposition CSS plutôt que l'API Fullscreen du
+  // navigateur, pour garder les styles de l'app et rester prévisible quand le
+  // runner est imbriqué dans le formulaire d'exercice (le composant reste au
+  // même endroit du DOM, la soumission continue de fonctionner).
+  const [pleinEcran, setPleinEcran] = useState(false);
+
   const [tempsRestant, setTempsRestant] = useState<number | null>(
     finChrono ? Math.max(0, Math.round((finChrono.getTime() - Date.now()) / 1000)) : null
   );
   const tempsEcoule = finChrono ? (tempsRestant ?? 0) <= 0 : false;
   const autoSoumisRef = useRef(false);
+
+  // Échap pour sortir, et on fige le défilement de la page derrière
+  // la superposition tant qu'elle est ouverte.
+  useEffect(() => {
+    if (!pleinEcran) return;
+
+    function surTouche(e: KeyboardEvent) {
+      if (e.key === "Escape") setPleinEcran(false);
+    }
+
+    const overflowInitial = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", surTouche);
+
+    return () => {
+      document.body.style.overflow = overflowInitial;
+      document.removeEventListener("keydown", surTouche);
+    };
+  }, [pleinEcran]);
 
   useEffect(() => {
     if (!finChrono) return;
@@ -184,7 +210,13 @@ export function PythonRunner({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div
+      className={
+        pleinEcran
+          ? "fixed inset-0 z-50 flex flex-col gap-3 bg-space-deep p-4 sm:p-6"
+          : "flex flex-col gap-3"
+      }
+    >
       {finChrono && (
         <p
           className={`self-start rounded-lg px-3 py-1 text-sm font-bold ${
@@ -200,7 +232,12 @@ export function PythonRunner({
       )}
 
       <div
-        className="overflow-hidden rounded-xl border border-space-border"
+        // En plein écran, `[&>div]:h-full` étire le conteneur que génère
+        // react-codemirror : sans lui, `height="100%"` ne se résout pas
+        // jusqu'à la zone de saisie, qui reste haute de quelques lignes.
+        className={`overflow-hidden rounded-xl border border-space-border ${
+          pleinEcran ? "min-h-0 flex-1 [&>div]:h-full" : ""
+        }`}
         onCopy={bloquerCopierColler}
         onCut={bloquerCopierColler}
         onPaste={bloquerCopierColler}
@@ -208,7 +245,9 @@ export function PythonRunner({
       >
         <CodeMirror
           value={code}
-          height="220px"
+          // En plein écran, l'éditeur remplit ce que les boutons et la sortie
+          // laissent (conteneur flex-1), au lieu d'une hauteur calculée.
+          height={pleinEcran ? "100%" : "220px"}
           extensions={[python()]}
           onChange={setCode}
           basicSetup={{ tabSize: 4 }}
@@ -232,6 +271,26 @@ export function PythonRunner({
             {enCours ? "..." : soumissionLabel}
           </button>
         )}
+
+        <button
+          type="button"
+          onClick={() => setPleinEcran((v) => !v)}
+          className="btn-secondary ml-auto gap-2"
+          title={pleinEcran ? "Quitter le plein écran (Échap)" : "Afficher le code en plein écran"}
+          aria-pressed={pleinEcran}
+        >
+          {pleinEcran ? (
+            <>
+              <Minimize2 className="h-4 w-4" />
+              Quitter le plein écran
+            </>
+          ) : (
+            <>
+              <Maximize2 className="h-4 w-4" />
+              Plein écran
+            </>
+          )}
+        </button>
       </div>
 
       <div>
