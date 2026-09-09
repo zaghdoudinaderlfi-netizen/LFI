@@ -5,6 +5,7 @@ import { obtenirCompteRendu, lireTravail } from "@/lib/comptes-rendus";
 import { MATIERE_LABELS } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { NotationCompteRendu } from "@/components/suivi/notation-compte-rendu";
+import { SupprimerCompteRenduButton } from "./supprimer-compte-rendu-button";
 
 export default async function CompteRenduDetailPage({
   params,
@@ -25,10 +26,16 @@ export default async function CompteRenduDetailPage({
           <ArrowLeft className="h-4 w-4" />
           Retour aux comptes-rendus
         </Link>
-        <a href={`/api/comptes-rendus/${compteRendu.id}/html`} download className="btn-secondary w-fit">
-          <Download className="h-4 w-4" />
-          Télécharger en HTML
-        </a>
+        <div className="flex flex-wrap items-center gap-3">
+          <a href={`/api/comptes-rendus/${compteRendu.id}/html`} download className="btn-secondary w-fit">
+            <Download className="h-4 w-4" />
+            Télécharger en HTML
+          </a>
+          <SupprimerCompteRenduButton
+            compteRenduId={compteRendu.id}
+            libelle={`${compteRendu.noms} — ${compteRendu.cours.titre}`}
+          />
+        </div>
       </div>
 
       <div className="card animate-fade-in-up p-6">

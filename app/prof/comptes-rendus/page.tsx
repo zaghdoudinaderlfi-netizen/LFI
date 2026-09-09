@@ -8,6 +8,7 @@ import {
 import { MATIERE_LABELS } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { estMatiereValide } from "@/lib/classes-constants";
+import { SupprimerCompteRenduButton } from "./[id]/supprimer-compte-rendu-button";
 
 const MATIERES: Matiere[] = ["TECHNOLOGIE", "SNT", "NSI"];
 
@@ -103,10 +104,12 @@ export default async function ComptesRendusPage({
       ) : (
         <ul className="flex flex-col gap-3 animate-fade-in-up [animation-delay:60ms]">
           {comptesRendus.map((cr) => (
-            <li key={cr.id}>
+            // Le bouton de suppression est hors du lien : un <button> dans un
+            // <a> est invalide, et le clic déclencherait la navigation.
+            <li key={cr.id} className="flex items-stretch gap-2">
               <Link
                 href={`/prof/comptes-rendus/${cr.id}`}
-                className="card flex flex-col gap-1 p-5 transition-colors hover:border-neon-blue/50 sm:flex-row sm:items-center sm:justify-between"
+                className="card flex flex-1 flex-col gap-1 p-5 transition-colors hover:border-neon-blue/50 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <p className="font-medium text-ink-primary">
@@ -140,6 +143,13 @@ export default async function ComptesRendusPage({
                   </span>
                 </div>
               </Link>
+              <div className="flex items-center">
+                <SupprimerCompteRenduButton
+                  compteRenduId={cr.id}
+                  libelle={`${cr.noms} — ${cr.cours.titre}`}
+                  compact
+                />
+              </div>
             </li>
           ))}
         </ul>

@@ -211,3 +211,21 @@ export async function listerClassesAvecComptesRendus() {
   });
   return classes;
 }
+
+/**
+ * Supprime un dépôt d'élève. `MembreCompteRendu` part en cascade (voir le
+ * schéma) et aucun fichier n'est stocké pour un compte-rendu — le travail
+ * est du texte dans la colonne `travail`. Rien d'autre à nettoyer.
+ *
+ * À savoir : si le dépôt était noté, sa note disparaît de la moyenne du
+ * critère « comptes-rendus » de la note orale (voir lib/suivi-oral.ts).
+ */
+export async function supprimerCompteRendu(id: string) {
+  const compteRendu = await prisma.compteRendu.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+  if (!compteRendu) throw new CompteRenduError("Compte-rendu introuvable.");
+
+  await prisma.compteRendu.delete({ where: { id } });
+}

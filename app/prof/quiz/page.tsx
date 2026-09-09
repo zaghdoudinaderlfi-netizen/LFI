@@ -8,6 +8,7 @@ import { NIVEAU_LABELS } from "@/lib/classes";
 import { estMatiereValide } from "@/lib/classes-constants";
 import { MatiereTabs } from "@/components/matiere-tabs";
 import { VisibiliteQuizToggle } from "./visibilite-toggle";
+import { SupprimerQuizButton } from "./[id]/supprimer-quiz-button";
 
 export default async function ProfQuizPage({
   searchParams,
@@ -96,6 +97,7 @@ export default async function ProfQuizPage({
                         <Link href={`/prof/quiz/${q.id}`} className="btn-secondary">
                           Modifier
                         </Link>
+                        <SupprimerQuizButton quizId={q.id} titreQuiz={q.titre} />
                       </div>
                     </li>
                   ))}
