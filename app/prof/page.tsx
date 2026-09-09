@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Eye, FileText, ListPlus, Megaphone, PlusCircle } from "lucide-react";
+import { CalendarClock, Eye, FileText, ListPlus, Lock, Megaphone, PlusCircle } from "lucide-react";
 import { Matiere } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -10,6 +10,7 @@ import { MATIERE_LABELS } from "@/lib/cours";
 import { AvatarDisplay } from "@/components/avatar/avatar-display";
 import { MatiereTabs } from "@/components/matiere-tabs";
 import { obtenirAnnonceActive } from "@/lib/annonces";
+import { obtenirCycleActif } from "@/lib/trimestre";
 
 export default async function ProfPage({
   searchParams,
@@ -23,7 +24,7 @@ export default async function ProfPage({
 
   const niveauFiltré = matiere ? NIVEAU_PAR_MATIERE[matiere] : undefined;
 
-  const [user, comptesRendusCount, classes, annonceActive] = await Promise.all([
+  const [user, comptesRendusCount, classes, annonceActive, cycleTrimestre] = await Promise.all([
     session?.user?.id
       ? prisma.user.findUnique({
           where: { id: session.user.id },
@@ -33,6 +34,7 @@ export default async function ProfPage({
     prisma.compteRendu.count(),
     listerClasses(),
     obtenirAnnonceActive(),
+    obtenirCycleActif(),
   ]);
 
   const classesFiltrees = niveauFiltré
@@ -131,6 +133,42 @@ export default async function ProfPage({
             }}
           >
             🔴 en direct
+          </span>
+        )}
+      </Link>
+
+      {/* Trimestre — clôture des notes finales */}
+      <Link
+        href="/prof/trimestre"
+        className="card-hard card-hard-violet flex items-center justify-between p-6 animate-fade-in-up [animation-delay:105ms]"
+      >
+        <div className="flex items-center gap-3">
+          <span className="icon-badge-nsi">
+            <CalendarClock className="h-5 w-5" />
+          </span>
+          <div>
+            <h2 className="section-title">Trimestre</h2>
+            <p className="text-sm text-ink-secondary">
+              {!cycleTrimestre
+                ? "Aucun trimestre ouvert — la note finale reste masquée aux élèves."
+                : cycleTrimestre.cloture
+                  ? `${cycleTrimestre.nom} : note finale visible aux élèves.`
+                  : `${cycleTrimestre.nom} : en cours, note finale masquée aux élèves.`}
+            </p>
+          </div>
+        </div>
+        {cycleTrimestre && !cycleTrimestre.cloture && (
+          <span
+            className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-bold"
+            style={{
+              color: "rgb(var(--neon-violet))",
+              borderColor: "rgba(var(--neon-violet), 0.35)",
+              background: "rgba(var(--neon-violet), 0.1)",
+              border: "1px solid",
+            }}
+          >
+            <Lock className="h-3.5 w-3.5" />
+            masquée
           </span>
         )}
       </Link>
