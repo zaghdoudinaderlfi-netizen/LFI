@@ -1,4 +1,5 @@
 import type { TypeBloc } from "@prisma/client";
+import { extraireEmbedVideo } from "./video";
 
 // Constantes et utilitaires purs liés aux blocs, sans dépendance à Prisma/Supabase
 // (lib/prisma.ts importe `pg`, incompatible avec un bundle client). Ce module peut
@@ -38,45 +39,11 @@ export function libelleOutil(outil: string): string {
 /**
  * Convertit un lien YouTube ou Vimeo en URL d'intégration (iframe).
  * Retourne `null` si le lien n'est pas reconnu.
+ *
+ * Délègue à `extraireEmbedVideo` : les blocs vidéo profitent ainsi du même
+ * lecteur que les cours de type VIDEO — domaine sans cookie côté YouTube et
+ * paramètres qui retirent vidéos suggérées, annotations, titre et auteur.
  */
 export function urlVideoEmbed(url: string): string | null {
-  let u: URL;
-  try {
-    u = new URL(url.trim());
-  } catch {
-    return null;
-  }
-
-  const host = u.hostname.replace(/^www\./, "");
-
-  if (host === "youtube.com" || host === "m.youtube.com") {
-    if (u.pathname === "/watch") {
-      const id = u.searchParams.get("v");
-      return id ? `https://www.youtube.com/embed/${id}` : null;
-    }
-    if (u.pathname.startsWith("/embed/")) {
-      return `https://www.youtube.com${u.pathname}`;
-    }
-    if (u.pathname.startsWith("/shorts/")) {
-      const id = u.pathname.split("/")[2];
-      return id ? `https://www.youtube.com/embed/${id}` : null;
-    }
-    return null;
-  }
-
-  if (host === "youtu.be") {
-    const id = u.pathname.slice(1);
-    return id ? `https://www.youtube.com/embed/${id}` : null;
-  }
-
-  if (host === "vimeo.com") {
-    const id = u.pathname.split("/").filter(Boolean)[0];
-    return id && /^\d+$/.test(id) ? `https://player.vimeo.com/video/${id}` : null;
-  }
-
-  if (host === "player.vimeo.com") {
-    return u.toString();
-  }
-
-  return null;
+  return extraireEmbedVideo(url)?.embedUrl ?? null;
 }

@@ -78,7 +78,7 @@ async function afficherBloc(bloc: Bloc) {
             <iframe
               src={url}
               title="Vidéo"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
               className="h-full w-full"
             />

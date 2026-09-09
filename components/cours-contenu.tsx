@@ -46,7 +46,7 @@ export function CoursContenu({ cours, estProf = false }: CoursContenuProps) {
             src={embed.embedUrl}
             title="Vidéo du cours"
             className="h-full w-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
             allowFullScreen
           />
         </div>
