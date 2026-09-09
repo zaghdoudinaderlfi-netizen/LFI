@@ -14,6 +14,7 @@ import {
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { estMatiereValide } from "@/lib/classes-constants";
 import { MatiereTabs } from "@/components/matiere-tabs";
+import { CouvertureCours } from "@/components/couverture-cours";
 
 export default async function EleveCoursPage({
   searchParams,
@@ -109,9 +110,7 @@ export default async function EleveCoursPage({
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <div className="flex h-full items-center justify-center">
-                                  <MonitorPlay className="h-10 w-10 text-neon-blue/40" />
-                                </div>
+                                <CouvertureCours matiere={c.matiere} graine={c.id} />
                               )}
                               <span className="absolute bottom-2 left-2 badge bg-neon-blue/20 px-2 text-neon-blue ring-1 ring-neon-blue/40 backdrop-blur-sm">
                                 <MonitorPlay className="mr-1 inline h-3 w-3" />
@@ -138,16 +137,20 @@ export default async function EleveCoursPage({
                           href={`/eleve/cours/${c.slug}`}
                           className="card-interactive flex h-full flex-col overflow-hidden"
                         >
-                          {imageUrl && (
-                            <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-neon-blue/15 to-neon-violet/20">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                          {/* Un cours sans image reçoit une couverture générée :
+                              une carte sans vignette passait inaperçue. */}
+                          <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-neon-blue/15 to-neon-violet/20">
+                            {imageUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={imageUrl}
                                 alt=""
                                 className="h-full w-full object-cover"
                               />
-                            </div>
-                          )}
+                            ) : (
+                              <CouvertureCours matiere={c.matiere} graine={c.id} />
+                            )}
+                          </div>
                           <div className="flex flex-col gap-1 p-4">
                             <span className="eyebrow flex items-center gap-1.5">
                               <BookOpen className="h-3.5 w-3.5" />

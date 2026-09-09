@@ -5,6 +5,7 @@ import { CoursContenu } from "@/components/cours-contenu";
 import { BlocsAffichage } from "@/components/blocs/blocs-affichage";
 import { PiecesJointesListe } from "@/components/pieces-jointes-liste";
 import { obtenirCoursPublicParId, MATIERE_LABELS, urlImageCouverture } from "@/lib/cours";
+import { CouvertureCours } from "@/components/couverture-cours";
 import { listerBlocsCours } from "@/lib/blocs";
 import { listerPiecesJointes } from "@/lib/pieces-jointes";
 import { NIVEAU_LABELS } from "@/lib/classes";
@@ -88,9 +89,7 @@ export default async function CoursDecouvertePage({
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <MonitorPlay className="h-16 w-16 text-neon-blue/30" />
-                    </div>
+                    <CouvertureCours matiere={cours.matiere} graine={cours.id} />
                   );
                 })()}
                 <span className="absolute bottom-3 left-3 badge bg-neon-blue/20 px-2.5 py-1 text-neon-blue ring-1 ring-neon-blue/40 backdrop-blur-sm">
