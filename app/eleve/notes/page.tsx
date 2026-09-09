@@ -1,21 +1,23 @@
 import Link from "next/link";
 import { auth } from "@/auth";
-import { Star } from "lucide-react";
+import { Lock, Star } from "lucide-react";
 import { listerNotesEleve } from "@/lib/soumissions";
 import { obtenirSuiviEleve, obtenirProgressionEleve, TRIMESTRE_LABELS } from "@/lib/suivi-oral";
+import { trimestreEstCloture } from "@/lib/trimestre";
 import { EtoilesAffichage } from "@/components/suivi/etoiles";
 import { ProgressionBouclier } from "@/components/suivi/bouclier";
 
 export default async function EleveNotesPage() {
   const session = await auth();
 
-  const [notes, suivi, progression] = session?.user?.id
+  const [notes, suivi, progression, trimestreCloture] = session?.user?.id
     ? await Promise.all([
         listerNotesEleve(session.user.id),
         obtenirSuiviEleve(session.user.id),
         obtenirProgressionEleve(session.user.id),
+        trimestreEstCloture(),
       ])
-    : [[], [], null];
+    : [[], [], null, false];
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -34,20 +36,30 @@ export default async function EleveNotesPage() {
             Vie de classe — note orale
           </h2>
           <ul className="flex flex-col gap-3">
-            {suivi.map((t) => (
-              <li key={t.trimestre} className="item-arcade flex items-center justify-between gap-3 p-4">
-                <div>
-                  <p className="font-medium text-ink-primary">
-                    {TRIMESTRE_LABELS[t.trimestre]}
-                    {t.estActuel && <span className="ml-2 text-xs text-ink-muted">(en cours)</span>}
-                  </p>
-                  {t.moyenne0a5 !== null && <EtoilesAffichage valeur={t.moyenne0a5} taille="h-4 w-4" />}
-                </div>
-                <p className="font-heading text-lg font-bold text-ink-primary">
-                  {t.note20 !== null ? `${t.note20.toFixed(1)} / 20` : "—"}
-                </p>
-              </li>
-            ))}
+            {suivi.map((t) => {
+              const noteMasquee = t.estActuel && !trimestreCloture;
+              return (
+                <li key={t.trimestre} className="item-arcade flex items-center justify-between gap-3 p-4">
+                  <div>
+                    <p className="font-medium text-ink-primary">
+                      {TRIMESTRE_LABELS[t.trimestre]}
+                      {t.estActuel && <span className="ml-2 text-xs text-ink-muted">(en cours)</span>}
+                    </p>
+                    {t.moyenne0a5 !== null && <EtoilesAffichage valeur={t.moyenne0a5} taille="h-4 w-4" />}
+                  </div>
+                  {noteMasquee ? (
+                    <p className="flex items-center gap-1.5 text-xs text-ink-muted">
+                      <Lock className="h-3.5 w-3.5" />
+                      Visible à la clôture du trimestre
+                    </p>
+                  ) : (
+                    <p className="font-heading text-lg font-bold text-ink-primary">
+                      {t.note20 !== null ? `${t.note20.toFixed(1)} / 20` : "—"}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}
