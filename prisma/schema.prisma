@@ -207,6 +207,13 @@ model Cours {
   // Quand true, le lien élève inclut ?corrige=1 (corrections affichées dans la page HTML)
   correctionVisible Boolean @default(false)
 
+  // Calculé automatiquement au rattachement/dépôt du fichier HTML (scan de
+  // class="correction") : dit si le toggle correctionVisible a un effet
+  // réel sur ce cours. Certains cours HTML (ex: quiz à révélation directe
+  // via data-quiz) n'ont aucun bloc de correction masquable — le toggle est
+  // alors simplement absent du dashboard plutôt que présent et inactif.
+  aCorrectionsMasquables Boolean @default(false)
+
   // Quand true, le cours est accessible sans connexion via /decouvrir/[id].
   estPublic Boolean @default(false)
 

@@ -41,6 +41,17 @@ export function activerCorrections(html: string): string {
   );
 }
 
+/**
+ * Dit si le fichier contient au moins un bloc de correction masquable
+ * (voir retirerCorrections ci-dessus). Sert à décider si le toggle
+ * "Corrigé visible/masqué" a un quelconque effet sur ce cours — certains
+ * cours HTML (quiz à révélation directe via data-quiz) n'en ont aucun.
+ */
+export function contientBlocsCorrection(html: string): boolean {
+  const $ = cheerio.load(html);
+  return $(".correction").length > 0;
+}
+
 export type ContexteEleveDepot = {
   moi: { id: string; nom: string };
   camarades: { id: string; nom: string }[];

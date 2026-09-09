@@ -10,6 +10,7 @@ import { notifierElevesDuNiveau } from "./notifications";
 import { extraireEmbedVideo } from "./video";
 import { nomFichierSur } from "./fichiers";
 import { supabaseAdmin, BUCKET_COURS_SIMPLE, assurerBucketPublic } from "./supabase";
+import { contientBlocsCorrection } from "./cours-interactif";
 
 export class CoursSimpleError extends Error {}
 
@@ -154,6 +155,9 @@ export async function creerCoursSimple(data: CoursSimpleInfoInput, contenu: Cont
     champs = { typeSimple: contenu.type, fichierUrl, videoUrl: null, quizId: null };
   }
 
+  const aCorrectionsMasquables =
+    contenu.type === "HTML" ? contientBlocsCorrection(await contenu.fichier.text()) : false;
+
   const cours = await prisma.cours.create({
     data: {
       titre: data.titre.trim(),
@@ -164,6 +168,7 @@ export async function creerCoursSimple(data: CoursSimpleInfoInput, contenu: Cont
       publie: data.publie,
       chapitre: data.chapitre ?? null,
       correctionVisible: contenu.type === "HTML" && !!data.correctionVisible,
+      aCorrectionsMasquables,
       ...champs,
     },
   });

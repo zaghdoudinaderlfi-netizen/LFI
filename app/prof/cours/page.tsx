@@ -110,7 +110,7 @@ export default async function ProfCoursPage({
                           <VisibiliteToggle coursId={c.id} visibleEleves={c.visibleEleves} />
                           <EstPublicToggle coursId={c.id} estPublic={c.estPublic} />
                           <VitrineButton coursId={c.id} enVitrine={c.enVitrine} />
-                          {(c.pageInteractive || c.typeSimple === "HTML") && (
+                          {c.aCorrectionsMasquables && (
                             <CorrectionToggle coursId={c.id} correctionVisible={c.correctionVisible} />
                           )}
                           {c.pageInteractive && (

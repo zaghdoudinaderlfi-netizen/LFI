@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { estNomPageValide } from "@/lib/cours-interactif";
+import { estNomPageValide, lirePageInteractive, contientBlocsCorrection } from "@/lib/cours-interactif";
 
 export async function modifierPageInteractiveAction(
   _prevState: string | undefined,
@@ -30,9 +30,20 @@ export async function modifierPageInteractiveAction(
   const cours = await prisma.cours.findUnique({ where: { id: coursId }, select: { id: true } });
   if (!cours) return "Cours introuvable.";
 
+  // Recalculé à chaque rattachement : le fichier associé peut changer.
+  let aCorrectionsMasquables = false;
+  if (pageInteractive) {
+    try {
+      const html = await lirePageInteractive(pageInteractive);
+      aCorrectionsMasquables = contientBlocsCorrection(html);
+    } catch {
+      aCorrectionsMasquables = false;
+    }
+  }
+
   await prisma.cours.update({
     where: { id: coursId },
-    data: { pageInteractive, titreInteractif },
+    data: { pageInteractive, titreInteractif, aCorrectionsMasquables },
   });
 
   revalidatePath(`/prof/cours/${coursId}`);
