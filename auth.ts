@@ -5,7 +5,18 @@ import { authConfig } from "./auth.config";
 import { prisma } from "./lib/prisma";
 import { adresseIpAppelant, compteurActuel, enregistrerEchec, reinitialiserCompteur } from "./lib/limite-acces";
 
-const MAX_TENTATIVES = 5;
+// Deux seuils distincts, parce que les deux clés n'ont pas le même sens.
+//
+// L'email désigne UN compte : 5 échecs y sont le vrai garde-fou contre la
+// force brute.
+//
+// L'IP, elle, est PARTAGÉE : au collège comme au lycée, une classe entière
+// sort derrière le même NAT avec une seule adresse publique. Au même seuil
+// que l'email, cinq fautes de frappe dans la salle verrouillaient tout
+// l'établissement pendant 15 minutes. Le seuil IP reste donc un filet contre
+// le balayage massif de comptes, pas une limite qu'un usage normal atteint.
+const MAX_TENTATIVES_EMAIL = 5;
+const MAX_TENTATIVES_IP = 40;
 const FENETRE_BLOCAGE_MS = 15 * 60 * 1000;
 
 // Hash bcrypt d'un mot de passe qui n'existe pas, comparé quand le compte
@@ -43,7 +54,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Bloqué : on compare quand même contre le hash factice pour garder
         // un temps de réponse comparable à une tentative normale.
-        if (echecsEmail >= MAX_TENTATIVES || echecsIp >= MAX_TENTATIVES) {
+        if (echecsEmail >= MAX_TENTATIVES_EMAIL || echecsIp >= MAX_TENTATIVES_IP) {
           await bcrypt.compare(password, HASH_FICTIF);
           return null;
         }
@@ -59,7 +70,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        await reinitialiserCompteur(cleEmail);
+        // Les DEUX compteurs sont remis à zéro : ne vider que celui de l'email
+        // laissait le compteur IP grimper pendant toute la fenêtre, même quand
+        // les connexions réussissaient — les échecs d'une salle finissaient par
+        // s'additionner jusqu'au blocage sans qu'aucune attaque n'ait eu lieu.
+        await Promise.all([reinitialiserCompteur(cleEmail), reinitialiserCompteur(cleIp)]);
 
         return {
           id: user.id,
