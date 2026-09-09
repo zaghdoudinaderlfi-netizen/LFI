@@ -52,9 +52,15 @@ li{margin:4px 0}
 .competences dd{margin:2px 0 0; color:var(--muted); font-size:14px}
 
 /* Document d'accroche */
-.doc-texte{background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:4px 18px 14px; margin:16px 0; box-shadow:var(--glow)}
+.doc-texte{background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:4px 18px 16px; margin:16px 0; box-shadow:var(--glow)}
 .doc-texte h3{margin-top:14px}
 .doc-texte p{color:var(--muted); font-size:15px}
+/* Bandeau de photos du sujet : donne à voir l'objet avant de l'analyser */
+.photo-bandeau{display:block; width:100%; height:auto; border-radius:10px; margin:12px 0 4px; border:1px solid var(--line)}
+/* Petite photo de la résidence, posée dans le texte */
+.photo-mini{float:right; width:min(46%,260px); height:auto; border-radius:10px; margin:6px 0 12px 18px; border:1px solid var(--line); box-shadow:var(--glow)}
+.doc-texte::after{content:''; display:block; clear:both}
+@media(max-width:520px){ .photo-mini{float:none; display:block; width:100%; max-width:300px; margin:12px auto} }
 
 /* Image de référence (schéma authentique du document) */
 .doc-img{background:#fff; border-radius:14px; padding:14px; margin:16px 0; box-shadow:var(--glow); border:1px solid var(--line)}
@@ -181,6 +187,8 @@ body.light .doc-img{ background:#fff; }
 
     <div class="doc-texte">
       <h3>📄 Le document</h3>
+      <img class="photo-bandeau" src="/cours/img/techno-ch1-ex3-conteneurs.jpg" alt="Trois photos de conteneurs maritimes : un porte-conteneurs en mer, un portique de déchargement dans un port, et des conteneurs empilés" loading="lazy">
+      <img class="photo-mini" src="/cours/img/techno-ch1-ex3-residence.jpg" alt="Résidence universitaire faite de conteneurs empilés peints en rouge, bleu et blanc, avec des fenêtres et des vélos garés devant" loading="lazy">
       <p>Un conteneur est une grosse boîte en acier, solide et étanche. Le conteneur maritime (<em>container</em> en anglais) est une <strong>innovation</strong> d'un transporteur routier américain, <strong>Malcom Mac Lean</strong>, en <strong>1956</strong>. Il eut l'idée de transporter par bateau des remorques de camion, puis de dissocier la caisse du châssis de la remorque — ce qui donna naissance au conteneur.</p>
       <p>Aujourd'hui, des conteneurs recyclés sont transformés en <strong>logements étudiants</strong>. C'est cet objet technique que tu vas analyser.</p>
     </div>
