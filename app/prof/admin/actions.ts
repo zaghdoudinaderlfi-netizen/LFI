@@ -129,6 +129,43 @@ export async function modifierEleveAction(
   return "ok";
 }
 
+// ── Déplacement d'un élève entre classes (glisser-déposer) ────────────────────
+
+export async function deplacerEleveAction(
+  eleveId: string,
+  nouvelleClasseId: string | null,
+): Promise<{ ok: boolean; erreur?: string; classeNom?: string }> {
+  try {
+    await verifierProf();
+  } catch {
+    return { ok: false, erreur: "Accès refusé." };
+  }
+
+  const eleve = await prisma.user.findUnique({
+    where: { id: eleveId, role: "ELEVE" },
+    select: { id: true },
+  });
+  if (!eleve) return { ok: false, erreur: "Élève introuvable." };
+
+  let classeNom: string | undefined;
+  if (nouvelleClasseId) {
+    const classe = await prisma.classe.findUnique({
+      where: { id: nouvelleClasseId },
+      select: { nom: true },
+    });
+    if (!classe) return { ok: false, erreur: "Classe introuvable." };
+    classeNom = classe.nom;
+  }
+
+  await prisma.user.update({
+    where: { id: eleveId },
+    data: { classeId: nouvelleClasseId },
+  });
+
+  revalidatePath("/prof/admin");
+  return { ok: true, classeNom };
+}
+
 // ── Suppression d'un élève ─────────────────────────────────────────────────────
 
 export async function supprimerEleveAction(eleveId: string): Promise<{

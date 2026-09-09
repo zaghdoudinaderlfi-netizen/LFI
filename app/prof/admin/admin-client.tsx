@@ -6,7 +6,19 @@ import {
   useState,
   useTransition,
 } from "react";
-import { ChevronDown, ChevronUp, KeyRound, Pencil, Trash2, X, Copy, Check } from "lucide-react";
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
+import { ChevronDown, ChevronUp, GripVertical, KeyRound, Pencil, Trash2, X, Copy, Check } from "lucide-react";
 import { NIVEAU_LABELS } from "@/lib/classes-constants";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 import { useToast } from "@/components/ui/toast";
@@ -15,6 +27,7 @@ import {
   modifierEleveAction,
   supprimerEleveAction,
   supprimerClasseAction,
+  deplacerEleveAction,
 } from "./actions";
 import type { Niveau } from "@prisma/client";
 
@@ -39,6 +52,9 @@ type ClasseSimple = {
 
 // ── Composant principal ───────────────────────────────────────────────────────
 
+// Id du droppable "sans classe" — distinct des cuid de vraies classes.
+const DROPPABLE_SANS_CLASSE = "sans-classe";
+
 export function AdminClient({
   eleves,
   classes,
@@ -49,8 +65,76 @@ export function AdminClient({
   const [recherche, setRecherche] = useState("");
   const [filtreClasse, setFiltreClasse] = useState<string>("toutes");
   const [mdpVisible, setMdpVisible] = useState<{ eleveId: string; nom: string; mdp: string } | null>(null);
+  const [activeEleve, setActiveEleve] = useState<Eleve | null>(null);
+  const [, startDeplacement] = useTransition();
+  const { addToast } = useToast();
 
-  const elevesFiltrés = eleves.filter((e) => {
+  // État local optimiste : le déplacement met à jour l'écran tout de suite,
+  // sans attendre la réponse serveur. Resynchronisé quand la donnée serveur
+  // change réellement (revalidation après l'action, ou une autre source).
+  const signatureRecue = eleves.map((e) => `${e.id}:${e.classeId ?? ""}`).join(",");
+  const [signatureConnue, setSignatureConnue] = useState(signatureRecue);
+  const [elevesLocal, setElevesLocal] = useState(eleves);
+  if (signatureRecue !== signatureConnue) {
+    setSignatureConnue(signatureRecue);
+    setElevesLocal(eleves);
+  }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+  );
+
+  function handleDragStart(event: DragStartEvent) {
+    const eleve = elevesLocal.find((e) => e.id === String(event.active.id));
+    setActiveEleve(eleve ?? null);
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    setActiveEleve(null);
+    const { active, over } = event;
+    if (!over) return;
+
+    const eleveId = String(active.id);
+    const cibleId = String(over.id);
+    const nouvelleClasseId = cibleId === DROPPABLE_SANS_CLASSE ? null : cibleId;
+
+    const eleve = elevesLocal.find((e) => e.id === eleveId);
+    if (!eleve) return;
+    if ((eleve.classeId ?? null) === nouvelleClasseId) return;
+
+    const classeCible = nouvelleClasseId ? classes.find((c) => c.id === nouvelleClasseId) : null;
+    const nomAffiche = classeCible ? classeCible.nom : "Sans classe";
+    const eleveAvant = eleve;
+
+    setElevesLocal((prev) =>
+      prev.map((e) =>
+        e.id === eleveId
+          ? {
+              ...e,
+              classeId: nouvelleClasseId,
+              classe: classeCible
+                ? { id: classeCible.id, nom: classeCible.nom, niveau: classeCible.niveau }
+                : null,
+            }
+          : e,
+      ),
+    );
+
+    startDeplacement(async () => {
+      const res = await deplacerEleveAction(eleveId, nouvelleClasseId);
+      if (res.ok) {
+        addToast({
+          type: "success",
+          message: `${formaterNomComplet(eleveAvant)} déplacé vers ${res.classeNom ?? nomAffiche}.`,
+        });
+      } else {
+        setElevesLocal((prev) => prev.map((e) => (e.id === eleveId ? eleveAvant : e)));
+        addToast({ type: "error", message: res.erreur ?? "Erreur inconnue." });
+      }
+    });
+  }
+
+  const elevesFiltrés = elevesLocal.filter((e) => {
     const nom = formaterNomComplet(e).toLowerCase();
     const matchRecherche = nom.includes(recherche.toLowerCase());
     const matchClasse =
@@ -59,17 +143,20 @@ export function AdminClient({
     return matchRecherche && matchClasse;
   });
 
-  // Regroupe par classe pour l'affichage
+  // Regroupe par classe pour l'affichage. En vue par défaut (sans recherche
+  // ni filtre), les classes vides restent affichées : sinon elles
+  // n'existeraient pas comme cible pour le glisser-déposer.
+  const vueParDefaut = recherche === "" && filtreClasse === "toutes";
   const elevesSansClasse = elevesFiltrés.filter((e) => !e.classe);
   const elevesByClasse = classes
     .map((c) => ({
       classe: c,
       eleves: elevesFiltrés.filter((e) => e.classeId === c.id),
     }))
-    .filter((g) => g.eleves.length > 0);
+    .filter((g) => g.eleves.length > 0 || vueParDefaut);
 
   return (
-    <>
+    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       {/* Barre de recherche + filtre */}
       <div className="card animate-fade-in-up flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
         <input
@@ -104,9 +191,10 @@ export function AdminClient({
       {elevesByClasse.map(({ classe, eleves: gr }) => (
         <GroupeClasse
           key={classe.id}
+          droppableId={classe.id}
           titre={`${classe.nom} — ${NIVEAU_LABELS[classe.niveau]} (${classe.anneeScolaire})`}
           classe={classe}
-          totalEleves={eleves.filter((e) => e.classeId === classe.id).length}
+          totalEleves={elevesLocal.filter((e) => e.classeId === classe.id).length}
           eleves={gr}
           classes={classes}
           onMdpReset={setMdpVisible}
@@ -115,6 +203,7 @@ export function AdminClient({
 
       {elevesSansClasse.length > 0 && (
         <GroupeClasse
+          droppableId={DROPPABLE_SANS_CLASSE}
           titre="Sans classe"
           eleves={elevesSansClasse}
           classes={classes}
@@ -130,7 +219,18 @@ export function AdminClient({
           onClose={() => setMdpVisible(null)}
         />
       )}
-    </>
+
+      <DragOverlay>
+        {activeEleve && (
+          <div className="flex items-center gap-2 rounded-xl border border-neon-violet/40 bg-space-surface px-4 py-2.5 shadow-2xl">
+            <GripVertical className="h-4 w-4 text-ink-muted" />
+            <span className="text-sm font-medium text-ink-primary">
+              {formaterNomComplet(activeEleve)}
+            </span>
+          </div>
+        )}
+      </DragOverlay>
+    </DndContext>
   );
 }
 
@@ -138,6 +238,7 @@ export function AdminClient({
 
 function GroupeClasse({
   titre,
+  droppableId,
   classe,
   totalEleves,
   eleves,
@@ -145,6 +246,7 @@ function GroupeClasse({
   onMdpReset,
 }: {
   titre: string;
+  droppableId: string;
   classe?: ClasseSimple;
   totalEleves?: number;
   eleves: Eleve[];
@@ -154,17 +256,16 @@ function GroupeClasse({
   const [ouvert, setOuvert] = useState(true);
   const [enSuppression, startSuppression] = useTransition();
   const { addToast } = useToast();
+  const { setNodeRef, isOver } = useDroppable({ id: droppableId });
 
   function handleSupprimerClasse() {
     if (!classe) return;
     const n = totalEleves ?? eleves.length;
-    if (
-      !confirm(
-        `Supprimer la classe « ${classe.nom} » ?\n\n` +
-          `Cela supprimera aussi ${n === 0 ? "ses" : `les ${n}`} élève${n !== 1 ? "s" : ""} de cette classe, confirmer ?`,
-      )
-    )
-      return;
+    const message =
+      n === 0
+        ? `Supprimer la classe « ${classe.nom} » ?\n\nElle ne contient aucun élève, confirmer ?`
+        : `Supprimer la classe « ${classe.nom} » ?\n\nCela supprimera aussi les ${n} élève${n !== 1 ? "s" : ""} de cette classe, confirmer ?`;
+    if (!confirm(message)) return;
 
     startSuppression(async () => {
       const res = await supprimerClasseAction(classe.id);
@@ -175,7 +276,12 @@ function GroupeClasse({
   }
 
   return (
-    <section className="card animate-fade-in-up overflow-hidden">
+    <section
+      ref={setNodeRef}
+      className={`card animate-fade-in-up overflow-hidden transition-colors ${
+        isOver ? "ring-2 ring-neon-violet/60 bg-neon-violet/5" : ""
+      }`}
+    >
       <div className="flex w-full items-center justify-between gap-2 px-5 py-4 hover:bg-space-surface2/50 transition-colors">
         <button
           type="button"
@@ -219,6 +325,11 @@ function GroupeClasse({
 
       {ouvert && (
         <ul className="divide-y divide-space-border">
+          {eleves.length === 0 && (
+            <li className="px-5 py-4 text-sm text-ink-muted">
+              Aucun élève — glisse une fiche élève ici pour l&apos;ajouter à cette classe.
+            </li>
+          )}
           {eleves.map((e) => (
             <LigneEleve
               key={e.id}
@@ -248,6 +359,9 @@ function LigneEleve({
   const [enReinit, startReinit] = useTransition();
   const [enSuppression, startSuppression] = useTransition();
   const { addToast } = useToast();
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: eleve.id,
+  });
 
   function handleSupprimer() {
     if (
@@ -285,18 +399,38 @@ function LigneEleve({
   }
 
   return (
-    <li className="px-5 py-3">
+    <li
+      ref={setNodeRef}
+      className={`px-5 py-3 transition-opacity ${isDragging ? "opacity-30" : ""}`}
+      style={
+        transform
+          ? { transform: CSS.Translate.toString(transform), zIndex: isDragging ? 10 : undefined }
+          : undefined
+      }
+    >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col gap-0.5">
-          <p className="font-medium text-ink-primary">
-            {formaterNomComplet(eleve)}
-            {eleve.doitChangerMdp && (
-              <span className="ml-2 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-400">
-                mdp temporaire
-              </span>
-            )}
-          </p>
-          <p className="text-xs text-ink-muted">{eleve.email}</p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            {...attributes}
+            {...listeners}
+            title="Glisser vers une autre classe"
+            aria-label={`Déplacer ${formaterNomComplet(eleve)} vers une autre classe`}
+            className="cursor-grab touch-none rounded p-1 text-ink-muted hover:text-ink-primary active:cursor-grabbing"
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+          <div className="flex flex-col gap-0.5">
+            <p className="font-medium text-ink-primary">
+              {formaterNomComplet(eleve)}
+              {eleve.doitChangerMdp && (
+                <span className="ml-2 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-400">
+                  mdp temporaire
+                </span>
+              )}
+            </p>
+            <p className="text-xs text-ink-muted">{eleve.email}</p>
+          </div>
         </div>
 
         <div className="flex gap-2">
