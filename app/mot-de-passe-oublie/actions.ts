@@ -4,6 +4,91 @@ import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { envoyerEmailReinit } from "@/lib/email";
+import { adresseIpAppelant, compteurActuel, enregistrerEchec, reinitialiserCompteur } from "@/lib/limite-acces";
+
+// ── Vérification d'identité par date de naissance (libre-service élève) ───────
+//
+// Mêmes seuils que la connexion normale (voir auth.ts) : 5 échecs par
+// identifiant (le vrai garde-fou), 40 par IP (filet contre le balayage
+// massif, pas une limite qu'une classe entière atteint en se trompant).
+const MAX_TENTATIVES_IDENTIFIANT = 5;
+const MAX_TENTATIVES_IP = 40;
+const FENETRE_BLOCAGE_MS = 15 * 60 * 1000;
+const MSG_IDENTITE_INVALIDE = "Identifiant ou date de naissance incorrects.";
+
+/**
+ * Vérifie l'identifiant (email) + la date de naissance d'un élève. En cas de
+ * correspondance, crée un token de réinitialisation (même mécanisme que le
+ * flux email — voir plus bas) et le renvoie directement : pas d'email à
+ * recevoir, la vérification d'identité fait ici office de preuve.
+ */
+export async function verifierIdentiteAction(
+  _prev: { ok: boolean; erreur?: string; token?: string } | undefined,
+  formData: FormData,
+): Promise<{ ok: boolean; erreur?: string; token?: string }> {
+  const identifiant = formData.get("identifiant");
+  const dateNaissance = formData.get("dateNaissance");
+
+  if (typeof identifiant !== "string" || typeof dateNaissance !== "string" || !identifiant.trim() || !dateNaissance) {
+    return { ok: false, erreur: "Tous les champs sont obligatoires." };
+  }
+
+  const identifiantNettoye = identifiant.trim().toLowerCase();
+  const ip = await adresseIpAppelant();
+  const cleIdentifiant = `reinit-echec:identifiant:${identifiantNettoye}`;
+  const cleIp = `reinit-echec:ip:${ip}`;
+
+  const [echecsIdentifiant, echecsIp] = await Promise.all([
+    compteurActuel(cleIdentifiant),
+    compteurActuel(cleIp),
+  ]);
+
+  if (echecsIdentifiant >= MAX_TENTATIVES_IDENTIFIANT || echecsIp >= MAX_TENTATIVES_IP) {
+    return {
+      ok: false,
+      erreur: "Trop de tentatives. Réessaie dans quelques minutes, ou demande à ton professeur.",
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: identifiantNettoye, role: "ELEVE" },
+    select: { id: true, dateNaissance: true },
+  });
+
+  const dateSaisie = new Date(`${dateNaissance}T00:00:00.000Z`);
+  const correspond =
+    !!user &&
+    !!user.dateNaissance &&
+    !Number.isNaN(dateSaisie.getTime()) &&
+    user.dateNaissance.getTime() === dateSaisie.getTime();
+
+  if (!correspond) {
+    await Promise.all([
+      enregistrerEchec(cleIdentifiant, FENETRE_BLOCAGE_MS),
+      enregistrerEchec(cleIp, FENETRE_BLOCAGE_MS),
+    ]);
+    return { ok: false, erreur: MSG_IDENTITE_INVALIDE };
+  }
+
+  await Promise.all([reinitialiserCompteur(cleIdentifiant), reinitialiserCompteur(cleIp)]);
+
+  // Invalide les anciens tokens non utilisés, comme le flux email.
+  await prisma.tokenReinitMdp.updateMany({
+    where: { userId: user.id, utilise: false },
+    data: { utilise: true },
+  });
+
+  const token = randomBytes(32).toString("hex");
+  // Fenêtre courte : le token est utilisé tout de suite dans la même page,
+  // pas envoyé par email (pas besoin d'une heure pour aller le relever).
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+  await prisma.tokenReinitMdp.create({
+    data: { userId: user.id, token, expiresAt },
+  });
+
+  return { ok: true, token };
+}
 
 // ── Demande de réinitialisation par email ─────────────────────────────────────
 
