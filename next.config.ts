@@ -42,10 +42,13 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
-  // Les pages d'exercices sont lues sur le disque par /cours/[fichier] ; sans
-  // ça elles manqueraient au bundle sur un hébergement serverless.
+  // Les pages d'exercices sont lues sur le disque : par /cours/[fichier] qui
+  // les sert, et par /prof/cours/[id] qui liste les fichiers associables au
+  // cours. Sans ça elles manqueraient au bundle sur un hébergement
+  // serverless — et le sélecteur du prof s'afficherait vide.
   outputFileTracingIncludes: {
     "/cours/[fichier]": ["./contenu/cours/**"],
+    "/prof/cours/[id]": ["./contenu/cours/**"],
   },
   experimental: {
     serverActions: {

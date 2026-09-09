@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { estNomPageValide } from "@/lib/cours-interactif";
 
 export async function modifierPageInteractiveAction(
   _prevState: string | undefined,
@@ -14,8 +15,14 @@ export async function modifierPageInteractiveAction(
   const coursId = formData.get("coursId");
   if (typeof coursId !== "string") return "Formulaire invalide.";
 
+  // Le champ peut venir d'une saisie libre quand la liste des fichiers n'a pas
+  // pu être construite : on refuse tout ce que /cours/[fichier] refuserait de
+  // servir, plutôt que d'enregistrer une association qui ne marchera jamais.
   const valeur = formData.get("pageInteractive");
   const pageInteractive = typeof valeur === "string" && valeur.trim() ? valeur.trim() : null;
+  if (pageInteractive !== null && !estNomPageValide(pageInteractive)) {
+    return "Nom de fichier invalide (attendu : minuscules, chiffres, tirets, se terminant par .html).";
+  }
 
   const valeurTitre = formData.get("titreInteractif");
   const titreInteractif = typeof valeurTitre === "string" && valeurTitre.trim() ? valeurTitre.trim() : null;
