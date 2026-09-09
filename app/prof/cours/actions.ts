@@ -353,3 +353,38 @@ export async function supprimerCoursAction(formData: FormData): Promise<void> {
   revalidatePath("/prof/cours");
   redirect("/prof/cours");
 }
+
+/**
+ * Réordonne les cours d'un même chapitre depuis le glisser-déposer de la
+ * liste prof. On reçoit les ids dans leur nouvel ordre d'affichage et on
+ * réécrit le champ `ordre` sur 0..n-1 — le tri de listerCoursProf est
+ * `matiere → chapitre → ordre → createdAt`, donc seul ce champ décide de
+ * l'ordre à l'intérieur d'un chapitre.
+ *
+ * Les ids sont vérifiés avant écriture : on n'écrit que sur des cours qui
+ * existent, et la mise à jour est atomique pour ne pas laisser un ordre
+ * à moitié appliqué si l'un d'eux disparaît entre-temps.
+ */
+export async function reordonnerCoursAction(ids: string[]): Promise<void> {
+  const session = await auth();
+  if (session?.user?.role !== "PROF") return;
+
+  if (!Array.isArray(ids) || ids.length === 0) return;
+  if (ids.some((id) => typeof id !== "string")) return;
+  if (new Set(ids).size !== ids.length) return;
+
+  const existants = await prisma.cours.findMany({
+    where: { id: { in: ids } },
+    select: { id: true },
+  });
+  if (existants.length !== ids.length) return;
+
+  await prisma.$transaction(
+    ids.map((id, index) =>
+      prisma.cours.update({ where: { id }, data: { ordre: index } })
+    )
+  );
+
+  revalidatePath("/prof/cours");
+  revalidatePath("/eleve/cours");
+}

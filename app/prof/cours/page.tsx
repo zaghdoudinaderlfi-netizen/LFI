@@ -12,6 +12,7 @@ import { EstPublicToggle } from "./estpublic-toggle";
 import { VitrineButton } from "./vitrine-button";
 import { CorrectionToggle } from "./correction-toggle";
 import { DepotToggle } from "./depot-toggle";
+import { CoursTriables } from "./cours-triables";
 
 export default async function ProfCoursPage({
   searchParams,
@@ -36,7 +37,8 @@ export default async function ProfCoursPage({
         <div>
           <h1 className="page-title mb-1">Cours</h1>
           <p className="text-ink-secondary">
-            Crée, édite et publie les cours par niveau et matière.
+            Crée, édite et publie les cours par niveau et matière. Attrape la poignée
+            d&apos;une carte pour changer l&apos;ordre des cours dans son chapitre.
           </p>
         </div>
         <div className="flex gap-2">
@@ -73,56 +75,56 @@ export default async function ProfCoursPage({
                 <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-muted border-b border-space-border pb-2">
                   {ch !== null ? `Chapitre ${ch}` : "Sans chapitre"}
                 </h2>
-                <ul className="flex flex-col gap-3">
-                  {coursDuChapitre.map((c) => (
-                    <li
-                      key={c.id}
-                      className="flex flex-col gap-3 rounded-xl border border-space-border bg-space-surface2/60 p-4 sm:flex-row sm:items-center sm:justify-between"
-                    >
-                      <div>
-                        <p className="eyebrow mb-1 flex items-center gap-1.5">
-                          {c.pageInteractive ? (
-                            <MonitorPlay className="h-3.5 w-3.5 text-neon-blue" />
-                          ) : (
-                            <BookOpen className="h-3.5 w-3.5" />
+                <CoursTriables
+                  items={coursDuChapitre.map((c) => ({
+                    id: c.id,
+                    contenu: (
+                      <>
+                        <div>
+                          <p className="eyebrow mb-1 flex items-center gap-1.5">
+                            {c.pageInteractive ? (
+                              <MonitorPlay className="h-3.5 w-3.5 text-neon-blue" />
+                            ) : (
+                              <BookOpen className="h-3.5 w-3.5" />
+                            )}
+                            {MATIERE_LABELS[c.matiere]}
+                            {c.pageInteractive && (
+                              <span className="badge bg-neon-blue/15 px-2 text-neon-blue ring-1 ring-neon-blue/30">
+                                Interactif
+                              </span>
+                            )}
+                          </p>
+                          <p className="font-medium text-ink-primary">{c.titre}</p>
+                          <p className="text-sm text-ink-secondary">{NIVEAU_LABELS[c.niveau]}</p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={`badge px-3 ${
+                              c.publie
+                                ? "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30"
+                                : "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30"
+                            }`}
+                          >
+                            {c.publie ? "Publié" : "Brouillon"}
+                          </span>
+                          <VisibiliteToggle coursId={c.id} visibleEleves={c.visibleEleves} />
+                          <EstPublicToggle coursId={c.id} estPublic={c.estPublic} />
+                          <VitrineButton coursId={c.id} enVitrine={c.enVitrine} />
+                          {(c.pageInteractive || c.typeSimple === "HTML") && (
+                            <CorrectionToggle coursId={c.id} correctionVisible={c.correctionVisible} />
                           )}
-                          {MATIERE_LABELS[c.matiere]}
                           {c.pageInteractive && (
-                            <span className="badge bg-neon-blue/15 px-2 text-neon-blue ring-1 ring-neon-blue/30">
-                              Interactif
-                            </span>
+                            <DepotToggle coursId={c.id} depotActive={c.depotActive} />
                           )}
-                        </p>
-                        <p className="font-medium text-ink-primary">{c.titre}</p>
-                        <p className="text-sm text-ink-secondary">{NIVEAU_LABELS[c.niveau]}</p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span
-                          className={`badge px-3 ${
-                            c.publie
-                              ? "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30"
-                              : "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30"
-                          }`}
-                        >
-                          {c.publie ? "Publié" : "Brouillon"}
-                        </span>
-                        <VisibiliteToggle coursId={c.id} visibleEleves={c.visibleEleves} />
-                        <EstPublicToggle coursId={c.id} estPublic={c.estPublic} />
-                        <VitrineButton coursId={c.id} enVitrine={c.enVitrine} />
-                        {(c.pageInteractive || c.typeSimple === "HTML") && (
-                          <CorrectionToggle coursId={c.id} correctionVisible={c.correctionVisible} />
-                        )}
-                        {c.pageInteractive && (
-                          <DepotToggle coursId={c.id} depotActive={c.depotActive} />
-                        )}
-                        <Link href={`/prof/cours/${c.id}`} className="btn-secondary">
-                          Modifier
-                        </Link>
-                        <SupprimerCoursButton coursId={c.id} titreCours={c.titre} />
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                          <Link href={`/prof/cours/${c.id}`} className="btn-secondary">
+                            Modifier
+                          </Link>
+                          <SupprimerCoursButton coursId={c.id} titreCours={c.titre} />
+                        </div>
+                      </>
+                    ),
+                  }))}
+                />
               </section>
             ))}
           </div>
