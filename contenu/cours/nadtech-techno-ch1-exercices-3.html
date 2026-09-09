@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technologie · Chapitre 1 — Cahier des charges d'un conteneur-logement (type brevet)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1020; --bg2:#121a31; --code:#0e1526; --ink:#e9eefb; --muted:#9aa7c2;
+  --cyan:#22d3ee; --violet:#8b5cf6; --pink:#ec4899; --ok:#34d399; --err:#fb7185; --amber:#f59e0b;
+  --line:rgba(255,255,255,.09); --glow:0 0 0 1px rgba(255,255,255,.04), 0 18px 40px -20px rgba(0,0,0,.7);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; background:
+    radial-gradient(1100px 600px at 80% -10%, rgba(139,92,246,.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(34,211,238,.14), transparent 55%),
+    var(--bg);
+  color:var(--ink); font-family:'Nunito',system-ui,sans-serif; line-height:1.65;}
+.wrap{max-width:920px; margin:0 auto; padding:0 20px}
+header.hero{padding:48px 0 24px; border-bottom:1px solid var(--line); margin-bottom:20px}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; color:var(--cyan);
+  border:1px solid var(--line); padding:6px 12px; border-radius:999px; background:rgba(34,211,238,.06)}
+h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(26px,5vw,40px); line-height:1.1; margin:16px 0 8px}
+h1 .accent{background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.lede{color:var(--muted); max-width:62ch; font-size:17px}
+.meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+.chip{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 11px}
+section{padding:26px 0; border-bottom:1px solid var(--line)}
+h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:23px; margin:0 0 6px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; scroll-margin-top:16px}
+h2 .num{font-family:var(--mono); font-size:13px; color:var(--violet); border:1px solid var(--line); border-radius:8px; padding:3px 9px; background:rgba(139,92,246,.08)}
+h3{font-family:'Space Grotesk',sans-serif; font-size:17px; margin:22px 0 8px; color:#fff}
+p{margin:10px 0}
+.muted{color:var(--muted)}
+strong{color:#fff}
+code.inl{font-family:var(--mono); font-size:.9em; background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; color:#cfe6ff; border:1px solid var(--line)}
+ul{margin:10px 0; padding-left:22px}
+li{margin:4px 0}
+.enonce{background:rgba(255,255,255,.03); border:1px solid var(--line); border-left:3px solid var(--cyan); border-radius:0 10px 10px 0; padding:12px 16px; margin:14px 0}
+.note{display:flex; gap:12px; padding:13px 16px; border-radius:12px; background:rgba(245,158,11,.07); border:1px solid rgba(245,158,11,.25); margin:14px 0}
+.note .ico{font-size:18px} .note p{margin:0}
+
+/* Compétences */
+.competences{background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:6px 18px 14px; margin:16px 0; box-shadow:var(--glow)}
+.competences dl{margin:0}
+.competences dt{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--cyan); margin-top:12px}
+.competences dd{margin:2px 0 0; color:var(--muted); font-size:14px}
+
+/* Document d'accroche */
+.doc-texte{background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:4px 18px 14px; margin:16px 0; box-shadow:var(--glow)}
+.doc-texte h3{margin-top:14px}
+.doc-texte p{color:var(--muted); font-size:15px}
+
+/* Image de référence (schéma authentique du document) */
+.doc-img{background:#fff; border-radius:14px; padding:14px; margin:16px 0; box-shadow:var(--glow); border:1px solid var(--line)}
+.doc-img img{display:block; width:100%; height:auto; border-radius:6px}
+.doc-img .cap{margin:10px 2px 0; font-family:var(--mono); font-size:12px; color:var(--muted); text-align:center}
+
+/* Schéma avec zones de saisie superposées directement sur l'image */
+.overlay-wrap{position:relative; width:100%; line-height:0; border-radius:6px; overflow:hidden}
+.overlay-wrap img{display:block; width:100%; height:auto}
+.overlay-field{position:absolute; box-sizing:border-box; padding:1.5%}
+.overlay-field input{
+  width:100%; height:100%; box-sizing:border-box; text-align:center;
+  font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; line-height:1.2;
+  border:2px dashed rgba(139,92,246,.65); border-radius:8px;
+  background:rgba(255,255,255,.82); color:#141833; padding:2px 6px;
+}
+.overlay-field input:focus{outline:none; border-color:#0891b2; background:#fff; border-style:solid}
+.overlay-field input::placeholder{color:rgba(20,24,45,.4); font-weight:600; font-size:12px}
+@media(max-width:560px){ .overlay-field input{font-size:11px; border-width:1.5px} .overlay-field input::placeholder{font-size:10px} }
+
+/* Champs de réponse */
+.champ{margin:14px 0}
+.champ label{display:block; font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:#fff; margin-bottom:6px}
+input.rep, textarea.rep{width:100%; padding:11px 14px; border-radius:10px; border:1px solid var(--line);
+  background:var(--code); color:var(--ink); font:inherit; font-size:15px; line-height:1.6}
+textarea.rep{resize:vertical; min-height:80px}
+input.rep:focus, textarea.rep:focus{outline:2px solid var(--cyan); outline-offset:1px; border-color:transparent}
+input.rep::placeholder, textarea.rep::placeholder{color:rgba(154,167,194,.55)}
+
+/* Tableau du cahier des charges à compléter */
+.tableau-wrap{overflow-x:auto; margin:16px 0; border:1px solid var(--line); border-radius:14px; background:var(--bg2)}
+table.cdc{border-collapse:collapse; width:100%; min-width:720px; font-size:14px}
+table.cdc th{background:rgba(255,255,255,.05); font-family:'Space Grotesk',sans-serif; font-size:13px; text-align:left; padding:10px 12px; border:1px solid var(--line); color:#fff}
+table.cdc td{padding:10px 12px; border:1px solid var(--line); vertical-align:top; color:var(--muted)}
+table.cdc td.fonction{font-family:var(--mono); font-weight:700; color:var(--amber); background:rgba(245,158,11,.08); text-align:center; white-space:nowrap; width:64px}
+table.cdc input.rep{padding:8px 10px; font-size:14px}
+table.cdc .sep{display:block; margin:6px 0}
+
+/* Correction */
+.correction{margin:14px 0}
+.reveal-btn{font-family:'Nunito'; font-weight:800; border:1px solid rgba(52,211,153,.4); background:rgba(52,211,153,.1); color:var(--ok); padding:9px 16px; border-radius:10px; cursor:pointer; transition:.15s}
+.reveal-btn:hover{background:rgba(52,211,153,.18)}
+.lock-note{display:flex; gap:10px; align-items:center; font-size:14px; color:var(--muted); border:1px dashed var(--line); border-radius:10px; padding:11px 14px}
+.correction-body{display:none; margin-top:12px; background:rgba(52,211,153,.05); border:1px solid rgba(52,211,153,.25); border-radius:12px; padding:4px 18px 14px}
+.correction-body.show{display:block}
+.correction-body h4{font-family:'Space Grotesk',sans-serif; color:var(--ok); margin:16px 0 6px}
+.correction-body .rep-ok{background:var(--code); border:1px solid rgba(52,211,153,.3); border-radius:10px; padding:10px 14px; margin:8px 0; color:#dff5e9}
+
+/* Rappel méthode + indices progressifs */
+.method-mini{background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:14px 18px; margin:18px 0}
+.method-mini h3{font-family:'Space Grotesk',sans-serif; font-size:15px; margin:0 0 8px; color:#fff; display:flex; align-items:center; gap:8px}
+.method-mini ol{margin:0; padding-left:20px; color:var(--muted); font-size:14px}
+.method-mini li{margin:3px 0}
+.method-mini .tip{margin-top:10px; font-size:13px; color:var(--muted)}
+.hints{margin:12px 0}
+.hint{border:1px solid var(--line); border-radius:12px; margin:8px 0; overflow:hidden; background:rgba(139,92,246,.05)}
+.hint summary{cursor:pointer; padding:11px 14px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; color:#fff; list-style:none; display:flex; align-items:center; gap:10px}
+.hint summary::-webkit-details-marker{display:none}
+.hint summary .htag{font-family:var(--mono); font-size:11px; color:var(--violet); border:1px solid var(--line); border-radius:7px; padding:3px 8px; background:rgba(139,92,246,.1)}
+.hint summary:hover{background:rgba(139,92,246,.08)}
+.hint .hbody{padding:0 14px 12px; color:var(--muted); font-size:14px}
+
+/* Badge ludique de progression */
+.badges{display:flex; gap:10px; flex-wrap:wrap; margin:14px 0}
+.badge{display:flex; align-items:center; gap:8px; background:var(--bg2); border:1px solid var(--line); border-radius:999px; padding:8px 14px; font-size:13px; color:var(--muted); transition:.2s}
+.badge .ico{font-size:16px; filter:grayscale(1); opacity:.5; transition:.2s}
+.badge.done{color:var(--ok); border-color:rgba(52,211,153,.4); background:rgba(52,211,153,.08)}
+.badge.done .ico{filter:none; opacity:1}
+
+footer{padding:36px 0 70px; color:var(--muted); font-size:14px}
+.mono-n{font-family:var(--mono); font-weight:700; font-size:18px; margin-top:12px}
+.mono-n span:nth-child(1){color:var(--cyan)} .mono-n span:nth-child(2){color:var(--pink)} .mono-n span:nth-child(3){color:var(--violet)}
+::selection{background:rgba(139,92,246,.4)}
+
+/* Bouton et thème clair (jour) */
+.theme-toggle{position:fixed; top:16px; right:16px; z-index:60; width:46px; height:46px; border-radius:12px;
+  border:1px solid var(--line); background:var(--bg2); color:var(--ink); font-size:20px; cursor:pointer;
+  box-shadow:0 8px 24px -12px rgba(0,0,0,.5); transition:.15s; display:grid; place-items:center}
+.theme-toggle:hover{border-color:var(--violet); transform:translateY(-1px)}
+body.light{
+  --bg:#eef1fb; --bg2:#ffffff; --code:#f6f7fd; --ink:#1a1f36; --muted:#5b6478; --line:rgba(20,24,45,.12);
+  --glow:0 0 0 1px rgba(20,24,45,.04), 0 18px 40px -24px rgba(20,24,45,.25);
+}
+body.light h3, body.light strong, body.light .method-mini h3, body.light .hint summary,
+body.light table.cdc th{ color:#141833; }
+body.light code.inl{ background:rgba(20,24,45,.06); color:#3730a3; border-color:rgba(20,24,45,.14); }
+body.light .enonce{ background:rgba(20,24,45,.03); }
+body.light .correction-body .rep-ok{ color:#14532d; }
+body.light .theme-toggle{ box-shadow:0 8px 24px -14px rgba(20,24,45,.4); }
+body.light .doc-img{ background:#fff; }
+</style>
+</head>
+<body>
+<button id="themeToggle" class="theme-toggle" title="Basculer jour / nuit" aria-label="Basculer jour / nuit">🌙</button>
+
+<div class="wrap">
+  <header class="hero">
+    <span class="kicker">Technologie · 3ème · Chapitre 1 · Type brevet</span>
+    <h1>Des conteneurs recyclés en <span class="accent">résidence universitaire</span></h1>
+    <p class="lede">Un sujet de brevet blanc complet : de l'analyse du besoin jusqu'au <strong>cahier des charges fonctionnel</strong>. Tu vas réutiliser les deux schémas incontournables du chapitre — la <strong>bête à cornes</strong> et le <strong>diagramme pieuvre</strong> — puis caractériser chaque fonction dans un tableau.</p>
+    <div class="meta">
+      <span class="chip">📦 conteneur maritime</span>
+      <span class="chip">🐮 bête à cornes</span>
+      <span class="chip">🐙 diagramme pieuvre</span>
+      <span class="chip">📋 CDCF · méthode A.P.T.E.</span>
+      <span class="chip">⏱️ 30 min</span>
+    </div>
+  </header>
+
+  <section id="competences">
+    <h2><span class="num">00</span> Ce que tu travailles</h2>
+    <div class="competences">
+      <dl>
+        <dt>Pratiquer des démarches scientifiques (1.3)</dt>
+        <dd>Interpréter un document technique et argumenter une réponse.</dd>
+        <dt>Concevoir, créer, réaliser (2.1)</dt>
+        <dd>Identifier un besoin et énoncer un problème technique (bête à cornes).</dd>
+        <dt>Concevoir, créer, réaliser (2.2)</dt>
+        <dd>Identifier les fonctions d'un objet et ses relations avec le milieu extérieur (diagramme pieuvre).</dd>
+        <dt>Concevoir, créer, réaliser (2.3)</dt>
+        <dd>Traduire ces fonctions en critères d'appréciation et niveaux d'exigence (CDCF).</dd>
+      </dl>
+    </div>
+
+    <div class="doc-texte">
+      <h3>📄 Le document</h3>
+      <p>Un conteneur est une grosse boîte en acier, solide et étanche. Le conteneur maritime (<em>container</em> en anglais) est une <strong>innovation</strong> d'un transporteur routier américain, <strong>Malcom Mac Lean</strong>, en <strong>1956</strong>. Il eut l'idée de transporter par bateau des remorques de camion, puis de dissocier la caisse du châssis de la remorque — ce qui donna naissance au conteneur.</p>
+      <p>Aujourd'hui, des conteneurs recyclés sont transformés en <strong>logements étudiants</strong>. C'est cet objet technique que tu vas analyser.</p>
+    </div>
+
+    <div class="method-mini">
+      <h3>🧭 L'ordre à respecter dans une analyse fonctionnelle</h3>
+      <ol>
+        <li><strong>Le besoin</strong> : la bête à cornes → à qui l'objet rend-il service, sur quoi agit-il, dans quel but ?</li>
+        <li><strong>Le milieu extérieur</strong> : le diagramme pieuvre → tout ce qui entoure l'objet, et les fonctions qui les relient (FP, FC1, FC2…).</li>
+        <li><strong>Le cahier des charges</strong> : chaque fonction reçoit un <strong>critère d'appréciation</strong> (ce qu'on mesure) et un <strong>niveau d'exigence</strong> (la valeur à atteindre).</li>
+      </ol>
+      <p class="tip">Les <strong>indices</strong> sont toujours disponibles. La <strong>correction</strong> s'affiche quand ton professeur l'autorise.</p>
+    </div>
+
+    <div class="badges" id="badges">
+      <span class="badge" data-badge="ex1"><span class="ico">💡</span> Innovation / invention</span>
+      <span class="badge" data-badge="ex2"><span class="ico">🤔</span> Argumentation</span>
+      <span class="badge" data-badge="ex3"><span class="ico">🏠</span> Le besoin</span>
+      <span class="badge" data-badge="ex4"><span class="ico">🐮</span> Bête à cornes</span>
+      <span class="badge" data-badge="ex5"><span class="ico">🐙</span> Diagramme pieuvre</span>
+      <span class="badge" data-badge="ex6"><span class="ico">📋</span> Tableau CDCF</span>
+    </div>
+  </section>
+
+  <!-- EX 1 -->
+  <section id="ex1">
+    <h2><span class="num">EX 1</span> Innovation ou invention ?</h2>
+    <div class="enonce"><p>Le texte dit que le conteneur maritime est une <strong>innovation</strong> de Malcom Mac Lean. Quelle est la différence entre une <strong>innovation</strong> et une <strong>invention</strong> ?</p></div>
+
+    <div class="champ">
+      <label for="q1">Ta réponse</label>
+      <textarea class="rep" id="q1" data-reponse data-question="EX1 · Différence entre innovation et invention" placeholder="Une invention, c'est… ; une innovation, c'est…" rows="3"></textarea>
+    </div>
+
+    <div class="hints">
+      <details class="hint"><summary><span class="htag">Indice</span> Pense à Léonard de Vinci</summary><div class="hbody"><p>Léonard de Vinci a dessiné un hélicoptère au XV<sup>e</sup> siècle : il a donc <em>créé</em> quelque chose qui n'existait pas. Mais personne ne l'a jamais fabriqué ni vendu à son époque. Un des deux mots décrit son travail, l'autre décrit ce qui a manqué ensuite.</p></div></details>
+    </div>
+
+    <div class="correction" data-correction>
+      <button class="reveal-btn">Voir la correction</button>
+      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
+      <div class="correction-body">
+        <h4>Correction</h4>
+        <div class="rep-ok">
+          <strong>Invention</strong> : la <strong>création</strong> de quelque chose qui n'existait pas (une idée, un principe technique nouveau).<br>
+          <strong>Innovation</strong> : l'<strong>exploitation commerciale</strong> d'une invention — l'objet est fabriqué, vendu et réellement utilisé (exemple : Léonard de Vinci a <em>inventé</em>, mais n'a pas <em>innové</em>).
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EX 2 -->
+  <section id="ex2">
+    <h2><span class="num">EX 2</span> Un conteneur comme logement : bonne idée ?</h2>
+    <div class="enonce"><p>Est-il judicieux d'utiliser ce type d'objet pour un logement ? <strong>Argumente</strong> ta réponse : donne les points forts, mais aussi ce qu'il faudra obligatoirement aménager.</p></div>
+
+    <div class="champ">
+      <label for="q2">Ton argumentation</label>
+      <textarea class="rep" id="q2" data-reponse data-question="EX2 · Un conteneur comme logement : argumentation" placeholder="Oui / non, parce que… (pense au coût, à l'aménagement, à l'isolation, aux réseaux, à la lumière, à l'emplacement)" rows="6"></textarea>
+    </div>
+
+    <div class="hints">
+      <details class="hint"><summary><span class="htag">Indice 1</span> Ce que le conteneur a déjà pour lui</summary><div class="hbody"><p>Relis la première phrase du document : « une grosse boîte en <strong>acier</strong>, <strong>solide</strong> et <strong>étanche</strong> ». Ajoute qu'il est recyclé, donc peu cher à l'achat, et qu'il est empilable et transportable.</p></div></details>
+      <details class="hint"><summary><span class="htag">Indice 2</span> Ce qui manque à une boîte en acier pour y vivre</summary><div class="hbody"><p>Une boîte en métal n'a ni fenêtre, ni chauffage, ni eau. Passe en revue : l'<strong>aménagement</strong> intérieur (espaces de vie), l'<strong>isolation</strong> (thermique et phonique — l'acier conduit la chaleur et le bruit), les <strong>réseaux</strong> à raccorder, la <strong>luminosité</strong>.</p></div></details>
+      <details class="hint"><summary><span class="htag">Indice 3</span> N'oublie pas l'étudiant</summary><div class="hbody"><p>Un logement étudiant doit rester <strong>abordable</strong> une fois aménagé, être <strong>proche du lieu d'étude</strong>, et l'ensemble de la résidence doit être <strong>harmonieux</strong> (on ne veut pas d'un simple tas de boîtes).</p></div></details>
+    </div>
+
+    <div class="correction" data-correction>
+      <button class="reveal-btn">Voir la correction</button>
+      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
+      <div class="correction-body">
+        <h4>Correction</h4>
+        <p class="muted">Question ouverte : toute réponse argumentée est acceptée. Voici les éléments attendus.</p>
+        <div class="rep-ok">
+          <strong>Oui, c'est une idée à développer</strong> — le conteneur est solide, étanche, recyclé et peu coûteux — <strong>à condition de traiter quatre points</strong> :<br>
+          • l'<strong>aménagement</strong> (créer de vrais espaces de vie) ;<br>
+          • l'<strong>isolation</strong> et ses performances (thermique et phonique) ;<br>
+          • les <strong>réseaux à raccorder</strong> (eau potable, eaux usées, électricité, internet) ;<br>
+          • la <strong>luminosité</strong> (percer des ouvertures).
+        </div>
+        <div class="rep-ok">
+          Trois conditions s'ajoutent : le <strong>coût de base est faible, il doit le rester après aménagement</strong> ; le logement doit être <strong>proche du lieu d'étude</strong> ; l'ensemble doit former un <strong>ensemble harmonieux</strong>.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EX 3 -->
+  <section id="ex3">
+    <h2><span class="num">EX 3</span> D'où vient le besoin ?</h2>
+    <div class="enonce">
+      <p><strong>Rappel — le cahier des charges fonctionnel (CDCF)</strong>, d'après la méthode A.P.T.E. (APplication aux Techniques d'Entreprise, norme NF X50-151) : c'est le document dans lequel le <strong>demandeur</strong> d'un objet technique exprime son <strong>besoin</strong> au <strong>concepteur</strong>. Il contient tous les renseignements sur l'objet, c'est-à-dire la <strong>fonction principale</strong> et les <strong>fonctions contraintes</strong> que l'objet doit respecter. C'est un <strong>contrat</strong> qui lie le demandeur et le concepteur : l'objet fini doit être conforme au cahier des charges.</p>
+      <p><strong>3.1</strong> — Les étudiants rencontrent quels types de difficultés pour se loger ?</p>
+    </div>
+
+    <div class="champ">
+      <label for="q3">Les difficultés (cite-en au moins trois)</label>
+      <textarea class="rep" id="q3" data-reponse data-question="EX3 · Difficultés des étudiants pour se loger" placeholder="1. …&#10;2. …&#10;3. …" rows="5"></textarea>
+    </div>
+
+    <div class="hints">
+      <details class="hint"><summary><span class="htag">Indice</span> Quatre pistes à explorer</summary><div class="hbody"><p>Pense à ce qui coûte (le <strong>prix</strong>), à ce qui manque (la <strong>quantité</strong> de logements disponibles), à ce qui est trop petit ou trop vieux (la <strong>taille</strong>, l'<strong>état</strong>) et à ce qui est trop loin (la <strong>distance</strong> jusqu'à la faculté).</p></div></details>
+    </div>
+
+    <div class="correction" data-correction>
+      <button class="reveal-btn">Voir la correction</button>
+      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
+      <div class="correction-body">
+        <h4>Correction</h4>
+        <div class="rep-ok">
+          • Le <strong>prix du loyer</strong> (trop élevé) et la <strong>taille</strong> des logements ;<br>
+          • la <strong>rareté</strong> des logements étudiants ;<br>
+          • l'<strong>état</strong> de certains logements (vétusté) ;<br>
+          • l'<strong>éloignement de la faculté</strong>.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EX 4 -->
+  <section id="ex4">
+    <h2><span class="num">EX 4</span> La bête à cornes du conteneur-logement</h2>
+    <div class="enonce"><p><strong>3.2</strong> — Complète le schéma qui permet de formaliser la description du besoin. <strong>Écris directement dans les trois blocs</strong> du schéma : les deux bulles du haut et l'encadré du bas.</p></div>
+
+    <div class="doc-img">
+      <div class="overlay-wrap">
+        <img src="/cours/img/techno-ch1-ex3-bete-a-cornes.png" alt="Bête à cornes du conteneur-logement : trois blocs vides à compléter — à qui rend-il service, sur quoi agit-il, dans quel but" loading="lazy">
+        <div class="overlay-field" style="left:3.8%; top:16%; width:30%; height:14%">
+          <input type="text" data-reponse data-question="EX4 · Bête à cornes — à qui rend-il service ?" placeholder="À qui ?" autocomplete="off">
+        </div>
+        <div class="overlay-field" style="left:63.8%; top:15.5%; width:34.5%; height:14.5%">
+          <input type="text" data-reponse data-question="EX4 · Bête à cornes — sur quoi agit-il ?" placeholder="Sur quoi ?" autocomplete="off">
+        </div>
+        <div class="overlay-field" style="left:4.9%; top:82.1%; width:83.7%; height:12.8%">
+          <input type="text" data-reponse data-question="EX4 · Bête à cornes — dans quel but ?" placeholder="Dans quel but ? (une phrase complète)" autocomplete="off">
+        </div>
+      </div>
+      <p class="cap">Document du brevet blanc — les 3 blocs vides sont à compléter ici</p>
+    </div>
+
+    <div class="hints">
+      <details class="hint"><summary><span class="htag">Indice 1</span> Que met-on dans chaque bulle ?</summary><div class="hbody"><p>La bulle de gauche contient <strong>une personne</strong> (celle qui utilise l'objet). La bulle de droite contient <strong>ce sur quoi l'objet agit</strong> — ici ce n'est pas une matière, c'est ce que l'étudiant recherche dans son logement. Le bloc du bas contient <strong>une phrase complète</strong> qui commence par le nom de l'objet.</p></div></details>
+      <details class="hint"><summary><span class="htag">Indice 2</span> Relis l'exercice 3</summary><div class="hbody"><p>Tu viens d'écrire les difficultés des étudiants (prix, taille, vétusté, éloignement). L'objet est fait <em>pour eux</em>, et le mot qui résume ce qui leur manque est déjà écrit dans le tableau du cahier des charges : « se loger dans un <strong>confort</strong> acceptable ».</p></div></details>
+    </div>
+
+    <div class="correction" data-correction>
+      <button class="reveal-btn">Voir la correction</button>
+      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
+      <div class="correction-body">
+        <h4>Correction</h4>
+        <p><strong>1. À qui rend-il service ?</strong></p>
+        <div class="rep-ok">L'étudiant.</div>
+        <p><strong>2. Sur quoi agit-il ?</strong></p>
+        <div class="rep-ok">Le confort.</div>
+        <p><strong>3. Dans quel but ?</strong></p>
+        <div class="rep-ok">Le conteneur doit permettre à un étudiant de se loger dans de bonnes conditions (confort).</div>
+        <p class="muted">Au centre, le produit est le <strong>conteneur</strong>. Retiens la forme de la phrase du bas : <em>« [l'objet] doit permettre à [l'utilisateur] de [action] »</em> — elle deviendra la <strong>fonction principale (FP)</strong> du cahier des charges.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- EX 5 -->
+  <section id="ex5">
+    <h2><span class="num">EX 5</span> Le diagramme pieuvre du conteneur</h2>
+    <div class="enonce"><p><strong>3.3</strong> — Voici le schéma qui représente la recherche des <strong>milieux extérieurs</strong>, aussi appelé « pieuvre ». Il n'est pas terminé : <strong>complète le contenu des six bulles vides</strong> en écrivant directement dessus. Une seule bulle est déjà remplie (<em>Le confort</em>, reliée par FC1).</p></div>
+
+    <div class="doc-img">
+      <div class="overlay-wrap">
+        <img src="/cours/img/techno-ch1-ex3-pieuvre.png" alt="Diagramme pieuvre du conteneur-logement : six bulles vides reliées au conteneur par FP, FC2, FC3, FC4, FC5 et FC6" loading="lazy">
+        <!-- Bulle FP (haut gauche) -->
+        <div class="overlay-field" style="left:23%; top:8.5%; width:18.5%; height:14%">
+          <input type="text" data-reponse data-question="EX5 · Bulle FP (haut gauche)" placeholder="FP : qui ?" autocomplete="off">
+        </div>
+        <!-- Bulle FC2 (droite) -->
+        <div class="overlay-field" style="left:71%; top:36%; width:22%; height:16%">
+          <input type="text" data-reponse data-question="EX5 · Bulle FC2 (droite)" placeholder="FC2 : …" autocomplete="off">
+        </div>
+        <!-- Bulle FC6 (gauche) -->
+        <div class="overlay-field" style="left:3%; top:37.5%; width:21.5%; height:15%">
+          <input type="text" data-reponse data-question="EX5 · Bulle FC6 (gauche)" placeholder="FC6 : …" autocomplete="off">
+        </div>
+        <!-- Bulle FC5 (bas gauche) -->
+        <div class="overlay-field" style="left:13.5%; top:62%; width:18.5%; height:15%">
+          <input type="text" data-reponse data-question="EX5 · Bulle FC5 (bas gauche)" placeholder="FC5 : …" autocomplete="off">
+        </div>
+        <!-- Bulle FC4 (bas centre) -->
+        <div class="overlay-field" style="left:36%; top:70.5%; width:18.5%; height:14.5%">
+          <input type="text" data-reponse data-question="EX5 · Bulle FC4 (bas centre)" placeholder="FC4 : …" autocomplete="off">
+        </div>
+        <!-- Bulle FC3 (bas droite) -->
+        <div class="overlay-field" style="left:59%; top:62%; width:18.5%; height:16%">
+          <input type="text" data-reponse data-question="EX5 · Bulle FC3 (bas droite)" placeholder="FC3 : …" autocomplete="off">
+        </div>
+      </div>
+      <p class="cap">Document du brevet blanc — les 6 bulles vides sont à compléter ici</p>
+    </div>
+
+    <div class="hints">
+      <details class="hint"><summary><span class="htag">Indice 1</span> Comment lire un diagramme pieuvre</summary><div class="hbody"><p>L'objet étudié est au centre (<strong>CONTENEUR</strong>). Chaque bulle autour est un <strong>élément du milieu extérieur</strong>. Le trait qui relie une bulle au centre porte un repère : <strong>FP</strong> (fonction principale, en bleu, elle relie <em>deux</em> bulles en passant par l'objet) ou <strong>FC1…FC6</strong> (fonctions contraintes, en vert).</p></div></details>
+      <details class="hint"><summary><span class="htag">Indice 2</span> Commence par la FP</summary><div class="hbody"><p>L'arc bleu <strong>FP</strong> relie la bulle vide du haut à gauche et la bulle « Le confort ». Or tu viens d'écrire la fonction principale dans la bête à cornes : <em>« le conteneur doit permettre à … de se loger dans le confort »</em>. La bulle manquante, c'est donc le mot qui vient à la place des points.</p></div></details>
+      <details class="hint"><summary><span class="htag">Indice 3</span> Utilise le tableau de l'exercice 6</summary><div class="hbody"><p>Le tableau du CDCF donne pour chaque repère la fonction correspondante : <strong>FC2</strong> → « doit respecter le développement durable » ; <strong>FC3</strong> → « adapté aux handicapés » ; <strong>FC4</strong> → « pas de gaz, matériaux ininflammables » ; <strong>FC5</strong> → « doit être esthétique » ; <strong>FC6</strong> → « doit être économique, inférieur à 400 € ». À chaque fois, demande-toi : <em>de quel élément du milieu extérieur parle cette fonction ?</em></p></div></details>
+    </div>
+
+    <div class="correction" data-correction>
+      <button class="reveal-btn">Voir la correction</button>
+      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
+      <div class="correction-body">
+        <h4>Correction</h4>
+        <div class="rep-ok">
+          <strong>FP</strong> (haut gauche) : Étudiant<br>
+          <strong>FC1</strong> : Le confort <span class="muted">(déjà donné)</span><br>
+          <strong>FC2</strong> (droite) : Environnement ; développement durable<br>
+          <strong>FC3</strong> (bas droite) : Ergonomie (normes : accès handicapé)<br>
+          <strong>FC4</strong> (bas centre) : Sécurité<br>
+          <strong>FC5</strong> (bas gauche) : Esthétique<br>
+          <strong>FC6</strong> (gauche) : Prix du loyer
+        </div>
+        <p class="muted">Méthode à retenir : une bulle contient <strong>un élément du milieu extérieur</strong> (une personne, une chose, une contrainte), jamais une phrase. La <strong>FP</strong> relie toujours <em>deux</em> bulles entre elles en passant par l'objet — ici « Étudiant » et « Le confort » —, alors qu'une <strong>FC</strong> relie l'objet à <em>une seule</em> bulle.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- EX 6 -->
+  <section id="ex6">
+    <h2><span class="num">EX 6</span> Terminer le cahier des charges</h2>
+    <div class="enonce"><p><strong>3.4</strong> — Complète le tableau qui caractérise la fonction principale et les fonctions contraintes. Chaque fonction a un <strong>critère d'appréciation</strong> (ce que l'on observe ou mesure) et un <strong>niveau d'exigence</strong> (la valeur à atteindre).</p></div>
+
+    <div class="tableau-wrap">
+      <table class="cdc">
+        <thead>
+          <tr><th></th><th>Fonctions</th><th>Critères d'appréciation</th><th>Niveau d'exigence</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fonction">FP</td>
+            <td>Le conteneur doit permettre à l'étudiant de se loger dans un confort acceptable</td>
+            <td>Volume suffisamment spacieux<span class="sep"></span>Raccordé à différents réseaux</td>
+            <td>Volume &gt; 75 m³<span class="sep"></span>Alimentation en eau potable ; eau usée ; internet ; l'électricité</td>
+          </tr>
+          <tr>
+            <td class="fonction">FC1</td>
+            <td><input type="text" class="rep" data-reponse data-question="EX6 · FC1 — fonction" placeholder="Doit être…" autocomplete="off"></td>
+            <td>Différents espaces de vie<span class="sep"></span>Luminosité<span class="sep"></span>Isolation thermique et phonique</td>
+            <td>Séparer la pièce<span class="sep"></span>Lumière naturelle et artificielle<span class="sep"></span>R (résistance thermique) = 2,5 minimum</td>
+          </tr>
+          <tr>
+            <td class="fonction">FC2</td>
+            <td>Doit respecter le développement durable</td>
+            <td>Matériaux utilisés pour la construction<span class="sep"></span>Energies utilisées</td>
+            <td><input type="text" class="rep" data-reponse data-question="EX6 · FC2 — niveau d'exigence (matériaux)" placeholder="Quels matériaux ?" autocomplete="off"><span class="sep"></span>Faible consommation</td>
+          </tr>
+          <tr>
+            <td class="fonction">FC3</td>
+            <td><input type="text" class="rep" data-reponse data-question="EX6 · FC3 — fonction" placeholder="Doit être…" autocomplete="off"></td>
+            <td>Adapté aux handicapés</td>
+            <td>Largeur des portes = 90 cm</td>
+          </tr>
+          <tr>
+            <td class="fonction">FC4</td>
+            <td><input type="text" class="rep" data-reponse data-question="EX6 · FC4 — fonction" placeholder="Doit être…" autocomplete="off"></td>
+            <td>Energies utilisées<span class="sep"></span>Matériaux utilisés pour la construction</td>
+            <td>Pas de gaz, pas de cheminée<span class="sep"></span>Matériaux ininflammables</td>
+          </tr>
+          <tr>
+            <td class="fonction">FC5</td>
+            <td>Doit être esthétique</td>
+            <td><input type="text" class="rep" data-reponse data-question="EX6 · FC5 — critères d'appréciation" placeholder="Que regarde-t-on ?" autocomplete="off"></td>
+            <td><input type="text" class="rep" data-reponse data-question="EX6 · FC5 — niveau d'exigence" placeholder="Quel niveau à atteindre ?" autocomplete="off"></td>
+          </tr>
+          <tr>
+            <td class="fonction">FC6</td>
+            <td>Doit être économique</td>
+            <td><input type="text" class="rep" data-reponse data-question="EX6 · FC6 — critère d'appréciation" placeholder="Que mesure-t-on ?" autocomplete="off"></td>
+            <td>Inférieur à 400 €</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note"><span class="ico">💡</span><p>Une <strong>fonction</strong> s'écrit toujours sous la forme « <strong>doit</strong> + verbe » (« doit être confortable », « doit permettre à l'étudiant de… ») : elle exprime une <em>obligation</em> pour le concepteur. Un <strong>niveau d'exigence</strong> est, quand c'est possible, un <strong>nombre avec une unité</strong> (90 cm, 400 €, 75 m³) : c'est ce qui rend le cahier des charges vérifiable.</p></div>
+
+    <div class="hints">
+      <details class="hint"><summary><span class="htag">Indice 1</span> Remplir une case « Fonctions »</summary><div class="hbody"><p>Regarde la ligne <em>de gauche à droite</em> : la fonction est le <strong>résumé</strong> de ses critères. FC1 → « espaces de vie + luminosité + isolation » = quel mot résume tout ça ? FC3 → « adapté aux handicapés, portes de 90 cm » = c'est la science qui adapte l'objet à l'humain. FC4 → « pas de gaz, matériaux ininflammables » = on cherche à éviter quoi ?</p></div></details>
+      <details class="hint"><summary><span class="htag">Indice 2</span> Remplir une case « Critères » ou « Niveau »</summary><div class="hbody"><p>Ici c'est l'inverse : pars de la fonction. FC5 « doit être esthétique » → qu'est-ce qui rend un logement joli, et qu'on peut décrire ? (deux choses : ce qu'on peint et ce qu'on installe dedans). FC6 « doit être économique », niveau « inférieur à 400 € » → 400 € par mois, c'est le prix de quoi ?</p></div></details>
+    </div>
+
+    <div class="correction" data-correction>
+      <button class="reveal-btn">Voir la correction</button>
+      <div class="lock-note"><span>🔒</span><span>Les corrections seront disponibles quand ton professeur les activera.</span></div>
+      <div class="correction-body">
+        <h4>Correction</h4>
+        <div class="rep-ok">
+          <strong>FC1</strong> (fonction) : Doit être confortable<br>
+          <strong>FC3</strong> (fonction) : Doit être ergonomique (respecter les normes d'accès handicapé)<br>
+          <strong>FC4</strong> (fonction) : Doit être sécurisé<br>
+          <strong>FC5</strong> (critères) : Couleurs / meubles — <strong>FC5</strong> (niveau) : 2 couleurs (chaudes) / modernes<br>
+          <strong>FC6</strong> (critère) : Prix du loyer
+        </div>
+        <p class="muted"><strong>FC2</strong> (niveau d'exigence sur les matériaux) est une question ouverte : plusieurs réponses sont acceptées.</p>
+        <div class="rep-ok"><strong>FC2</strong> — exemple de réponse : « Matériaux recyclés ou recyclables, d'origine locale » (le conteneur est lui-même un objet recyclé).</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="mono-n"><span>N</span><span>a</span><span>dtech</span> · Technologie · 3ème · Chapitre 1 — Conteneurs recyclés en résidence universitaire (type brevet)</p>
+  </footer>
+</div>
+
+<script>
+/* Corrections : autorisation decidee par le serveur (voir
+   app/cours/[fichier]/route.ts) — sans elle, les corrections ne sont meme
+   pas envoyees au navigateur. */
+(function(){
+  var autorise = window.__CORRECTION_ACTIVE__ === true;
+  document.querySelectorAll('[data-correction]').forEach(function(wrap){
+    var btn  = wrap.querySelector('.reveal-btn');
+    var body = wrap.querySelector('.correction-body');
+    var lock = wrap.querySelector('.lock-note');
+    if (autorise){
+      lock.style.display = 'none';
+      btn.style.display  = 'inline-block';
+      btn.addEventListener('click', function(){
+        var open = body.classList.toggle('show');
+        btn.textContent = open ? 'Masquer la correction' : 'Voir la correction';
+      });
+    } else {
+      btn.style.display = 'none';
+      lock.style.display = 'flex';
+      body.classList.remove('show');
+    }
+  });
+})();
+</script>
+<script>
+/* Theme jour / nuit */
+(function(){
+  var b=document.getElementById('themeToggle'); if(!b) return;
+  function apply(mode){
+    if(mode==='light'){ document.body.classList.add('light'); b.textContent='☀️'; }
+    else { document.body.classList.remove('light'); b.textContent='🌙'; }
+  }
+  var saved=null; try{ saved=localStorage.getItem('nadtech-theme'); }catch(e){}
+  apply(saved==='light' ? 'light' : 'dark');
+  b.addEventListener('click', function(){
+    var light=!document.body.classList.contains('light');
+    apply(light?'light':'dark');
+    try{ localStorage.setItem('nadtech-theme', light?'light':'dark'); }catch(e){}
+  });
+})();
+</script>
+<script>
+/* Badges ludiques : s'allument des qu'on a commence a repondre a la section */
+(function(){
+  function marquer(id){
+    var b = document.querySelector('[data-badge="'+id+'"]');
+    if (b) b.classList.add('done');
+  }
+  ['ex1','ex2','ex3','ex4','ex5','ex6'].forEach(function(id){
+    var section = document.getElementById(id);
+    if (!section) return;
+    section.querySelectorAll('[data-reponse]').forEach(function(champ){
+      champ.addEventListener('input', function(){
+        if (champ.value.trim()) marquer(id);
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
