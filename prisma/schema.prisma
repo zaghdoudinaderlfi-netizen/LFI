@@ -94,6 +94,25 @@ enum TypeNotification {
   NOTE
 }
 
+// Cycle de trimestre côté "clôture des notes" — distinct de l'enum Trimestre
+// (T1/T2/T3, calculé automatiquement depuis une date, voir trimestreDeDate()
+// dans lib/suivi-oral-constants.ts) qui continue de classer les entrées de
+// suivi par période. Ce modèle sert uniquement à savoir si le trimestre en
+// cours est ouvert ou clôturé : tant qu'il ne l'est pas, la note orale /20
+// reste masquée aux élèves (voir lib/trimestre.ts). Le trimestre "actif" est
+// la ligne la plus récente (créée en premier lieu par le prof, ou recréée via
+// "Ouvrir un nouveau trimestre") ; les lignes précédentes restent en base
+// comme historique, jamais supprimées. Nommé "CycleTrimestre" (et non
+// "Trimestre") car ce nom est déjà pris par l'enum ci-dessus.
+model CycleTrimestre {
+  id          String    @id @default(cuid())
+  nom         String
+  cloture     Boolean   @default(false)
+  dateCloture DateTime?
+
+  createdAt DateTime @default(now())
+}
+
 // ───────────────────────────────────────────────
 //  UTILISATEURS & CLASSES
 // ───────────────────────────────────────────────
@@ -129,18 +148,18 @@ model User {
   // Null = jamais connecté depuis l'ajout de cette fonctionnalité.
   derniereActivite DateTime?
 
-  soumissions         Soumission[]
-  groupesMembre       MembreGroupe[]
-  quizCrees           Quiz[]              @relation("AuteurQuiz")
-  tentativesQuiz      TentativeQuiz[]
-  notifications       Notification[]
-  tokensReinit        TokenReinitMdp[]
-  entreesSuivi        EntreeSuivi[]
-  comptesRendus       CompteRendu[]       @relation("AuteurCompteRendu")
-  comptesRendusMembre MembreCompteRendu[]
-  annoncesCreees      Annonce[]
-  verrousExamen       VerrouExamen[]
-  mainLevee           MainLevee?
+  soumissions           Soumission[]
+  groupesMembre         MembreGroupe[]
+  quizCrees             Quiz[]                @relation("AuteurQuiz")
+  tentativesQuiz        TentativeQuiz[]
+  notifications         Notification[]
+  tokensReinit          TokenReinitMdp[]
+  entreesSuivi          EntreeSuivi[]
+  comptesRendus         CompteRendu[]         @relation("AuteurCompteRendu")
+  comptesRendusMembre   MembreCompteRendu[]
+  annoncesCreees        Annonce[]
+  verrousExamen         VerrouExamen[]
+  mainLevee             MainLevee?
   progressionsExercices ProgressionExercice[]
 
   createdAt DateTime @default(now())
@@ -261,10 +280,10 @@ model Cours {
   quiz   Quiz?   @relation(fields: [quizId], references: [id], onDelete: SetNull)
   quizId String?
 
-  exercices     Exercice[]
-  piecesJointes PieceJointe[]
-  blocs         Bloc[]
-  comptesRendus CompteRendu[]
+  exercices             Exercice[]
+  piecesJointes         PieceJointe[]
+  blocs                 Bloc[]
+  comptesRendus         CompteRendu[]
   progressionsExercices ProgressionExercice[]
 
   createdAt DateTime @default(now())
