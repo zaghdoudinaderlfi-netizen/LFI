@@ -141,6 +141,7 @@ model User {
   annoncesCreees      Annonce[]
   verrousExamen       VerrouExamen[]
   mainLevee           MainLevee?
+  progressionsExercices ProgressionExercice[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -264,11 +265,32 @@ model Cours {
   piecesJointes PieceJointe[]
   blocs         Bloc[]
   comptesRendus CompteRendu[]
+  progressionsExercices ProgressionExercice[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([quizId])
+}
+
+// Sauvegarde automatique du code tapé par un élève dans une cellule
+// d'exercice d'une page interactive (voir app/cours/[fichier]/route.ts et le
+// script injecté par lib/cours-interactif.ts). `exerciceId` est l'id HTML du
+// conteneur de l'exercice (ex: "ex1", "s1e1") — stable par convention dans
+// les fichiers de contenu/cours, jamais généré ni choisi par l'élève.
+// N'enregistre jamais les cellules situées dans un bloc `.correction` (ce
+// n'est pas le travail de l'élève).
+model ProgressionExercice {
+  id             String   @id @default(cuid())
+  eleve          User     @relation(fields: [eleveId], references: [id], onDelete: Cascade)
+  eleveId        String
+  cours          Cours    @relation(fields: [coursId], references: [id], onDelete: Cascade)
+  coursId        String
+  exerciceId     String
+  codeSauvegarde String   @db.Text
+  dateMaj        DateTime @updatedAt
+
+  @@unique([eleveId, coursId, exerciceId])
 }
 
 // Compte-rendu déposé par un élève (ou un groupe) directement depuis la page
