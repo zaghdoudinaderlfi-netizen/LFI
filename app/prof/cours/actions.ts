@@ -17,6 +17,7 @@ import {
   basculerVitrine,
   basculerCorrectionVisible,
   basculerDepotActive,
+  modifierDateLimiteDepot,
   renommerCours,
   televerserImageCouverture,
 } from "@/lib/cours";
@@ -354,6 +355,25 @@ export async function basculerDepotActiveAction(formData: FormData): Promise<voi
 
   revalidatePath("/prof/cours");
   revalidatePath("/eleve/cours");
+}
+
+export async function modifierDateLimiteDepotAction(
+  coursId: string,
+  dateLimiteDepot: string,
+): Promise<{ ok: boolean; erreur?: string }> {
+  const session = await auth();
+  if (session?.user?.role !== "PROF") return { ok: false, erreur: "Accès refusé." };
+
+  let date: Date | null = null;
+  if (dateLimiteDepot) {
+    date = new Date(`${dateLimiteDepot}T23:59:59.999Z`);
+    if (Number.isNaN(date.getTime())) return { ok: false, erreur: "Date invalide." };
+  }
+
+  await modifierDateLimiteDepot(coursId, date);
+
+  revalidatePath("/prof/cours");
+  return { ok: true };
 }
 
 export async function supprimerCoursAction(formData: FormData): Promise<void> {

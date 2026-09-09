@@ -12,6 +12,7 @@ import { EstPublicToggle } from "./estpublic-toggle";
 import { VitrineButton } from "./vitrine-button";
 import { CorrectionToggle } from "./correction-toggle";
 import { DepotToggle } from "./depot-toggle";
+import { DateLimiteDepotInput } from "./date-limite-depot-input";
 import { CoursTriables } from "./cours-triables";
 import { TitreCoursEditable } from "./titre-cours-editable";
 
@@ -115,7 +116,15 @@ export default async function ProfCoursPage({
                             <CorrectionToggle coursId={c.id} correctionVisible={c.correctionVisible} />
                           )}
                           {c.pageInteractive && (
-                            <DepotToggle coursId={c.id} depotActive={c.depotActive} />
+                            <>
+                              <DepotToggle coursId={c.id} depotActive={c.depotActive} />
+                              <DateLimiteDepotInput
+                                coursId={c.id}
+                                dateLimiteDepot={
+                                  c.dateLimiteDepot ? c.dateLimiteDepot.toISOString().slice(0, 10) : null
+                                }
+                              />
+                            </>
                           )}
                           <Link href={`/prof/cours/${c.id}`} className="btn-secondary">
                             Modifier

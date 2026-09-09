@@ -382,6 +382,14 @@ export async function basculerDepotActive(id: string, depotActive: boolean) {
   });
 }
 
+/** `dateLimiteDepot` null = pas de délai, dépôt toujours ouvert. */
+export async function modifierDateLimiteDepot(id: string, dateLimiteDepot: Date | null) {
+  return prisma.cours.update({
+    where: { id },
+    data: { dateLimiteDepot },
+  });
+}
+
 export async function renommerCours(id: string, titre: string) {
   const titreNettoye = titre.trim();
   if (!titreNettoye) {

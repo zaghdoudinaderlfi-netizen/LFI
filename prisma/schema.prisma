@@ -230,6 +230,12 @@ model Cours {
   // coller à la main dans le fichier (voir lib/depot-compte-rendu.ts).
   depotActive Boolean @default(false)
 
+  // Délai optionnel du dépôt : au-delà de cette date, la route affiche un
+  // message "délai dépassé" à la place du widget plutôt que de bloquer
+  // silencieusement. Null = pas de délai, dépôt toujours ouvert tant que
+  // depotActive est vrai.
+  dateLimiteDepot DateTime?
+
   // Un seul cours à la fois peut être mis en avant sur la page d'accueil
   // publique (unicité gérée côté serveur, pas de contrainte DB : voir la
   // route qui bascule ce champ).

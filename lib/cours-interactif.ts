@@ -74,6 +74,21 @@ export function injecterContexteEleve(html: string, contexte: ContexteEleveDepot
 }
 
 /**
+ * Injecté à la place du widget de dépôt quand `dateLimiteDepot` est dépassée
+ * (voir app/cours/[fichier]/route.ts) : dit clairement que le délai est
+ * passé plutôt que de faire disparaître silencieusement le formulaire.
+ */
+export function injecterMessageDelaiDepasse(html: string): string {
+  const bloc = `
+<section style="margin:40px auto;max-width:720px;padding:20px 22px;background:#121a31;border:1px solid rgba(251,113,133,.3);border-radius:14px;color:#e9eefb;font-family:system-ui,sans-serif">
+  <h3 style="margin:0 0 6px;font-size:18px">📤 Déposer ton compte-rendu</h3>
+  <p style="margin:0;color:#fb7185;font-size:14px">⏰ Le délai de dépôt est dépassé.</p>
+</section>
+`;
+  return html.replace("</body>", `${bloc}</body>`);
+}
+
+/**
  * Bloc HTML/CSS/JS générique de dépôt de compte-rendu, injecté juste avant
  * `</body>` quand `depotActive` est activé pour le cours (voir DepotToggle
  * côté dashboard prof). Remplace le copier-coller manuel qui existait dans

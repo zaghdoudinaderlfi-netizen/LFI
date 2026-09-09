@@ -8,6 +8,7 @@ import {
   activerCorrections,
   injecterContexteEleve,
   injecterWidgetDepot,
+  injecterMessageDelaiDepasse,
 } from "@/lib/cours-interactif";
 import { listerCamaradesClasse } from "@/lib/comptes-rendus";
 import { formaterNomComplet } from "@/lib/utilisateurs";
@@ -30,6 +31,7 @@ export async function GET(
         id: true,
         correctionVisible: true,
         depotActive: true,
+        dateLimiteDepot: true,
         publie: true,
         visibleEleves: true,
         estPublic: true,
@@ -102,7 +104,10 @@ export async function GET(
   }
 
   if (cours.depotActive) {
-    resultat = injecterWidgetDepot(resultat, cours.id);
+    const delaiDepasse = cours.dateLimiteDepot !== null && new Date() > cours.dateLimiteDepot;
+    resultat = delaiDepasse
+      ? injecterMessageDelaiDepasse(resultat)
+      : injecterWidgetDepot(resultat, cours.id);
   }
 
   return new NextResponse(resultat, {
