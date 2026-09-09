@@ -17,6 +17,23 @@ export async function lirePageInteractive(fichier: string): Promise<string> {
 }
 
 /**
+ * Insère `contenu` juste avant la vraie balise `</head>` ou `</body>` de la
+ * page. Plusieurs fichiers (ceux qui ouvrent une popup de résultat Turtle)
+ * construisent un mini-document HTML complet dans une chaîne JS, avec leurs
+ * propres `</head>`/`</body>` littéraux — un `.replace()` naïf (première
+ * occurrence) tombe dedans et casse le script.
+ *
+ * Le vrai `</head>` est forcément le premier du fichier (le mini-document
+ * embarqué est plus loin, dans le corps de la page) ; le vrai `</body>` est
+ * forcément le dernier (le mini-document embarqué le précède).
+ */
+function injecterAvantFermeture(html: string, balise: "</head>" | "</body>", contenu: string): string {
+  const index = balise === "</head>" ? html.indexOf(balise) : html.lastIndexOf(balise);
+  if (index === -1) return html;
+  return html.slice(0, index) + contenu + html.slice(index);
+}
+
+/**
  * Vide les blocs de correction : les solutions ne sont pas envoyées au
  * navigateur tant que le professeur ne les a pas activées. L'habillage
  * (bouton, cadenas) reste en place.
@@ -35,10 +52,7 @@ export function retirerCorrections(html: string): string {
 
 /** Signale à la page que les corrections sont autorisées. */
 export function activerCorrections(html: string): string {
-  return html.replace(
-    "</head>",
-    "<script>window.__CORRECTION_ACTIVE__ = true;</script>\n</head>"
-  );
+  return injecterAvantFermeture(html, "</head>", "<script>window.__CORRECTION_ACTIVE__ = true;</script>\n");
 }
 
 /**
@@ -67,10 +81,7 @@ export function injecterContexteEleve(html: string, contexte: ContexteEleveDepot
   // casser hors du tag (les noms viennent de la base, pas de l'utilisateur
   // courant, mais un autre élève a pu saisir le sien à l'inscription).
   const json = JSON.stringify(contexte).replace(/</g, "\\u003c");
-  return html.replace(
-    "</head>",
-    `<script>window.__CONTEXTE_ELEVE__ = ${json};</script>\n</head>`
-  );
+  return injecterAvantFermeture(html, "</head>", `<script>window.__CONTEXTE_ELEVE__ = ${json};</script>\n`);
 }
 
 /**
@@ -85,7 +96,7 @@ export function injecterMessageDelaiDepasse(html: string): string {
   <p style="margin:0;color:#fb7185;font-size:14px">⏰ Le délai de dépôt est dépassé.</p>
 </section>
 `;
-  return html.replace("</body>", `${bloc}</body>`);
+  return injecterAvantFermeture(html, "</body>", bloc);
 }
 
 /**
@@ -275,5 +286,81 @@ export function injecterWidgetDepot(html: string, coursId: string): string {
 </script>
 `;
 
-  return html.replace("</body>", `${bloc}</body>`);
+  return injecterAvantFermeture(html, "</body>", bloc);
+}
+
+/**
+ * Sauvegarde/restauration automatique du code tapé dans les cellules
+ * d'exercice (voir ProgressionExercice) : injecté juste avant `</body>`,
+ * comme le widget de dépôt, pour s'appliquer à tous les fichiers
+ * d'exercices sans modification manuelle.
+ *
+ * Cible chaque `.cell[data-cell] textarea.code` dont le plus proche ancêtre
+ * identifié (`[id]`) n'est PAS un bloc `.correction` — l'id de cet ancêtre
+ * sert d'`exerciceId` stable (ex: "ex1", "s1e1", convention déjà en place
+ * dans contenu/cours/*.html). Les cellules de démonstration à l'intérieur
+ * d'une correction ne sont jamais capturées : ce n'est pas le travail de
+ * l'élève.
+ */
+export function injecterScriptProgression(
+  html: string,
+  coursId: string,
+  sauvegardes: Record<string, string>,
+): string {
+  const coursIdJson = JSON.stringify(coursId).replace(/</g, "\\u003c");
+  const sauvegardesJson = JSON.stringify(sauvegardes).replace(/</g, "\\u003c");
+
+  const script = `
+<script>
+(function(){
+  var COURS_ID = ${coursIdJson};
+  var SAUVEGARDES = ${sauvegardesJson};
+  var DELAI_DEBOUNCE = 2000;
+
+  document.querySelectorAll('.cell[data-cell] > textarea.code').forEach(function(textarea){
+    var cell = textarea.closest('[data-cell]');
+    if (cell.closest('.correction')) return; // démo du prof, pas le travail de l'élève
+
+    var conteneur = cell.closest('[id]');
+    if (!conteneur) return;
+    var exerciceId = conteneur.id;
+
+    if (Object.prototype.hasOwnProperty.call(SAUVEGARDES, exerciceId)) {
+      textarea.value = SAUVEGARDES[exerciceId];
+    }
+
+    var indicateur = document.createElement('span');
+    indicateur.className = 'lfi-progression-indicateur';
+    indicateur.style.cssText = 'margin-left:10px;font-size:12px;color:#34d399;opacity:0;transition:opacity .3s';
+    indicateur.textContent = 'Sauvegardé ✓';
+    var head = cell.querySelector('.cell-head');
+    if (head) head.appendChild(indicateur); else cell.insertBefore(indicateur, cell.firstChild);
+
+    var minuteur = null;
+    var masquageMinuteur = null;
+
+    textarea.addEventListener('input', function(){
+      if (minuteur) clearTimeout(minuteur);
+      indicateur.style.opacity = '0';
+      minuteur = setTimeout(function(){
+        fetch('/api/progression', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ coursId: COURS_ID, exerciceId: exerciceId, code: textarea.value })
+        })
+        .then(function(res){
+          if (!res.ok) return;
+          indicateur.style.opacity = '1';
+          if (masquageMinuteur) clearTimeout(masquageMinuteur);
+          masquageMinuteur = setTimeout(function(){ indicateur.style.opacity = '0'; }, 3000);
+        })
+        .catch(function(){});
+      }, DELAI_DEBOUNCE);
+    });
+  });
+})();
+</script>
+`;
+
+  return injecterAvantFermeture(html, "</body>", script);
 }

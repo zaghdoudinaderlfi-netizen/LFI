@@ -9,6 +9,7 @@ import {
   injecterContexteEleve,
   injecterWidgetDepot,
   injecterMessageDelaiDepasse,
+  injecterScriptProgression,
 } from "@/lib/cours-interactif";
 import { listerCamaradesClasse } from "@/lib/comptes-rendus";
 import { formaterNomComplet } from "@/lib/utilisateurs";
@@ -108,6 +109,21 @@ export async function GET(
     resultat = delaiDepasse
       ? injecterMessageDelaiDepasse(resultat)
       : injecterWidgetDepot(resultat, cours.id);
+  }
+
+  // Élève connecté : restaure le code sauvegardé dans les cellules
+  // d'exercice, et câble la sauvegarde automatique des saisies suivantes.
+  // S'applique à toutes les pages sans distinction — sans effet si la page
+  // ne contient aucune cellule d'exercice.
+  if (session?.user?.id && session.user.role === "ELEVE") {
+    const progressions = await prisma.progressionExercice.findMany({
+      where: { eleveId: session.user.id, coursId: cours.id },
+      select: { exerciceId: true, codeSauvegarde: true },
+    });
+    const sauvegardes = Object.fromEntries(
+      progressions.map((p) => [p.exerciceId, p.codeSauvegarde])
+    );
+    resultat = injecterScriptProgression(resultat, cours.id, sauvegardes);
   }
 
   return new NextResponse(resultat, {
