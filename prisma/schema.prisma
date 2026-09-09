@@ -109,6 +109,13 @@ model User {
   // Sécurité : force le changement de mdp après réinitialisation admin.
   doitChangerMdp Boolean @default(false)
 
+  // Optionnel pour compatibilité avec les comptes créés avant ce champ —
+  // obligatoire pour toute nouvelle inscription. Sert à vérifier l'identité
+  // lors d'une réinitialisation de mot de passe en libre-service (voir
+  // /mot-de-passe-oublie) : ce n'est pas un secret fort, mais suffisant pour
+  // un usage scolaire interne.
+  dateNaissance DateTime? @db.Date
+
   // Avatar (constructeur façon Kahoot, élèves uniquement). Null = avatar
   // par défaut généré à partir de l'identifiant (lib/avatar.ts).
   avatarStyle   String?

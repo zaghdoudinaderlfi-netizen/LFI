@@ -54,6 +54,23 @@ export function InscriptionForm() {
       </div>
 
       <div className="flex flex-col gap-1">
+        <label htmlFor="dateNaissance" className="field-label">
+          Date de naissance
+        </label>
+        <input
+          id="dateNaissance"
+          name="dateNaissance"
+          type="date"
+          required
+          autoComplete="bday"
+          className="input"
+        />
+        <p className="text-xs text-ink-muted">
+          Utilisée uniquement pour vérifier ton identité si tu oublies ton mot de passe.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-1">
         <label htmlFor="motDePasse" className="field-label">
           Mot de passe
         </label>

@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { nom, prenom, email, motDePasse, codeInscription } = body as Record<
+  const { nom, prenom, email, motDePasse, codeInscription, dateNaissance } = body as Record<
     string,
     unknown
   >;
@@ -21,7 +21,8 @@ export async function POST(request: Request) {
     typeof prenom !== "string" ||
     typeof email !== "string" ||
     typeof motDePasse !== "string" ||
-    typeof codeInscription !== "string"
+    typeof codeInscription !== "string" ||
+    typeof dateNaissance !== "string"
   ) {
     return NextResponse.json(
       { error: "Champs manquants ou invalides." },
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const user = await inscrireEleve({ nom, prenom, email, motDePasse, codeInscription });
+    const user = await inscrireEleve({ nom, prenom, email, motDePasse, codeInscription, dateNaissance });
     return NextResponse.json(
       { id: user.id, email: user.email, nom: user.nom, prenom: user.prenom, role: user.role },
       { status: 201 }

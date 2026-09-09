@@ -13,19 +13,21 @@ export async function inscrire(
   const email = formData.get("email");
   const motDePasse = formData.get("motDePasse");
   const codeInscription = formData.get("codeInscription");
+  const dateNaissance = formData.get("dateNaissance");
 
   if (
     typeof nom !== "string" ||
     typeof prenom !== "string" ||
     typeof email !== "string" ||
     typeof motDePasse !== "string" ||
-    typeof codeInscription !== "string"
+    typeof codeInscription !== "string" ||
+    typeof dateNaissance !== "string"
   ) {
     return "Formulaire invalide.";
   }
 
   try {
-    await inscrireEleve({ nom, prenom, email, motDePasse, codeInscription });
+    await inscrireEleve({ nom, prenom, email, motDePasse, codeInscription, dateNaissance });
   } catch (error) {
     if (error instanceof InscriptionError) {
       return error.message;
