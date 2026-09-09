@@ -60,6 +60,7 @@ export function CoursForm({
   const enregistre = message === "Cours enregistré.";
   const [publie, setPublie] = useState(cours?.publie ?? false);
   const [typeSimple, setTypeSimple] = useState<TypeCoursSimple | null>(null);
+  const [depotActif, setDepotActif] = useState(false);
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -212,19 +213,62 @@ export function CoursForm({
           )}
 
           {typeSimple === "HTML" && (
-            <label className="flex items-start gap-2 text-sm font-medium text-ink-secondary">
-              <input
-                type="checkbox"
-                name="correctionVisible"
-                className="mt-0.5 h-4 w-4 rounded border-space-border accent-neon-blue"
-              />
-              <span>
-                Afficher le corrigé aux élèves
-                <span className="mt-0.5 block text-xs font-normal text-ink-muted">
-                  Tant que c&apos;est décoché, les corrections ne sont pas envoyées au navigateur de l&apos;élève : elles restent invisibles même dans le code source de la page.
+            <div className="flex flex-col gap-4 rounded-lg border border-space-border bg-space-surface2/40 p-4">
+              <span className="field-label">Options</span>
+
+              <label className="flex items-start gap-2 text-sm font-medium text-ink-secondary">
+                <input
+                  type="checkbox"
+                  name="correctionVisible"
+                  className="mt-0.5 h-4 w-4 rounded border-space-border accent-neon-blue"
+                />
+                <span>
+                  Afficher le corrigé aux élèves
+                  <span className="mt-0.5 block text-xs font-normal text-ink-muted">
+                    Tant que c&apos;est décoché, les corrections ne sont pas envoyées au navigateur de
+                    l&apos;élève : elles restent invisibles même dans le code source de la page.
+                  </span>
                 </span>
-              </span>
-            </label>
+              </label>
+
+              <div className="flex flex-col gap-2">
+                <label className="flex items-start gap-2 text-sm font-medium text-ink-secondary">
+                  <input
+                    type="checkbox"
+                    name="depotActive"
+                    checked={depotActif}
+                    onChange={(e) => setDepotActif(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-space-border accent-neon-blue"
+                  />
+                  <span>
+                    Dépôt de compte-rendu
+                    <span className="mt-0.5 block text-xs font-normal text-ink-muted">
+                      Les élèves pourront déposer leur travail directement depuis la page du cours.
+                    </span>
+                  </span>
+                </label>
+
+                {depotActif && (
+                  <div className="flex items-center gap-2 pl-6">
+                    <label htmlFor="dateLimiteDepot" className="text-xs font-medium text-ink-secondary">
+                      Date limite <span className="font-normal text-ink-muted">(optionnelle)</span>
+                    </label>
+                    <input
+                      id="dateLimiteDepot"
+                      name="dateLimiteDepot"
+                      type="date"
+                      className="input w-auto py-1 text-xs"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {(typeSimple === "PDF" || typeSimple === "WORD" || typeSimple === "VIDEO") && (
+            <p className="text-xs text-ink-muted">
+              Dépôt de compte-rendu et correction ne sont pas disponibles pour ce type de fichier.
+            </p>
           )}
 
           {typeSimple === "VIDEO" && (

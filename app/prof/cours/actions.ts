@@ -35,6 +35,12 @@ function lireInfosFormulaire(formData: FormData) {
   const matiere = formData.get("matiere");
   const publie = formData.get("publie") === "on";
   const correctionVisible = formData.get("correctionVisible") === "on";
+  const depotActive = formData.get("depotActive") === "on";
+  const dateLimiteDepotRaw = formData.get("dateLimiteDepot");
+  const dateLimiteDepot =
+    typeof dateLimiteDepotRaw === "string" && dateLimiteDepotRaw.trim() !== ""
+      ? new Date(`${dateLimiteDepotRaw}T23:59:59.999Z`)
+      : null;
   const chapitreRaw = formData.get("chapitre");
   const chapitre =
     chapitreRaw && typeof chapitreRaw === "string" && chapitreRaw.trim() !== ""
@@ -47,6 +53,7 @@ function lireInfosFormulaire(formData: FormData) {
 
   if (niveau !== "TROISIEME" && niveau !== "SECONDE" && niveau !== "PREMIERE") return null;
   if (matiere !== "TECHNOLOGIE" && matiere !== "SNT" && matiere !== "NSI") return null;
+  if (dateLimiteDepot && Number.isNaN(dateLimiteDepot.getTime())) return null;
 
   return {
     titre,
@@ -54,6 +61,8 @@ function lireInfosFormulaire(formData: FormData) {
     matiere: matiere as Matiere,
     publie,
     correctionVisible,
+    depotActive,
+    dateLimiteDepot,
     chapitre,
   };
 }

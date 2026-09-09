@@ -4,7 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { obtenirCoursParId } from "@/lib/cours";
 import { cheminCoursSimpleDepuisUrl } from "@/lib/cours-simple";
 import { supabaseAdmin, BUCKET_COURS_SIMPLE } from "@/lib/supabase";
-import { activerCorrections, retirerCorrections } from "@/lib/cours-interactif";
+import {
+  activerCorrections,
+  retirerCorrections,
+  injecterContexteEleve,
+  injecterWidgetDepot,
+  injecterMessageDelaiDepasse,
+} from "@/lib/cours-interactif";
+import { listerCamaradesClasse } from "@/lib/comptes-rendus";
+import { formaterNomComplet } from "@/lib/utilisateurs";
 
 /**
  * Sert le fichier HTML d'un cours "mode simplifié" en le retéléchargeant
@@ -31,10 +39,17 @@ export async function GET(
     return NextResponse.redirect(new URL("/connexion", request.url));
   }
 
+  let utilisateur: {
+    nom: string;
+    prenom: string | null;
+    classeId: string | null;
+    classe: { niveau: string } | null;
+  } | null = null;
+
   if (session && session.user.role !== "PROF") {
-    const utilisateur = await prisma.user.findUnique({
+    utilisateur = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { classe: true },
+      select: { nom: true, prenom: true, classeId: true, classe: { select: { niveau: true } } },
     });
 
     const accesAutorise = cours.publie && utilisateur?.classe?.niveau === cours.niveau;
@@ -62,7 +77,25 @@ export async function GET(
   // qui n'est qu'un raccourci d'affichage, pas une autorisation.
   const estProf = session?.user?.role === "PROF";
   const corrigeAutorise = estProf || cours.correctionVisible === true;
-  const resultat = corrigeAutorise ? activerCorrections(html) : retirerCorrections(html);
+  let resultat = corrigeAutorise ? activerCorrections(html) : retirerCorrections(html);
+
+  // Élève connecté et rattaché à une classe : le widget de dépôt peut
+  // utiliser son identité et chercher ses camarades au lieu d'une saisie
+  // libre — même logique que app/cours/[fichier]/route.ts.
+  if (session?.user?.id && utilisateur?.classeId) {
+    const camarades = await listerCamaradesClasse(session.user.id);
+    resultat = injecterContexteEleve(resultat, {
+      moi: { id: session.user.id, nom: formaterNomComplet(utilisateur) },
+      camarades: camarades.map((c) => ({ id: c.id, nom: formaterNomComplet(c) })),
+    });
+  }
+
+  if (cours.depotActive) {
+    const delaiDepasse = cours.dateLimiteDepot !== null && new Date() > cours.dateLimiteDepot;
+    resultat = delaiDepasse
+      ? injecterMessageDelaiDepasse(resultat)
+      : injecterWidgetDepot(resultat, cours.id);
+  }
 
   return new NextResponse(resultat, {
     headers: {

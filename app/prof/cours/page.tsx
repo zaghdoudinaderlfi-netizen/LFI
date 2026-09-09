@@ -115,7 +115,7 @@ export default async function ProfCoursPage({
                           {c.aCorrectionsMasquables && (
                             <CorrectionToggle coursId={c.id} correctionVisible={c.correctionVisible} />
                           )}
-                          {c.pageInteractive && (
+                          {(c.pageInteractive || c.typeSimple === "HTML") && (
                             <>
                               <DepotToggle coursId={c.id} depotActive={c.depotActive} />
                               <DateLimiteDepotInput

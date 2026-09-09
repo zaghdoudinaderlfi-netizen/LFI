@@ -107,10 +107,13 @@ export type CoursSimpleInfoInput = {
   matiere: Matiere;
   publie: boolean;
   chapitre?: number | null;
-  // Uniquement pertinent pour un fichier HTML qui implémente lui-même la
-  // convention ?corrige=1 (voir correctionVisible sur le modèle Cours et
-  // le lien élève des cours interactifs). Ignoré pour les autres types.
+  // Uniquement pertinent pour un fichier HTML : le widget de dépôt/la
+  // correction ne peuvent s'injecter que dans une page HTML que l'on sert
+  // nous-mêmes (voir app/api/cours/[id]/html/route.ts) — PDF/Word/Vidéo
+  // n'ont pas de page HTML modifiable. Ignorés pour les autres types.
   correctionVisible?: boolean;
+  depotActive?: boolean;
+  dateLimiteDepot?: Date | null;
 };
 
 export type ContenuCoursSimple =
@@ -169,6 +172,8 @@ export async function creerCoursSimple(data: CoursSimpleInfoInput, contenu: Cont
       chapitre: data.chapitre ?? null,
       correctionVisible: contenu.type === "HTML" && !!data.correctionVisible,
       aCorrectionsMasquables,
+      depotActive: contenu.type === "HTML" && !!data.depotActive,
+      dateLimiteDepot: contenu.type === "HTML" ? (data.dateLimiteDepot ?? null) : null,
       ...champs,
     },
   });
