@@ -390,15 +390,30 @@ export async function modifierDateLimiteDepot(id: string, dateLimiteDepot: Date 
   });
 }
 
+/**
+ * Renomme un cours depuis le clic rapide de la liste "Mes cours". L'élève
+ * voit `titreInteractif` en priorité sur `titre` quand il est renseigné
+ * (voir app/eleve/cours/**) : on met donc à jour celui des deux qui est
+ * réellement affiché, pour que ce renommage rapide se répercute toujours
+ * côté élève plutôt que d'être masqué par un `titreInteractif` resté
+ * inchangé.
+ */
 export async function renommerCours(id: string, titre: string) {
   const titreNettoye = titre.trim();
   if (!titreNettoye) {
     throw new CoursError("Le titre est obligatoire.");
   }
 
+  const cours = await prisma.cours.findUnique({ where: { id }, select: { titreInteractif: true } });
+  if (!cours) {
+    throw new CoursError("Cours introuvable.");
+  }
+
   return prisma.cours.update({
     where: { id },
-    data: { titre: titreNettoye },
+    data: cours.titreInteractif !== null
+      ? { titreInteractif: titreNettoye }
+      : { titre: titreNettoye },
   });
 }
 

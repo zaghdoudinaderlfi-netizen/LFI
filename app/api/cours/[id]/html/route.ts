@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { obtenirCoursParId } from "@/lib/cours";
 import { cheminCoursSimpleDepuisUrl } from "@/lib/cours-simple";
 import { supabaseAdmin, BUCKET_COURS_SIMPLE } from "@/lib/supabase";
+import { activerCorrections, retirerCorrections } from "@/lib/cours-interactif";
 
 /**
  * Sert le fichier HTML d'un cours "mode simplifié" en le retéléchargeant
@@ -53,12 +54,20 @@ export async function GET(
     return NextResponse.json({ error: "Fichier introuvable." }, { status: 404 });
   }
 
-  const buffer = await data.arrayBuffer();
+  const html = await data.text();
 
-  return new NextResponse(buffer, {
+  // Le prof voit toujours les corrections ; l'élève seulement quand le
+  // toggle du dashboard est activé pour ce cours — décidé côté serveur,
+  // jamais depuis le paramètre `?corrige=1` de l'URL (voir CoursContenu),
+  // qui n'est qu'un raccourci d'affichage, pas une autorisation.
+  const estProf = session?.user?.role === "PROF";
+  const corrigeAutorise = estProf || cours.correctionVisible === true;
+  const resultat = corrigeAutorise ? activerCorrections(html) : retirerCorrections(html);
+
+  return new NextResponse(resultat, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "private, max-age=60",
+      "Cache-Control": "no-store",
     },
   });
 }

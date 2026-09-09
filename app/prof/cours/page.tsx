@@ -96,7 +96,7 @@ export default async function ProfCoursPage({
                               </span>
                             )}
                           </p>
-                          <TitreCoursEditable coursId={c.id} titre={c.titre} />
+                          <TitreCoursEditable coursId={c.id} titre={c.titreInteractif ?? c.titre} />
                           <p className="text-sm text-ink-secondary">{NIVEAU_LABELS[c.niveau]}</p>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
