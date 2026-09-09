@@ -7,6 +7,7 @@ import {
   retirerCorrections,
   activerCorrections,
   injecterContexteEleve,
+  injecterWidgetDepot,
 } from "@/lib/cours-interactif";
 import { listerCamaradesClasse } from "@/lib/comptes-rendus";
 import { formaterNomComplet } from "@/lib/utilisateurs";
@@ -26,7 +27,9 @@ export async function GET(
     prisma.cours.findFirst({
       where: { pageInteractive: fichier },
       select: {
+        id: true,
         correctionVisible: true,
+        depotActive: true,
         publie: true,
         visibleEleves: true,
         estPublic: true,
@@ -96,6 +99,10 @@ export async function GET(
       moi: { id: session.user.id, nom: formaterNomComplet(utilisateur) },
       camarades: camarades.map((c) => ({ id: c.id, nom: formaterNomComplet(c) })),
     });
+  }
+
+  if (cours.depotActive) {
+    resultat = injecterWidgetDepot(resultat, cours.id);
   }
 
   return new NextResponse(resultat, {
