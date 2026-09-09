@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AUCUN, AVATAR_CATEGORIES, estStyleAvatar, type AvatarOptions } from "@/lib/avatar";
+import { parserDateNaissance } from "@/lib/utilisateurs";
 
 export async function modifierProfilAction(
   _prevState: string | undefined,
@@ -33,6 +34,30 @@ export async function modifierProfilAction(
 
   revalidatePath("/eleve/profil");
   return "Profil mis à jour.";
+}
+
+export async function modifierDateNaissanceAction(
+  _prevState: string | undefined,
+  formData: FormData
+): Promise<string | undefined> {
+  const session = await auth();
+  if (!session?.user) return "Non connecté.";
+
+  const dateNaissance = formData.get("dateNaissance");
+  if (typeof dateNaissance !== "string" || !dateNaissance) {
+    return "Date de naissance invalide.";
+  }
+
+  const resultat = parserDateNaissance(dateNaissance);
+  if ("erreur" in resultat) return resultat.erreur;
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { dateNaissance: resultat.date },
+  });
+
+  revalidatePath("/eleve/profil");
+  return "Date de naissance mise à jour.";
 }
 
 export async function changerMdpAction(

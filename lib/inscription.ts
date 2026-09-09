@@ -1,27 +1,8 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
+import { parserDateNaissance } from "./utilisateurs";
 
 export class InscriptionError extends Error {}
-
-/** Parse une date "AAAA-MM-JJ" (input HTML date) et vérifie sa plausibilité. */
-function parserDateNaissance(valeur: string): Date {
-  const date = new Date(`${valeur}T00:00:00.000Z`);
-  if (Number.isNaN(date.getTime())) {
-    throw new InscriptionError("Date de naissance invalide.");
-  }
-
-  const maintenant = new Date();
-  if (date > maintenant) {
-    throw new InscriptionError("La date de naissance ne peut pas être dans le futur.");
-  }
-
-  const ageEnAnnees = (maintenant.getTime() - date.getTime()) / (365.25 * 24 * 3600 * 1000);
-  if (ageEnAnnees > 100) {
-    throw new InscriptionError("Date de naissance invalide.");
-  }
-
-  return date;
-}
 
 export async function inscrireEleve({
   nom,
@@ -48,7 +29,11 @@ export async function inscrireEleve({
     );
   }
 
-  const dateNaissanceParsee = parserDateNaissance(dateNaissance);
+  const resultatDate = parserDateNaissance(dateNaissance);
+  if ("erreur" in resultatDate) {
+    throw new InscriptionError(resultatDate.erreur);
+  }
+  const dateNaissanceParsee = resultatDate.date;
 
   const classe = await prisma.classe.findUnique({
     where: { codeInscription },

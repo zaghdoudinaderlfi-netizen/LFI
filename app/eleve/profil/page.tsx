@@ -7,6 +7,7 @@ import { AvatarBuilder } from "@/components/avatar/avatar-builder";
 import { ChangerMdpForm } from "@/components/profil/changer-mdp-form";
 import { ProfilForm } from "./profil-form";
 import { EmailForm } from "./email-form";
+import { DateNaissanceForm } from "./date-naissance-form";
 import { changerMdpAction, modifierEmailAction } from "./actions";
 
 export default async function EleveProfilPage() {
@@ -75,9 +76,22 @@ export default async function EleveProfilPage() {
       <section className="card animate-fade-in-up p-6 [animation-delay:180ms]">
         <h2 className="section-title mb-1">Adresse email</h2>
         <p className="mb-4 text-sm text-ink-secondary">
-          Ton adresse email sert à te connecter et à recevoir un lien si tu oublies ton mot de passe.
+          Ton adresse email sert à te connecter, et d&apos;identifiant si tu dois réinitialiser ton mot de passe.
         </p>
         <EmailForm emailActuel={user?.email ?? ""} action={modifierEmailAction} />
+      </section>
+
+      {/* Date de naissance */}
+      <section className="card animate-fade-in-up p-6 [animation-delay:210ms]">
+        <h2 className="section-title mb-1">Date de naissance</h2>
+        <p className="mb-4 text-sm text-ink-secondary">
+          {user?.dateNaissance
+            ? "Sert à vérifier ton identité si tu oublies ton mot de passe."
+            : "Pas encore renseignée : sans elle, tu ne pourras pas réinitialiser ton mot de passe toi-même si tu l'oublies (ton professeur restera ton seul recours)."}
+        </p>
+        <DateNaissanceForm
+          dateNaissance={user?.dateNaissance ? user.dateNaissance.toISOString().slice(0, 10) : ""}
+        />
       </section>
 
       {/* Changer le mot de passe */}
