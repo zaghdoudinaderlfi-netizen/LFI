@@ -6,11 +6,16 @@ import {
   useState,
   useTransition,
 } from "react";
-import { ChevronDown, ChevronUp, KeyRound, Pencil, X, Copy, Check } from "lucide-react";
+import { ChevronDown, ChevronUp, KeyRound, Pencil, Trash2, X, Copy, Check } from "lucide-react";
 import { NIVEAU_LABELS } from "@/lib/classes-constants";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 import { useToast } from "@/components/ui/toast";
-import { reinitMdpEleveAction, modifierEleveAction } from "./actions";
+import {
+  reinitMdpEleveAction,
+  modifierEleveAction,
+  supprimerEleveAction,
+  supprimerClasseAction,
+} from "./actions";
 import type { Niveau } from "@prisma/client";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -100,6 +105,8 @@ export function AdminClient({
         <GroupeClasse
           key={classe.id}
           titre={`${classe.nom} — ${NIVEAU_LABELS[classe.niveau]} (${classe.anneeScolaire})`}
+          classe={classe}
+          totalEleves={eleves.filter((e) => e.classeId === classe.id).length}
           eleves={gr}
           classes={classes}
           onMdpReset={setMdpVisible}
@@ -131,36 +138,84 @@ export function AdminClient({
 
 function GroupeClasse({
   titre,
+  classe,
+  totalEleves,
   eleves,
   classes,
   onMdpReset,
 }: {
   titre: string;
+  classe?: ClasseSimple;
+  totalEleves?: number;
   eleves: Eleve[];
   classes: ClasseSimple[];
   onMdpReset: (v: { eleveId: string; nom: string; mdp: string }) => void;
 }) {
   const [ouvert, setOuvert] = useState(true);
+  const [enSuppression, startSuppression] = useTransition();
+  const { addToast } = useToast();
+
+  function handleSupprimerClasse() {
+    if (!classe) return;
+    const n = totalEleves ?? eleves.length;
+    if (
+      !confirm(
+        `Supprimer la classe « ${classe.nom} » ?\n\n` +
+          `Cela supprimera aussi ${n === 0 ? "ses" : `les ${n}`} élève${n !== 1 ? "s" : ""} de cette classe, confirmer ?`,
+      )
+    )
+      return;
+
+    startSuppression(async () => {
+      const res = await supprimerClasseAction(classe.id);
+      if (!res.ok) {
+        addToast({ type: "error", message: res.erreur ?? "Erreur inconnue." });
+      }
+    });
+  }
 
   return (
     <section className="card animate-fade-in-up overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setOuvert((o) => !o)}
-        className="flex w-full items-center justify-between px-5 py-4 text-left hover:bg-space-surface2/50 transition-colors"
-      >
-        <span className="font-semibold text-ink-primary">
-          {titre}{" "}
-          <span className="ml-1 text-sm font-normal text-ink-secondary">
-            ({eleves.length} élève{eleves.length > 1 ? "s" : ""})
+      <div className="flex w-full items-center justify-between gap-2 px-5 py-4 hover:bg-space-surface2/50 transition-colors">
+        <button
+          type="button"
+          onClick={() => setOuvert((o) => !o)}
+          className="flex flex-1 items-center gap-2 text-left"
+        >
+          <span className="font-semibold text-ink-primary">
+            {titre}{" "}
+            <span className="ml-1 text-sm font-normal text-ink-secondary">
+              ({eleves.length} élève{eleves.length > 1 ? "s" : ""})
+            </span>
           </span>
-        </span>
-        {ouvert ? (
-          <ChevronUp className="h-4 w-4 text-ink-muted" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-ink-muted" />
-        )}
-      </button>
+        </button>
+        <div className="flex items-center gap-1">
+          {classe && (
+            <button
+              type="button"
+              onClick={handleSupprimerClasse}
+              disabled={enSuppression}
+              title="Supprimer la classe"
+              className="btn-ghost gap-1.5 py-1 text-xs text-red-400 hover:bg-red-500/10"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              {enSuppression ? "…" : "Supprimer"}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setOuvert((o) => !o)}
+            aria-label={ouvert ? "Replier" : "Déplier"}
+            className="rounded-lg p-1.5 text-ink-muted hover:text-ink-primary"
+          >
+            {ouvert ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+      </div>
 
       {ouvert && (
         <ul className="divide-y divide-space-border">
@@ -191,7 +246,25 @@ function LigneEleve({
 }) {
   const [modeEdition, setModeEdition] = useState(false);
   const [enReinit, startReinit] = useTransition();
+  const [enSuppression, startSuppression] = useTransition();
   const { addToast } = useToast();
+
+  function handleSupprimer() {
+    if (
+      !confirm(
+        `Supprimer l'élève ${formaterNomComplet(eleve)} ?\n\n` +
+          `Action irréversible — ses soumissions, tentatives de quiz, comptes-rendus et notifications seront aussi supprimés.`,
+      )
+    )
+      return;
+
+    startSuppression(async () => {
+      const res = await supprimerEleveAction(eleve.id);
+      if (!res.ok) {
+        addToast({ type: "error", message: res.erreur ?? "Erreur inconnue." });
+      }
+    });
+  }
 
   async function handleReinit() {
     if (
@@ -243,6 +316,15 @@ function LigneEleve({
           >
             <KeyRound className="h-3.5 w-3.5" />
             {enReinit ? "…" : "Réinitialiser mdp"}
+          </button>
+          <button
+            type="button"
+            onClick={handleSupprimer}
+            disabled={enSuppression}
+            className="btn-ghost gap-1.5 py-1 text-xs text-red-400 hover:bg-red-500/10"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            {enSuppression ? "…" : "Supprimer"}
           </button>
         </div>
       </div>

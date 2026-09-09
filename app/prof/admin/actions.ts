@@ -128,3 +128,62 @@ export async function modifierEleveAction(
   revalidatePath("/prof/admin");
   return "ok";
 }
+
+// ── Suppression d'un élève ─────────────────────────────────────────────────────
+
+export async function supprimerEleveAction(eleveId: string): Promise<{
+  ok: boolean;
+  erreur?: string;
+}> {
+  try {
+    await verifierProf();
+  } catch {
+    return { ok: false, erreur: "Accès refusé." };
+  }
+
+  const eleve = await prisma.user.findUnique({
+    where: { id: eleveId, role: "ELEVE" },
+    select: { id: true },
+  });
+  if (!eleve) return { ok: false, erreur: "Élève introuvable." };
+
+  // Tout le reste (soumissions, tentatives de quiz, comptes-rendus,
+  // notifications, suivi oral...) est en ON DELETE CASCADE sur User.id.
+  await prisma.user.delete({ where: { id: eleveId } });
+
+  revalidatePath("/prof/admin");
+  revalidatePath("/prof/classes");
+  return { ok: true };
+}
+
+// ── Suppression d'une classe (et de ses élèves) ────────────────────────────────
+
+export async function supprimerClasseAction(classeId: string): Promise<{
+  ok: boolean;
+  erreur?: string;
+}> {
+  try {
+    await verifierProf();
+  } catch {
+    return { ok: false, erreur: "Accès refusé." };
+  }
+
+  const classe = await prisma.classe.findUnique({
+    where: { id: classeId },
+    select: { id: true },
+  });
+  if (!classe) return { ok: false, erreur: "Classe introuvable." };
+
+  // La contrainte User.classeId est ON DELETE SET NULL : supprimer la classe
+  // seule ne ferait que détacher les élèves. On les supprime explicitement
+  // d'abord (demande produit : "supprimer la classe supprime ses élèves"),
+  // puis la classe — dans une transaction pour rester cohérent en cas d'échec.
+  await prisma.$transaction([
+    prisma.user.deleteMany({ where: { classeId, role: "ELEVE" } }),
+    prisma.classe.delete({ where: { id: classeId } }),
+  ]);
+
+  revalidatePath("/prof/admin");
+  revalidatePath("/prof/classes");
+  return { ok: true };
+}
