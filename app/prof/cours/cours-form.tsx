@@ -1,8 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import type { Matiere, Niveau, TypeCoursSimple } from "@prisma/client";
+import {
+  Upload,
+  FileCode2,
+  FileType2,
+  FileText,
+  PlayCircle,
+  HelpCircle,
+  CheckCircle2,
+  Inbox,
+  Eye,
+  Lock,
+  CalendarClock,
+} from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import { NIVEAU_LABELS, MATIERE_LABELS } from "@/lib/classes-constants";
 
@@ -22,13 +35,21 @@ type QuizDisponible = {
   matiere: Matiere;
 };
 
-const TYPES_COURS: { value: TypeCoursSimple; emoji: string; label: string }[] = [
-  { value: "HTML", emoji: "📄", label: "Fichier HTML" },
-  { value: "PDF", emoji: "📕", label: "PDF" },
-  { value: "WORD", emoji: "📝", label: "Word" },
-  { value: "VIDEO", emoji: "🎬", label: "Vidéo" },
-  { value: "QCM", emoji: "❓", label: "QCM" },
+const TYPES_COURS: { value: TypeCoursSimple; Icone: typeof FileCode2; label: string; accent: string }[] = [
+  { value: "HTML", Icone: FileCode2, label: "HTML", accent: "violet" },
+  { value: "PDF", Icone: FileType2, label: "PDF", accent: "amber" },
+  { value: "WORD", Icone: FileText, label: "Word", accent: "blue" },
+  { value: "VIDEO", Icone: PlayCircle, label: "Vidéo", accent: "pink" },
+  { value: "QCM", Icone: HelpCircle, label: "QCM", accent: "cyan" },
 ];
+
+const ACCENT_CLASSES: Record<string, { actif: string; icone: string }> = {
+  violet: { actif: "!border-violet-500/40 !bg-violet-500/10 !text-violet-600 dark:!text-violet-300", icone: "text-violet-500" },
+  amber: { actif: "!border-amber-500/40 !bg-amber-500/10 !text-amber-600 dark:!text-amber-300", icone: "text-amber-500" },
+  blue: { actif: "!border-neon-blue/40 !bg-neon-blue/10 !text-neon-blue", icone: "text-neon-blue" },
+  pink: { actif: "!border-pink-500/40 !bg-pink-500/10 !text-pink-600 dark:!text-pink-300", icone: "text-pink-500" },
+  cyan: { actif: "!border-neon-cyan/40 !bg-neon-cyan/10 !text-neon-cyan", icone: "text-neon-cyan" },
+};
 
 const ACCEPT_PAR_TYPE: Record<"HTML" | "PDF" | "WORD", string> = {
   HTML: ".html,.htm",
@@ -60,8 +81,30 @@ export function CoursForm({
   const enregistre = message === "Cours enregistré.";
   const [publie, setPublie] = useState(cours?.publie ?? false);
   const [typeSimple, setTypeSimple] = useState<TypeCoursSimple | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
   const [depotActif, setDepotActif] = useState(false);
+  const [correctionActif, setCorrectionActif] = useState(false);
+  const fichierRef = useRef<HTMLInputElement>(null);
+  const publieRef = useRef<HTMLInputElement>(null);
   const { addToast } = useToast();
+
+  function choisirType(valeur: TypeCoursSimple) {
+    setTypeSimple((cur) => (cur === valeur ? null : valeur));
+    setFileName(null);
+    setDepotActif(false);
+    setCorrectionActif(false);
+    if (fichierRef.current) fichierRef.current.value = "";
+  }
+
+  function deposerFichier(fichier: File | null | undefined) {
+    if (!fichier) return;
+    setFileName(fichier.name);
+  }
+
+  function changerFichier() {
+    setFileName(null);
+    if (fichierRef.current) fichierRef.current.value = "";
+  }
 
   useEffect(() => {
     if (!message) return;
@@ -173,100 +216,176 @@ export function CoursForm({
       )}
 
       {!cours?.id && (
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <span className="field-label">Type de cours — optionnel</span>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <span className="field-label">Contenu du cours — optionnel</span>
             <div className="flex flex-wrap gap-2">
-              {TYPES_COURS.map((t) => (
-                <button
-                  key={t.value}
-                  type="button"
-                  aria-pressed={typeSimple === t.value}
-                  onClick={() => setTypeSimple((cur) => (cur === t.value ? null : t.value))}
-                  className={`btn-secondary ${
-                    typeSimple === t.value ? "!border-neon-blue !text-neon-blue !bg-neon-blue/10" : ""
-                  }`}
-                >
-                  <span aria-hidden="true">{t.emoji}</span>
-                  {t.label}
-                </button>
-              ))}
+              {TYPES_COURS.map((t) => {
+                const actif = typeSimple === t.value;
+                const accent = ACCENT_CLASSES[t.accent];
+                return (
+                  <button
+                    key={t.value}
+                    type="button"
+                    aria-pressed={actif}
+                    onClick={() => choisirType(t.value)}
+                    className={`btn-secondary gap-1.5 ${actif ? accent.actif : ""}`}
+                  >
+                    <t.Icone className={`h-4 w-4 ${actif ? "" : accent.icone}`} />
+                    {t.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
           <input type="hidden" name="type" value={typeSimple ?? ""} />
 
           {(typeSimple === "HTML" || typeSimple === "PDF" || typeSimple === "WORD") && (
-            <div className="flex flex-col gap-1">
-              <label htmlFor="fichier" className="field-label">
-                {LABEL_FICHIER_PAR_TYPE[typeSimple]}
-              </label>
+            <div className="flex flex-col gap-2">
+              {!fileName ? (
+                <label
+                  htmlFor="fichier"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const fichier = e.dataTransfer.files?.[0];
+                    if (fichier && fichierRef.current) {
+                      const dt = new DataTransfer();
+                      dt.items.add(fichier);
+                      fichierRef.current.files = dt.files;
+                      deposerFichier(fichier);
+                    }
+                  }}
+                  className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-space-borderlight bg-space-surface2/40 px-6 py-8 text-center transition-colors hover:border-neon-blue/50 hover:bg-space-surface2/70"
+                >
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-neon-blue/10 text-neon-blue">
+                    <Upload className="h-5 w-5" />
+                  </span>
+                  <span className="text-sm font-semibold text-ink-primary">Dépose ton fichier ici</span>
+                  <span className="text-xs text-ink-secondary">
+                    ou clique pour parcourir — {LABEL_FICHIER_PAR_TYPE[typeSimple]}, 20 Mo max
+                  </span>
+                </label>
+              ) : (
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-space-border bg-space-surface2/50 px-4 py-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-space-surface ${ACCENT_CLASSES[TYPES_COURS.find((t) => t.value === typeSimple)!.accent].icone}`}>
+                      {(() => {
+                        const Icone = TYPES_COURS.find((t) => t.value === typeSimple)!.Icone;
+                        return <Icone className="h-5 w-5" />;
+                      })()}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-ink-primary">{fileName}</p>
+                      <p className="flex items-center gap-1 text-xs font-medium text-emerald-500">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Fichier prêt
+                      </p>
+                    </div>
+                  </div>
+                  <button type="button" onClick={changerFichier} className="shrink-0 text-xs font-semibold text-ink-secondary hover:text-ink-primary">
+                    Changer
+                  </button>
+                </div>
+              )}
               <input
+                ref={fichierRef}
                 id="fichier"
                 name="fichier"
                 type="file"
                 required
                 accept={ACCEPT_PAR_TYPE[typeSimple]}
-                className="input file:mr-3 file:rounded file:border-0 file:bg-space-surface file:px-3 file:py-1 file:text-sm file:text-ink-primary"
+                onChange={(e) => deposerFichier(e.target.files?.[0])}
+                className="sr-only"
               />
-              <p className="text-xs text-ink-muted">20 Mo max.</p>
             </div>
           )}
 
           {typeSimple === "HTML" && (
-            <div className="flex flex-col gap-4 rounded-lg border border-space-border bg-space-surface2/40 p-4">
+            <div className="flex flex-col gap-3 rounded-xl border border-space-border bg-space-surface2/40 p-4">
               <span className="field-label">Options</span>
 
-              <label className="flex items-start gap-2 text-sm font-medium text-ink-secondary">
-                <input
-                  type="checkbox"
-                  name="correctionVisible"
-                  className="mt-0.5 h-4 w-4 rounded border-space-border accent-neon-blue"
-                />
-                <span>
-                  Afficher le corrigé aux élèves
-                  <span className="mt-0.5 block text-xs font-normal text-ink-muted">
-                    Tant que c&apos;est décoché, les corrections ne sont pas envoyées au navigateur de
-                    l&apos;élève : elles restent invisibles même dans le code source de la page.
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-2.5">
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-500">
+                    <Eye className="h-4 w-4" />
                   </span>
-                </span>
-              </label>
-
-              <div className="flex flex-col gap-2">
-                <label className="flex items-start gap-2 text-sm font-medium text-ink-secondary">
-                  <input
-                    type="checkbox"
-                    name="depotActive"
-                    checked={depotActif}
-                    onChange={(e) => setDepotActif(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded border-space-border accent-neon-blue"
+                  <span className="text-sm text-ink-secondary">
+                    <span className="font-medium text-ink-primary">Correction visible aux élèves</span>
+                    <span className="mt-0.5 block text-xs">
+                      Tant que c&apos;est désactivé, les corrections ne sont jamais envoyées au navigateur de
+                      l&apos;élève.
+                    </span>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={correctionActif}
+                  onClick={() => setCorrectionActif((v) => !v)}
+                  className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                    correctionActif ? "bg-gradient-to-r from-neon-blue to-neon-violet" : "bg-space-border"
+                  }`}
+                >
+                  <span
+                    className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                      correctionActif ? "translate-x-[20px]" : "translate-x-0"
+                    }`}
                   />
-                  <span>
-                    Dépôt de compte-rendu
-                    <span className="mt-0.5 block text-xs font-normal text-ink-muted">
+                </button>
+                <input type="hidden" name="correctionVisible" value={correctionActif ? "on" : ""} />
+              </div>
+
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-2.5">
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                    <Inbox className="h-4 w-4" />
+                  </span>
+                  <span className="text-sm text-ink-secondary">
+                    <span className="font-medium text-ink-primary">Dépôt de compte-rendu</span>
+                    <span className="mt-0.5 block text-xs">
                       Les élèves pourront déposer leur travail directement depuis la page du cours.
                     </span>
                   </span>
-                </label>
-
-                {depotActif && (
-                  <div className="flex items-center gap-2 pl-6">
-                    <label htmlFor="dateLimiteDepot" className="text-xs font-medium text-ink-secondary">
-                      Date limite <span className="font-normal text-ink-muted">(optionnelle)</span>
-                    </label>
-                    <input
-                      id="dateLimiteDepot"
-                      name="dateLimiteDepot"
-                      type="date"
-                      className="input w-auto py-1 text-xs"
-                    />
-                  </div>
-                )}
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={depotActif}
+                  onClick={() => setDepotActif((v) => !v)}
+                  className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                    depotActif ? "bg-gradient-to-r from-neon-blue to-neon-violet" : "bg-space-border"
+                  }`}
+                >
+                  <span
+                    className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                      depotActif ? "translate-x-[20px]" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+                <input type="hidden" name="depotActive" value={depotActif ? "on" : ""} />
               </div>
+
+              {depotActif && (
+                <div className="flex items-center gap-2 pl-[42px]">
+                  <CalendarClock className="h-3.5 w-3.5 text-ink-muted" />
+                  <label htmlFor="dateLimiteDepot" className="text-xs font-medium text-ink-secondary">
+                    Date limite <span className="font-normal text-ink-muted">(optionnelle)</span>
+                  </label>
+                  <input
+                    id="dateLimiteDepot"
+                    name="dateLimiteDepot"
+                    type="date"
+                    className="input w-auto py-1 text-xs"
+                  />
+                </div>
+              )}
             </div>
           )}
 
           {(typeSimple === "PDF" || typeSimple === "WORD" || typeSimple === "VIDEO") && (
-            <p className="text-xs text-ink-muted">
+            <p className="flex items-center gap-1.5 text-xs text-ink-muted">
+              <Lock className="h-3.5 w-3.5" />
               Dépôt de compte-rendu et correction ne sont pas disponibles pour ce type de fichier.
             </p>
           )}
@@ -314,16 +433,18 @@ export function CoursForm({
         </div>
       )}
 
-      <label className="flex items-center gap-2 text-sm font-medium text-ink-secondary">
-        <input
-          type="checkbox"
-          name="publie"
-          checked={publie}
-          onChange={(e) => setPublie(e.target.checked)}
-          className="h-4 w-4 rounded border-space-border accent-neon-blue"
-        />
-        Publier ce cours (visible par les élèves du niveau correspondant)
-      </label>
+      {cours?.id && (
+        <label className="flex items-center gap-2 text-sm font-medium text-ink-secondary">
+          <input
+            type="checkbox"
+            name="publie"
+            checked={publie}
+            onChange={(e) => setPublie(e.target.checked)}
+            className="h-4 w-4 rounded border-space-border accent-neon-blue"
+          />
+          Publier ce cours (visible par les élèves du niveau correspondant)
+        </label>
+      )}
 
       {message && (
         <p
@@ -334,9 +455,35 @@ export function CoursForm({
         </p>
       )}
 
-      <button type="submit" disabled={isPending} className="btn-primary mt-2 self-start">
-        {isPending ? "Enregistrement..." : submitLabel}
-      </button>
+      {cours?.id ? (
+        <button type="submit" disabled={isPending} className="btn-primary mt-2 self-start">
+          {isPending ? "Enregistrement..." : submitLabel}
+        </button>
+      ) : (
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <input ref={publieRef} type="hidden" name="publie" defaultValue="" />
+          <button
+            type="submit"
+            disabled={isPending}
+            onClick={() => {
+              if (publieRef.current) publieRef.current.value = "";
+            }}
+            className="btn-secondary"
+          >
+            {isPending ? "Enregistrement..." : "Enregistrer en brouillon"}
+          </button>
+          <button
+            type="submit"
+            disabled={isPending}
+            onClick={() => {
+              if (publieRef.current) publieRef.current.value = "on";
+            }}
+            className="btn-primary"
+          >
+            {isPending ? "Enregistrement..." : "Créer et publier"}
+          </button>
+        </div>
+      )}
     </form>
   );
 }
