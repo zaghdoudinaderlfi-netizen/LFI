@@ -10,9 +10,7 @@ export function formaterNomComplet({ nom, prenom }: { nom: string; prenom?: stri
 /**
  * Parse une date "AAAA-MM-JJ" (input HTML `type="date"`) et vérifie sa
  * plausibilité (pas dans le futur, pas absurde). Utilisé à l'inscription et
- * quand un élève complète sa date de naissance depuis son profil — sert à
- * vérifier son identité lors d'une réinitialisation de mot de passe en
- * libre-service (voir /mot-de-passe-oublie).
+ * quand un élève complète sa date de naissance depuis son profil.
  */
 export function parserDateNaissance(valeur: string): { date: Date } | { erreur: string } {
   const date = new Date(`${valeur}T00:00:00.000Z`);

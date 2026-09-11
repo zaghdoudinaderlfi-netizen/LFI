@@ -35,6 +35,8 @@ export async function inscrireEleve({
   }
   const dateNaissanceParsee = resultatDate.date;
 
+  const emailNettoye = email.trim().toLowerCase();
+
   const classe = await prisma.classe.findUnique({
     where: { codeInscription },
   });
@@ -43,7 +45,7 @@ export async function inscrireEleve({
     throw new InscriptionError("Code de classe invalide.");
   }
 
-  const existant = await prisma.user.findUnique({ where: { email } });
+  const existant = await prisma.user.findUnique({ where: { email: emailNettoye } });
   if (existant) {
     throw new InscriptionError("Un compte existe déjà avec cet email.");
   }
@@ -54,7 +56,7 @@ export async function inscrireEleve({
     data: {
       nom,
       prenom,
-      email,
+      email: emailNettoye,
       motDePasse: motDePasseHash,
       role: "ELEVE",
       classeId: classe.id,

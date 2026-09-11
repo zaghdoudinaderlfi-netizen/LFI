@@ -42,7 +42,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const emailNettoye = email.trim();
+        const emailNettoye = email.trim().toLowerCase();
         const ip = await adresseIpAppelant();
         const cleEmail = `connexion-echec:email:${emailNettoye}`;
         const cleIp = `connexion-echec:ip:${ip}`;
