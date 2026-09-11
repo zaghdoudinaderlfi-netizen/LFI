@@ -161,9 +161,26 @@ model User {
   verrousExamen         VerrouExamen[]
   mainLevee             MainLevee?
   progressionsExercices ProgressionExercice[]
+  pushSubscriptions     PushSubscription[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Abonnement push d'un appareil (navigateur) d'un utilisateur — un même
+// compte peut être connecté sur plusieurs appareils, chacun avec son propre
+// abonnement. `endpoint` identifie l'appareil de façon unique auprès du
+// service de push du navigateur (Chrome, Firefox...).
+model PushSubscription {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 // Token à usage unique pour la réinitialisation du mot de passe par email.

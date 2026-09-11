@@ -25,6 +25,7 @@ import { logout } from "@/app/actions";
 import { AvatarDisplay } from "@/components/avatar/avatar-display";
 import { BadgeBouclierAvatar } from "@/components/suivi/bouclier";
 import { NotificationSon } from "@/components/nav/notification-son";
+import { PushNotificationPrompt } from "@/components/push-notification-prompt";
 import { PageTransition } from "@/components/ui/page-transition";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { InstallAppButton } from "@/components/install-app-button";
@@ -240,6 +241,7 @@ export function AppShell({
   return (
     <div className="min-h-screen lg:flex">
       {notificationsParType && <NotificationSon initial={notificationsParType} />}
+      <PushNotificationPrompt />
       {/* Sidebar bureau */}
       <aside className="hidden lg:flex lg:w-64 lg:flex-col arcade-sidebar-desktop">
         <div className="flex h-16 items-center justify-between border-b-2 border-space-border px-6">

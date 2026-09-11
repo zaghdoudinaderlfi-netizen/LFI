@@ -1,5 +1,11 @@
 import { Matiere, Niveau, TypeNotification } from "@prisma/client";
 import { prisma } from "./prisma";
+import { envoyerPushUtilisateur, envoyerPushUtilisateurs } from "./push";
+
+/** Titre de la notification push — distingue une note reçue du reste, comme le son côté client. */
+function titrePush(type: TypeNotification): string {
+  return type === "NOTE" ? "📝 Nouvelle note" : "LFI";
+}
 
 export async function compterNotificationsNonLues(userId: string) {
   return prisma.notification.count({
@@ -53,6 +59,7 @@ export async function notifierEleve(
   await prisma.notification.create({
     data: { destinataireId: eleveId, message, lien, matiere, type },
   });
+  await envoyerPushUtilisateur(eleveId, { title: titrePush(type), body: message, url: lien });
 }
 
 export async function notifierElevesDuNiveau(
@@ -78,6 +85,10 @@ export async function notifierElevesDuNiveau(
       type,
     })),
   });
+  await envoyerPushUtilisateurs(
+    eleves.map((e) => e.id),
+    { title: titrePush(type), body: message, url: lien }
+  );
 }
 
 export async function notifierProfs(
@@ -102,4 +113,8 @@ export async function notifierProfs(
       type,
     })),
   });
+  await envoyerPushUtilisateurs(
+    profs.map((p) => p.id),
+    { title: titrePush(type), body: message, url: lien }
+  );
 }

@@ -30,6 +30,7 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "@types/web-push": "^3.6.4",
     "autoprefixer": "^10.5.0",
     "postcss": "^8.5.15",
     "prisma": "^7.8.0",
@@ -76,7 +77,8 @@
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
     "server-only": "^0.0.1",
-    "unified": "^11.0.5"
+    "unified": "^11.0.5",
+    "web-push": "^3.6.7"
   },
   "allowScripts": {
     "@prisma/engines@7.8.0": true,
