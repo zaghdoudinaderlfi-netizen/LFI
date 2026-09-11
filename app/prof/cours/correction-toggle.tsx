@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { CheckCircle2, Circle } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { basculerCorrectionVisibleAction } from "./actions";
 
 export function CorrectionToggle({
@@ -21,27 +21,25 @@ export function CorrectionToggle({
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleToggle}
-      disabled={isPending}
+    <span
       title={
         correctionVisible
           ? "Corrigé affiché aux élèves — cliquer pour le masquer"
           : "Corrigé masqué aux élèves — cliquer pour l'afficher"
       }
-      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${
+      className={`inline-flex items-center gap-2 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${
         correctionVisible
-          ? "border-violet-500/30 bg-violet-500/10 text-violet-300 hover:bg-violet-500/20"
-          : "border-space-border bg-space-surface2/60 text-ink-muted hover:bg-space-surface2"
+          ? "border-violet-500/30 bg-violet-500/10 text-violet-300"
+          : "border-space-border bg-space-surface2/60 text-ink-muted"
       } ${isPending ? "opacity-50" : ""}`}
     >
-      {correctionVisible ? (
-        <CheckCircle2 className="h-3.5 w-3.5" />
-      ) : (
-        <Circle className="h-3.5 w-3.5" />
-      )}
       {correctionVisible ? "Corrigé visible" : "Corrigé masqué"}
-    </button>
+      <Switch
+        checked={correctionVisible}
+        onChange={handleToggle}
+        disabled={isPending}
+        label="Afficher le corrigé aux élèves"
+      />
+    </span>
   );
 }

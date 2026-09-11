@@ -17,6 +17,7 @@ import {
   CalendarClock,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+import { Switch } from "@/components/ui/switch";
 import { NIVEAU_LABELS, MATIERE_LABELS } from "@/lib/classes-constants";
 
 type CoursFormValues = {
@@ -318,21 +319,11 @@ export function CoursForm({
                     </span>
                   </span>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={correctionActif}
-                  onClick={() => setCorrectionActif((v) => !v)}
-                  className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-                    correctionActif ? "bg-gradient-to-r from-neon-blue to-neon-violet" : "bg-space-border"
-                  }`}
-                >
-                  <span
-                    className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                      correctionActif ? "translate-x-[20px]" : "translate-x-0"
-                    }`}
-                  />
-                </button>
+                <Switch
+                  checked={correctionActif}
+                  onChange={() => setCorrectionActif((v) => !v)}
+                  label="Correction visible aux élèves"
+                />
                 <input type="hidden" name="correctionVisible" value={correctionActif ? "on" : ""} />
               </div>
 
@@ -348,21 +339,11 @@ export function CoursForm({
                     </span>
                   </span>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={depotActif}
-                  onClick={() => setDepotActif((v) => !v)}
-                  className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-                    depotActif ? "bg-gradient-to-r from-neon-blue to-neon-violet" : "bg-space-border"
-                  }`}
-                >
-                  <span
-                    className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                      depotActif ? "translate-x-[20px]" : "translate-x-0"
-                    }`}
-                  />
-                </button>
+                <Switch
+                  checked={depotActif}
+                  onChange={() => setDepotActif((v) => !v)}
+                  label="Dépôt de compte-rendu activé"
+                />
                 <input type="hidden" name="depotActive" value={depotActif ? "on" : ""} />
               </div>
 
