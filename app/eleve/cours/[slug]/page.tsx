@@ -22,6 +22,7 @@ import { formaterNomComplet } from "@/lib/utilisateurs";
 import { DevoirSoumissionForm } from "./devoir-soumission-form";
 import { FormulaireForm } from "./formulaire-form";
 import { ExerciceCodeRunner } from "./exercice-code-form";
+import { TelechargerPdfBouton } from "./telecharger-pdf-bouton";
 
 export default async function CoursLecturePage({
   params,
@@ -162,17 +163,22 @@ export default async function CoursLecturePage({
 
             {peutTelechargerHtml && (
               <div className="mt-4 flex flex-col items-start gap-1.5">
-                <a
-                  href={`/api/cours/${cours.id}/telecharger-html`}
-                  download
-                  className="btn-secondary w-fit"
-                >
-                  <Download className="h-4 w-4" />
-                  Télécharger (HTML)
-                </a>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href={`/api/cours/${cours.id}/telecharger-html`}
+                    download
+                    className="btn-secondary w-fit"
+                  >
+                    <Download className="h-4 w-4" />
+                    Télécharger (HTML)
+                  </a>
+                  <TelechargerPdfBouton coursId={cours.id} />
+                </div>
                 <p className="text-xs text-ink-muted">
                   Pour consulter ce cours hors connexion. Les parties interactives (Python) ont
                   besoin d&apos;internet pour fonctionner — seul le contenu reste consultable sans.
+                  Pour le PDF, choisis « Enregistrer en PDF » dans la fenêtre d&apos;impression qui
+                  s&apos;ouvre.
                 </p>
               </div>
             )}

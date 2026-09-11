@@ -5,7 +5,12 @@ import { obtenirCoursParId } from "@/lib/cours";
 import { cheminCoursSimpleDepuisUrl } from "@/lib/cours-simple";
 import { supabaseAdmin, BUCKET_COURS_SIMPLE } from "@/lib/supabase";
 import { slugifier } from "@/lib/fichiers";
-import { estNomPageValide, lirePageInteractive, finaliserHtmlCours } from "@/lib/cours-interactif";
+import {
+  estNomPageValide,
+  lirePageInteractive,
+  finaliserHtmlCours,
+  injecterStylesImpression,
+} from "@/lib/cours-interactif";
 import { listerCamaradesClasse } from "@/lib/comptes-rendus";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 
@@ -34,12 +39,19 @@ function echapperHtml(texte: string): string {
  * - Sinon, le blob `contenu` de l'éditeur avancé : simplement emballé dans
  *   un document HTML minimal, sans injection (il n'y en a pas non plus à
  *   l'affichage en ligne pour ce format, voir CoursContenu).
+ *
+ * `?apercu=1` : mode utilisé par le bouton "Télécharger (PDF)" (impression
+ * navigateur, voir telecharger-pdf-bouton.tsx) — affiche le document dans
+ * l'onglet au lieu de le télécharger, avec un style d'impression forcé
+ * (fond blanc/texte noir, voir injecterStylesImpression) puisque le thème
+ * sombre des cours serait illisible une fois imprimé.
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const pourImpression = request.nextUrl.searchParams.get("apercu") === "1";
 
   const [session, cours] = await Promise.all([auth(), obtenirCoursParId(id)]);
   if (!cours) {
@@ -152,13 +164,18 @@ ${cours.contenu}
     return NextResponse.json({ error: "Ce cours n'a pas de version HTML téléchargeable." }, { status: 404 });
   }
 
-  const nomFichier = `${slugifier(cours.titreInteractif ?? cours.titre)}.html`;
+  if (pourImpression) {
+    html = injecterStylesImpression(html);
+  }
 
-  return new NextResponse(html, {
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${nomFichier}"`,
-      "Cache-Control": "no-store",
-    },
-  });
+  const headers: Record<string, string> = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store",
+  };
+  if (!pourImpression) {
+    const nomFichier = `${slugifier(cours.titreInteractif ?? cours.titre)}.html`;
+    headers["Content-Disposition"] = `attachment; filename="${nomFichier}"`;
+  }
+
+  return new NextResponse(html, { headers });
 }

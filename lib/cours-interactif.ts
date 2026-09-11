@@ -474,3 +474,27 @@ export function injecterScriptProgression(
 
   return injecterAvantFermeture(html, "</body>", script);
 }
+
+/**
+ * Force un rendu lisible à l'impression (fond blanc, texte noir) : les
+ * pages de cours utilisent un thème sombre (texte clair sur fond spatial),
+ * or les navigateurs n'impriment pas les couleurs de fond par défaut — sans
+ * cette correction, un cours imprimé montrerait du texte clair sur une
+ * page blanche, quasi illisible. Masque aussi les éléments qui n'ont pas de
+ * sens sur papier (boutons d'exécution, cadenas de correction).
+ *
+ * N'est injecté que pour le flux d'impression/export PDF (voir
+ * app/api/cours/[id]/telecharger-html?apercu=1) — le téléchargement HTML
+ * "brut" (ÉTAPE 1) garde le thème d'origine, prévu pour un écran.
+ */
+export function injecterStylesImpression(html: string): string {
+  const style = `
+<style media="print">
+  * { background: #fff !important; color: #000 !important; box-shadow: none !important; text-shadow: none !important; }
+  a { color: #000 !important; text-decoration: underline; }
+  pre, code, .cell, .cell-head { background: #f4f4f5 !important; border-color: #ccc !important; }
+  button, .run-btn, [class*="btn"]:not(.correction) { display: none !important; }
+</style>
+`;
+  return injecterAvantFermeture(html, "</head>", style);
+}
