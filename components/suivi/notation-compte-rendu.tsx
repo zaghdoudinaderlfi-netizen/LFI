@@ -3,14 +3,20 @@
 import { useState, useTransition } from "react";
 import { Star } from "lucide-react";
 import { ETOILES_MAX } from "@/lib/suivi-oral-constants";
-import { noterCompteRenduAction } from "@/app/prof/comptes-rendus/[id]/actions";
+import { noterCompteRenduAction, noterMembreCompteRenduAction } from "@/app/prof/comptes-rendus/[id]/actions";
 
-/** Notation en étoiles d'un dépôt, envoyée au clic (pas de bouton "valider"). */
+/**
+ * Notation en étoiles d'un dépôt, envoyée au clic (pas de bouton "valider").
+ * Sans `eleveId` : note le dépôt (l'auteur). Avec `eleveId` : note ce
+ * coéquipier précisément, indépendamment des autres membres du groupe.
+ */
 export function NotationCompteRendu({
   id,
+  eleveId,
   valeurInitiale,
 }: {
   id: string;
+  eleveId?: string;
   valeurInitiale: number | null;
 }) {
   const [valeur, setValeur] = useState(valeurInitiale ?? 0);
@@ -21,7 +27,11 @@ export function NotationCompteRendu({
   function noter(n: number) {
     setValeur(n);
     startTransition(async () => {
-      await noterCompteRenduAction(id, n);
+      if (eleveId) {
+        await noterMembreCompteRenduAction(id, eleveId, n);
+      } else {
+        await noterCompteRenduAction(id, n);
+      }
     });
   }
 

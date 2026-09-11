@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Paperclip } from "lucide-react";
 import { Matiere } from "@prisma/client";
 import {
   listerComptesRendus,
@@ -8,6 +9,8 @@ import {
 import { MATIERE_LABELS } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { estMatiereValide } from "@/lib/classes-constants";
+import { formaterNomComplet } from "@/lib/utilisateurs";
+import { NotationCompteRendu } from "@/components/suivi/notation-compte-rendu";
 import { SupprimerCompteRenduButton } from "./[id]/supprimer-compte-rendu-button";
 
 const MATIERES: Matiere[] = ["TECHNOLOGIE", "SNT", "NSI"];
@@ -104,16 +107,14 @@ export default async function ComptesRendusPage({
       ) : (
         <ul className="flex flex-col gap-3 animate-fade-in-up [animation-delay:60ms]">
           {comptesRendus.map((cr) => (
-            // Le bouton de suppression est hors du lien : un <button> dans un
-            // <a> est invalide, et le clic déclencherait la navigation.
-            <li key={cr.id} className="flex items-stretch gap-2">
-              <Link
-                href={`/prof/comptes-rendus/${cr.id}`}
-                className="card flex flex-1 flex-col gap-1 p-5 transition-colors hover:border-neon-blue/50 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
+            <li key={cr.id} className="card flex flex-col gap-3 p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <Link
+                  href={`/prof/comptes-rendus/${cr.id}`}
+                  className="transition-colors hover:text-neon-blue"
+                >
                   <p className="font-medium text-ink-primary">
-                    {cr.noms}
+                    {cr.cours.titre}
                     {cr.classe && (
                       <span className="ml-2 badge bg-space-surface2/80 px-2 text-ink-secondary ring-1 ring-space-border">
                         {cr.classe.nom}
@@ -121,10 +122,10 @@ export default async function ComptesRendusPage({
                     )}
                   </p>
                   <p className="mt-1 text-sm text-ink-secondary">
-                    {cr.cours.titre} · {MATIERE_LABELS[cr.cours.matiere]} · {NIVEAU_LABELS[cr.cours.niveau]}
+                    {MATIERE_LABELS[cr.cours.matiere]} · {NIVEAU_LABELS[cr.cours.niveau]}
                   </p>
-                </div>
-                <div className="flex flex-col sm:items-end">
+                </Link>
+                <div className="flex flex-col items-end gap-1">
                   <p className="text-xs text-ink-muted">
                     Déposé le{" "}
                     {cr.dateDepot.toLocaleDateString("fr-FR", {
@@ -135,15 +136,46 @@ export default async function ComptesRendusPage({
                       minute: "2-digit",
                     })}
                   </p>
-                  <span className="mt-1 text-xs text-neon-cyan">
+                  <span className="text-xs text-neon-cyan">
                     {cr.travail ? "Voir le travail →" : "Sans travail joint"}
                   </span>
-                  <span className="mt-1 text-xs text-ink-muted">
-                    {cr.noteEtoiles !== null ? `⭐ ${cr.noteEtoiles}/5` : "Non noté"}
-                  </span>
                 </div>
-              </Link>
-              <div className="flex items-center">
+              </div>
+
+              <div className="flex flex-col gap-2 border-t border-space-border pt-3">
+                {cr.eleve ? (
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-sm text-ink-primary">{formaterNomComplet(cr.eleve)}</span>
+                    <NotationCompteRendu id={cr.id} valeurInitiale={cr.noteEtoiles} />
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-sm text-ink-primary">{cr.noms}</span>
+                    <NotationCompteRendu id={cr.id} valeurInitiale={cr.noteEtoiles} />
+                  </div>
+                )}
+                {cr.membres.map((membre) => (
+                  <div key={membre.eleveId} className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-sm text-ink-primary">{formaterNomComplet(membre.eleve)}</span>
+                    <NotationCompteRendu id={cr.id} eleveId={membre.eleveId} valeurInitiale={membre.etoiles} />
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                {cr.fichierUrl ? (
+                  <a
+                    href={cr.fichierUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-neon-cyan hover:underline"
+                  >
+                    <Paperclip className="h-3.5 w-3.5" />
+                    Voir le fichier joint
+                  </a>
+                ) : (
+                  <span />
+                )}
                 <SupprimerCompteRenduButton
                   compteRenduId={cr.id}
                   libelle={`${cr.noms} — ${cr.cours.titre}`}

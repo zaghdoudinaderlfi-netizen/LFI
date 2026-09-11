@@ -215,6 +215,29 @@ export async function noterCompteRendu(id: string, noteEtoiles: number) {
   return compteRendu;
 }
 
+/** Note en étoiles (0-5) donnée par le prof à un coéquipier précis d'un dépôt de groupe. */
+export async function noterMembreCompteRendu(compteRenduId: string, eleveId: string, noteEtoiles: number) {
+  if (!Number.isInteger(noteEtoiles) || noteEtoiles < 0 || noteEtoiles > NOTE_ETOILES_MAX) {
+    throw new CompteRenduError(`La note doit être un entier entre 0 et ${NOTE_ETOILES_MAX}.`);
+  }
+
+  const membre = await prisma.membreCompteRendu.update({
+    where: { compteRenduId_eleveId: { compteRenduId, eleveId } },
+    data: { etoiles: noteEtoiles },
+    include: { compteRendu: { select: { cours: { select: { titre: true, matiere: true } } } } },
+  });
+
+  await notifierEleve(
+    eleveId,
+    `Ton compte-rendu « ${membre.compteRendu.cours.titre} » a été noté : ${noteEtoiles}/${NOTE_ETOILES_MAX}`,
+    undefined,
+    membre.compteRendu.cours.matiere,
+    "NOTE"
+  );
+
+  return membre;
+}
+
 export async function obtenirCompteRendu(id: string) {
   return prisma.compteRendu.findUnique({
     where: { id },
@@ -248,6 +271,8 @@ export async function listerComptesRendus({
     include: {
       cours: { select: { titre: true, matiere: true, niveau: true } },
       classe: { select: { nom: true } },
+      eleve: { select: { nom: true, prenom: true } },
+      membres: { include: { eleve: { select: { nom: true, prenom: true } } } },
     },
     orderBy: tri === "cours" ? { cours: { titre: "asc" } } : { dateDepot: "desc" },
   });
