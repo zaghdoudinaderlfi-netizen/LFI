@@ -290,6 +290,55 @@ export function injecterWidgetDepot(html: string, coursId: string): string {
 }
 
 /**
+ * Désactive le collage (clavier, clic droit, glisser-déposer) dans les
+ * zones de réponse Python des exercices — frein pédagogique contre le
+ * copier-coller irréfléchi, pas une sécurité stricte : un élève déterminé
+ * peut toujours retaper à la main depuis un autre onglet. Le copier
+ * n'est volontairement pas touché (l'élève doit pouvoir sauvegarder son
+ * propre code ailleurs).
+ *
+ * Injecté juste avant `</body>`, comme les autres widgets, pour
+ * s'appliquer à toutes les pages sans modification manuelle des fichiers.
+ * L'événement `paste` du navigateur se déclenche de la même façon que le
+ * collage vienne du raccourci clavier ou du menu contextuel (clic droit) :
+ * un seul écouteur suffit à couvrir les deux, sans avoir à désactiver le
+ * menu contextuel entier (ce qui aurait aussi bloqué le "copier").
+ */
+export function injecterBlocageCollage(html: string): string {
+  const script = `
+<script>
+(function(){
+  function afficherMessage(champ){
+    var existant = champ.parentElement && champ.parentElement.querySelector('.lfi-paste-bloque-msg');
+    if (existant) existant.remove();
+    var msg = document.createElement('div');
+    msg.className = 'lfi-paste-bloque-msg';
+    msg.textContent = "Le copier-coller est désactivé ici — tape ton code toi-même 🙂";
+    msg.style.cssText = 'margin:6px 0 0;padding:6px 10px;border-radius:8px;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.35);color:#fbbf24;font:12px system-ui,sans-serif;transition:opacity .3s ease';
+    champ.insertAdjacentElement('afterend', msg);
+    setTimeout(function(){
+      msg.style.opacity = '0';
+      setTimeout(function(){ msg.remove(); }, 300);
+    }, 2500);
+  }
+
+  document.querySelectorAll('textarea.code').forEach(function(champ){
+    champ.addEventListener('paste', function(e){
+      e.preventDefault();
+      afficherMessage(champ);
+    });
+    champ.addEventListener('drop', function(e){
+      e.preventDefault();
+      afficherMessage(champ);
+    });
+  });
+})();
+</script>
+`;
+  return injecterAvantFermeture(html, "</body>", script);
+}
+
+/**
  * Sauvegarde/restauration automatique du code tapé dans les cellules
  * d'exercice (voir ProgressionExercice) : injecté juste avant `</body>`,
  * comme le widget de dépôt, pour s'appliquer à tous les fichiers

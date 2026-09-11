@@ -10,6 +10,7 @@ import {
   injecterWidgetDepot,
   injecterMessageDelaiDepasse,
   injecterScriptProgression,
+  injecterBlocageCollage,
 } from "@/lib/cours-interactif";
 import { listerCamaradesClasse } from "@/lib/comptes-rendus";
 import { formaterNomComplet } from "@/lib/utilisateurs";
@@ -125,6 +126,10 @@ export async function GET(
     );
     resultat = injecterScriptProgression(resultat, cours.id, sauvegardes);
   }
+
+  // Frein pédagogique contre le copier-coller dans les zones de code —
+  // s'applique à toutes les pages, sans condition (pas un toggle prof).
+  resultat = injecterBlocageCollage(resultat);
 
   return new NextResponse(resultat, {
     headers: {
