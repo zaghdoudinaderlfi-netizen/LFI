@@ -44,11 +44,27 @@ function injecterAvantFermeture(html: string, balise: "</head>" | "</body>", con
  * dans un conteneur `.correction[data-correction]` qui porte le bouton et
  * le cadenas — seul le contenu doit être vidé. `.correction` sans
  * `data-correction` (ch4) EST directement la solution : c'est lui qu'on vide.
+ *
+ * Les quiz "à révélation directe" (`[data-quiz][data-answer]`) sont un
+ * troisième format : la bonne réponse est un attribut `data-answer` en clair
+ * dans le HTML, lu par un petit script embarqué au clic sur une option.
+ * Sans retrait, elle est visible dans le code source par n'importe quel
+ * élève, indépendamment du toggle. On retire l'attribut et les options
+ * cliquables (le script embarqué ne trouve alors plus rien à quoi
+ * attacher ses écouteurs — pas d'erreur JS, juste un quiz inerte).
  */
 export function retirerCorrections(html: string): string {
   const $ = cheerio.load(html);
   $(".correction-body").empty();
   $(".correction:not([data-correction])").empty();
+  $("[data-quiz]").each((_, el) => {
+    const $quiz = $(el);
+    $quiz.removeAttr("data-answer");
+    $quiz.find(".opt, .feedback").remove();
+    $quiz.append(
+      '<p class="quiz-verrouille" style="opacity:.7;font-style:italic">🔒 Réponse masquée par le professeur.</p>'
+    );
+  });
   return $.html();
 }
 
@@ -58,14 +74,14 @@ export function activerCorrections(html: string): string {
 }
 
 /**
- * Dit si le fichier contient au moins un bloc de correction masquable
- * (voir retirerCorrections ci-dessus). Sert à décider si le toggle
- * "Corrigé visible/masqué" a un quelconque effet sur ce cours — certains
- * cours HTML (quiz à révélation directe via data-quiz) n'en ont aucun.
+ * Dit si le fichier contient au moins un bloc de correction ou un quiz à
+ * révélation directe masquable (voir retirerCorrections ci-dessus). Sert à
+ * décider si le toggle "Corrigé visible/masqué" a un quelconque effet sur
+ * ce cours.
  */
 export function contientBlocsCorrection(html: string): boolean {
   const $ = cheerio.load(html);
-  return $(".correction").length > 0;
+  return $(".correction").length > 0 || $("[data-quiz]").length > 0;
 }
 
 export type ContexteEleveDepot = {
