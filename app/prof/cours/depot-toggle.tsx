@@ -1,22 +1,27 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
 import { basculerDepotActiveAction } from "./actions";
 
 export function DepotToggle({
   coursId,
-  depotActive,
+  depotActive: depotActiveInitial,
 }: {
   coursId: string;
   depotActive: boolean;
 }) {
+  // État local mis à jour immédiatement au clic (optimiste) : sans lui,
+  // l'affichage n'aurait bougé qu'après revalidation complète de la page.
+  const [depotActive, setDepotActive] = useState(depotActiveInitial);
   const [isPending, startTransition] = useTransition();
 
   function handleToggle() {
+    const nouvelleValeur = !depotActive;
+    setDepotActive(nouvelleValeur);
     const formData = new FormData();
     formData.set("coursId", coursId);
-    formData.set("depotActive", String(!depotActive));
+    formData.set("depotActive", String(nouvelleValeur));
     startTransition(() => basculerDepotActiveAction(formData));
   }
 

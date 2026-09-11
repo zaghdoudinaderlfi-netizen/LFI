@@ -1,22 +1,27 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Globe, Lock } from "lucide-react";
 import { basculerEstPublicAction } from "./actions";
 
 export function EstPublicToggle({
   coursId,
-  estPublic,
+  estPublic: estPublicInitial,
 }: {
   coursId: string;
   estPublic: boolean;
 }) {
+  // État local mis à jour immédiatement au clic (optimiste) : sans lui,
+  // l'affichage n'aurait bougé qu'après revalidation complète de la page.
+  const [estPublic, setEstPublic] = useState(estPublicInitial);
   const [isPending, startTransition] = useTransition();
 
   function handleToggle() {
+    const nouvelleValeur = !estPublic;
+    setEstPublic(nouvelleValeur);
     const formData = new FormData();
     formData.set("coursId", coursId);
-    formData.set("estPublic", String(!estPublic));
+    formData.set("estPublic", String(nouvelleValeur));
     startTransition(() => basculerEstPublicAction(formData));
   }
 

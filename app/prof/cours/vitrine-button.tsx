@@ -1,22 +1,27 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Sparkles } from "lucide-react";
 import { basculerVitrineAction } from "./actions";
 
 export function VitrineButton({
   coursId,
-  enVitrine,
+  enVitrine: enVitrineInitial,
 }: {
   coursId: string;
   enVitrine: boolean;
 }) {
+  // État local mis à jour immédiatement au clic (optimiste) : sans lui,
+  // l'affichage n'aurait bougé qu'après revalidation complète de la page.
+  const [enVitrine, setEnVitrine] = useState(enVitrineInitial);
   const [isPending, startTransition] = useTransition();
 
   function handleToggle() {
+    const nouvelleValeur = !enVitrine;
+    setEnVitrine(nouvelleValeur);
     const formData = new FormData();
     formData.set("coursId", coursId);
-    formData.set("enVitrine", String(!enVitrine));
+    formData.set("enVitrine", String(nouvelleValeur));
     startTransition(() => basculerVitrineAction(formData));
   }
 

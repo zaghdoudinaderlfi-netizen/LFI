@@ -1,22 +1,27 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { basculerVisibiliteElevesAction } from "./actions";
 
 export function VisibiliteToggle({
   coursId,
-  visibleEleves,
+  visibleEleves: visibleElevesInitial,
 }: {
   coursId: string;
   visibleEleves: boolean;
 }) {
+  // État local mis à jour immédiatement au clic (optimiste) : sans lui,
+  // l'affichage n'aurait bougé qu'après revalidation complète de la page.
+  const [visibleEleves, setVisibleEleves] = useState(visibleElevesInitial);
   const [isPending, startTransition] = useTransition();
 
   function handleToggle() {
+    const nouvelleValeur = !visibleEleves;
+    setVisibleEleves(nouvelleValeur);
     const formData = new FormData();
     formData.set("coursId", coursId);
-    formData.set("visible", String(!visibleEleves));
+    formData.set("visible", String(nouvelleValeur));
     startTransition(() => basculerVisibiliteElevesAction(formData));
   }
 

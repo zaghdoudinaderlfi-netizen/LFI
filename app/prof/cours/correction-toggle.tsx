@@ -1,22 +1,27 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
 import { basculerCorrectionVisibleAction } from "./actions";
 
 export function CorrectionToggle({
   coursId,
-  correctionVisible,
+  correctionVisible: correctionVisibleInitiale,
 }: {
   coursId: string;
   correctionVisible: boolean;
 }) {
+  // État local mis à jour immédiatement au clic (optimiste) : sans lui,
+  // l'affichage n'aurait bougé qu'après revalidation complète de la page.
+  const [correctionVisible, setCorrectionVisible] = useState(correctionVisibleInitiale);
   const [isPending, startTransition] = useTransition();
 
   function handleToggle() {
+    const nouvelleValeur = !correctionVisible;
+    setCorrectionVisible(nouvelleValeur);
     const formData = new FormData();
     formData.set("coursId", coursId);
-    formData.set("correctionVisible", String(!correctionVisible));
+    formData.set("correctionVisible", String(nouvelleValeur));
     startTransition(() => basculerCorrectionVisibleAction(formData));
   }
 
