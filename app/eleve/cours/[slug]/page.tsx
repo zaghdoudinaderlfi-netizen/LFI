@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarDays, ClipboardList, Code2, MonitorPlay } from "lucide-react";
+import { ArrowLeft, CalendarDays, ClipboardList, Code2, Download, MonitorPlay } from "lucide-react";
 import { TypeExercice } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -125,6 +125,14 @@ export default async function CoursLecturePage({
     })
   );
 
+  // Un cours n'a une version HTML téléchargeable que s'il a un contenu HTML
+  // (pas les formats PDF/WORD/VIDEO/QCM, qui ont déjà leur propre mode de
+  // consultation, voir CoursContenu).
+  const peutTelechargerHtml =
+    !!cours.pageInteractive ||
+    (cours.typeSimple === "HTML" && !!cours.fichierUrl) ||
+    (!cours.typeSimple && cours.typeContenu === "HTML" && cours.contenu.trim().length > 0);
+
   return (
     <div>
       <ReadingProgress />
@@ -151,6 +159,23 @@ export default async function CoursLecturePage({
             <h1 className="text-3xl font-extrabold tracking-tight text-ink-primary sm:text-4xl font-heading">
               {cours.titre}
             </h1>
+
+            {peutTelechargerHtml && (
+              <div className="mt-4 flex flex-col items-start gap-1.5">
+                <a
+                  href={`/api/cours/${cours.id}/telecharger-html`}
+                  download
+                  className="btn-secondary w-fit"
+                >
+                  <Download className="h-4 w-4" />
+                  Télécharger (HTML)
+                </a>
+                <p className="text-xs text-ink-muted">
+                  Pour consulter ce cours hors connexion. Les parties interactives (Python) ont
+                  besoin d&apos;internet pour fonctionner — seul le contenu reste consultable sans.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Contenu */}

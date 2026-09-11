@@ -20,3 +20,13 @@ export function formaterTaille(octets: number): string {
   if (octets < 1024 * 1024) return `${(octets / 1024).toFixed(1)} Ko`;
   return `${(octets / (1024 * 1024)).toFixed(1)} Mo`;
 }
+
+/** Retire les accents et caractères non-alphanum pour un nom de fichier de téléchargement sûr. */
+export function slugifier(texte: string): string {
+  return texte
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}

@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { obtenirCompteRendu, lireTravail } from "@/lib/comptes-rendus";
 import { MATIERE_LABELS } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
+import { slugifier } from "@/lib/fichiers";
 
 function echapperHtml(texte: string): string {
   return texte
@@ -11,16 +12,6 @@ function echapperHtml(texte: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
-}
-
-// Retire les accents et caractères non-alphanum pour un nom de fichier sûr.
-function slugifier(texte: string): string {
-  return texte
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 export async function GET(

@@ -379,6 +379,39 @@ export function injecterBlocageCollage(html: string): string {
  * d'une correction ne sont jamais capturées : ce n'est pas le travail de
  * l'élève.
  */
+export type ContexteFinalisationCours = {
+  corrigeAutorise: boolean;
+  contexteEleve: ContexteEleveDepot | null;
+  depot: { delaiDepasse: boolean; coursId: string } | null;
+  progression: { coursId: string; sauvegardes: Record<string, string> } | null;
+};
+
+/**
+ * Applique la même chaîne de traitement que app/cours/[fichier]/route.ts
+ * (corrections, contexte élève, widget de dépôt, restauration de la
+ * progression, blocage du copier-coller) — factorisé pour être réutilisable
+ * par la route de téléchargement hors-ligne d'un cours interactif.
+ */
+export function finaliserHtmlCours(html: string, ctx: ContexteFinalisationCours): string {
+  let resultat = ctx.corrigeAutorise ? activerCorrections(html) : retirerCorrections(html);
+
+  if (ctx.contexteEleve) {
+    resultat = injecterContexteEleve(resultat, ctx.contexteEleve);
+  }
+
+  if (ctx.depot) {
+    resultat = ctx.depot.delaiDepasse
+      ? injecterMessageDelaiDepasse(resultat)
+      : injecterWidgetDepot(resultat, ctx.depot.coursId);
+  }
+
+  if (ctx.progression) {
+    resultat = injecterScriptProgression(resultat, ctx.progression.coursId, ctx.progression.sauvegardes);
+  }
+
+  return injecterBlocageCollage(resultat);
+}
+
 export function injecterScriptProgression(
   html: string,
   coursId: string,
