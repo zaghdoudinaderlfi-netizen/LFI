@@ -344,10 +344,17 @@ model CompteRendu {
   // de recherche côté élève) — même schéma que Soumission/MembreGroupe.
   membres MembreCompteRendu[]
 
-  // Note en étoiles (0-5) donnée par le prof à ce dépôt précis — moyennée
-  // par trimestre pour former le critère "comptes-rendus" de la note orale
-  // (voir lib/suivi-oral.ts). Null tant que le prof n'a pas noté.
+  // Note en étoiles (0-5) donnée par le prof à l'auteur du dépôt — chaque
+  // coéquipier (voir MembreCompteRendu.etoiles) a la sienne, indépendante :
+  // deux élèves qui déposent ensemble peuvent recevoir des notes
+  // différentes. Moyennée par trimestre pour former le critère
+  // "comptes-rendus" de la note orale (voir lib/suivi-oral.ts). Null tant
+  // que le prof n'a pas noté.
   noteEtoiles Int?
+
+  // Fichier joint optionnel (ex: document de recherche), stocké comme les
+  // autres fichiers de la plateforme (voir lib/supabase.ts).
+  fichierUrl String?
 
   @@index([coursId])
   @@index([classeId])
@@ -362,6 +369,11 @@ model MembreCompteRendu {
   compteRenduId String
   eleve         User        @relation(fields: [eleveId], references: [id], onDelete: Cascade)
   eleveId       String
+
+  // Note en étoiles (0-5) donnée par le prof à CE coéquipier précisément,
+  // indépendante de CompteRendu.noteEtoiles (la note de l'auteur) et de
+  // celle des autres coéquipiers. Null tant que le prof n'a pas noté.
+  etoiles Int?
 
   createdAt DateTime @default(now())
 
