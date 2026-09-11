@@ -24,13 +24,19 @@ export async function POST(request: Request) {
     );
   }
 
-  const body = await request.json().catch(() => null);
-
-  if (!body || typeof body !== "object") {
+  // multipart/form-data plutôt que JSON : le widget peut joindre un fichier
+  // (voir injecterWidgetDepot, lib/cours-interactif.ts). `camaradesIds`
+  // voyage en JSON dans un champ texte du formulaire.
+  const formData = await request.formData().catch(() => null);
+  if (!formData) {
     return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 });
   }
 
-  const { coursId, camaradesIds, travail, site } = body as Record<string, unknown>;
+  const coursId = formData.get("coursId");
+  const travail = formData.get("travail");
+  const site = formData.get("site");
+  const camaradesIdsRaw = formData.get("camaradesIds");
+  const fichier = formData.get("fichier");
 
   // Honeypot : un champ invisible pour un humain, que les robots de spam
   // remplissent automatiquement. On répond succès sans rien enregistrer,
@@ -42,19 +48,28 @@ export async function POST(request: Request) {
   if (typeof coursId !== "string") {
     return NextResponse.json({ error: "Champs manquants ou invalides." }, { status: 400 });
   }
-  if (
-    camaradesIds !== undefined &&
-    !(Array.isArray(camaradesIds) && camaradesIds.every((id) => typeof id === "string"))
-  ) {
-    return NextResponse.json({ error: "Champs manquants ou invalides." }, { status: 400 });
+
+  let camaradesIds: string[] | undefined;
+  if (typeof camaradesIdsRaw === "string" && camaradesIdsRaw.trim()) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(camaradesIdsRaw);
+    } catch {
+      return NextResponse.json({ error: "Champs manquants ou invalides." }, { status: 400 });
+    }
+    if (!(Array.isArray(parsed) && parsed.every((id) => typeof id === "string"))) {
+      return NextResponse.json({ error: "Champs manquants ou invalides." }, { status: 400 });
+    }
+    camaradesIds = parsed;
   }
 
   try {
     const compteRendu = await deposerCompteRendu({
       coursId,
       eleveId: session.user.id,
-      camaradesIds: Array.isArray(camaradesIds) ? (camaradesIds as string[]) : undefined,
+      camaradesIds,
       travail: typeof travail === "string" ? travail : undefined,
+      fichier: fichier instanceof File && fichier.size > 0 ? fichier : undefined,
     });
     return NextResponse.json(
       { id: compteRendu.id, dateDepot: compteRendu.dateDepot },

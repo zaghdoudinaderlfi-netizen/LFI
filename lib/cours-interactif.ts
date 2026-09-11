@@ -1,6 +1,8 @@
 import { readFile } from "fs/promises";
 import path from "path";
 import * as cheerio from "cheerio";
+import { MAX_COEQUIPIERS } from "./groupes";
+import { EXTENSIONS_DOCUMENTS } from "./fichiers";
 
 // Les pages d'exercices vivent hors de public/ : elles passent par la route
 // /cours/[fichier], qui décide côté serveur si les corrections partent dans
@@ -119,6 +121,8 @@ export function injecterWidgetDepot(html: string, coursId: string): string {
   if (html.includes('id="depotCompteRendu"')) return html;
 
   const coursIdJson = JSON.stringify(coursId).replace(/</g, "\\u003c");
+  const maxCoequipiersJson = JSON.stringify(MAX_COEQUIPIERS);
+  const acceptFichier = [...EXTENSIONS_DOCUMENTS].map((e) => `.${e}`).join(",");
 
   const bloc = `
 <section id="lfi-cr-widget" style="margin:40px auto;max-width:720px;padding:20px 22px;background:#121a31;border:1px solid rgba(255,255,255,.12);border-radius:14px;color:#e9eefb;font-family:system-ui,sans-serif">
@@ -129,12 +133,16 @@ export function injecterWidgetDepot(html: string, coursId: string): string {
   <div id="lfi-cr-unlocked" hidden>
     <p style="margin:0 0 12px;color:#9aa7c2;font-size:14px">Tu déposes en tant que <strong id="lfi-cr-nom" style="color:#fff"></strong>. Tes réponses saisies sur la page sont envoyées avec le dépôt.</p>
     <div id="lfi-cr-groupe" hidden style="margin:0 0 14px">
-      <p style="margin:0 0 6px;color:#9aa7c2;font-size:14px">Vous avez travaillé en groupe ? Cherche tes camarades :</p>
+      <p style="margin:0 0 6px;color:#9aa7c2;font-size:14px">Vous avez travaillé en groupe ? Cherche tes camarades (${MAX_COEQUIPIERS} maximum) :</p>
       <div style="position:relative">
         <input type="text" id="lfi-cr-recherche" placeholder="Nom d'un camarade de la classe..." autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0b1020;color:#e9eefb;font:inherit">
         <div id="lfi-cr-liste" hidden style="position:absolute;z-index:5;top:calc(100% + 4px);left:0;right:0;max-height:200px;overflow-y:auto;background:#0b1020;border:1px solid rgba(255,255,255,.12);border-radius:10px"></div>
       </div>
       <div id="lfi-cr-chips" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+    </div>
+    <div style="margin:0 0 14px">
+      <label for="lfi-cr-fichier" style="display:block;margin:0 0 6px;color:#9aa7c2;font-size:14px">Joindre un fichier (optionnel — document, image...) :</label>
+      <input type="file" id="lfi-cr-fichier" accept="${acceptFichier}" style="width:100%;box-sizing:border-box;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0b1020;color:#e9eefb;font:inherit">
     </div>
     <button id="lfi-cr-btn" type="button" style="padding:10px 18px;border-radius:10px;border:1px solid #8b5cf6;background:rgba(139,92,246,.15);color:#e9eefb;font:inherit;cursor:pointer">📤 Déposer mon compte-rendu</button>
     <p id="lfi-cr-msg" role="status" style="margin:12px 0 0;font-size:14px;min-height:20px"></p>
@@ -143,6 +151,7 @@ export function injecterWidgetDepot(html: string, coursId: string): string {
 <script>
 (function(){
   var COURS_ID = ${coursIdJson};
+  var MAX_COEQUIPIERS = ${maxCoequipiersJson};
   var contexte = window.__CONTEXTE_ELEVE__ || null;
   var locked = document.getElementById('lfi-cr-locked');
   var unlocked = document.getElementById('lfi-cr-unlocked');
@@ -209,6 +218,7 @@ export function injecterWidgetDepot(html: string, coursId: string): string {
       retirer.addEventListener('click', function(){
         choisis = choisis.filter(function(x){ return x.id !== c.id; });
         afficherChips();
+        majEtatRecherche();
       });
       chip.appendChild(texte);
       chip.appendChild(retirer);
@@ -216,12 +226,21 @@ export function injecterWidgetDepot(html: string, coursId: string): string {
     });
   }
 
+  function majEtatRecherche(){
+    if (!recherche) return;
+    var complet = choisis.length >= MAX_COEQUIPIERS;
+    recherche.disabled = complet;
+    recherche.placeholder = complet
+      ? 'Maximum de ' + MAX_COEQUIPIERS + ' camarade(s) atteint'
+      : "Nom d'un camarade de la classe...";
+  }
+
   if (groupe && recherche && liste && camarades.length) {
     groupe.hidden = false;
     recherche.addEventListener('input', function(){
       var q = sansAccents(recherche.value);
       fermerListe();
-      if (!q) return;
+      if (!q || choisis.length >= MAX_COEQUIPIERS) return;
       var pris = choisis.map(function(c){ return c.id; });
       var resultats = camarades.filter(function(c){
         return pris.indexOf(c.id) === -1 && sansAccents(c.nom).indexOf(q) !== -1;
@@ -233,8 +252,10 @@ export function injecterWidgetDepot(html: string, coursId: string): string {
         opt.textContent = c.nom;
         opt.style.cssText = 'display:block;width:100%;text-align:left;padding:9px 14px;background:none;border:none;color:#e9eefb;font:inherit;cursor:pointer';
         opt.addEventListener('click', function(){
+          if (choisis.length >= MAX_COEQUIPIERS) return;
           choisis.push(c);
           afficherChips();
+          majEtatRecherche();
           recherche.value = '';
           fermerListe();
           recherche.focus();
@@ -248,19 +269,26 @@ export function injecterWidgetDepot(html: string, coursId: string): string {
     });
   }
 
+  var fichierInput = document.getElementById('lfi-cr-fichier');
+
   btn.addEventListener('click', function(){
     msg.textContent = '';
     msg.style.color = '';
     btn.disabled = true;
     btn.textContent = '⏳ Envoi…';
+
+    var donnees = new FormData();
+    donnees.append('coursId', COURS_ID);
+    var travail = collecterTravail();
+    if (travail !== undefined) donnees.append('travail', travail);
+    donnees.append('camaradesIds', JSON.stringify(choisis.map(function(c){ return c.id; })));
+    if (fichierInput && fichierInput.files && fichierInput.files[0]) {
+      donnees.append('fichier', fichierInput.files[0]);
+    }
+
     fetch('/api/comptes-rendus', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        coursId: COURS_ID,
-        travail: collecterTravail(),
-        camaradesIds: choisis.map(function(c){ return c.id; })
-      })
+      body: donnees
     })
     .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
     .then(function(result){

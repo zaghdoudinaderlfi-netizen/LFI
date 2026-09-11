@@ -1,12 +1,19 @@
+import { randomUUID } from "crypto";
 import { Matiere } from "@prisma/client";
 import { prisma } from "./prisma";
 import { notifierProfs, notifierEleve } from "./notifications";
 import { formaterNomComplet } from "./utilisateurs";
+import { MAX_COEQUIPIERS } from "./groupes";
+import { supabaseAdmin, BUCKET_COMPTES_RENDUS, assurerBucketPublic } from "./supabase";
+import { TAILLE_MAX_OCTETS, EXTENSIONS_DOCUMENTS, extensionDe, nomFichierSur } from "./fichiers";
 
 export class CompteRenduError extends Error {}
 
 const TRAVAIL_LONGUEUR_MAX = 200_000;
 export const NOTE_ETOILES_MAX = 5;
+// Même plafond que les groupes de devoir (voir lib/groupes.ts) : l'auteur
+// plus jusqu'à MAX_COEQUIPIERS camarades, soit 1 à 3 élèves par dépôt.
+export { MAX_COEQUIPIERS };
 
 export type DeposerCompteRenduInput = {
   coursId: string;
@@ -15,10 +22,48 @@ export type DeposerCompteRenduInput = {
   // cours de déposer sous un nom usurpé.
   eleveId: string;
   // Coéquipiers choisis dans le widget de recherche — doivent appartenir à
-  // la même classe que l'auteur.
+  // la même classe que l'auteur. Plafonné à MAX_COEQUIPIERS ci-dessous.
   camaradesIds?: string[];
   travail?: string;
+  // Fichier optionnel (ex: document de recherche) — voir televerserFichierCompteRendu.
+  fichier?: File;
 };
+
+/**
+ * Dépose le fichier joint optionnel dans le bucket "comptes-rendus-lfi" et
+ * renvoie son URL publique, à stocker dans `CompteRendu.fichierUrl` — même
+ * mécanisme que televerserFichierCoursSimple (lib/cours-simple.ts).
+ */
+export async function televerserFichierCompteRendu(coursId: string, fichier: File): Promise<string> {
+  if (fichier.size === 0) {
+    throw new CompteRenduError("Le fichier joint est vide.");
+  }
+  if (fichier.size > TAILLE_MAX_OCTETS) {
+    throw new CompteRenduError("Le fichier joint dépasse la taille maximale autorisée (10 Mo).");
+  }
+
+  const extension = extensionDe(fichier.name);
+  if (!EXTENSIONS_DOCUMENTS.has(extension)) {
+    throw new CompteRenduError("Type de fichier non autorisé.");
+  }
+
+  await assurerBucketPublic(BUCKET_COMPTES_RENDUS);
+
+  const nomNettoye = nomFichierSur(fichier.name);
+  const chemin = `${coursId}/${randomUUID()}-${nomNettoye}`;
+
+  const { error } = await supabaseAdmin.storage.from(BUCKET_COMPTES_RENDUS).upload(chemin, fichier, {
+    contentType: fichier.type || "application/octet-stream",
+    upsert: false,
+  });
+
+  if (error) {
+    throw new CompteRenduError("Échec de l'envoi du fichier joint.");
+  }
+
+  const { data } = supabaseAdmin.storage.from(BUCKET_COMPTES_RENDUS).getPublicUrl(chemin);
+  return data.publicUrl;
+}
 
 export type ExerciceRendu = { exercice: string; code: string };
 
@@ -66,6 +111,7 @@ export async function deposerCompteRendu({
   eleveId: idAuteur,
   camaradesIds,
   travail,
+  fichier,
 }: DeposerCompteRenduInput) {
   if (travail && travail.length > TRAVAIL_LONGUEUR_MAX) {
     throw new CompteRenduError("Le travail joint est trop volumineux.");
@@ -93,9 +139,11 @@ export async function deposerCompteRendu({
   let camaradesValides: string[] = [];
 
   if (camaradesIds?.length) {
+    // Plafonné à MAX_COEQUIPIERS : un dépôt de groupe, pas la classe entière.
+    const idsPlafonnes = [...new Set(camaradesIds)].slice(0, MAX_COEQUIPIERS);
     const camarades = await prisma.user.findMany({
       where: {
-        id: { in: [...new Set(camaradesIds)] },
+        id: { in: idsPlafonnes },
         classeId: eleve.classeId,
         role: "ELEVE",
         NOT: { id: eleve.id },
@@ -108,6 +156,8 @@ export async function deposerCompteRendu({
     nomsFinal = formaterNomComplet(eleve);
   }
 
+  const fichierUrl = fichier ? await televerserFichierCompteRendu(coursId, fichier) : null;
+
   const compteRendu = await prisma.compteRendu.create({
     data: {
       coursId,
@@ -115,6 +165,7 @@ export async function deposerCompteRendu({
       travail: travail ?? null,
       classeId,
       eleveId,
+      fichierUrl,
       membres: camaradesValides.length
         ? { create: camaradesValides.map((id) => ({ eleveId: id })) }
         : undefined,

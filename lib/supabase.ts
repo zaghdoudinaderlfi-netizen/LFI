@@ -25,6 +25,11 @@ export const BUCKET_IMAGES_COURS = "images-cours-lfi";
 // directement utilisable en <a href> / <iframe src> côté élève.
 export const BUCKET_COURS_SIMPLE = "cours";
 
+// Bucket public : fichier optionnel joint à un dépôt de compte-rendu élève
+// (ex: document de recherche). Public pour que `CompteRendu.fichierUrl`
+// soit directement utilisable en <a href> côté prof, sans URL signée.
+export const BUCKET_COMPTES_RENDUS = "comptes-rendus-lfi";
+
 const bucketsVerifies = new Set<string>();
 
 /**
