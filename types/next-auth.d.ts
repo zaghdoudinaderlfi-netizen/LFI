@@ -5,6 +5,8 @@ declare module "next-auth" {
   interface User {
     role: Role;
     doitChangerMdp: boolean;
+    /** Compte de démonstration publique (voir lib/demo-constants.ts) — accès lecture seule. */
+    isDemo?: boolean;
   }
 
   interface Session {
@@ -12,6 +14,7 @@ declare module "next-auth" {
       id: string;
       role: Role;
       doitChangerMdp: boolean;
+      isDemo: boolean;
     } & DefaultSession["user"];
   }
 }
@@ -21,5 +24,6 @@ declare module "@auth/core/jwt" {
     id: string;
     role: Role;
     doitChangerMdp: boolean;
+    isDemo: boolean;
   }
 }

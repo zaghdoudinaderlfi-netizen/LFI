@@ -19,6 +19,7 @@ import { EtoilesAffichage } from "@/components/suivi/etoiles";
 import { BadgeBouclierAvatar } from "@/components/suivi/bouclier";
 import { AnnonceBulle } from "@/components/eleve/annonce-bulle";
 import { obtenirAnnonceActive } from "@/lib/annonces";
+import { AmeliorationsFutures } from "@/components/demo/ameliorations-futures";
 import type { Matiere } from "@prisma/client";
 
 const MATIERE_STYLE: Record<Matiere, React.CSSProperties> = {
@@ -29,6 +30,7 @@ const MATIERE_STYLE: Record<Matiere, React.CSSProperties> = {
 
 export default async function ElevePage() {
   const session = await auth();
+  const isDemo = session?.user?.isDemo ?? false;
 
   const user = session?.user
     ? await prisma.user.findUnique({
@@ -247,6 +249,8 @@ export default async function ElevePage() {
               </ul>
             )}
           </section>
+
+          {isDemo && <AmeliorationsFutures role="ELEVE" />}
         </>
       )}
     </div>

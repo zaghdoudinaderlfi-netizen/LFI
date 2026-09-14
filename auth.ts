@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { authConfig } from "./auth.config";
 import { prisma } from "./lib/prisma";
 import { adresseIpAppelant, compteurActuel, enregistrerEchec, reinitialiserCompteur } from "./lib/limite-acces";
+import { EMAIL_ELEVE_DEMO, EMAIL_PROF_DEMO } from "./lib/demo-constants";
 
 // Deux seuils distincts, parce que les deux clés n'ont pas le même sens.
 //
@@ -87,6 +88,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.nom,
           role: user.role,
           doitChangerMdp: user.doitChangerMdp,
+        };
+      },
+    }),
+    // Bouton "Voir la démo" sur l'accueil (sans connexion) : pas de mot de
+    // passe, juste le rôle demandé. N'authentifie jamais un compte qui n'est
+    // pas explicitement marqué isDemo=true (voir prisma/seed-demo.ts) — les
+    // deux seuls emails possibles sont ceux ci-dessous, ni saisis ni
+    // devinables par le visiteur.
+    Credentials({
+      id: "demo",
+      credentials: {
+        role: { label: "role", type: "text" },
+      },
+      async authorize(credentials) {
+        const role = credentials?.role;
+        if (role !== "ELEVE" && role !== "PROF") return null;
+
+        const email = role === "ELEVE" ? EMAIL_ELEVE_DEMO : EMAIL_PROF_DEMO;
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user || !user.isDemo || user.role !== role) return null;
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.nom,
+          role: user.role,
+          doitChangerMdp: false,
+          isDemo: true,
         };
       },
     }),

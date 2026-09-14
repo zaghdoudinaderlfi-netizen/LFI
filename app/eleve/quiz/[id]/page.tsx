@@ -36,6 +36,7 @@ export default async function EleveQuizJouerPage({
       titre={quiz.titre}
       nbQuestions={quiz._count.questions}
       meilleurScore={meilleure?.score ?? null}
+      isDemo={session?.user?.isDemo ?? false}
     />
   );
 }

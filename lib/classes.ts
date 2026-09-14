@@ -63,8 +63,13 @@ export async function creerClasse({
   });
 }
 
-export async function listerClasses() {
+// `estDemo` filtre les classes : true → uniquement la "Classe Démo" (compte
+// prof démo, voir prisma/seed-demo.ts), false → toutes les vraies classes,
+// jamais la démo. Sans filtre (undefined), aucune classe n'est exclue — ce
+// cas ne doit servir que hors contexte d'un vrai/faux compte connecté.
+export async function listerClasses({ estDemo }: { estDemo?: boolean } = {}) {
   const classes = await prisma.classe.findMany({
+    where: estDemo === undefined ? {} : { estDemo },
     orderBy: { createdAt: "desc" },
     include: { _count: { select: { eleves: true } } },
   });

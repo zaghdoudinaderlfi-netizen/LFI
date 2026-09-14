@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { baisserLaMainParId } from "@/lib/mains-levees";
+import { reponseDemoBloquee } from "@/lib/demo-guard";
 
 /** Le prof baisse la main d'un élève précis depuis la popup (interrogé, ou pour nettoyer). */
 export async function DELETE(
@@ -11,6 +12,7 @@ export async function DELETE(
   if (session?.user?.role !== "PROF") {
     return NextResponse.json({ error: "Accès réservé aux professeurs." }, { status: 401 });
   }
+  if (session.user.isDemo) return reponseDemoBloquee();
 
   const { id } = await params;
   await baisserLaMainParId(id);

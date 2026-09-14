@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { leverLaMain, baisserLaMain, mainEstLevee } from "@/lib/mains-levees";
+import { reponseDemoBloquee } from "@/lib/demo-guard";
 
 /** État de la main de l'élève connecté — interrogé au montage du bouton et
  * périodiquement pour détecter une baisse déclenchée depuis la popup prof. */
@@ -20,6 +21,7 @@ export async function POST() {
   if (session?.user?.role !== "ELEVE") {
     return NextResponse.json({ error: "Non connecté." }, { status: 401 });
   }
+  if (session.user.isDemo) return reponseDemoBloquee();
 
   await leverLaMain(session.user.id);
   return NextResponse.json({ actif: true });
@@ -31,6 +33,7 @@ export async function DELETE() {
   if (session?.user?.role !== "ELEVE") {
     return NextResponse.json({ error: "Non connecté." }, { status: 401 });
   }
+  if (session.user.isDemo) return reponseDemoBloquee();
 
   await baisserLaMain(session.user.id);
   return NextResponse.json({ actif: false });

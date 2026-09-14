@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, GraduationCap, Moon, PlayCircle, Sun } from "lucide-react";
+import { DemoButtons } from "./demo-buttons";
 
 /* ── Palette arcade (toujours sombre — fenêtre terminal) ─── */
 const INK = "#15103a";
@@ -246,6 +247,13 @@ export function LandingPage({ coursVitrine }: { coursVitrine: CoursVitrine | nul
               >
                 Découvrir
               </a>
+            </div>
+
+            <div className="mt-5">
+              <p className="mb-2 text-[13px]" style={{ ...MONO, color: MUTED }}>
+                // sans compte, en lecture seule
+              </p>
+              <DemoButtons />
             </div>
           </div>
 

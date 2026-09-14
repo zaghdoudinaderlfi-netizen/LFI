@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { sauvegarderProgression, ProgressionError } from "@/lib/progression";
 import { limiterFrequence } from "@/lib/limite-acces";
+import { reponseDemoBloquee } from "@/lib/demo-guard";
 
 const LIMITE_SAUVEGARDES = 60;
 const FENETRE_MS = 60_000;
@@ -11,6 +12,7 @@ export async function POST(request: Request) {
   if (session?.user?.role !== "ELEVE") {
     return NextResponse.json({ error: "Connecte-toi pour sauvegarder ta progression." }, { status: 401 });
   }
+  if (session.user.isDemo) return reponseDemoBloquee();
 
   const autorise = await limiterFrequence(
     `progression:${session.user.id}`,

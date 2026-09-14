@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { PlusCircle, Users, Star } from "lucide-react";
+import { auth } from "@/auth";
 import { anneeScolaireParDefaut, listerClasses, NIVEAU_LABELS } from "@/lib/classes";
 import { ClasseForm } from "../classe-form";
 
 export default async function ProfClassesPage() {
-  const classes = await listerClasses();
+  const session = await auth();
+  const classes = await listerClasses({ estDemo: session?.user?.isDemo ?? false });
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">

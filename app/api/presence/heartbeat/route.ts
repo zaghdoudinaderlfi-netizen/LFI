@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { reponseDemoBloquee } from "@/lib/demo-guard";
 
 /** Battement de coeur de présence — appelé périodiquement côté élève (voir components/eleve/presence-heartbeat.tsx). */
 export async function POST() {
@@ -8,6 +9,7 @@ export async function POST() {
   if (session?.user?.role !== "ELEVE") {
     return NextResponse.json({ error: "Non connecté." }, { status: 401 });
   }
+  if (session.user.isDemo) return reponseDemoBloquee();
 
   await prisma.user.update({
     where: { id: session.user.id },

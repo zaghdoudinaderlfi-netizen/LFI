@@ -38,11 +38,13 @@ export function QuizJeu({
   titre,
   nbQuestions,
   meilleurScore,
+  isDemo,
 }: {
   quizId: string;
   titre: string;
   nbQuestions: number;
   meilleurScore: number | null;
+  isDemo?: boolean;
 }) {
   const [etat, setEtat] = useState<EtatJeu>("accueil");
   const [erreur, setErreur] = useState<string | null>(null);
@@ -72,6 +74,14 @@ export function QuizJeu({
 
   async function demarrer() {
     setErreur(null);
+    // Court-circuite avant d'appeler la Server Action : elle est de toute
+    // façon bloquée côté serveur pour un compte démo (voir auth.config.ts),
+    // mais un message clair vaut mieux qu'un échec réseau silencieux.
+    if (isDemo) {
+      setErreur("Ceci est une démonstration — connecte-toi avec ton compte pour jouer à ce quiz.");
+      setEtat("erreur");
+      return;
+    }
     setEtat("chargement");
     const res = await demarrerTentativeAction(quizId);
     if (!res.ok) {

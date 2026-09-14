@@ -11,6 +11,8 @@ import { AvatarDisplay } from "@/components/avatar/avatar-display";
 import { MatiereTabs } from "@/components/matiere-tabs";
 import { obtenirAnnonceActive } from "@/lib/annonces";
 import { obtenirCycleActif } from "@/lib/trimestre";
+import { compterComptesRendus } from "@/lib/comptes-rendus";
+import { AmeliorationsFutures } from "@/components/demo/ameliorations-futures";
 
 export default async function ProfPage({
   searchParams,
@@ -21,6 +23,7 @@ export default async function ProfPage({
   const matiere: Matiere | null = estMatiereValide(matiereParam) ? matiereParam : null;
 
   const session = await auth();
+  const isDemo = session?.user?.isDemo ?? false;
 
   const niveauFiltré = matiere ? NIVEAU_PAR_MATIERE[matiere] : undefined;
 
@@ -31,8 +34,8 @@ export default async function ProfPage({
           select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true },
         })
       : Promise.resolve(null),
-    prisma.compteRendu.count(),
-    listerClasses(),
+    compterComptesRendus(isDemo),
+    listerClasses({ estDemo: isDemo }),
     obtenirAnnonceActive(),
     obtenirCycleActif(),
   ]);
@@ -245,6 +248,8 @@ export default async function ProfPage({
           </ul>
         )}
       </section>
+
+      {isDemo && <AmeliorationsFutures role="PROF" />}
     </div>
   );
 }

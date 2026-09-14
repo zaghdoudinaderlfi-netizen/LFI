@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { verrouillerEleve } from "@/lib/examen";
+import { reponseDemoBloquee } from "@/lib/demo-guard";
 
 /**
  * Verrouillage dur déclenché côté client dès qu'un élève quitte l'écran
@@ -14,6 +15,7 @@ export async function POST(request: Request) {
   if (session?.user?.role !== "ELEVE") {
     return NextResponse.json({ error: "Non connecté." }, { status: 401 });
   }
+  if (session.user.isDemo) return reponseDemoBloquee();
 
   const body = await request.json().catch(() => null);
   const exerciceId = body?.exerciceId;

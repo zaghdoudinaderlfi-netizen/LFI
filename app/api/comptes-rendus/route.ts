@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { deposerCompteRendu, CompteRenduError } from "@/lib/comptes-rendus";
 import { adresseIpAppelant, limiterFrequence } from "@/lib/limite-acces";
+import { reponseDemoBloquee } from "@/lib/demo-guard";
 
 const LIMITE_DEPOTS = 5;
 const FENETRE_DEPOTS_MS = 60_000;
@@ -14,6 +15,7 @@ export async function POST(request: Request) {
   if (session?.user?.role !== "ELEVE") {
     return NextResponse.json({ error: "Connecte-toi pour déposer un compte-rendu." }, { status: 401 });
   }
+  if (session.user.isDemo) return reponseDemoBloquee();
 
   const ip = await adresseIpAppelant();
   const autorise = await limiterFrequence(`cr:${ip}`, LIMITE_DEPOTS, FENETRE_DEPOTS_MS);

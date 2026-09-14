@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { reponseDemoBloquee } from "@/lib/demo-guard";
 
 /**
  * Enregistre (ou met à jour) l'abonnement push d'un appareil pour
@@ -12,6 +13,7 @@ export async function POST(request: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
   }
+  if (session.user.isDemo) return reponseDemoBloquee();
 
   const body = await request.json().catch(() => null);
   const endpoint = body?.endpoint;

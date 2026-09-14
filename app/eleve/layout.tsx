@@ -7,6 +7,7 @@ import { AppShell } from "@/components/nav/app-shell";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 import { PresenceHeartbeat } from "@/components/eleve/presence-heartbeat";
 import { LeverMainBouton } from "@/components/eleve/lever-main-bouton";
+import { DemoBanner } from "@/components/demo/demo-banner";
 
 export default async function EleveLayout({
   children,
@@ -14,6 +15,7 @@ export default async function EleveLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
+  const isDemo = session?.user?.isDemo ?? false;
 
   const [user, notificationsNonLues, notificationsParType, progression, mainLevee] = session?.user?.id
     ? await Promise.all([
@@ -37,6 +39,7 @@ export default async function EleveLayout({
 
   return (
     <>
+      {isDemo && <DemoBanner />}
       <AppShell
         role="ELEVE"
         user={user ?? { id: session?.user?.id ?? "", nom: session?.user?.name ?? "" }}
@@ -47,8 +50,8 @@ export default async function EleveLayout({
         {children}
       </AppShell>
       <PWAInstallPrompt />
-      <PresenceHeartbeat />
-      {session?.user?.id && <LeverMainBouton initial={mainLevee} />}
+      {!isDemo && <PresenceHeartbeat />}
+      {session?.user?.id && !isDemo && <LeverMainBouton initial={mainLevee} />}
     </>
   );
 }

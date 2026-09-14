@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Paperclip } from "lucide-react";
 import { Matiere } from "@prisma/client";
+import { auth } from "@/auth";
 import {
   listerComptesRendus,
   listerClassesAvecComptesRendus,
@@ -25,10 +26,13 @@ export default async function ComptesRendusPage({
   const tri: TriComptesRendus = triParam === "cours" ? "cours" : "date";
   const matiere = estMatiereValide(matiereParam) ? matiereParam : undefined;
 
-  const classes = await listerClassesAvecComptesRendus();
+  const session = await auth();
+  const isDemo = session?.user?.isDemo ?? false;
+
+  const classes = await listerClassesAvecComptesRendus(isDemo);
   const classeId = classes.some((c) => c.id === classeParam) ? classeParam : undefined;
 
-  const comptesRendus = await listerComptesRendus({ tri, matiere, classeId });
+  const comptesRendus = await listerComptesRendus({ tri, matiere, classeId, estDemo: isDemo });
 
   function lien(remplacements: { tri?: string; matiere?: string; classe?: string }) {
     const params = new URLSearchParams();

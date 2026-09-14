@@ -7,6 +7,7 @@ import { changerMdpProfAction } from "./actions";
 
 export default async function ProfProfilPage() {
   const session = await auth();
+  const isDemo = session?.user?.isDemo ?? false;
 
   const user = session?.user
     ? await prisma.user.findUnique({ where: { id: session.user.id } })
@@ -34,6 +35,14 @@ export default async function ProfProfilPage() {
         </dl>
       </section>
 
+      {isDemo && (
+        <p className="card animate-fade-in-up p-4 text-sm text-ink-secondary">
+          Ceci est une démonstration — connecte-toi avec ton compte pour modifier ton profil. Les
+          champs ci-dessous sont désactivés.
+        </p>
+      )}
+
+      <fieldset disabled={isDemo} className="contents">
       {/* Prénom et nom */}
       <section className="card animate-fade-in-up p-6 [animation-delay:60ms]">
         <h2 className="section-title mb-1">Prénom et nom</h2>
@@ -51,6 +60,7 @@ export default async function ProfProfilPage() {
         </p>
         <ChangerMdpForm action={changerMdpProfAction} />
       </section>
+      </fieldset>
     </div>
   );
 }

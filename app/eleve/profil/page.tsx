@@ -12,6 +12,7 @@ import { changerMdpAction, modifierEmailAction } from "./actions";
 
 export default async function EleveProfilPage() {
   const session = await auth();
+  const isDemo = session?.user?.isDemo ?? false;
 
   const user = session?.user
     ? await prisma.user.findUnique({
@@ -52,6 +53,14 @@ export default async function EleveProfilPage() {
         </dl>
       </section>
 
+      {isDemo && (
+        <p className="card animate-fade-in-up p-4 text-sm text-ink-secondary">
+          Ceci est une démonstration — connecte-toi avec ton compte pour modifier ton profil. Les
+          champs ci-dessous sont désactivés.
+        </p>
+      )}
+
+      <fieldset disabled={isDemo} className="contents">
       {/* Avatar */}
       <section className="card animate-fade-in-up p-6 [animation-delay:60ms]">
         <h2 className="section-title mb-1">Avatar</h2>
@@ -104,6 +113,7 @@ export default async function EleveProfilPage() {
         )}
         <ChangerMdpForm action={changerMdpAction} forcé={user?.doitChangerMdp ?? false} />
       </section>
+      </fieldset>
     </div>
   );
 }

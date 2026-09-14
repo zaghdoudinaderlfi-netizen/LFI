@@ -277,17 +277,32 @@ export type FiltresComptesRendus = {
   tri?: TriComptesRendus;
   matiere?: Matiere;
   classeId?: string;
+  // true → uniquement les dépôts de la "Classe Démo" (compte prof démo) ;
+  // false → tous les vrais dépôts, jamais ceux de la démo. Un dépôt fait
+  // hors connexion (classeId null) n'appartient à aucune classe : on le
+  // garde côté "vrai" (comportement historique, avant l'existence de la
+  // démo) mais jamais côté démo. Voir prisma/seed-demo.ts.
+  estDemo?: boolean;
 };
+
+function filtreClasseDemo(estDemo: boolean | undefined) {
+  if (estDemo === undefined) return {};
+  return estDemo
+    ? { classe: { estDemo: true } }
+    : { OR: [{ classeId: null }, { classe: { estDemo: false } }] };
+}
 
 export async function listerComptesRendus({
   tri = "date",
   matiere,
   classeId,
+  estDemo,
 }: FiltresComptesRendus = {}) {
   return prisma.compteRendu.findMany({
     where: {
       ...(matiere ? { cours: { matiere } } : {}),
       ...(classeId ? { classeId } : {}),
+      ...filtreClasseDemo(estDemo),
     },
     include: {
       cours: { select: { titre: true, matiere: true, niveau: true } },
@@ -299,10 +314,17 @@ export async function listerComptesRendus({
   });
 }
 
+export async function compterComptesRendus(estDemo?: boolean) {
+  return prisma.compteRendu.count({ where: filtreClasseDemo(estDemo) });
+}
+
 /** Classes ayant au moins un compte-rendu — pour ne proposer que des filtres utiles. */
-export async function listerClassesAvecComptesRendus() {
+export async function listerClassesAvecComptesRendus(estDemo?: boolean) {
   const classes = await prisma.classe.findMany({
-    where: { comptesRendus: { some: {} } },
+    where: {
+      comptesRendus: { some: {} },
+      ...(estDemo === undefined ? {} : { estDemo }),
+    },
     select: { id: true, nom: true, niveau: true },
     orderBy: { nom: "asc" },
   });

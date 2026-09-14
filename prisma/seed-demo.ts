@@ -3,6 +3,11 @@ import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import {
+  CODE_INSCRIPTION_CLASSE_DEMO,
+  EMAIL_ELEVE_DEMO,
+  EMAIL_PROF_DEMO,
+} from "../lib/demo-constants";
 
 // Client Prisma dédié à ce script (pas d'import de lib/prisma.ts, qui charge
 // "server-only" et casse hors runtime Next.js — voir aussi prisma/seed.ts).
@@ -20,10 +25,6 @@ const prisma = new PrismaClient({ adapter });
 // lib/classes-constants.ts — c'est la seule combinaison valide pour ce
 // niveau, toutes les requêtes élève/prof filtrent strictement les deux
 // ensemble).
-
-const CODE_INSCRIPTION_DEMO = "DEMO-PUBLIC-NSI";
-const EMAIL_ELEVE_DEMO = "demo-eleve@nadtech-demo.invalid";
-const EMAIL_PROF_DEMO = "demo-prof@nadtech-demo.invalid";
 
 function anneeScolaireActuelle(): string {
   const maintenant = new Date();
@@ -93,12 +94,12 @@ Le tri à bulles compare jusqu'à n² éléments : il devient lent sur de grande
 async function main() {
   // ── Classe démo (isolée des vraies classes) ──────────────────────────
   const classe = await prisma.classe.upsert({
-    where: { codeInscription: CODE_INSCRIPTION_DEMO },
+    where: { codeInscription: CODE_INSCRIPTION_CLASSE_DEMO },
     update: { estDemo: true },
     create: {
       nom: "Classe Démo",
       niveau: "PREMIERE",
-      codeInscription: CODE_INSCRIPTION_DEMO,
+      codeInscription: CODE_INSCRIPTION_CLASSE_DEMO,
       anneeScolaire: anneeScolaireActuelle(),
       estDemo: true,
     },
