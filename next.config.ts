@@ -49,6 +49,12 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/cours/[fichier]": ["./contenu/cours/**"],
     "/prof/cours/[id]": ["./contenu/cours/**"],
+    // Le sprite d'icônes (voir app/layout.tsx) est lu sur le disque depuis
+    // le layout racine, donc par TOUTES les routes — sans ça, la même
+    // erreur ENOENT que ci-dessus casserait le site entier en serverless
+    // (déjà vu en production : le dossier public/ n'est pas inclus dans le
+    // bundle d'une fonction par défaut).
+    "/**": ["./public/icons/**"],
   },
   experimental: {
     serverActions: {
