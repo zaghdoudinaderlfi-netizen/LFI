@@ -86,7 +86,10 @@ export async function changerMdpAction(
   });
   if (!user) return "Utilisateur introuvable.";
 
-  const valide = await bcrypt.compare(ancien, user.motDePasse);
+  // Même souci que la connexion (auth.ts) : `ancien` est souvent le code
+  // temporaire donné par le prof, retapé ici sur un clavier qui peut ajouter
+  // un espace de fin — sans trim, une saisie valide échouait par intermittence.
+  const valide = await bcrypt.compare(ancien.trim(), user.motDePasse);
   if (!valide) return "Le mot de passe actuel est incorrect.";
 
   const hash = await bcrypt.hash(nouveau, 12);

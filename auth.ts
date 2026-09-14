@@ -43,6 +43,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         const emailNettoye = email.trim().toLowerCase();
+        // Espace parasite fréquent avec un mot de passe temporaire (copié-collé
+        // depuis un message, ou clavier tactile qui ajoute un espace de fin) —
+        // contrairement à l'email, `password` n'était pas nettoyé avant, ce qui
+        // faisait échouer des connexions valides de façon imprévisible.
+        const passwordNettoye = password.trim();
         const ip = await adresseIpAppelant();
         const cleEmail = `connexion-echec:email:${emailNettoye}`;
         const cleIp = `connexion-echec:ip:${ip}`;
@@ -55,12 +60,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Bloqué : on compare quand même contre le hash factice pour garder
         // un temps de réponse comparable à une tentative normale.
         if (echecsEmail >= MAX_TENTATIVES_EMAIL || echecsIp >= MAX_TENTATIVES_IP) {
-          await bcrypt.compare(password, HASH_FICTIF);
+          await bcrypt.compare(passwordNettoye, HASH_FICTIF);
           return null;
         }
 
         const user = await prisma.user.findUnique({ where: { email: emailNettoye } });
-        const valid = await bcrypt.compare(password, user?.motDePasse ?? HASH_FICTIF);
+        const valid = await bcrypt.compare(passwordNettoye, user?.motDePasse ?? HASH_FICTIF);
 
         if (!user || !valid) {
           await Promise.all([

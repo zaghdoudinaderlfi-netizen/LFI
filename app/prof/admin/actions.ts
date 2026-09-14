@@ -15,12 +15,17 @@ async function verifierProf() {
 
 // ── Réinitialisation du mot de passe par l'admin ──────────────────────────────
 
-const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sans I, O, 0, 1 (confusion visuelle)
-
+// Uniquement des chiffres : contrairement à un code alphanumérique, aucune
+// ambiguïté de casse (un clavier de téléphone qui repasse en minuscules par
+// défaut ne peut plus faire échouer la comparaison) ni de caractères
+// visuellement confusables (S/5, B/8, G/6, Z/2). Plus court à retaper aussi
+// — 8 chiffres suffisent largement pour un code à usage unique, protégé par
+// le verrouillage anti-force-brute (voir MAX_TENTATIVES_EMAIL, auth.ts) et
+// remplacé dès la première connexion.
 function genererMdpTemporaire(): string {
   const groupe = () =>
-    Array.from({ length: 4 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join("");
-  return `${groupe()}-${groupe()}-${groupe()}`;
+    Array.from({ length: 4 }, () => Math.floor(Math.random() * 10)).join("");
+  return `${groupe()}-${groupe()}`;
 }
 
 /**
