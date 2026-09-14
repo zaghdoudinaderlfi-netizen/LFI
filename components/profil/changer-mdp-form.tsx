@@ -42,19 +42,21 @@ export function ChangerMdpForm({
           </p>
         </div>
       )}
-      <div className="flex flex-col gap-1">
-        <label htmlFor="ancien" className="field-label">
-          Mot de passe actuel
-        </label>
-        <input
-          id="ancien"
-          name="ancien"
-          type="password"
-          required
-          autoComplete="current-password"
-          className="input"
-        />
-      </div>
+      {!forcé && (
+        <div className="flex flex-col gap-1">
+          <label htmlFor="ancien" className="field-label">
+            Mot de passe actuel
+          </label>
+          <input
+            id="ancien"
+            name="ancien"
+            type="password"
+            required
+            autoComplete="current-password"
+            className="input"
+          />
+        </div>
+      )}
 
       <div className="flex flex-col gap-1">
         <label htmlFor="nouveau" className="field-label">

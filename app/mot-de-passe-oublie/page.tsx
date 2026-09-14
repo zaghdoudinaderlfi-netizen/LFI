@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LegalLinks } from "@/components/legal-links";
+import { ReinitMdpWizard } from "./reinit-mdp-wizard";
 
 export default function MotDePasseOublieePage() {
   return (
@@ -39,11 +40,10 @@ export default function MotDePasseOublieePage() {
               Mot de passe oublié
             </h1>
             <p className="mb-6 text-sm text-ink-secondary">
-              Pour des raisons de sécurité, la réinitialisation se fait uniquement par ton
-              professeur. Demande-lui de réinitialiser ton mot de passe depuis son interface
-              d&apos;administration : il te communiquera un mot de passe temporaire, à changer
-              dès ta prochaine connexion.
+              Réinitialise-le toi-même en vérifiant ton identité, sans attendre ton professeur.
             </p>
+
+            <ReinitMdpWizard />
 
             <p className="mt-6 text-center text-sm text-ink-secondary">
               <Link

@@ -72,7 +72,7 @@ export async function changerMdpAction(
   const confirmation = formData.get("confirmation");
 
   if (
-    typeof ancien !== "string" ||
+    (ancien !== null && typeof ancien !== "string") ||
     typeof nouveau !== "string" ||
     typeof confirmation !== "string"
   ) return "Formulaire invalide.";
@@ -82,15 +82,24 @@ export async function changerMdpAction(
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { motDePasse: true },
+    select: { motDePasse: true, doitChangerMdp: true },
   });
   if (!user) return "Utilisateur introuvable.";
 
-  // Même souci que la connexion (auth.ts) : `ancien` est souvent le code
-  // temporaire donné par le prof, retapé ici sur un clavier qui peut ajouter
-  // un espace de fin — sans trim, une saisie valide échouait par intermittence.
-  const valide = await bcrypt.compare(ancien.trim(), user.motDePasse);
-  if (!valide) return "Le mot de passe actuel est incorrect.";
+  // Juste après une réinitialisation par le prof, l'élève vient de
+  // s'authentifier avec ce mot de passe temporaire à l'instant — le
+  // redemander ici n'apporte rien et double la friction (voir
+  // components/profil/changer-mdp-form.tsx, qui masque alors ce champ).
+  // `doitChangerMdp` est relu en base, jamais fait confiance côté client.
+  if (!user.doitChangerMdp) {
+    // Même souci que la connexion (auth.ts) : `ancien` est souvent le code
+    // temporaire donné par le prof, retapé ici sur un clavier qui peut
+    // ajouter un espace de fin — sans trim, une saisie valide échouait par
+    // intermittence.
+    if (typeof ancien !== "string") return "Formulaire invalide.";
+    const valide = await bcrypt.compare(ancien.trim(), user.motDePasse);
+    if (!valide) return "Le mot de passe actuel est incorrect.";
+  }
 
   const hash = await bcrypt.hash(nouveau, 12);
   await prisma.user.update({
