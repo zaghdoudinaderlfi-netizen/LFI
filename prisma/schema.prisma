@@ -128,6 +128,13 @@ model User {
   // Sécurité : force le changement de mdp après réinitialisation admin.
   doitChangerMdp Boolean @default(false)
 
+  // Compte de démonstration publique (bouton "Voir la démo" sur l'accueil,
+  // sans connexion). Accès strictement en lecture seule côté serveur (voir
+  // middleware.ts) : toute Server Action est bloquée pour ce compte. Un seul
+  // compte élève et un seul compte prof sont marqués ainsi, recréés/réinitialisés
+  // par prisma/seed-demo.ts.
+  isDemo Boolean @default(false)
+
   // Optionnel pour compatibilité avec les comptes créés avant ce champ —
   // obligatoire pour toute nouvelle inscription. Sert à vérifier l'identité
   // lors d'une réinitialisation de mot de passe en libre-service (voir
@@ -204,6 +211,12 @@ model Classe {
   niveau          Niveau
   codeInscription String @unique
   anneeScolaire   String
+
+  // Classe dédiée au compte démo prof (voir prisma/seed-demo.ts) : permet de
+  // filtrer les pages prof en mode démo pour qu'un visiteur anonyme ne voie
+  // jamais les vraies classes ni les vrais élèves (voir middleware.ts et les
+  // pages sous app/prof qui appellent listerClasses).
+  estDemo Boolean @default(false)
 
   eleves        User[]
   comptesRendus CompteRendu[]
