@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Hand } from "lucide-react";
+import { Icon } from "@/components/ui/icon";
 
 const INTERVALLE_MS = 10_000;
 
@@ -68,7 +68,7 @@ export function LeverMainBouton({ initial }: { initial: boolean }) {
       } ${enCours ? "opacity-70" : ""}`}
       style={{ boxShadow: "3px 3px 0 rgb(var(--arcade-shadow-clr))" }}
     >
-      <Hand className={`h-5 w-5 shrink-0 ${levee ? "animate-wiggle" : ""}`} />
+      <Icon name="main-levee" className={`h-6 w-6 shrink-0 ${levee ? "animate-wiggle" : ""}`} />
       <span className="hidden sm:inline">{levee ? "Main levée — en attente" : "Lever la main"}</span>
     </button>
   );

@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Space_Mono, Nunito } from "next/font/google";
 import Script from "next/script";
+import { readFileSync } from "fs";
+import { join } from "path";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
 import { AuthSessionProvider } from "@/components/session-provider";
@@ -81,6 +83,26 @@ window.addEventListener("appinstalled", function () {
 });
 `;
 
+// Sprite d'icônes colorées (voir components/ui/icon.tsx) — lu une seule
+// fois au chargement du module (pas par requête) et injecté brut dans le
+// DOM pour que tous ses <symbol> deviennent réutilisables partout via
+// <use href="#icon-...">.
+//
+// Le fichier source masque son <svg> racine avec style="display:none" ;
+// on le remplace ici par la technique "clip à 0×0" (position absolute +
+// taille nulle + overflow hidden). display:none retire complètement le
+// sous-arbre du rendu, ce qui empêche Chrome de résoudre les dégradés
+// (fill="url(#g-cyan)" etc.) pour les <use> ailleurs sur la page — les
+// icônes s'affichaient alors en blanc uni, sans leurs couleurs. Vérifié
+// par capture d'écran avant/après ce correctif.
+const ICON_SPRITE = readFileSync(
+  join(process.cwd(), "public/icons/nadtech-icones-dashboard.svg"),
+  "utf-8"
+).replace(
+  'style="display:none"',
+  'style="position:absolute;width:0;height:0;overflow:hidden"'
+);
+
 export default function RootLayout({
   children,
 }: {
@@ -102,6 +124,7 @@ export default function RootLayout({
         <Script id="pwa-install-capture" strategy="beforeInteractive">
           {PWA_INSTALL_CAPTURE_SCRIPT}
         </Script>
+        <div dangerouslySetInnerHTML={{ __html: ICON_SPRITE }} />
         <AuthSessionProvider>
           <ToastProvider>{children}</ToastProvider>
         </AuthSessionProvider>

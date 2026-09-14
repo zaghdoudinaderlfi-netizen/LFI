@@ -31,6 +31,7 @@ import { PageTransition } from "@/components/ui/page-transition";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { InstallAppButton } from "@/components/install-app-button";
 import { LegalLinks } from "@/components/legal-links";
+import { Icon as SpriteIcon } from "@/components/ui/icon";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 import type { PalierBouclier } from "@/lib/suivi-oral-constants";
 
@@ -40,6 +41,8 @@ type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+  /** Nom d'une icône du sprite coloré (voir components/ui/icon.tsx), prioritaire sur `icon`. */
+  iconSprite?: string;
   /** Image à afficher à la place de `icon` (ex: logo Pronote). */
   iconImage?: string;
   /** Lien externe : s'ouvre dans un nouvel onglet, jamais marqué "actif". */
@@ -68,13 +71,13 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
       iconImage: "/pronote-icon.png",
       externe: true,
     },
-    { href: "/eleve/cours", label: "Mes cours", icon: BookOpen },
+    { href: "/eleve/cours", label: "Mes cours", icon: BookOpen, iconSprite: "cours" },
     { href: "/eleve/travail", label: "Travail à faire", icon: ListChecks },
     { href: "/eleve/notes", label: "Mes notes", icon: Award },
-    { href: "/eleve/quiz", label: "Quiz", icon: Gamepad2 },
+    { href: "/eleve/quiz", label: "Quiz", icon: Gamepad2, iconSprite: "quiz" },
     { href: "/eleve/logiciels", label: "Logiciels", icon: Download },
-    { href: "/eleve/notifications", label: "Notifications", icon: Bell },
-    { href: "/eleve/profil", label: "Profil", icon: User },
+    { href: "/eleve/notifications", label: "Notifications", icon: Bell, iconSprite: "notifications" },
+    { href: "/eleve/profil", label: "Profil", icon: User, iconSprite: "profil" },
   ],
   PROF: [
     { href: "/prof", label: "Tableau de bord", icon: LayoutDashboard },
@@ -85,14 +88,14 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
       iconImage: "/pronote-icon.png",
       externe: true,
     },
-    { href: "/prof/cours", label: "Mes cours", icon: BookOpen },
-    { href: "/prof/comptes-rendus", label: "Comptes-rendus", icon: FileText },
-    { href: "/prof/classes", label: "Mes classes", icon: Users },
-    { href: "/prof/admin", label: "Gestion élèves", icon: UserCog },
-    { href: "/prof/quiz", label: "Quiz", icon: Gamepad2 },
+    { href: "/prof/cours", label: "Mes cours", icon: BookOpen, iconSprite: "cours" },
+    { href: "/prof/comptes-rendus", label: "Comptes-rendus", icon: FileText, iconSprite: "compte-rendu" },
+    { href: "/prof/classes", label: "Mes classes", icon: Users, iconSprite: "classes" },
+    { href: "/prof/admin", label: "Gestion élèves", icon: UserCog, iconSprite: "eleves" },
+    { href: "/prof/quiz", label: "Quiz", icon: Gamepad2, iconSprite: "quiz" },
     { href: "/prof/logiciels", label: "Logiciels", icon: Download },
-    { href: "/prof/notifications", label: "Notifications", icon: Bell },
-    { href: "/prof/profil", label: "Profil", icon: User },
+    { href: "/prof/notifications", label: "Notifications", icon: Bell, iconSprite: "notifications" },
+    { href: "/prof/profil", label: "Profil", icon: User, iconSprite: "profil" },
   ],
 };
 
@@ -176,6 +179,8 @@ export function AppShell({
             <>
               {item.iconImage ? (
                 <img src={item.iconImage} alt="" className="h-6 w-6 shrink-0 rounded-md" />
+              ) : item.iconSprite ? (
+                <SpriteIcon name={item.iconSprite} className="h-7 w-7 shrink-0" />
               ) : (
                 <Icon
                   className="h-5 w-5 shrink-0"

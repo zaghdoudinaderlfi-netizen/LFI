@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, X } from "lucide-react";
+import { X } from "lucide-react";
+import { Icon } from "@/components/ui/icon";
 import type { ClasseAvecPresence } from "@/lib/presence";
 
 const INTERVALLE_MS = 10_000;
@@ -63,7 +64,7 @@ export function BullePresence() {
         className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full border-2 border-space-border bg-space-surface text-ink-primary transition-transform hover:scale-105"
         style={{ boxShadow: "3px 3px 0 rgb(var(--arcade-shadow-clr))" }}
       >
-        {ouvert ? <X className="h-6 w-6" /> : <Users className="h-6 w-6" />}
+        {ouvert ? <X className="h-6 w-6" /> : <Icon name="connectes" className="h-7 w-7" />}
       </button>
 
       {ouvert && (
