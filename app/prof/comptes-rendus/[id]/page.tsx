@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Download, BadgeCheck } from "lucide-react";
+import { ArrowLeft, Download, BadgeCheck, Paperclip } from "lucide-react";
 import { obtenirCompteRendu, lireTravail } from "@/lib/comptes-rendus";
 import { MATIERE_LABELS } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
@@ -64,6 +64,18 @@ export default async function CompteRenduDetailPage({
           })}
         </p>
 
+        {compteRendu.fichierUrl && (
+          <a
+            href={compteRendu.fichierUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex items-center gap-1 text-sm text-neon-cyan hover:underline"
+          >
+            <Paperclip className="h-4 w-4" />
+            Voir le fichier joint
+          </a>
+        )}
+
         <div className="mt-4 border-t border-space-border pt-4">
           <p className="eyebrow mb-2">Note de ce dépôt</p>
           <NotationCompteRendu id={compteRendu.id} valeurInitiale={compteRendu.noteEtoiles} />
@@ -73,7 +85,7 @@ export default async function CompteRenduDetailPage({
       {travail.length === 0 ? (
         <div className="card animate-fade-in-up p-6 text-center">
           <p className="text-ink-secondary">
-            Aucun travail joint à ce dépôt — l&apos;élève a seulement signalé qu&apos;il avait terminé.
+            Aucun travail détecté sur ce cours au moment du dépôt.
           </p>
         </div>
       ) : (

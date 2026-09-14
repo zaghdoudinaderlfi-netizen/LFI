@@ -158,11 +158,32 @@ export async function deposerCompteRendu({
 
   const fichierUrl = fichier ? await televerserFichierCompteRendu(coursId, fichier) : null;
 
+  // Instantané du travail réel de l'élève sur CE cours, au moment précis du
+  // dépôt : les cellules de code (ProgressionExercice, sauvegardées en
+  // continu pendant que l'élève tape) plus les réponses libres envoyées par
+  // le widget (collecterTravail côté client, champs `[data-reponse]`, pour
+  // les pages qui n'utilisent pas de cellules de code). On fige les deux ici
+  // plutôt que de les relier dynamiquement à la progression : l'élève peut
+  // continuer à modifier son code après le dépôt, le prof doit voir la
+  // version rendue, pas une version modifiée après coup.
+  const progressions = await prisma.progressionExercice.findMany({
+    where: { eleveId, coursId },
+    select: { exerciceId: true, codeSauvegarde: true },
+    orderBy: { exerciceId: "asc" },
+  });
+  const travailProgression: ExerciceRendu[] = progressions.map((p) => ({
+    exercice: `Exercice ${p.exerciceId}`,
+    code: p.codeSauvegarde,
+  }));
+  const travailClient = lireTravail(travail ?? null);
+  const travailComplet = [...travailProgression, ...travailClient];
+  const travailFinal = travailComplet.length ? JSON.stringify(travailComplet) : null;
+
   const compteRendu = await prisma.compteRendu.create({
     data: {
       coursId,
       noms: nomsFinal,
-      travail: travail ?? null,
+      travail: travailFinal,
       classeId,
       eleveId,
       fichierUrl,

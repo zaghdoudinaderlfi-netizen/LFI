@@ -341,9 +341,13 @@ model CompteRendu {
   noms      String
   dateDepot DateTime @default(now())
 
-  // Code saisi par l'élève dans chaque cellule de la page, au moment du
-  // dépôt : JSON [{ exercice, code }]. Null pour les dépôts antérieurs à
-  // cette fonctionnalité. Les cellules de correction ne sont pas capturées.
+  // Instantané du travail de l'élève sur ce cours, figé au moment du dépôt :
+  // JSON [{ exercice, code }], fusion du code des cellules d'exercice (lu
+  // depuis ProgressionExercice à l'instant du dépôt) et des réponses libres
+  // envoyées par le widget (`[data-reponse]`, pages sans cellules de code).
+  // Null pour les dépôts antérieurs à cette fonctionnalité, ou si l'élève
+  // n'avait aucun travail sauvegardé sur ce cours. Les cellules de
+  // correction ne sont pas capturées.
   travail String? @db.Text
 
   // Classe de l'élève connecté au moment du dépôt, relevée côté serveur
