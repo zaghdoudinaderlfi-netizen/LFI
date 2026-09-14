@@ -19,6 +19,7 @@ import {
   X,
   LogOut,
   ChevronDown,
+  ArrowUpRight,
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/app/actions";
@@ -39,7 +40,15 @@ type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+  /** Image à afficher à la place de `icon` (ex: logo Pronote). */
+  iconImage?: string;
+  /** Lien externe : s'ouvre dans un nouvel onglet, jamais marqué "actif". */
+  externe?: boolean;
 };
+
+// URL de l'instance Pronote de l'établissement — un lien direct pour ne pas
+// obliger élèves et profs à chercher/retenir l'adresse dans un autre onglet.
+const PRONOTE_URL_BASE = "https://e216000i.index-education.net/pronote/";
 
 type ShellUser = {
   id: string;
@@ -52,6 +61,13 @@ type ShellUser = {
 const NAV_ITEMS: Record<Role, NavItem[]> = {
   ELEVE: [
     { href: "/eleve", label: "Tableau de bord", icon: LayoutDashboard },
+    {
+      href: `${PRONOTE_URL_BASE}eleve.html`,
+      label: "Pronote",
+      icon: LayoutDashboard,
+      iconImage: "/pronote-icon.png",
+      externe: true,
+    },
     { href: "/eleve/cours", label: "Mes cours", icon: BookOpen },
     { href: "/eleve/travail", label: "Travail à faire", icon: ListChecks },
     { href: "/eleve/notes", label: "Mes notes", icon: Award },
@@ -62,6 +78,13 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
   ],
   PROF: [
     { href: "/prof", label: "Tableau de bord", icon: LayoutDashboard },
+    {
+      href: `${PRONOTE_URL_BASE}professeur.html`,
+      label: "Pronote",
+      icon: LayoutDashboard,
+      iconImage: "/pronote-icon.png",
+      externe: true,
+    },
     { href: "/prof/cours", label: "Mes cours", icon: BookOpen },
     { href: "/prof/comptes-rendus", label: "Comptes-rendus", icon: FileText },
     { href: "/prof/classes", label: "Mes classes", icon: Users },
@@ -146,8 +169,42 @@ export function AppShell({
       <nav className="flex flex-col gap-1">
         {items.map((item) => {
           const Icon = item.icon;
-          const actif = estActif(item.href);
+          const actif = !item.externe && estActif(item.href);
           const badge = item.href === notificationsHref ? notificationsNonLues : 0;
+
+          const contenu = (
+            <>
+              {item.iconImage ? (
+                <img src={item.iconImage} alt="" className="h-6 w-6 shrink-0 rounded-md" />
+              ) : (
+                <Icon
+                  className="h-5 w-5 shrink-0"
+                  style={actif ? { color: "rgb(var(--arcade-snt))" } : undefined}
+                />
+              )}
+              <span className="flex-1">{item.label}</span>
+              {item.externe ? (
+                <ArrowUpRight className="h-4 w-4 shrink-0 text-ink-muted" />
+              ) : (
+                <NotificationBadge count={badge} />
+              )}
+            </>
+          );
+
+          if (item.externe) {
+            return (
+              <a
+                key={item.href}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={onNavigate}
+                className="nav-arcade-link nav-arcade-link-inactive"
+              >
+                {contenu}
+              </a>
+            );
+          }
 
           return (
             <Link
@@ -157,12 +214,7 @@ export function AppShell({
               aria-current={actif ? "page" : undefined}
               className={`nav-arcade-link ${actif ? "nav-arcade-link-active" : "nav-arcade-link-inactive"}`}
             >
-              <Icon
-                className="h-5 w-5 shrink-0"
-                style={actif ? { color: "rgb(var(--arcade-snt))" } : undefined}
-              />
-              <span className="flex-1">{item.label}</span>
-              <NotificationBadge count={badge} />
+              {contenu}
             </Link>
           );
         })}
