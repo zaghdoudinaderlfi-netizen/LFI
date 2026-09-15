@@ -94,6 +94,12 @@ enum TypeNotification {
   NOTE
 }
 
+// Avis rapide laissé par un élève en fin de cours (voir CoursFeedback).
+enum AvisFeedback {
+  POSITIF
+  NEGATIF
+}
+
 // Cycle de trimestre côté "clôture des notes" — distinct de l'enum Trimestre
 // (T1/T2/T3, calculé automatiquement depuis une date, voir trimestreDeDate()
 // dans lib/suivi-oral-constants.ts) qui continue de classer les entrées de
@@ -179,6 +185,7 @@ model User {
   pushSubscriptions     PushSubscription[]
   documentsCasier       DocumentCasier[]       @relation("DocumentsCasierEleve")
   documentsCasierEnvoyes DocumentCasier[]      @relation("DocumentsCasierAuteur")
+  coursFeedbacks        CoursFeedback[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -325,6 +332,7 @@ model Cours {
   blocs                 Bloc[]
   comptesRendus         CompteRendu[]
   progressionsExercices ProgressionExercice[]
+  feedbacks             CoursFeedback[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -350,6 +358,24 @@ model ProgressionExercice {
   dateMaj        DateTime @updatedAt
 
   @@unique([eleveId, coursId, exerciceId])
+}
+
+// Avis rapide ("😊 J'ai aimé" / "😕 Pas compris") laissé par un élève en fin
+// d'un cours HTML — widget injecté automatiquement, voir
+// injecterWidgetFeedback dans lib/cours-interactif.ts. Un élève ne peut
+// laisser qu'un seul avis par cours (contrainte d'unicité ci-dessous) : une
+// fois cliqué, le choix est définitif, pas un sondage qu'on peut refaire.
+model CoursFeedback {
+  id      String       @id @default(cuid())
+  eleve   User         @relation(fields: [eleveId], references: [id], onDelete: Cascade)
+  eleveId String
+  cours   Cours        @relation(fields: [coursId], references: [id], onDelete: Cascade)
+  coursId String
+  avis    AvisFeedback
+  date    DateTime     @default(now())
+
+  @@unique([eleveId, coursId])
+  @@index([coursId])
 }
 
 // Compte-rendu déposé par un élève (ou un groupe) directement depuis la page

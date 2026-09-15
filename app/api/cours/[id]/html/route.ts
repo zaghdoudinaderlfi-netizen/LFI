@@ -12,7 +12,9 @@ import {
   injecterMessageDelaiDepasse,
   injecterBlocageCollage,
   injecterWidgetAccessibilite,
+  injecterWidgetFeedback,
 } from "@/lib/cours-interactif";
+import { obtenirFeedbackEleve } from "@/lib/cours-feedback";
 import { listerCamaradesClasse } from "@/lib/comptes-rendus";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 
@@ -98,6 +100,15 @@ export async function GET(
       ? injecterMessageDelaiDepasse(resultat)
       : injecterWidgetDepot(resultat, cours.id);
   }
+
+  // Feedback rapide en fin de cours — même principe, toutes les pages, aucun
+  // réglage prof (le widget s'efface lui-même côté client si aucun élève
+  // n'est connecté).
+  const avisExistant =
+    session?.user?.id && session.user.role !== "PROF"
+      ? ((await obtenirFeedbackEleve(session.user.id, cours.id))?.avis ?? null)
+      : null;
+  resultat = injecterWidgetFeedback(resultat, cours.id, avisExistant);
 
   // Frein pédagogique contre le copier-coller dans les zones de code —
   // s'applique à toutes les pages, sans condition (pas un toggle prof).

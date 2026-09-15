@@ -11,6 +11,7 @@ import {
   finaliserHtmlCours,
   injecterStylesImpression,
 } from "@/lib/cours-interactif";
+import { obtenirFeedbackEleve } from "@/lib/cours-feedback";
 import { listerCamaradesClasse } from "@/lib/comptes-rendus";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 
@@ -98,6 +99,12 @@ export async function GET(
     };
   }
 
+  const avisExistant =
+    session?.user?.id && session.user.role === "ELEVE"
+      ? ((await obtenirFeedbackEleve(session.user.id, cours.id))?.avis ?? null)
+      : null;
+  const feedback = { coursId: cours.id, avisExistant };
+
   let html: string;
   let progression = null;
 
@@ -124,6 +131,7 @@ export async function GET(
       contexteEleve,
       depot: depotActive ? { delaiDepasse, coursId: cours.id } : null,
       progression,
+      feedback,
     });
   } else if (cours.typeSimple === "HTML" && cours.fichierUrl) {
     const chemin = cheminCoursSimpleDepuisUrl(cours.fichierUrl);
@@ -141,6 +149,7 @@ export async function GET(
       contexteEleve,
       depot: depotActive ? { delaiDepasse, coursId: cours.id } : null,
       progression: null,
+      feedback,
     });
   } else if (!cours.typeSimple && cours.typeContenu === "HTML" && cours.contenu.trim()) {
     html = `<!doctype html>

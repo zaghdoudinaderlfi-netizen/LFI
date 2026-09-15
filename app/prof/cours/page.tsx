@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { ArrowLeft, BookOpen, MonitorPlay, PlusCircle } from "lucide-react";
 import type { Matiere } from "@prisma/client";
 import { listerCoursProf, matieresPresentes, regrouperParChapitre, MATIERE_LABELS } from "@/lib/cours";
+import { compterFeedbacksParCours } from "@/lib/cours-feedback";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { estMatiereValide } from "@/lib/classes-constants";
 import { MatiereTabs } from "@/components/matiere-tabs";
@@ -32,6 +33,7 @@ export default async function ProfCoursPage({
 
   const cours = matiereActive ? tousLesCours.filter((c) => c.matiere === matiereActive) : tousLesCours;
   const parChapitre = regrouperParChapitre(cours);
+  const feedbacksParCours = await compterFeedbacksParCours(cours.map((c) => c.id));
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -109,6 +111,15 @@ export default async function ProfCoursPage({
                           >
                             {c.publie ? "Publié" : "Brouillon"}
                           </span>
+                          {(() => {
+                            const f = feedbacksParCours.get(c.id);
+                            if (!f || f.positifs + f.negatifs === 0) return null;
+                            return (
+                              <span className="badge bg-space-surface2 px-3 text-ink-secondary ring-1 ring-space-border">
+                                😊 {f.positifs} · 😕 {f.negatifs}
+                              </span>
+                            );
+                          })()}
                           <VisibiliteToggle coursId={c.id} visibleEleves={c.visibleEleves} />
                           <EstPublicToggle coursId={c.id} estPublic={c.estPublic} />
                           <VitrineButton coursId={c.id} enVitrine={c.enVitrine} />

@@ -547,6 +547,98 @@ export function injecterWidgetAccessibilite(html: string): string {
 }
 
 /**
+ * Widget de feedback rapide en fin de cours (voir CoursFeedback) — deux
+ * boutons "😊 J'ai aimé" / "😕 Pas compris", cliquables une seule fois par
+ * élève et par cours. Comme le widget de dépôt, repose sur
+ * `window.__CONTEXTE_ELEVE__` (voir injecterContexteEleve) : sans élève
+ * connecté et rattaché à une classe, le widget ne s'affiche pas du tout
+ * (pas utile pour un prof qui prévisualise ou un visiteur anonyme).
+ *
+ * `avisExistant` vient du serveur (voir CoursFeedback) pour afficher
+ * directement le message de remerciement au chargement si l'élève a déjà
+ * répondu, sans aller-retour réseau ni flash des deux boutons.
+ */
+export function injecterWidgetFeedback(
+  html: string,
+  coursId: string,
+  avisExistant: "POSITIF" | "NEGATIF" | null
+): string {
+  if (html.includes('id="lfi-feedback-widget"')) return html;
+
+  const coursIdJson = JSON.stringify(coursId).replace(/</g, "\\u003c");
+  const avisExistantJson = JSON.stringify(avisExistant);
+
+  const bloc = `
+<section id="lfi-feedback-widget" style="margin:24px auto 40px;max-width:720px;padding:18px 22px;background:#121a31;border:1px solid rgba(255,255,255,.12);border-radius:14px;color:#e9eefb;font-family:system-ui,sans-serif;text-align:center">
+  <p id="lfi-feedback-question" style="margin:0 0 12px;font-size:15px;color:#9aa7c2">Ce cours t'a aidé ?</p>
+  <div id="lfi-feedback-boutons" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <button id="lfi-feedback-positif" type="button" style="padding:10px 18px;border-radius:10px;border:1px solid rgba(52,211,153,.4);background:rgba(52,211,153,.12);color:#e9eefb;font:inherit;cursor:pointer">😊 J'ai aimé</button>
+    <button id="lfi-feedback-negatif" type="button" style="padding:10px 18px;border-radius:10px;border:1px solid rgba(251,113,133,.4);background:rgba(251,113,133,.12);color:#e9eefb;font:inherit;cursor:pointer">😕 Pas compris</button>
+  </div>
+  <p id="lfi-feedback-msg" role="status" style="margin:12px 0 0;font-size:13px;color:#fb7185;min-height:16px"></p>
+</section>
+<script>
+(function(){
+  var COURS_ID = ${coursIdJson};
+  var AVIS_EXISTANT = ${avisExistantJson};
+  var contexte = window.__CONTEXTE_ELEVE__ || null;
+
+  var section = document.getElementById('lfi-feedback-widget');
+  if (!section) return;
+  if (!contexte || !contexte.moi) { section.remove(); return; }
+
+  var question = document.getElementById('lfi-feedback-question');
+  var boutons = document.getElementById('lfi-feedback-boutons');
+  var msg = document.getElementById('lfi-feedback-msg');
+  var btnPositif = document.getElementById('lfi-feedback-positif');
+  var btnNegatif = document.getElementById('lfi-feedback-negatif');
+
+  function afficherMerci(avis){
+    boutons.hidden = true;
+    question.textContent = avis === 'POSITIF' ? 'Merci pour ton retour 😊' : 'Merci pour ton retour, on regardera ça 😕';
+  }
+
+  if (AVIS_EXISTANT) {
+    afficherMerci(AVIS_EXISTANT);
+    return;
+  }
+
+  function envoyer(avis){
+    btnPositif.disabled = true;
+    btnNegatif.disabled = true;
+    msg.textContent = '';
+    fetch('/api/cours-feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ coursId: COURS_ID, avis: avis })
+    })
+    .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
+    .then(function(result){
+      if (result.ok) {
+        afficherMerci(avis);
+        return;
+      }
+      msg.textContent = (result.data && result.data.error) || "Une erreur est survenue.";
+      btnPositif.disabled = false;
+      btnNegatif.disabled = false;
+    })
+    .catch(function(){
+      msg.textContent = 'Impossible de contacter le serveur.';
+      btnPositif.disabled = false;
+      btnNegatif.disabled = false;
+    });
+  }
+
+  btnPositif.addEventListener('click', function(){ envoyer('POSITIF'); });
+  btnNegatif.addEventListener('click', function(){ envoyer('NEGATIF'); });
+})();
+</script>
+`;
+
+  return injecterAvantFermeture(html, "</body>", bloc);
+}
+
+/**
  * Sauvegarde/restauration automatique du code tapé dans les cellules
  * d'exercice (voir ProgressionExercice) : injecté juste avant `</body>`,
  * comme le widget de dépôt, pour s'appliquer à tous les fichiers
@@ -564,13 +656,15 @@ export type ContexteFinalisationCours = {
   contexteEleve: ContexteEleveDepot | null;
   depot: { delaiDepasse: boolean; coursId: string } | null;
   progression: { coursId: string; sauvegardes: Record<string, string> } | null;
+  feedback: { coursId: string; avisExistant: "POSITIF" | "NEGATIF" | null };
 };
 
 /**
  * Applique la même chaîne de traitement que app/cours/[fichier]/route.ts
  * (corrections, contexte élève, widget de dépôt, restauration de la
- * progression, blocage du copier-coller) — factorisé pour être réutilisable
- * par la route de téléchargement hors-ligne d'un cours interactif.
+ * progression, feedback rapide, blocage du copier-coller) — factorisé pour
+ * être réutilisable par la route de téléchargement hors-ligne d'un cours
+ * interactif.
  */
 export function finaliserHtmlCours(html: string, ctx: ContexteFinalisationCours): string {
   let resultat = ctx.corrigeAutorise ? activerCorrections(html) : retirerCorrections(html);
@@ -588,6 +682,8 @@ export function finaliserHtmlCours(html: string, ctx: ContexteFinalisationCours)
   if (ctx.progression) {
     resultat = injecterScriptProgression(resultat, ctx.progression.coursId, ctx.progression.sauvegardes);
   }
+
+  resultat = injecterWidgetFeedback(resultat, ctx.feedback.coursId, ctx.feedback.avisExistant);
 
   return injecterWidgetAccessibilite(injecterBlocageCollage(resultat));
 }
