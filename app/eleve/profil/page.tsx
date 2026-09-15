@@ -5,11 +5,10 @@ import { configAvatarUtilisateur } from "@/lib/avatar";
 import { AvatarDisplay } from "@/components/avatar/avatar-display";
 import { AvatarBuilder } from "@/components/avatar/avatar-builder";
 import { ChangerMdpForm } from "@/components/profil/changer-mdp-form";
-import { PhotoAvatarForm } from "@/components/profil/photo-avatar-form";
 import { ProfilForm } from "./profil-form";
 import { EmailForm } from "./email-form";
 import { DateNaissanceForm } from "./date-naissance-form";
-import { changerMdpAction, modifierEmailAction, modifierPhotoAvatarAction } from "./actions";
+import { changerMdpAction, modifierEmailAction } from "./actions";
 
 export default async function EleveProfilPage() {
   const session = await auth();
@@ -64,21 +63,11 @@ export default async function EleveProfilPage() {
       )}
 
       <fieldset disabled={isDemo} className="contents">
-      {/* Photo de profil */}
-      <section className="card animate-fade-in-up p-6 [animation-delay:30ms]">
-        <h2 className="section-title mb-1">Photo de profil</h2>
-        <p className="mb-4 text-sm text-ink-secondary">
-          Préfères-tu une vraie photo plutôt qu&apos;un avatar dessiné ? Importe-la ici.
-        </p>
-        <PhotoAvatarForm action={modifierPhotoAvatarAction} photoActuelle={user?.avatarPhotoUrl ?? null} />
-      </section>
-
       {/* Avatar */}
       <section className="card animate-fade-in-up p-6 [animation-delay:60ms]">
         <h2 className="section-title mb-1">Avatar</h2>
         <p className="mb-4 text-sm text-ink-secondary">
-          Personnalise ton avatar : il s&apos;affiche dans le menu et partout sur la plateforme
-          (tant qu&apos;aucune photo n&apos;est active ci-dessus).
+          Personnalise ton avatar : il s&apos;affiche dans le menu et partout sur la plateforme.
         </p>
         {user && (
           <AvatarBuilder seed={user.id} configInitiale={configAvatarUtilisateur(user)} />
