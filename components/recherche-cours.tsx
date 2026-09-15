@@ -26,7 +26,15 @@ export function RechercheCours({ items }: { items: ItemRecherche[] }) {
   const recherche = terme.trim().length > 0;
 
   return (
-    <div className="relative animate-fade-in-up">
+    // z-10 : `animate-fade-in-up` laisse un transform actif après coup
+    // (fill-mode "both", translateY(0) ≠ none), ce qui crée un contexte
+    // d'empilement CSS pour ce conteneur ET pour les onglets matière juste
+    // en dessous (même animation). Sans z-index explicite ici, les deux
+    // contextes ont un z-index "auto" et se départagent par ordre du DOM :
+    // les onglets, plus bas dans le HTML, passaient devant le menu déroulant
+    // des résultats malgré son z-20 interne (invisible en dehors de son
+    // propre contexte d'empilement).
+    <div className="relative z-10 animate-fade-in-up">
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
         <input
