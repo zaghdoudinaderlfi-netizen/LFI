@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ClipboardList } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { CoursContenu } from "@/components/cours-contenu";
 import { BlocsAffichage } from "@/components/blocs/blocs-affichage";
 import { PiecesJointesListe } from "@/components/pieces-jointes-liste";
-import { ApercuFichier } from "@/components/apercu-fichier";
 import { ReadingProgress } from "@/components/ui/reading-progress";
 import { obtenirCoursParId, MATIERE_LABELS } from "@/lib/cours";
 import { listerBlocsCours } from "@/lib/blocs";
 import { listerPiecesJointes } from "@/lib/pieces-jointes";
-import { listerDevoirsCours } from "@/lib/devoirs";
 import { NIVEAU_LABELS } from "@/lib/classes";
 
 export default async function ApercuCoursPage({
@@ -26,7 +24,6 @@ export default async function ApercuCoursPage({
 
   const piecesJointes = await listerPiecesJointes(id);
   const blocs = await listerBlocsCours(id);
-  const devoirs = await listerDevoirsCours(id);
 
   return (
     <div>
@@ -62,40 +59,6 @@ export default async function ApercuCoursPage({
             </div>
           )}
         </article>
-
-        {devoirs.length > 0 && (
-          <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:60ms]">
-            <h2 className="section-title flex items-center gap-2">
-              <ClipboardList className="h-5 w-5 text-neon-violet" />
-              Devoirs à rendre
-            </h2>
-
-            <ul className="flex flex-col gap-4">
-              {devoirs.map((devoir) => (
-                <li key={devoir.id} className="flex flex-col gap-3 rounded-xl border border-space-border bg-space-surface2/60 p-4">
-                  <div>
-                    <p className="font-medium text-ink-primary">{devoir.titre}</p>
-                    <p className="whitespace-pre-wrap text-sm text-ink-secondary">{devoir.consigne}</p>
-                    <p className="mt-1 text-xs text-ink-muted">
-                      Barème : {devoir.points} pts
-                      {devoir.dateLimite &&
-                        ` · à rendre avant le ${devoir.dateLimite.toLocaleDateString("fr-FR")}`}
-                    </p>
-                  </div>
-
-                  {devoir.sujetNom && devoir.sujetTaille != null && devoir.sujetTypeMime && (
-                    <ApercuFichier
-                      nom={devoir.sujetNom}
-                      taille={devoir.sujetTaille}
-                      typeMime={devoir.sujetTypeMime}
-                      urlBase={`/api/devoirs/${devoir.id}/sujet`}
-                    />
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
     </div>
   );

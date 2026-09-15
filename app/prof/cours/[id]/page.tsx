@@ -2,19 +2,11 @@ import fs from "fs";
 import path from "path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ClipboardList, Code2, FileText, Image as ImageIcon, Layers, MonitorPlay, Paperclip } from "lucide-react";
-import { TypeExercice } from "@prisma/client";
-import { ApercuFichier } from "@/components/apercu-fichier";
+import { ArrowLeft, Code2, FileText, Image as ImageIcon, Layers, MonitorPlay, Paperclip } from "lucide-react";
 import { SupprimerCoursButton } from "./supprimer-cours-button";
 import { obtenirCoursParId, MATIERE_LABELS, urlImageCouverture } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { listerPiecesJointes, formaterTaille } from "@/lib/pieces-jointes";
-import {
-  listerDevoirsCours,
-  obtenirChampsFormulaireDevoir,
-  TYPE_DEVOIR_LABELS,
-  ModeRemiseFormulaire,
-} from "@/lib/devoirs";
 import { listerExercicesCodeCours, TYPE_EXERCICE_CODE_LABELS } from "@/lib/exercices-code";
 import { listerVerrousActifs } from "@/lib/examen";
 import { listerBlocsCours } from "@/lib/blocs";
@@ -26,10 +18,6 @@ import { ContenuForm } from "./contenu-form";
 import { BlocsForm } from "./blocs-form";
 import { PieceJointeForm } from "./pieces-jointes-form";
 import { supprimerPieceJointeAction } from "./pieces-jointes-actions";
-import { DevoirForm } from "./devoirs-form";
-import { DevoirModeForm } from "./devoir-mode-form";
-import { DevoirSujetForm } from "./devoir-sujet-form";
-import { supprimerDevoirAction, supprimerSujetDevoirAction } from "./devoirs-actions";
 import { ExerciceCodeForm } from "./exercices-code-form";
 import { supprimerExerciceCodeAction, debloquerEleveAction } from "./exercices-code-actions";
 import { PageInteractiveForm } from "./page-interactive-form";
@@ -77,7 +65,6 @@ export default async function ModifierCoursPage({
 
   const piecesJointes = await listerPiecesJointes(id);
   const blocs = await listerBlocsCours(id);
-  const devoirs = await listerDevoirsCours(id);
   const exercicesCode = await listerExercicesCodeCours(id);
   const verrousParExercice = new Map(
     await Promise.all(
@@ -90,19 +77,6 @@ export default async function ModifierCoursPage({
     cours.typeSimple === "QCM"
       ? (await listerQuizProf()).map((q) => ({ id: q.id, titre: q.titre, niveau: q.niveau, matiere: q.matiere }))
       : [];
-  const devoirsAvecChamps = await Promise.all(
-    devoirs.map(async (devoir) => {
-      if (devoir.type !== TypeExercice.DEVOIR_PDF_FORMULAIRE) {
-        return { ...devoir, champs: null };
-      }
-      try {
-        const champs = await obtenirChampsFormulaireDevoir(devoir);
-        return { ...devoir, champs };
-      } catch {
-        return { ...devoir, champs: null };
-      }
-    })
-  );
 
   return (
     <div>
@@ -293,106 +267,6 @@ export default async function ModifierCoursPage({
           )}
 
           <PieceJointeForm coursId={cours.id} />
-        </div>
-
-        <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:240ms]">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="section-title flex items-center gap-2">
-              <ClipboardList className="h-5 w-5 text-neon-violet" />
-              Devoirs (dépôt élève)
-            </h2>
-            {cours.publie ? (
-              <span className="badge bg-emerald-500/10 px-3 text-emerald-400 ring-1 ring-emerald-500/30">
-                Cours publié — visible par les élèves de {NIVEAU_LABELS[cours.niveau]}
-              </span>
-            ) : (
-              <span className="badge bg-amber-500/10 px-3 text-amber-400 ring-1 ring-amber-500/30">
-                Cours en brouillon — devoirs invisibles pour les élèves
-              </span>
-            )}
-          </div>
-
-          {devoirsAvecChamps.length > 0 ? (
-            <ul className="flex flex-col gap-3">
-              {devoirsAvecChamps.map((devoir) => (
-                <li
-                  key={devoir.id}
-                  className="flex flex-col gap-3 rounded-xl border border-space-border bg-space-surface2/60 p-3"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="truncate text-sm font-medium text-ink-primary">{devoir.titre}</p>
-                        <span className="badge bg-space-surface2 px-2 text-ink-secondary ring-1 ring-space-border">
-                          {TYPE_DEVOIR_LABELS[devoir.type as keyof typeof TYPE_DEVOIR_LABELS]}
-                        </span>
-                      </div>
-                      <p className="truncate text-xs text-ink-muted">
-                        {devoir.points} pts
-                        {devoir.dateLimite &&
-                          ` · à rendre avant le ${devoir.dateLimite.toLocaleDateString("fr-FR")}`}
-                      </p>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-3">
-                      <form action={supprimerDevoirAction}>
-                        <input type="hidden" name="id" value={devoir.id} />
-                        <input type="hidden" name="coursId" value={cours.id} />
-                        <button type="submit" className="text-sm font-medium text-red-400 hover:underline">
-                          Supprimer
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-
-                  {devoir.type === TypeExercice.DEVOIR_PDF_FORMULAIRE && (
-                    <>
-                      <p className="text-xs text-ink-muted">
-                        {devoir.modeRemise === ModeRemiseFormulaire.TELECHARGEMENT
-                          ? "Mode téléchargement : l'élève télécharge ce PDF, le remplit dans son lecteur, puis dépose le fichier rempli."
-                          : devoir.champs === null
-                            ? !devoir.sujetNom
-                              ? "Aucun PDF-formulaire déposé pour le moment."
-                              : "Impossible de lire les champs de ce PDF."
-                            : devoir.champs.length === 0
-                              ? "⚠️ Ce PDF ne contient pas de champs remplissables (zones de texte ou cases à cocher)."
-                              : `${devoir.champs.length} champ${devoir.champs.length > 1 ? "s" : ""} détecté${devoir.champs.length > 1 ? "s" : ""} dans le formulaire.`}
-                      </p>
-                      <DevoirModeForm devoirId={devoir.id} coursId={cours.id} modeRemise={devoir.modeRemise} />
-                    </>
-                  )}
-
-                  {devoir.sujetNom && devoir.sujetTaille != null && devoir.sujetTypeMime && (
-                    <div className="flex flex-col gap-2 rounded-xl border border-space-border bg-space-surface/60 p-3">
-                      <ApercuFichier
-                        nom={devoir.sujetNom}
-                        taille={devoir.sujetTaille}
-                        typeMime={devoir.sujetTypeMime}
-                        urlBase={`/api/devoirs/${devoir.id}/sujet`}
-                      />
-                      <form action={supprimerSujetDevoirAction} className="self-start">
-                        <input type="hidden" name="devoirId" value={devoir.id} />
-                        <input type="hidden" name="coursId" value={cours.id} />
-                        <button type="submit" className="text-xs font-medium text-red-400 hover:underline">
-                          Supprimer le sujet
-                        </button>
-                      </form>
-                    </div>
-                  )}
-
-                  <DevoirSujetForm
-                    devoirId={devoir.id}
-                    coursId={cours.id}
-                    type={devoir.type}
-                    aDejaSujet={!!devoir.sujetNom}
-                  />
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-ink-muted">Aucun devoir pour ce cours.</p>
-          )}
-
-          <DevoirForm coursId={cours.id} />
         </div>
 
         <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:300ms]">

@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { Award, BookOpen, ListChecks, Star } from "lucide-react";
+import { Award, BookOpen, Star } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { listerCoursRecherche, listerDerniersCoursPublies, MATIERE_LABELS } from "@/lib/cours";
 import { RechercheCours, type ItemRecherche } from "@/components/recherche-cours";
-import { listerDevoirsAFaire } from "@/lib/devoirs";
 import { listerNotesEleve } from "@/lib/soumissions";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { configAvatarUtilisateur, genererAvatarSvg } from "@/lib/avatar";
@@ -40,19 +39,17 @@ export default async function ElevePage() {
       })
     : null;
 
-  const [derniersCours, devoirs, notes, scoreLudique, progression, annonce, coursRecherche] = user?.classe
+  const [derniersCours, notes, scoreLudique, progression, annonce, coursRecherche] = user?.classe
     ? await Promise.all([
         listerDerniersCoursPublies(user.classe.niveau, 3),
-        listerDevoirsAFaire(user.id, user.classe.niveau),
         listerNotesEleve(user.id),
         obtenirScoreLudiqueActuel(user.id),
         obtenirProgressionEleve(user.id),
         obtenirAnnonceActive(),
         listerCoursRecherche(user.classe.niveau),
       ])
-    : [[], [], [], null, null, null, []];
+    : [[], [], null, null, null, []];
 
-  const devoirsAFaire = devoirs.filter((devoir) => !devoir.soumission).slice(0, 4);
   const dernieresNotes = notes.slice(0, 4);
 
   const itemsRecherche: ItemRecherche[] = coursRecherche.map((c) => ({
@@ -147,44 +144,6 @@ export default async function ElevePage() {
                         {MATIERE_LABELS[cours.matiere]}
                       </p>
                       <p className="font-medium text-ink-primary">{cours.titre}</p>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          {/* Devoirs à rendre — accent NSI magenta */}
-          <section className="card-hard card-hard-nsi animate-fade-in-up p-6 [animation-delay:120ms]">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="section-title flex items-center gap-2">
-                <ListChecks className="h-5 w-5" style={{ color: "rgb(var(--arcade-nsi))" }} />
-                Devoirs à rendre
-              </h2>
-              <Link href="/eleve/travail" className="text-sm font-medium hover:underline" style={{ color: "rgb(var(--nsi-txt))" }}>
-                Voir tout
-              </Link>
-            </div>
-
-            {devoirsAFaire.length === 0 ? (
-              <p className="text-sm text-ink-muted">Rien à faire pour le moment. 🎉</p>
-            ) : (
-              <ul className="flex flex-col gap-3">
-                {devoirsAFaire.map((devoir) => (
-                  <li key={devoir.id}>
-                    <Link
-                      href={`/eleve/cours/${devoir.cours.slug}`}
-                      className="item-arcade flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between"
-                    >
-                      <div>
-                        <p className="font-medium text-ink-primary">{devoir.titre}</p>
-                        <p className="text-sm text-ink-secondary">{devoir.cours.titre}</p>
-                      </div>
-                      {devoir.dateLimite && (
-                        <p className="text-sm text-ink-muted">
-                          À rendre avant le {devoir.dateLimite.toLocaleDateString("fr-FR")}
-                        </p>
-                      )}
                     </Link>
                   </li>
                 ))}

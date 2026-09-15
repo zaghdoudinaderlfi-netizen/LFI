@@ -481,7 +481,6 @@ export async function supprimerCours(id: string) {
       piecesJointes: { select: { chemin: true } },
       exercices: {
         select: {
-          sujetChemin: true,
           soumissions: { select: { fichierChemin: true } },
         },
       },
@@ -496,14 +495,6 @@ export async function supprimerCours(id: string) {
     .filter((c): c is string => !!c);
   if (cheminsSoumissions.length > 0) {
     await supabaseAdmin.storage.from(BUCKET_RENDUS_DEVOIRS).remove(cheminsSoumissions);
-  }
-
-  // Supprimer les sujets des devoirs/exercices (fichiers-lfi)
-  const cheminsSujets = cours.exercices
-    .map((e) => e.sujetChemin)
-    .filter((c): c is string => !!c);
-  if (cheminsSujets.length > 0) {
-    await supabaseAdmin.storage.from(BUCKET_PIECES_JOINTES).remove(cheminsSujets);
   }
 
   // Supprimer les fichiers des blocs IMAGE/PDF (fichiers-lfi)

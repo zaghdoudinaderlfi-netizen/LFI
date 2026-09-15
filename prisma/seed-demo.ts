@@ -180,61 +180,6 @@ async function main() {
     },
   });
 
-  // ── Devoirs : un à rendre, un déjà noté ─────────────────────────────
-  const dansDeuxSemaines = new Date();
-  dansDeuxSemaines.setDate(dansDeuxSemaines.getDate() + 14);
-
-  let devoirARendre = await prisma.exercice.findFirst({
-    where: { coursId: cours1.id, titre: "Rendu : premier programme Python" },
-  });
-  if (!devoirARendre) {
-    devoirARendre = await prisma.exercice.create({
-      data: {
-        coursId: cours1.id,
-        titre: "Rendu : premier programme Python",
-        consigne: "Écris un petit programme Python qui demande ton prénom et affiche un message de bienvenue, puis dépose-le ici.",
-        type: "DEVOIR_PDF",
-        points: 20,
-        ordre: 1,
-        dateLimite: dansDeuxSemaines,
-      },
-    });
-  }
-
-  let devoirNote = await prisma.exercice.findFirst({
-    where: { coursId: cours2.id, titre: "Exercice noté : tri à bulles" },
-  });
-  if (!devoirNote) {
-    devoirNote = await prisma.exercice.create({
-      data: {
-        coursId: cours2.id,
-        titre: "Exercice noté : tri à bulles",
-        consigne: "Implémente et teste le tri à bulles sur une liste de 10 nombres.",
-        type: "DEVOIR_PDF",
-        points: 20,
-        ordre: 1,
-        dateLimite: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-      },
-    });
-  }
-
-  const soumissionExistante = await prisma.soumission.findFirst({
-    where: { exerciceId: devoirNote.id, eleveId: eleveDemo.id },
-  });
-  if (!soumissionExistante) {
-    await prisma.soumission.create({
-      data: {
-        exerciceId: devoirNote.id,
-        eleveId: eleveDemo.id,
-        contenu: "def tri_a_bulles(liste):\n    ...",
-        reussi: true,
-        note: 17,
-        feedback: "Bon travail, la logique est correcte. Attention à bien tester les cas limites (liste vide).",
-        corrigeManuellement: true,
-      },
-    });
-  }
-
   // ── Quiz : deux quiz, scores variés ─────────────────────────────────
   let quiz1 = await prisma.quiz.findFirst({ where: { titre: "Quiz démo : bases de Python" } });
   if (!quiz1) {

@@ -37,17 +37,6 @@ enum TypeExercice {
   QCM
   ARDUINO
   CODE_OUVERT
-  DEVOIR_PDF
-  DEVOIR_PDF_FORMULAIRE
-}
-
-// Pour un devoir DEVOIR_PDF_FORMULAIRE, mode de remise choisi par le prof :
-// - EN_LIGNE : l'élève remplit les champs du PDF directement sur le site.
-// - TELECHARGEMENT : l'élève télécharge le PDF-formulaire, le remplit dans
-//   son propre lecteur PDF, puis dépose le fichier rempli (façon Capytale).
-enum ModeRemiseFormulaire {
-  EN_LIGNE
-  TELECHARGEMENT
 }
 
 enum TypeContenuCours {
@@ -610,14 +599,6 @@ model Exercice {
   points         Int          @default(1)
   ordre          Int          @default(0)
   dateLimite     DateTime?
-
-  sujetNom      String?
-  sujetChemin   String?
-  sujetTaille   Int?
-  sujetTypeMime String?
-
-  // DEVOIR_PDF_FORMULAIRE uniquement : mode de remise choisi par le prof.
-  modeRemise ModeRemiseFormulaire @default(EN_LIGNE)
 
   // ── Mode examen (PYTHON/TURTLE uniquement) : chrono partagé pour toute la
   // classe + anti-triche (copier-coller bloqué, verrouillage si l'élève

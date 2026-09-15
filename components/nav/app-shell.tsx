@@ -6,7 +6,6 @@ import { useState } from "react";
 import {
   LayoutDashboard,
   BookOpen,
-  ListChecks,
   Award,
   Gamepad2,
   BarChart3,
@@ -74,7 +73,6 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
       externe: true,
     },
     { href: "/eleve/cours", label: "Mes cours", icon: BookOpen, iconSprite: "cours" },
-    { href: "/eleve/travail", label: "Travail à faire", icon: ListChecks, iconSprite: "devoirs" },
     { href: "/eleve/notes", label: "Mes notes", icon: Award, iconSprite: "notes" },
     { href: "/eleve/quiz", label: "Quiz", icon: Gamepad2, iconSprite: "quiz" },
     { href: "/eleve/casier", label: "Casier", icon: FolderOpen, iconSprite: "casier" },
