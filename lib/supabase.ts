@@ -15,6 +15,10 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
 export const BUCKET_PIECES_JOINTES = "fichiers-lfi";
 export const BUCKET_RENDUS_DEVOIRS = "rendus-lfi";
 
+// Bucket privé : casier numérique (documents partagés par le prof par
+// matière, fichiers personnels déposés par les élèves) — voir lib/casier.ts.
+export const BUCKET_CASIER = "casier-lfi";
+
 // Bucket public : héberge les images extraites des cours importés depuis
 // Word, pour qu'elles puissent être affichées directement (<img src>) sans
 // passer par une URL signée.
@@ -43,6 +47,21 @@ export async function assurerBucketPublic(bucket: string) {
   const { data } = await supabaseAdmin.storage.getBucket(bucket);
   if (!data) {
     const { error } = await supabaseAdmin.storage.createBucket(bucket, { public: true });
+    if (error && !error.message.toLowerCase().includes("already exists")) {
+      throw error;
+    }
+  }
+
+  bucketsVerifies.add(bucket);
+}
+
+/** Même principe qu'assurerBucketPublic, pour un bucket privé (accès via URL signée). */
+export async function assurerBucketPrive(bucket: string) {
+  if (bucketsVerifies.has(bucket)) return;
+
+  const { data } = await supabaseAdmin.storage.getBucket(bucket);
+  if (!data) {
+    const { error } = await supabaseAdmin.storage.createBucket(bucket, { public: false });
     if (error && !error.message.toLowerCase().includes("already exists")) {
       throw error;
     }

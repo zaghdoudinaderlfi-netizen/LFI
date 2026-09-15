@@ -177,6 +177,8 @@ model User {
   mainLevee             MainLevee?
   progressionsExercices ProgressionExercice[]
   pushSubscriptions     PushSubscription[]
+  documentsCasier       DocumentCasier[]       @relation("DocumentsCasierEleve")
+  documentsCasierEnvoyes DocumentCasier[]      @relation("DocumentsCasierAuteur")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -505,6 +507,29 @@ model PieceJointe {
   createdAt DateTime @default(now())
 
   @@index([coursId])
+}
+
+// Casier numérique : documents partagés par le prof pour toute une matière
+// (eleveId null) ou fichiers personnels déposés par un élève (eleveId
+// renseigné, visible par lui + les profs). Voir lib/casier.ts.
+model DocumentCasier {
+  id       String  @id @default(cuid())
+  nom      String
+  chemin   String
+  taille   Int
+  typeMime String
+  matiere  Matiere
+
+  eleve   User?   @relation("DocumentsCasierEleve", fields: [eleveId], references: [id], onDelete: Cascade)
+  eleveId String?
+
+  auteur   User   @relation("DocumentsCasierAuteur", fields: [auteurId], references: [id], onDelete: Cascade)
+  auteurId String
+
+  createdAt DateTime @default(now())
+
+  @@index([matiere])
+  @@index([eleveId])
 }
 
 model Exercice {
