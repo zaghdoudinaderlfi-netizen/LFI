@@ -454,21 +454,6 @@ export function LandingPage({ coursVitrine }: { coursVitrine: CoursVitrine | nul
               <p className="mt-1 text-sm font-medium text-ink-secondary">
                 Professeur de Technologie, SNT &amp; NSI · Ingénieur en Génie Électrique
               </p>
-              <div className="mt-4 flex flex-col gap-4 text-sm leading-relaxed text-ink-secondary sm:text-base">
-                <p>
-                  Enseignant du réseau AEFE depuis plus de 10 ans, je conçois une pédagogie active où les élèves
-                  apprennent en créant : robotique, programmation, intelligence artificielle et développement durable.
-                  Spécialisé en NSI et SNT, j&apos;ai accompagné des projets élèves primés à l&apos;international — du
-                  1er Prix Projet X pour un lombricomposteur connecté à un robot aquatique de dépollution marine, en
-                  passant par les Trophées NSI et la First Lego League.
-                </p>
-                <p>
-                  Ingénieur en génie électrique et doctorant en IoT et villes intelligentes, je relie en permanence le
-                  terrain de la classe et la technologie de pointe. J&apos;ai créé Nadtech pour rassembler en un seul
-                  espace mes cours, des activités interactives et des outils de code en ligne, et donner à chaque élève
-                  les moyens de progresser à son rythme.
-                </p>
-              </div>
               <a
                 href="https://cutt.ly/0hddRq1"
                 target="_blank"
