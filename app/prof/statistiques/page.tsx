@@ -1,6 +1,10 @@
 import Link from "next/link";
-import { BarChart3, Users } from "lucide-react";
-import { statsQuestionsRateesGlobal, statsScoreMoyenParClasseEtChapitre } from "@/lib/quiz";
+import { BarChart3, Gamepad2, ListChecks, Percent, Users } from "lucide-react";
+import {
+  apercuStatistiques,
+  statsQuestionsRateesGlobal,
+  statsScoreMoyenParClasseEtChapitre,
+} from "@/lib/quiz";
 import { MATIERE_LABELS } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
 
@@ -17,9 +21,10 @@ function tauxBarreClasse(taux: number) {
 }
 
 export default async function StatistiquesPage() {
-  const [questionsRatees, scoresParClasseChapitre] = await Promise.all([
+  const [questionsRatees, scoresParClasseChapitre, apercu] = await Promise.all([
     statsQuestionsRateesGlobal(),
     statsScoreMoyenParClasseEtChapitre(),
+    apercuStatistiques(),
   ]);
 
   return (
@@ -31,7 +36,33 @@ export default async function StatistiquesPage() {
         </p>
       </div>
 
-      <div className="card animate-fade-in-up flex flex-col gap-4 p-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 animate-fade-in-up [animation-delay:30ms]">
+        <div className="card flex flex-col gap-1 p-4">
+          <span className="icon-badge-nsi w-fit">
+            <Gamepad2 className="h-4 w-4" />
+          </span>
+          <p className="font-heading text-2xl font-bold text-ink-primary">{apercu.totalTentatives}</p>
+          <p className="text-xs text-ink-secondary">
+            Partie{apercu.totalTentatives > 1 ? "s" : ""} jouée{apercu.totalTentatives > 1 ? "s" : ""}
+          </p>
+        </div>
+        <div className="card flex flex-col gap-1 p-4">
+          <span className="icon-badge-snt w-fit">
+            <Percent className="h-4 w-4" />
+          </span>
+          <p className="font-heading text-2xl font-bold text-ink-primary">{apercu.tauxReussiteMoyenGlobal}%</p>
+          <p className="text-xs text-ink-secondary">Taux de réussite moyen</p>
+        </div>
+        <div className="card flex flex-col gap-1 p-4">
+          <span className="icon-badge-nsi w-fit">
+            <ListChecks className="h-4 w-4" />
+          </span>
+          <p className="font-heading text-2xl font-bold text-ink-primary">{apercu.nbQuizActifs}</p>
+          <p className="text-xs text-ink-secondary">Quiz actif{apercu.nbQuizActifs > 1 ? "s" : ""}</p>
+        </div>
+      </div>
+
+      <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:60ms]">
         <h2 className="section-title flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-neon-cyan" />
           Questions les plus ratées (tous quiz confondus)
@@ -81,7 +112,7 @@ export default async function StatistiquesPage() {
         )}
       </div>
 
-      <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:60ms]">
+      <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:90ms]">
         <h2 className="section-title flex items-center gap-2">
           <Users className="h-5 w-5 text-neon-violet" />
           Score moyen par classe et par chapitre

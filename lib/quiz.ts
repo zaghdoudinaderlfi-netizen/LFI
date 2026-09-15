@@ -760,3 +760,36 @@ export async function statsScoreMoyenParClasseEtChapitre(): Promise<StatClasseCh
     }))
     .sort((a, b) => a.tauxReussiteMoyen - b.tauxReussiteMoyen);
 }
+
+export type ApercuStatistiques = {
+  totalTentatives: number;
+  tauxReussiteMoyenGlobal: number;
+  nbQuizActifs: number;
+};
+
+/** Chiffres clés affichés en tête de la page Statistiques prof. */
+export async function apercuStatistiques(): Promise<ApercuStatistiques> {
+  const [tentatives, nbQuizActifs] = await Promise.all([
+    prisma.tentativeQuiz.findMany({
+      select: { bonnesReponses: true, quiz: { select: { _count: { select: { questions: true } } } } },
+    }),
+    prisma.quiz.count({ where: { visibleEleves: true } }),
+  ]);
+
+  const tentativesValides = tentatives.filter((t) => t.quiz._count.questions > 0);
+  const tauxReussiteMoyenGlobal =
+    tentativesValides.length > 0
+      ? Math.round(
+          tentativesValides.reduce(
+            (somme, t) => somme + (t.bonnesReponses / t.quiz._count.questions) * 100,
+            0
+          ) / tentativesValides.length
+        )
+      : 0;
+
+  return {
+    totalTentatives: tentatives.length,
+    tauxReussiteMoyenGlobal,
+    nbQuizActifs,
+  };
+}
