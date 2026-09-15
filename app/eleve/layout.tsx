@@ -28,6 +28,7 @@ export default async function EleveLayout({
             prenom: true,
             avatarStyle: true,
             avatarOptions: true,
+            avatarPhotoUrl: true,
             doitChangerMdp: true,
             email: true,
             dateNaissance: true,

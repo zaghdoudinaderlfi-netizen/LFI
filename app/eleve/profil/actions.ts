@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AUCUN, AVATAR_CATEGORIES, estStyleAvatar, type AvatarOptions } from "@/lib/avatar";
+import { AvatarPhotoError, televerserPhotoAvatar, supprimerPhotoAvatar } from "@/lib/avatar-photo";
 import { parserDateNaissance } from "@/lib/utilisateurs";
 
 export async function modifierProfilAction(
@@ -174,6 +175,48 @@ export async function enregistrerAvatarAction(
     where: { id: session.user.id },
     data: { avatarStyle: style, avatarOptions: optionsValidees },
   });
+
+  revalidatePath("/eleve", "layout");
+  return "ok";
+}
+
+export async function modifierPhotoAvatarAction(
+  _prevState: string | undefined,
+  formData: FormData
+): Promise<string | undefined> {
+  const session = await auth();
+  if (!session?.user) {
+    return "Non connecté.";
+  }
+
+  const utilisateur = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { avatarPhotoUrl: true },
+  });
+
+  // Suppression explicite : revenir à l'avatar dessiné.
+  if (formData.get("supprimerPhoto") === "on") {
+    await supprimerPhotoAvatar(utilisateur?.avatarPhotoUrl ?? null);
+    await prisma.user.update({ where: { id: session.user.id }, data: { avatarPhotoUrl: null } });
+    revalidatePath("/eleve", "layout");
+    return "ok";
+  }
+
+  const fichier = formData.get("photo");
+  if (!(fichier instanceof File) || fichier.size === 0) {
+    return "Choisis une photo.";
+  }
+
+  let avatarPhotoUrl: string;
+  try {
+    avatarPhotoUrl = await televerserPhotoAvatar(session.user.id, fichier);
+  } catch (err) {
+    if (err instanceof AvatarPhotoError) return err.message;
+    throw err;
+  }
+
+  await supprimerPhotoAvatar(utilisateur?.avatarPhotoUrl ?? null);
+  await prisma.user.update({ where: { id: session.user.id }, data: { avatarPhotoUrl } });
 
   revalidatePath("/eleve", "layout");
   return "ok";

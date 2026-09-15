@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { AvatarPhotoError, televerserPhotoAvatar, supprimerPhotoAvatar } from "@/lib/avatar-photo";
 
 export async function modifierProfilProfAction(
   _prev: string | undefined,
@@ -62,5 +63,45 @@ export async function changerMdpProfAction(
     data: { motDePasse: hash },
   });
 
+  return "ok";
+}
+
+export async function modifierPhotoAvatarProfAction(
+  _prevState: string | undefined,
+  formData: FormData
+): Promise<string | undefined> {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "PROF") return "Accès refusé.";
+
+  const utilisateur = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { avatarPhotoUrl: true },
+  });
+
+  // Suppression explicite : revenir à l'avatar par défaut.
+  if (formData.get("supprimerPhoto") === "on") {
+    await supprimerPhotoAvatar(utilisateur?.avatarPhotoUrl ?? null);
+    await prisma.user.update({ where: { id: session.user.id }, data: { avatarPhotoUrl: null } });
+    revalidatePath("/prof", "layout");
+    return "ok";
+  }
+
+  const fichier = formData.get("photo");
+  if (!(fichier instanceof File) || fichier.size === 0) {
+    return "Choisis une photo.";
+  }
+
+  let avatarPhotoUrl: string;
+  try {
+    avatarPhotoUrl = await televerserPhotoAvatar(session.user.id, fichier);
+  } catch (err) {
+    if (err instanceof AvatarPhotoError) return err.message;
+    throw err;
+  }
+
+  await supprimerPhotoAvatar(utilisateur?.avatarPhotoUrl ?? null);
+  await prisma.user.update({ where: { id: session.user.id }, data: { avatarPhotoUrl } });
+
+  revalidatePath("/prof", "layout");
   return "ok";
 }

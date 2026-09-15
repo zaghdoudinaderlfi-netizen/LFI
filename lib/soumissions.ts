@@ -43,9 +43,9 @@ export async function listerCamaradesClasse(eleveId: string): Promise<CamaradeCl
 }
 
 const MEMBRE_AVEC_ELEVE = {
-  eleve: { select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true } },
+  eleve: { select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true, avatarPhotoUrl: true } },
   membres: {
-    include: { eleve: { select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true } } },
+    include: { eleve: { select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true, avatarPhotoUrl: true } } },
   },
 } as const;
 
@@ -481,7 +481,7 @@ export async function obtenirSoumissionAvecAcces(id: string) {
 }
 
 const SOUMISSION_AVEC_CONTEXTE = {
-  eleve: { select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true } },
+  eleve: { select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true, avatarPhotoUrl: true } },
   exercice: {
     select: {
       id: true,
@@ -547,7 +547,7 @@ export async function listerRosterDevoir(exerciceId: string, classeId: string): 
   const [eleves, soumissions] = await Promise.all([
     prisma.user.findMany({
       where: { classeId, role: "ELEVE" },
-      select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true },
+      select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true, avatarPhotoUrl: true },
       orderBy: { nom: "asc" },
     }),
     prisma.soumission.findMany({

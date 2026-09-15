@@ -34,6 +34,11 @@ export const BUCKET_COURS_SIMPLE = "cours";
 // soit directement utilisable en <a href> côté prof, sans URL signée.
 export const BUCKET_COMPTES_RENDUS = "comptes-rendus-lfi";
 
+// Bucket public : photo de profil importée par un élève ou un prof (voir
+// lib/avatar-photo.ts). Public pour que User.avatarPhotoUrl soit directement
+// utilisable en <img src>, sans URL signée.
+export const BUCKET_AVATARS_PHOTOS = "avatars-photos-lfi";
+
 const bucketsVerifies = new Set<string>();
 
 /**

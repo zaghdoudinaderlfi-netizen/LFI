@@ -161,6 +161,12 @@ model User {
   avatarStyle   String?
   avatarOptions Json?
 
+  // Photo importée par l'utilisateur (URL publique complète, bucket
+  // avatars-photos-lfi) — élève ou prof. Prioritaire sur avatarStyle/
+  // avatarOptions dans AvatarDisplay quand renseignée : l'utilisateur choisit
+  // soit l'avatar dessiné, soit une vraie photo, jamais les deux à la fois.
+  avatarPhotoUrl String?
+
   classe   Classe? @relation(fields: [classeId], references: [id])
   classeId String?
 

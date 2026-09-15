@@ -7,6 +7,7 @@ export type CamaradeClasse = {
   prenom: string | null;
   avatarStyle?: string | null;
   avatarOptions?: unknown;
+  avatarPhotoUrl?: string | null;
 };
 
 // Un groupe = l'élève qui rend + au plus 2 coéquipiers.

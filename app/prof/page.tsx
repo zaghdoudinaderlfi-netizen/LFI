@@ -32,7 +32,7 @@ export default async function ProfPage({
     session?.user?.id
       ? prisma.user.findUnique({
           where: { id: session.user.id },
-          select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true },
+          select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true, avatarPhotoUrl: true },
         })
       : Promise.resolve(null),
     compterComptesRendus(isDemo),

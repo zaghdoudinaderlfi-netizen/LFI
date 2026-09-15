@@ -18,7 +18,7 @@ export default async function ProfLayout({
     ? await Promise.all([
         prisma.user.findUnique({
           where: { id: session.user.id },
-          select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true },
+          select: { id: true, nom: true, prenom: true, avatarStyle: true, avatarOptions: true, avatarPhotoUrl: true },
         }),
         compterNotificationsNonLues(session.user.id),
         compterNotificationsNonLuesParType(session.user.id),

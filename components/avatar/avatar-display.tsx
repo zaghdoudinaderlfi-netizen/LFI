@@ -11,8 +11,10 @@ const TAILLES = {
 export type TailleAvatar = keyof typeof TAILLES;
 
 /**
- * Affiche l'avatar Avataaars d'un utilisateur (SVG généré côté serveur ou client).
- * neutre=true → config dérivée du seed (pour les profs sans avatar personnalisé).
+ * Affiche l'avatar d'un utilisateur : sa photo importée si renseignée
+ * (avatarPhotoUrl, prioritaire), sinon l'avatar Avataaars généré (SVG côté
+ * serveur ou client). neutre=true → config dérivée du seed (pour les profs
+ * sans avatar personnalisé).
  */
 export function AvatarDisplay({
   user,
@@ -21,7 +23,12 @@ export function AvatarDisplay({
   className = "",
   badge,
 }: {
-  user: { id: string; avatarStyle?: string | null; avatarOptions?: unknown };
+  user: {
+    id: string;
+    avatarStyle?: string | null;
+    avatarOptions?: unknown;
+    avatarPhotoUrl?: string | null;
+  };
   neutre?: boolean;
   taille?: TailleAvatar;
   className?: string;
@@ -33,12 +40,21 @@ export function AvatarDisplay({
 
   return (
     <span className={`relative inline-flex shrink-0 ${TAILLES[taille]} ${className}`}>
-      <span
-        role="img"
-        aria-label="Avatar"
-        className="h-full w-full overflow-hidden rounded-full"
-        dangerouslySetInnerHTML={{ __html: svg }}
-      />
+      {user.avatarPhotoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={user.avatarPhotoUrl}
+          alt="Avatar"
+          className="h-full w-full rounded-full object-cover"
+        />
+      ) : (
+        <span
+          role="img"
+          aria-label="Avatar"
+          className="h-full w-full overflow-hidden rounded-full"
+          dangerouslySetInnerHTML={{ __html: svg }}
+        />
+      )}
       {badge}
     </span>
   );

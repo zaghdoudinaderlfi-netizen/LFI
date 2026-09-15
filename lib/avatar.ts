@@ -50,6 +50,23 @@ function prefixerIds(svg: string, seed: string): string {
     .replace(/url\(#([^)]+)\)/g, (_, id) => `url(#${id}-${prefix})`);
 }
 
+/**
+ * Remplace les width/height fixes de dicebear (attributs pixel, ex.
+ * width="96") par 100% : l'avatar est toujours affiché dans un conteneur de
+ * taille variable (h-6/h-10/h-28 selon TAILLES dans AvatarDisplay, h-44 dans
+ * le constructeur...) qui ne correspond presque jamais au paramètre `taille`
+ * passé ici. Sans ça, le SVG garde sa taille intrinsèque en pixels et se
+ * retrouve mal centré (ou rogné) à l'intérieur du cercle du conteneur au
+ * lieu de le remplir. Le viewBox est conservé, donc le rendu reste net à
+ * n'importe quelle taille d'affichage.
+ */
+function rendreResponsive(svg: string): string {
+  return svg.replace(/^<svg([^>]*)>/, (_, attrs: string) => {
+    const sansTaille = attrs.replace(/\s(?:width|height)="[^"]*"/g, "");
+    return `<svg${sansTaille} width="100%" height="100%">`;
+  });
+}
+
 function optionsDicebear(o: AvatarOptions): Record<string, unknown> {
   const hasAccessory = Boolean(o.accessories && o.accessories !== "");
   return {
@@ -82,7 +99,7 @@ export function genererAvatarSvg(config: AvatarConfig, seed: string, taille = 96
     backgroundColor: ["ffffff"],
     ...optionsDicebear(config.options),
   });
-  return prefixerIds(avatar.toString(), seed);
+  return rendreResponsive(prefixerIds(avatar.toString(), seed));
 }
 
 /** SVG d'aperçu pour une vignette du constructeur (change une seule option). */

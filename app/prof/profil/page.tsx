@@ -2,8 +2,9 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AvatarDisplay } from "@/components/avatar/avatar-display";
 import { ChangerMdpForm } from "@/components/profil/changer-mdp-form";
+import { PhotoAvatarForm } from "@/components/profil/photo-avatar-form";
 import { ProfilProfForm } from "./profil-form";
-import { changerMdpProfAction } from "./actions";
+import { changerMdpProfAction, modifierPhotoAvatarProfAction } from "./actions";
 
 export default async function ProfProfilPage() {
   const session = await auth();
@@ -43,6 +44,15 @@ export default async function ProfProfilPage() {
       )}
 
       <fieldset disabled={isDemo} className="contents">
+      {/* Photo de profil */}
+      <section className="card animate-fade-in-up p-6 [animation-delay:30ms]">
+        <h2 className="section-title mb-1">Photo de profil</h2>
+        <p className="mb-4 text-sm text-ink-secondary">
+          Importe une vraie photo à la place de l&apos;avatar par défaut.
+        </p>
+        <PhotoAvatarForm action={modifierPhotoAvatarProfAction} photoActuelle={user?.avatarPhotoUrl ?? null} />
+      </section>
+
       {/* Prénom et nom */}
       <section className="card animate-fade-in-up p-6 [animation-delay:60ms]">
         <h2 className="section-title mb-1">Prénom et nom</h2>
