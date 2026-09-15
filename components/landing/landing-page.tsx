@@ -454,11 +454,13 @@ export function LandingPage({ coursVitrine }: { coursVitrine: CoursVitrine | nul
       {/* Footer */}
       <footer className="border-t border-space-border">
         <div
-          className="mx-auto flex max-w-[1180px] flex-col items-center gap-3 px-6 py-8 text-center text-[13px]"
+          className="mx-auto flex max-w-[1180px] flex-col items-center gap-2 px-6 py-8 text-center text-[13px]"
           style={{ ...MONO, color: MUTED }}
         >
-          <p>© Plateforme pédagogique — Technologie · SNT · NSI · fait avec ♥ et beaucoup de print()</p>
-          <div className="flex items-center gap-3">
+          <p className="text-sm font-semibold text-ink-primary">Nader Zaghdoudi</p>
+          <p>Plateforme pédagogique — Technologie · SNT · NSI · fait avec ♥ et beaucoup de print()</p>
+          <p>créé par Zaghdoudi Nader</p>
+          <div className="mt-1 flex items-center gap-3">
             <Link href="/mentions-legales" className="hover:underline">
               Mentions légales
             </Link>
