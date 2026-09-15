@@ -11,6 +11,7 @@ import {
   injecterMessageDelaiDepasse,
   injecterScriptProgression,
   injecterBlocageCollage,
+  injecterWidgetAccessibilite,
 } from "@/lib/cours-interactif";
 import { listerCamaradesClasse } from "@/lib/comptes-rendus";
 import { formaterNomComplet } from "@/lib/utilisateurs";
@@ -130,6 +131,10 @@ export async function GET(
   // Frein pédagogique contre le copier-coller dans les zones de code —
   // s'applique à toutes les pages, sans condition (pas un toggle prof).
   resultat = injecterBlocageCollage(resultat);
+
+  // Widget d'accessibilité (zoom, contraste élevé) — même principe, toutes
+  // les pages, aucun réglage prof.
+  resultat = injecterWidgetAccessibilite(resultat);
 
   return new NextResponse(resultat, {
     headers: {

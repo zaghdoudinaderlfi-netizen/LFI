@@ -383,6 +383,170 @@ export function injecterBlocageCollage(html: string): string {
 }
 
 /**
+ * Widget flottant d'accessibilité (zoom de texte + contraste élevé) — comme
+ * le blocage du copier-coller, injecté sans condition sur toutes les pages
+ * de cours, pas un toggle prof.
+ *
+ * Le zoom utilise la propriété CSS `zoom` (pas `transform: scale`) : le
+ * contenu des pages de contenu/cours/*.html fixe ses tailles de police en
+ * px en dur (pas en rem/em), donc changer `html { font-size }` n'aurait
+ * aucun effet sur la plupart du texte, et `transform: scale` ne recalcule
+ * pas la mise en page (débordements, scroll horizontal). `zoom` recalcule
+ * vraiment la mise en page à la taille demandée, quelle que soit l'unité
+ * d'origine — c'est le seul des trois qui marche de façon fiable ici.
+ *
+ * Préférence mémorisée par élève dans localStorage (pas de compte
+ * nécessaire, et ce n'est qu'un confort d'affichage local au navigateur).
+ */
+export function injecterWidgetAccessibilite(html: string): string {
+  const style = `
+<style id="lfi-accessibilite-style">
+  #lfi-accessibilite-bouton {
+    position: fixed; bottom: 16px; left: 16px; z-index: 2147483000;
+    display: flex; align-items: center; justify-content: center;
+    width: 48px; height: 48px; border-radius: 9999px;
+    background: #1e293b; color: #fff; border: 2px solid #38bdf8;
+    font: 700 15px system-ui, sans-serif; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,.35);
+  }
+  #lfi-accessibilite-panneau {
+    position: fixed; bottom: 72px; left: 16px; z-index: 2147483000;
+    display: none; flex-direction: column; gap: 10px;
+    background: #0f172a; color: #fff; border: 1px solid #334155;
+    border-radius: 12px; padding: 14px; min-width: 200px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.45); font: 14px system-ui, sans-serif;
+  }
+  #lfi-accessibilite-panneau.lfi-ouvert { display: flex; }
+  #lfi-accessibilite-panneau button {
+    font: inherit; border: 1px solid #334155; border-radius: 8px;
+    background: #1e293b; color: #fff; padding: 6px 10px; cursor: pointer;
+  }
+  #lfi-accessibilite-panneau button:hover { border-color: #38bdf8; }
+  #lfi-accessibilite-panneau .lfi-zoom-ligne { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  #lfi-accessibilite-panneau .lfi-contraste-bouton { width: 100%; }
+  #lfi-accessibilite-panneau .lfi-contraste-bouton[aria-pressed="true"] { border-color: #38bdf8; background: #1e3a8a; }
+
+  body.lfi-contraste-eleve, body.lfi-contraste-eleve * {
+    background-color: #000 !important;
+    background-image: none !important;
+    color: #fff !important;
+    border-color: #fff !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  body.lfi-contraste-eleve a { color: #fde047 !important; text-decoration: underline !important; }
+  body.lfi-contraste-eleve img, body.lfi-contraste-eleve svg { filter: grayscale(1) contrast(1.2); }
+  /* Le widget lui-même garde son propre habillage, même en contraste élevé
+     — la valeur CSS "revert" reviendrait au style par défaut du navigateur
+     (pas au nôtre), on réaffirme donc explicitement les mêmes couleurs que
+     ci-dessus. */
+  body.lfi-contraste-eleve #lfi-accessibilite-bouton {
+    background-color: #1e293b !important;
+    color: #fff !important;
+    border-color: #38bdf8 !important;
+  }
+  body.lfi-contraste-eleve #lfi-accessibilite-panneau {
+    background-color: #0f172a !important;
+    color: #fff !important;
+    border-color: #334155 !important;
+  }
+  body.lfi-contraste-eleve #lfi-accessibilite-panneau button {
+    background-color: #1e293b !important;
+    color: #fff !important;
+    border-color: #334155 !important;
+  }
+  body.lfi-contraste-eleve #lfi-accessibilite-panneau .lfi-contraste-bouton[aria-pressed="true"] {
+    background-color: #1e3a8a !important;
+    border-color: #38bdf8 !important;
+  }
+</style>
+`;
+
+  const script = `
+<script>
+(function(){
+  var CLE = 'lfi-accessibilite';
+  var PALIERS = [100, 115, 130, 145, 160];
+
+  var etat = { zoomIndex: 0, contraste: false };
+  try {
+    var sauvegarde = JSON.parse(localStorage.getItem(CLE) || '{}');
+    if (typeof sauvegarde.zoomIndex === 'number' && sauvegarde.zoomIndex >= 0 && sauvegarde.zoomIndex < PALIERS.length) {
+      etat.zoomIndex = sauvegarde.zoomIndex;
+    }
+    if (typeof sauvegarde.contraste === 'boolean') etat.contraste = sauvegarde.contraste;
+  } catch (e) {}
+
+  var bouton = document.createElement('button');
+  bouton.id = 'lfi-accessibilite-bouton';
+  bouton.type = 'button';
+  bouton.setAttribute('aria-label', "Options d'accessibilité");
+  bouton.textContent = 'Aa';
+
+  var panneau = document.createElement('div');
+  panneau.id = 'lfi-accessibilite-panneau';
+
+  var ligneZoom = document.createElement('div');
+  ligneZoom.className = 'lfi-zoom-ligne';
+  var boutonMoins = document.createElement('button');
+  boutonMoins.type = 'button';
+  boutonMoins.textContent = 'A-';
+  boutonMoins.setAttribute('aria-label', 'Réduire le texte');
+  var indicateurZoom = document.createElement('span');
+  var boutonPlus = document.createElement('button');
+  boutonPlus.type = 'button';
+  boutonPlus.textContent = 'A+';
+  boutonPlus.setAttribute('aria-label', 'Agrandir le texte');
+  ligneZoom.appendChild(boutonMoins);
+  ligneZoom.appendChild(indicateurZoom);
+  ligneZoom.appendChild(boutonPlus);
+
+  var boutonContraste = document.createElement('button');
+  boutonContraste.type = 'button';
+  boutonContraste.className = 'lfi-contraste-bouton';
+  boutonContraste.textContent = '🌓 Contraste élevé';
+  boutonContraste.setAttribute('aria-pressed', 'false');
+
+  panneau.appendChild(ligneZoom);
+  panneau.appendChild(boutonContraste);
+
+  function appliquer() {
+    document.body.style.zoom = PALIERS[etat.zoomIndex] + '%';
+    document.body.classList.toggle('lfi-contraste-eleve', etat.contraste);
+    indicateurZoom.textContent = PALIERS[etat.zoomIndex] + '%';
+    boutonContraste.setAttribute('aria-pressed', String(etat.contraste));
+    try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch (e) {}
+  }
+
+  boutonMoins.addEventListener('click', function(){
+    etat.zoomIndex = Math.max(0, etat.zoomIndex - 1);
+    appliquer();
+  });
+  boutonPlus.addEventListener('click', function(){
+    etat.zoomIndex = Math.min(PALIERS.length - 1, etat.zoomIndex + 1);
+    appliquer();
+  });
+  boutonContraste.addEventListener('click', function(){
+    etat.contraste = !etat.contraste;
+    appliquer();
+  });
+  bouton.addEventListener('click', function(){
+    panneau.classList.toggle('lfi-ouvert');
+  });
+
+  document.body.appendChild(bouton);
+  document.body.appendChild(panneau);
+  appliquer();
+})();
+</script>
+`;
+
+  let resultat = injecterAvantFermeture(html, "</head>", style);
+  resultat = injecterAvantFermeture(resultat, "</body>", script);
+  return resultat;
+}
+
+/**
  * Sauvegarde/restauration automatique du code tapé dans les cellules
  * d'exercice (voir ProgressionExercice) : injecté juste avant `</body>`,
  * comme le widget de dépôt, pour s'appliquer à tous les fichiers
@@ -425,7 +589,7 @@ export function finaliserHtmlCours(html: string, ctx: ContexteFinalisationCours)
     resultat = injecterScriptProgression(resultat, ctx.progression.coursId, ctx.progression.sauvegardes);
   }
 
-  return injecterBlocageCollage(resultat);
+  return injecterWidgetAccessibilite(injecterBlocageCollage(resultat));
 }
 
 export function injecterScriptProgression(
