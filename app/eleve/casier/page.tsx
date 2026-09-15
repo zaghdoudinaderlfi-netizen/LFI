@@ -1,12 +1,23 @@
 import { redirect } from "next/navigation";
-import { Download, FolderOpen } from "lucide-react";
+import { FolderOpen } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { listerDocumentsPartages, listerFichiersEleve } from "@/lib/casier";
+import {
+  listerDocumentsPartages,
+  listerFichiersEleve,
+  listerDossiersPartages,
+  listerDossiersEleve,
+} from "@/lib/casier";
 import { MATIERE_PAR_NIVEAU, MATIERE_LABELS } from "@/lib/classes-constants";
-import { formaterTaille } from "@/lib/fichiers";
-import { CasierUploadForm } from "./casier-upload-form";
-import { supprimerFichierEleveAction } from "./actions";
+import { CasierExplorer } from "@/components/casier/casier-explorer";
+import {
+  creerDossierEleveAction,
+  deplacerDocumentEleveAction,
+  deposerFichierAction,
+  renommerDossierEleveAction,
+  supprimerDocumentEleveAction,
+  supprimerDossierEleveAction,
+} from "./actions";
 
 export default async function EleveCasierPage() {
   const session = await auth();
@@ -32,9 +43,11 @@ export default async function EleveCasierPage() {
   }
 
   const matiere = MATIERE_PAR_NIVEAU[user.classe.niveau];
-  const [documentsPartages, mesFichiers] = await Promise.all([
+  const [documentsPartages, dossiersPartages, mesFichiers, mesDossiers] = await Promise.all([
     listerDocumentsPartages(matiere),
+    listerDossiersPartages(matiere),
     listerFichiersEleve(session.user.id),
+    listerDossiersEleve(session.user.id),
   ]);
 
   return (
@@ -51,65 +64,26 @@ export default async function EleveCasierPage() {
 
       <section className="card animate-fade-in-up flex flex-col gap-3 p-6">
         <h2 className="section-title">Partagés par ton prof — {MATIERE_LABELS[matiere]}</h2>
-        {documentsPartages.length === 0 ? (
-          <p className="text-sm text-ink-muted">Rien pour l&apos;instant.</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {documentsPartages.map((doc) => (
-              <li
-                key={doc.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-space-border bg-space-surface2/60 px-3 py-2"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-ink-primary">{doc.nom}</p>
-                  <p className="text-xs text-ink-muted">{formaterTaille(doc.taille)}</p>
-                </div>
-                <a href={`/api/casier/${doc.id}`} className="btn-ghost gap-1.5 py-1 text-xs">
-                  <Download className="h-3.5 w-3.5" />
-                  Télécharger
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
+        <CasierExplorer
+          lectureSeule
+          dossiers={dossiersPartages.map((d) => ({ id: d.id, nom: d.nom, nbDocuments: d._count.documents }))}
+          documents={documentsPartages.map((d) => ({ id: d.id, nom: d.nom, taille: d.taille, dossierId: d.dossierId }))}
+        />
       </section>
 
       <section className="card animate-fade-in-up flex flex-col gap-3 p-6 [animation-delay:60ms]">
         <h2 className="section-title">Mes fichiers</h2>
-        {mesFichiers.length === 0 ? (
-          <p className="text-sm text-ink-muted">Tu n&apos;as encore rien déposé.</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {mesFichiers.map((doc) => (
-              <li
-                key={doc.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-space-border bg-space-surface2/60 px-3 py-2"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-ink-primary">{doc.nom}</p>
-                  <p className="text-xs text-ink-muted">{formaterTaille(doc.taille)}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <a
-                    href={`/api/casier/${doc.id}`}
-                    title="Télécharger"
-                    className="rounded-lg p-1.5 text-ink-muted hover:text-ink-primary"
-                  >
-                    <Download className="h-4 w-4" />
-                  </a>
-                  <form action={supprimerFichierEleveAction}>
-                    <input type="hidden" name="id" value={doc.id} />
-                    <button type="submit" className="text-sm font-medium text-red-400 hover:underline">
-                      Supprimer
-                    </button>
-                  </form>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <CasierUploadForm />
+        <CasierExplorer
+          dossiers={mesDossiers.map((d) => ({ id: d.id, nom: d.nom, nbDocuments: d._count.documents }))}
+          documents={mesFichiers.map((d) => ({ id: d.id, nom: d.nom, taille: d.taille, dossierId: d.dossierId }))}
+          onCreerDossier={creerDossierEleveAction}
+          onRenommerDossier={renommerDossierEleveAction}
+          onSupprimerDossier={supprimerDossierEleveAction}
+          onSupprimerDocument={supprimerDocumentEleveAction}
+          onDeplacerDocument={deplacerDocumentEleveAction}
+          uploadAction={deposerFichierAction}
+          libelleUpload="Déposer un fichier"
+        />
       </section>
     </div>
   );

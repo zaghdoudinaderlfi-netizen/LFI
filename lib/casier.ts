@@ -56,7 +56,7 @@ async function envoyerVersStockage(chemin: string, fichier: File) {
 }
 
 /** Dépose un fichier personnel d'élève — matière déduite de sa classe. */
-export async function deposerFichierEleve(eleveId: string, fichier: File) {
+export async function deposerFichierEleve(eleveId: string, fichier: File, dossierId?: string | null) {
   validerFichier(fichier);
 
   const eleve = await prisma.user.findUnique({
@@ -82,6 +82,7 @@ export async function deposerFichierEleve(eleveId: string, fichier: File) {
         matiere,
         eleveId,
         auteurId: eleveId,
+        dossierId: dossierId ?? null,
       },
     });
   } catch (err) {
@@ -91,7 +92,12 @@ export async function deposerFichierEleve(eleveId: string, fichier: File) {
 }
 
 /** Partage un document par le prof, visible par tous les élèves de la matière. */
-export async function partagerDocumentMatiere(profId: string, matiere: Matiere, fichier: File) {
+export async function partagerDocumentMatiere(
+  profId: string,
+  matiere: Matiere,
+  fichier: File,
+  dossierId?: string | null
+) {
   validerFichier(fichier);
 
   const nomNettoye = nomFichierSur(fichier.name);
@@ -108,6 +114,7 @@ export async function partagerDocumentMatiere(profId: string, matiere: Matiere, 
         matiere,
         eleveId: null,
         auteurId: profId,
+        dossierId: dossierId ?? null,
       },
     });
   } catch (err) {
@@ -172,4 +179,84 @@ export async function creerUrlTelechargement(
   }
 
   return data.signedUrl;
+}
+
+// ───────────────────────────────────────────────
+//  DOSSIERS
+// ───────────────────────────────────────────────
+//
+// Un seul niveau (pas de sous-dossiers) : suffisant pour ranger un casier
+// scolaire, plus simple à naviguer et à glisser-déposer qu'une arborescence.
+// Même dualité que les documents : eleveId null = dossier partagé par le
+// prof pour toute la matière, renseigné = dossier personnel de cet élève.
+
+const NOM_DOSSIER_MAX = 60;
+
+function validerNomDossier(nom: string): string {
+  const nomPropre = nom.trim();
+  if (!nomPropre) {
+    throw new CasierError("Le nom du dossier est obligatoire.");
+  }
+  if (nomPropre.length > NOM_DOSSIER_MAX) {
+    throw new CasierError(`Le nom du dossier est trop long (${NOM_DOSSIER_MAX} caractères maximum).`);
+  }
+  return nomPropre;
+}
+
+export async function creerDossierEleve(eleveId: string, nom: string) {
+  const eleve = await prisma.user.findUnique({
+    where: { id: eleveId, role: "ELEVE" },
+    select: { classe: { select: { niveau: true } } },
+  });
+  if (!eleve?.classe) {
+    throw new CasierError("Tu dois être rattaché à une classe pour utiliser le casier.");
+  }
+  const matiere = MATIERE_PAR_NIVEAU[eleve.classe.niveau];
+  const nomPropre = validerNomDossier(nom);
+
+  return prisma.dossierCasier.create({
+    data: { nom: nomPropre, matiere, eleveId, auteurId: eleveId },
+  });
+}
+
+export async function creerDossierProf(profId: string, matiere: Matiere, nom: string) {
+  const nomPropre = validerNomDossier(nom);
+  return prisma.dossierCasier.create({
+    data: { nom: nomPropre, matiere, eleveId: null, auteurId: profId },
+  });
+}
+
+export async function renommerDossier(id: string, nom: string) {
+  const nomPropre = validerNomDossier(nom);
+  return prisma.dossierCasier.update({ where: { id }, data: { nom: nomPropre } });
+}
+
+export async function obtenirDossier(id: string) {
+  return prisma.dossierCasier.findUnique({ where: { id } });
+}
+
+/** Supprime le dossier — les documents qu'il contenait reviennent en vrac à la racine (onDelete: SetNull). */
+export async function supprimerDossier(id: string) {
+  await prisma.dossierCasier.delete({ where: { id } });
+}
+
+export async function listerDossiersPartages(matiere: Matiere) {
+  return prisma.dossierCasier.findMany({
+    where: { matiere, eleveId: null },
+    include: { _count: { select: { documents: true } } },
+    orderBy: { nom: "asc" },
+  });
+}
+
+export async function listerDossiersEleve(eleveId: string) {
+  return prisma.dossierCasier.findMany({
+    where: { eleveId },
+    include: { _count: { select: { documents: true } } },
+    orderBy: { nom: "asc" },
+  });
+}
+
+/** Déplace un document dans un dossier, ou en vrac à la racine si dossierId est null. */
+export async function deplacerDocument(id: string, dossierId: string | null) {
+  return prisma.documentCasier.update({ where: { id }, data: { dossierId } });
 }

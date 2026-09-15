@@ -191,6 +191,8 @@ model User {
   pushSubscriptions     PushSubscription[]
   documentsCasier       DocumentCasier[]       @relation("DocumentsCasierEleve")
   documentsCasierEnvoyes DocumentCasier[]      @relation("DocumentsCasierAuteur")
+  dossiersCasier        DossierCasier[]        @relation("DossiersCasierEleve")
+  dossiersCasierCrees   DossierCasier[]        @relation("DossiersCasierAuteur")
   coursFeedbacks        CoursFeedback[]
 
   createdAt DateTime @default(now())
@@ -557,6 +559,38 @@ model DocumentCasier {
 
   auteur   User   @relation("DocumentsCasierAuteur", fields: [auteurId], references: [id], onDelete: Cascade)
   auteurId String
+
+  // Dossier de rangement (voir DossierCasier) — null = fichier "en vrac", à
+  // la racine du casier. SetNull (pas Cascade) : supprimer un dossier ne
+  // doit jamais supprimer les documents qu'il contient, juste les remettre
+  // en vrac à la racine, comme dans un vrai casier qu'on viderait d'un
+  // classeur sans jeter les feuilles à l'intérieur.
+  dossier   DossierCasier? @relation(fields: [dossierId], references: [id], onDelete: SetNull)
+  dossierId String?
+
+  createdAt DateTime @default(now())
+
+  @@index([matiere])
+  @@index([eleveId])
+  @@index([dossierId])
+}
+
+// Dossier de rangement du casier numérique — même dualité que DocumentCasier
+// (eleveId null = dossier partagé par le prof pour toute la matière, rempli
+// = dossier personnel de cet élève). Un seul niveau (pas de sous-dossiers) :
+// suffisant pour un casier scolaire, plus simple à naviguer qu'une arborescence.
+model DossierCasier {
+  id      String  @id @default(cuid())
+  nom     String
+  matiere Matiere
+
+  eleve   User?   @relation("DossiersCasierEleve", fields: [eleveId], references: [id], onDelete: Cascade)
+  eleveId String?
+
+  auteur   User   @relation("DossiersCasierAuteur", fields: [auteurId], references: [id], onDelete: Cascade)
+  auteurId String
+
+  documents DocumentCasier[]
 
   createdAt DateTime @default(now())
 

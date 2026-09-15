@@ -2,12 +2,24 @@ import { Suspense } from "react";
 import { Download, FolderOpen } from "lucide-react";
 import type { Matiere } from "@prisma/client";
 import { estMatiereValide, MATIERE_LABELS } from "@/lib/classes-constants";
-import { listerDocumentsPartages, listerFichiersElevesParMatiere } from "@/lib/casier";
+import {
+  listerDocumentsPartages,
+  listerFichiersElevesParMatiere,
+  listerDossiersPartages,
+} from "@/lib/casier";
 import { formaterTaille } from "@/lib/fichiers";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 import { MatiereTabs } from "@/components/matiere-tabs";
-import { PartagerDocumentForm } from "./partager-document-form";
-import { supprimerDocumentProfAction } from "./actions";
+import { CasierExplorer } from "@/components/casier/casier-explorer";
+import {
+  creerDossierProfAction,
+  deplacerDocumentProfAction,
+  partagerDocumentAction,
+  renommerDossierProfAction,
+  supprimerDocumentPartageAction,
+  supprimerDocumentProfAction,
+  supprimerDossierProfAction,
+} from "./actions";
 
 export default async function ProfCasierPage({
   searchParams,
@@ -17,8 +29,9 @@ export default async function ProfCasierPage({
   const { matiere: matiereParam } = await searchParams;
   const matiere: Matiere = estMatiereValide(matiereParam) ? matiereParam : "TECHNOLOGIE";
 
-  const [documentsPartages, fichiersEleves] = await Promise.all([
+  const [documentsPartages, dossiersPartages, fichiersEleves] = await Promise.all([
     listerDocumentsPartages(matiere),
+    listerDossiersPartages(matiere),
     listerFichiersElevesParMatiere(matiere),
   ]);
 
@@ -40,40 +53,18 @@ export default async function ProfCasierPage({
 
       <section className="card animate-fade-in-up flex flex-col gap-3 p-6">
         <h2 className="section-title">Documents partagés — {MATIERE_LABELS[matiere]}</h2>
-        {documentsPartages.length === 0 ? (
-          <p className="text-sm text-ink-muted">Aucun document partagé pour cette matière.</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {documentsPartages.map((doc) => (
-              <li
-                key={doc.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-space-border bg-space-surface2/60 px-3 py-2"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-ink-primary">{doc.nom}</p>
-                  <p className="text-xs text-ink-muted">{formaterTaille(doc.taille)}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <a
-                    href={`/api/casier/${doc.id}`}
-                    title="Télécharger"
-                    className="rounded-lg p-1.5 text-ink-muted hover:text-ink-primary"
-                  >
-                    <Download className="h-4 w-4" />
-                  </a>
-                  <form action={supprimerDocumentProfAction}>
-                    <input type="hidden" name="id" value={doc.id} />
-                    <button type="submit" className="text-sm font-medium text-red-400 hover:underline">
-                      Supprimer
-                    </button>
-                  </form>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <PartagerDocumentForm matiere={matiere} />
+        <CasierExplorer
+          dossiers={dossiersPartages.map((d) => ({ id: d.id, nom: d.nom, nbDocuments: d._count.documents }))}
+          documents={documentsPartages.map((d) => ({ id: d.id, nom: d.nom, taille: d.taille, dossierId: d.dossierId }))}
+          onCreerDossier={creerDossierProfAction.bind(null, matiere)}
+          onRenommerDossier={renommerDossierProfAction}
+          onSupprimerDossier={supprimerDossierProfAction}
+          onSupprimerDocument={supprimerDocumentPartageAction}
+          onDeplacerDocument={deplacerDocumentProfAction}
+          uploadAction={partagerDocumentAction}
+          libelleUpload="Partager un document"
+          champsCachesUpload={{ matiere }}
+        />
       </section>
 
       <section className="card animate-fade-in-up flex flex-col gap-3 p-6 [animation-delay:60ms]">
