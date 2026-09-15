@@ -679,3 +679,84 @@ export async function repondre(
     classement: terminee ? await classementQuiz(tentative.quizId, eleveId) : undefined,
   };
 }
+
+// ───────────────────────────────────────────────
+//  CÔTÉ PROF — STATISTIQUES PAR CLASSE / CHAPITRE
+// ───────────────────────────────────────────────
+
+export type StatClasseChapitre = {
+  classeId: string;
+  classeNom: string;
+  niveau: Niveau;
+  matiere: Matiere;
+  chapitre: number | null;
+  tauxReussiteMoyen: number; // 0-100, moyenne du % de bonnes réponses par tentative
+  nbTentatives: number;
+};
+
+/**
+ * Score moyen (% de bonnes réponses) par classe et par chapitre, toutes
+ * tentatives confondues, trié du plus faible au plus fort — pour repérer
+ * rapidement quelle classe a le plus besoin d'insister sur quel chapitre.
+ * Le score gamifié (TentativeQuiz.score, avec bonus de vitesse/série) n'est
+ * pas utilisé ici : c'est un score de jeu, pas une mesure pédagogique
+ * comparable d'une tentative à l'autre.
+ */
+export async function statsScoreMoyenParClasseEtChapitre(): Promise<StatClasseChapitre[]> {
+  const tentatives = await prisma.tentativeQuiz.findMany({
+    select: {
+      bonnesReponses: true,
+      quiz: {
+        select: { chapitre: true, niveau: true, matiere: true, _count: { select: { questions: true } } },
+      },
+      eleve: { select: { classeId: true, classe: { select: { nom: true } } } },
+    },
+  });
+
+  type Groupe = {
+    classeId: string;
+    classeNom: string;
+    niveau: Niveau;
+    matiere: Matiere;
+    chapitre: number | null;
+    sommeTaux: number;
+    nb: number;
+  };
+  const groupes = new Map<string, Groupe>();
+
+  for (const t of tentatives) {
+    const nbQuestions = t.quiz._count.questions;
+    if (!t.eleve.classeId || !t.eleve.classe || nbQuestions === 0) continue;
+
+    const taux = (t.bonnesReponses / nbQuestions) * 100;
+    const cle = `${t.eleve.classeId}|${t.quiz.chapitre ?? "none"}|${t.quiz.niveau}|${t.quiz.matiere}`;
+
+    const existant = groupes.get(cle);
+    if (existant) {
+      existant.sommeTaux += taux;
+      existant.nb += 1;
+    } else {
+      groupes.set(cle, {
+        classeId: t.eleve.classeId,
+        classeNom: t.eleve.classe.nom,
+        niveau: t.quiz.niveau,
+        matiere: t.quiz.matiere,
+        chapitre: t.quiz.chapitre,
+        sommeTaux: taux,
+        nb: 1,
+      });
+    }
+  }
+
+  return [...groupes.values()]
+    .map((g) => ({
+      classeId: g.classeId,
+      classeNom: g.classeNom,
+      niveau: g.niveau,
+      matiere: g.matiere,
+      chapitre: g.chapitre,
+      tauxReussiteMoyen: Math.round(g.sommeTaux / g.nb),
+      nbTentatives: g.nb,
+    }))
+    .sort((a, b) => a.tauxReussiteMoyen - b.tauxReussiteMoyen);
+}

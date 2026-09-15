@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { BarChart3 } from "lucide-react";
-import { statsQuestionsRateesGlobal } from "@/lib/quiz";
+import { BarChart3, Users } from "lucide-react";
+import { statsQuestionsRateesGlobal, statsScoreMoyenParClasseEtChapitre } from "@/lib/quiz";
 import { MATIERE_LABELS } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
 
@@ -17,7 +17,10 @@ function tauxBarreClasse(taux: number) {
 }
 
 export default async function StatistiquesPage() {
-  const questionsRatees = await statsQuestionsRateesGlobal();
+  const [questionsRatees, scoresParClasseChapitre] = await Promise.all([
+    statsQuestionsRateesGlobal(),
+    statsScoreMoyenParClasseEtChapitre(),
+  ]);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 pb-10">
@@ -71,6 +74,50 @@ export default async function StatistiquesPage() {
                 <p className="text-xs text-ink-muted">
                   {q.nbCorrectes}/{q.nbReponses} bonne{q.nbReponses > 1 ? "s" : ""} réponse
                   {q.nbReponses > 1 ? "s" : ""}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:60ms]">
+        <h2 className="section-title flex items-center gap-2">
+          <Users className="h-5 w-5 text-neon-violet" />
+          Score moyen par classe et par chapitre
+        </h2>
+
+        {scoresParClasseChapitre.length === 0 ? (
+          <p className="text-sm text-ink-muted">
+            Aucune donnée pour le moment — les élèves n&apos;ont pas encore joué à un quiz.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {scoresParClasseChapitre.map((s) => (
+              <li
+                key={`${s.classeId}-${s.chapitre}-${s.niveau}-${s.matiere}`}
+                className="flex flex-col gap-2 rounded-xl border border-space-border bg-space-surface2/60 p-3"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-ink-primary">{s.classeNom}</p>
+                    <p className="text-xs text-ink-muted">
+                      {NIVEAU_LABELS[s.niveau]} · {MATIERE_LABELS[s.matiere]}
+                      {s.chapitre != null ? ` · Ch. ${s.chapitre}` : " · sans chapitre"}
+                    </p>
+                  </div>
+                  <span className={`badge shrink-0 px-2.5 ${tauxBadgeClasse(s.tauxReussiteMoyen)}`}>
+                    {s.tauxReussiteMoyen}%
+                  </span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-space-border">
+                  <div
+                    className={`h-full rounded-full transition-[width] duration-500 ${tauxBarreClasse(s.tauxReussiteMoyen)}`}
+                    style={{ width: `${s.tauxReussiteMoyen}%` }}
+                  />
+                </div>
+                <p className="text-xs text-ink-muted">
+                  {s.nbTentatives} tentative{s.nbTentatives > 1 ? "s" : ""}
                 </p>
               </li>
             ))}
