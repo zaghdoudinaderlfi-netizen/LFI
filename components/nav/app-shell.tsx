@@ -65,7 +65,7 @@ type ShellUser = {
 
 const NAV_ITEMS: Record<Role, NavItem[]> = {
   ELEVE: [
-    { href: "/eleve", label: "Tableau de bord", icon: LayoutDashboard },
+    { href: "/eleve", label: "Tableau de bord", icon: LayoutDashboard, iconSprite: "dashboard" },
     {
       href: `${PRONOTE_URL_BASE}eleve.html`,
       label: "Pronote",
@@ -74,16 +74,16 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
       externe: true,
     },
     { href: "/eleve/cours", label: "Mes cours", icon: BookOpen, iconSprite: "cours" },
-    { href: "/eleve/travail", label: "Travail à faire", icon: ListChecks },
-    { href: "/eleve/notes", label: "Mes notes", icon: Award },
+    { href: "/eleve/travail", label: "Travail à faire", icon: ListChecks, iconSprite: "devoirs" },
+    { href: "/eleve/notes", label: "Mes notes", icon: Award, iconSprite: "notes" },
     { href: "/eleve/quiz", label: "Quiz", icon: Gamepad2, iconSprite: "quiz" },
-    { href: "/eleve/casier", label: "Casier", icon: FolderOpen },
-    { href: "/eleve/logiciels", label: "Logiciels", icon: Download },
+    { href: "/eleve/casier", label: "Casier", icon: FolderOpen, iconSprite: "casier" },
+    { href: "/eleve/logiciels", label: "Logiciels", icon: Download, iconSprite: "logiciels" },
     { href: "/eleve/notifications", label: "Notifications", icon: Bell, iconSprite: "notifications" },
     { href: "/eleve/profil", label: "Profil", icon: User, iconSprite: "profil" },
   ],
   PROF: [
-    { href: "/prof", label: "Tableau de bord", icon: LayoutDashboard },
+    { href: "/prof", label: "Tableau de bord", icon: LayoutDashboard, iconSprite: "dashboard" },
     {
       href: `${PRONOTE_URL_BASE}professeur.html`,
       label: "Pronote",
@@ -96,9 +96,9 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
     { href: "/prof/classes", label: "Mes classes", icon: Users, iconSprite: "classes" },
     { href: "/prof/admin", label: "Gestion élèves", icon: UserCog, iconSprite: "eleves" },
     { href: "/prof/quiz", label: "Quiz", icon: Gamepad2, iconSprite: "quiz" },
-    { href: "/prof/statistiques", label: "Statistiques", icon: BarChart3 },
-    { href: "/prof/casier", label: "Casier", icon: FolderOpen },
-    { href: "/prof/logiciels", label: "Logiciels", icon: Download },
+    { href: "/prof/statistiques", label: "Statistiques", icon: BarChart3, iconSprite: "statistiques" },
+    { href: "/prof/casier", label: "Casier", icon: FolderOpen, iconSprite: "casier" },
+    { href: "/prof/logiciels", label: "Logiciels", icon: Download, iconSprite: "logiciels" },
     { href: "/prof/notifications", label: "Notifications", icon: Bell, iconSprite: "notifications" },
     { href: "/prof/profil", label: "Profil", icon: User, iconSprite: "profil" },
   ],
@@ -260,11 +260,11 @@ export function AppShell({
         {userMenuOuvert && (
           <>
             <div
-              className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]"
+              className="fixed inset-0 z-[60] bg-black/30 backdrop-blur-[1px]"
               onClick={() => setUserMenuOuvert(false)}
             />
             <div
-              className="absolute left-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border-2 border-space-border bg-space-surface"
+              className="absolute left-0 z-[70] mt-2 w-56 overflow-hidden rounded-xl border-2 border-space-border bg-space-surface"
               style={{ boxShadow: "3px 3px 0 rgb(var(--arcade-shadow-clr))" }}
             >
               {compact && (
@@ -360,9 +360,11 @@ export function AppShell({
           </div>
         </div>
 
-        {/* Volet mobile */}
+        {/* Volet mobile — z-index au-dessus des boutons flottants (lever la
+            main, présence...) : sinon un bouton fixe en z-50 restait visible
+            par-dessus le volet ouvert et en gênait l'usage. */}
         {menuOuvert && (
-          <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="fixed inset-0 z-[60] lg:hidden">
             <div
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setMenuOuvert(false)}
