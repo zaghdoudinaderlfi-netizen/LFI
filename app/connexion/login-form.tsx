@@ -14,14 +14,14 @@ export function LoginForm() {
     <form action={formAction} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <label htmlFor="email" className="field-label">
-          Email
+          Email ou identifiant
         </label>
         <input
           id="email"
           name="email"
-          type="email"
+          type="text"
           required
-          autoComplete="email"
+          autoComplete="username"
           className="input"
         />
       </div>

@@ -18,7 +18,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { ChevronDown, ChevronUp, GripVertical, KeyRound, Pencil, Trash2, X, Copy, Check } from "lucide-react";
+import { ChevronDown, ChevronUp, GripVertical, KeyRound, Pencil, Trash2, Upload, X, Copy, Check } from "lucide-react";
 import { NIVEAU_LABELS } from "@/lib/classes-constants";
 import { formaterNomComplet } from "@/lib/utilisateurs";
 import { useToast } from "@/components/ui/toast";
@@ -29,6 +29,7 @@ import {
   supprimerClasseAction,
   deplacerEleveAction,
 } from "./actions";
+import { ModaleImportEleves } from "./import-eleves-modal";
 import type { Niveau } from "@prisma/client";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -37,7 +38,8 @@ type Eleve = {
   id: string;
   nom: string;
   prenom: string | null;
-  email: string;
+  email: string | null;
+  identifiant: string | null;
   doitChangerMdp: boolean;
   classeId: string | null;
   classe: { id: string; nom: string; niveau: Niveau } | null;
@@ -65,6 +67,7 @@ export function AdminClient({
   const [recherche, setRecherche] = useState("");
   const [filtreClasse, setFiltreClasse] = useState<string>("toutes");
   const [mdpVisible, setMdpVisible] = useState<{ eleveId: string; nom: string; mdp: string } | null>(null);
+  const [classeImport, setClasseImport] = useState<ClasseSimple | null>(null);
   const [activeEleve, setActiveEleve] = useState<Eleve | null>(null);
   const [, startDeplacement] = useTransition();
   const { addToast } = useToast();
@@ -198,6 +201,7 @@ export function AdminClient({
           eleves={gr}
           classes={classes}
           onMdpReset={setMdpVisible}
+          onImporter={() => setClasseImport(classe)}
         />
       ))}
 
@@ -217,6 +221,14 @@ export function AdminClient({
           nom={mdpVisible.nom}
           mdp={mdpVisible.mdp}
           onClose={() => setMdpVisible(null)}
+        />
+      )}
+
+      {/* Modale import d'élèves par fichier */}
+      {classeImport && (
+        <ModaleImportEleves
+          classe={classeImport}
+          onClose={() => setClasseImport(null)}
         />
       )}
 
@@ -244,6 +256,7 @@ function GroupeClasse({
   eleves,
   classes,
   onMdpReset,
+  onImporter,
 }: {
   titre: string;
   droppableId: string;
@@ -252,6 +265,7 @@ function GroupeClasse({
   eleves: Eleve[];
   classes: ClasseSimple[];
   onMdpReset: (v: { eleveId: string; nom: string; mdp: string }) => void;
+  onImporter?: () => void;
 }) {
   const [ouvert, setOuvert] = useState(true);
   const [enSuppression, startSuppression] = useTransition();
@@ -296,6 +310,17 @@ function GroupeClasse({
           </span>
         </button>
         <div className="flex items-center gap-1">
+          {classe && onImporter && (
+            <button
+              type="button"
+              onClick={onImporter}
+              title="Importer des élèves depuis un fichier"
+              className="btn-ghost gap-1.5 py-1 text-xs"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              Importer
+            </button>
+          )}
           {classe && (
             <button
               type="button"
@@ -429,7 +454,13 @@ function LigneEleve({
                 </span>
               )}
             </p>
-            <p className="text-xs text-ink-muted">{eleve.email}</p>
+            <p className="text-xs text-ink-muted">
+              {eleve.email ?? (
+                <>
+                  identifiant : <span className="font-mono">{eleve.identifiant}</span>
+                </>
+              )}
+            </p>
           </div>
         </div>
 
@@ -532,7 +563,7 @@ function FormModifierEleve({
         <input
           name="email"
           type="email"
-          defaultValue={eleve.email}
+          defaultValue={eleve.email ?? ""}
           className="input"
         />
       </div>

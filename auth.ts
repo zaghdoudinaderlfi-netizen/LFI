@@ -32,7 +32,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       credentials: {
-        email: { label: "Email", type: "email" },
+        email: { label: "Email ou identifiant", type: "text" },
         password: { label: "Mot de passe", type: "password" },
       },
       async authorize(credentials) {
@@ -43,6 +43,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        // Champ unique pour email (auto-inscription) ou identifiant (import
+        // en masse par le prof, voir lib/import-eleves.ts) — les deux sont
+        // stockés en minuscules, donc la même normalisation s'applique.
         const emailNettoye = email.trim().toLowerCase();
         // Espace parasite fréquent avec un mot de passe temporaire (copié-collé
         // depuis un message, ou clavier tactile qui ajoute un espace de fin) —
@@ -65,7 +68,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const user = await prisma.user.findUnique({ where: { email: emailNettoye } });
+        const user = await prisma.user.findFirst({
+          where: { OR: [{ email: emailNettoye }, { identifiant: emailNettoye }] },
+        });
         const valid = await bcrypt.compare(passwordNettoye, user?.motDePasse ?? HASH_FICTIF);
 
         if (!user || !valid) {

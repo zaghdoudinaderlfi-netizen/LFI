@@ -20,6 +20,7 @@ export default async function AdminPage() {
         nom: true,
         prenom: true,
         email: true,
+        identifiant: true,
         doitChangerMdp: true,
         classeId: true,
         classe: {

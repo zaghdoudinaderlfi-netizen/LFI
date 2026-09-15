@@ -119,7 +119,15 @@ model CycleTrimestre {
 
 model User {
   id         String  @id @default(cuid())
-  email      String  @unique
+  // Optionnel : les élèves importés en masse (voir lib/import-eleves.ts) se
+  // connectent par `identifiant`, pas par email. Un compte a toujours l'un
+  // des deux (email ou identifiant), jamais aucun — imposé en code, pas en
+  // base (Postgres autorise plusieurs NULL sous une contrainte @unique).
+  email      String? @unique
+  // Identifiant de connexion pour les élèves importés en masse : 1ère lettre
+  // du prénom + nom, suffixe numérique en cas de doublon (voir
+  // genererIdentifiantsUniques dans lib/import-eleves.ts).
+  identifiant String? @unique
   nom        String
   prenom     String?
   motDePasse String

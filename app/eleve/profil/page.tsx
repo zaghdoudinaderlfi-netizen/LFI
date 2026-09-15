@@ -33,7 +33,9 @@ export default async function EleveProfilPage() {
             <p className="text-lg font-semibold text-ink-primary">
               {[user?.prenom, user?.nom].filter(Boolean).join(" ")}
             </p>
-            <p className="text-sm text-ink-secondary">{user?.email}</p>
+            <p className="text-sm text-ink-secondary">
+              {user?.email ?? (user?.identifiant ? `identifiant : ${user.identifiant}` : "")}
+            </p>
           </div>
         </div>
 
@@ -85,7 +87,9 @@ export default async function EleveProfilPage() {
       <section className="card animate-fade-in-up p-6 [animation-delay:180ms]">
         <h2 className="section-title mb-1">Adresse email</h2>
         <p className="mb-4 text-sm text-ink-secondary">
-          Ton adresse email sert à te connecter, et d&apos;identifiant si tu dois réinitialiser ton mot de passe.
+          {user?.identifiant
+            ? "Ajoute une adresse email pour pouvoir réinitialiser ton mot de passe toi-même si tu l'oublies."
+            : "Ton adresse email sert à te connecter, et d'identifiant si tu dois réinitialiser ton mot de passe."}
         </p>
         <EmailForm emailActuel={user?.email ?? ""} action={modifierEmailAction} />
       </section>
