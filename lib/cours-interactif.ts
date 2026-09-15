@@ -653,6 +653,10 @@ export function injecterWidgetFeedback(
  */
 export type ContexteFinalisationCours = {
   corrigeAutorise: boolean;
+  // Désactive le blocage du copier-coller (voir injecterBlocageCollage) : le
+  // prof lui-même (vue élève, projection en classe, téléchargement) n'y est
+  // pas soumis.
+  estProf: boolean;
   contexteEleve: ContexteEleveDepot | null;
   depot: { delaiDepasse: boolean; coursId: string } | null;
   progression: { coursId: string; sauvegardes: Record<string, string> } | null;
@@ -685,7 +689,11 @@ export function finaliserHtmlCours(html: string, ctx: ContexteFinalisationCours)
 
   resultat = injecterWidgetFeedback(resultat, ctx.feedback.coursId, ctx.feedback.avisExistant);
 
-  return injecterWidgetAccessibilite(injecterBlocageCollage(resultat));
+  if (!ctx.estProf) {
+    resultat = injecterBlocageCollage(resultat);
+  }
+
+  return injecterWidgetAccessibilite(resultat);
 }
 
 export function injecterScriptProgression(

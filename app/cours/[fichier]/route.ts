@@ -140,8 +140,12 @@ export async function GET(
   resultat = injecterWidgetFeedback(resultat, cours.id, avisExistant);
 
   // Frein pédagogique contre le copier-coller dans les zones de code —
-  // s'applique à toutes les pages, sans condition (pas un toggle prof).
-  resultat = injecterBlocageCollage(resultat);
+  // s'applique à toutes les pages élève, sans toggle prof. Le prof lui-même
+  // (vue élève, projection en classe) n'y est pas soumis : il n'a pas besoin
+  // qu'on l'empêche de coller son propre code de démonstration.
+  if (!estProf) {
+    resultat = injecterBlocageCollage(resultat);
+  }
 
   // Widget d'accessibilité (zoom, contraste élevé) — même principe, toutes
   // les pages, aucun réglage prof.

@@ -128,6 +128,7 @@ export async function GET(
 
     html = finaliserHtmlCours(html, {
       corrigeAutorise,
+      estProf,
       contexteEleve,
       depot: depotActive ? { delaiDepasse, coursId: cours.id } : null,
       progression,
@@ -146,6 +147,7 @@ export async function GET(
 
     html = finaliserHtmlCours(await data.text(), {
       corrigeAutorise,
+      estProf,
       contexteEleve,
       depot: depotActive ? { delaiDepasse, coursId: cours.id } : null,
       progression: null,
