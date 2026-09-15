@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ExternalLink, GraduationCap, Moon, PlayCircle, Sun } from "lucide-react";
+import { ExternalLink, GraduationCap, Moon, Sun } from "lucide-react";
 import { DemoButtons } from "./demo-buttons";
 
 /* ── Palette arcade (toujours sombre — fenêtre terminal) ─── */
@@ -20,12 +20,33 @@ const BG = "#0d0926";
 const PHRASES = ["bienvenue.py", "prof_nader@plateforme:~$", "prêt à coder ?"];
 
 const FEATURES = [
-  { icon: "▶", bg: NSI,       label: "Code en ligne",        desc: "Écris et exécute du Python dans ton navigateur. Rien à installer, jamais.",  badge: "+ Skulpt" },
-  { icon: "⚡", bg: SNT,       label: "Branche tes montages",  desc: "Simule Arduino et micro:bit en direct, comme sur la vraie carte.",           badge: "+ Wokwi" },
-  { icon: "◈", bg: TECHNO,    label: "Cours interactifs",     desc: "Des leçons claires avec des schémas qui bougent quand tu cliques.",          badge: "+ animations" },
-  { icon: "✓", bg: "#b6f09c", label: "Exos auto-corrigés",   desc: "Tu te trompes, tu recommences, tu progresses. Feedback immédiat.",           badge: "+ correction" },
-  { icon: "⚔", bg: "#c89bff", label: "Duels & quiz",          desc: "Défie tes potes en 1 contre 1 et grimpe dans le classement.",               badge: "+ 1v1" },
-  { icon: "★", bg: "#ff8d6b", label: "Ta progression",        desc: "Gagne de l'XP, débloque des badges et passe au niveau supérieur.",          badge: "+ XP & badges" },
+  { icon: "▶", bg: NSI,       label: "Code en ligne",        desc: "Écris et exécute du Python dans ton navigateur. Rien à installer, jamais." },
+  { icon: "⚡", bg: SNT,       label: "Branche tes montages",  desc: "Simule Arduino et micro:bit en direct, comme sur la vraie carte." },
+  { icon: "◈", bg: TECHNO,    label: "Cours interactifs",     desc: "Des leçons claires avec des schémas qui bougent quand tu cliques." },
+  { icon: "✓", bg: "#b6f09c", label: "Exos auto-corrigés",   desc: "Tu te trompes, tu recommences, tu progresses. Feedback immédiat." },
+  { icon: "⚔", bg: "#c89bff", label: "Duels & quiz",          desc: "Défie tes potes en 1 contre 1 et grimpe dans le classement." },
+  { icon: "★", bg: "#ff8d6b", label: "Ta progression",        desc: "Gagne de l'XP, débloque des badges et passe au niveau supérieur." },
+];
+
+const ATOUTS = [
+  {
+    icon: "⌨",
+    bg: SNT,
+    title: "Console de code intégrée",
+    desc: "Chaque activité embarque sa propre console de programmation : tu écris, tu exécutes et tu vois le résultat directement dans la page, sans rien installer.",
+  },
+  {
+    icon: "✓",
+    bg: "#b6f09c",
+    title: "Correction automatique instantanée",
+    desc: "Les exercices interactifs vérifient ta réponse en temps réel et te guident immédiatement vers la bonne piste — feedback immédiat, pas d'attente.",
+  },
+  {
+    icon: "⚔",
+    bg: NSI,
+    title: "Apprentissage gamifié",
+    desc: "XP, badges et duels 1 contre 1 transforment chaque chapitre en défi à relever, pas en cours à subir.",
+  },
 ];
 
 const CARTOUCHES = [
@@ -228,18 +249,38 @@ export function LandingPage({ coursVitrine }: { coursVitrine: CoursVitrine | nul
               <strong style={{ color: TXT }}>directement dans ton navigateur</strong>.
             </p>
 
-            <div className="flex flex-wrap gap-3.5">
-              <button
-                type="button"
-                className="btn-arcade cursor-pointer rounded-[13px] border-2 px-[22px] py-3.5 font-heading text-[16px] font-bold"
-                style={{ background: NSI, color: "#1a0a14", borderColor: BG }}
-                onClick={() => {
-                  dessineRosace();
-                  svgRef.current?.parentElement?.scrollIntoView({ block: "center" });
-                }}
+            <div className="mb-5">
+              <span
+                className="mb-2.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold"
+                style={{ ...MONO, background: TECHNO, color: "#1a0a14" }}
               >
-                ▶ Lancer un cours
-              </button>
+                ✨ sans compte, en lecture seule
+              </span>
+              <DemoButtons />
+            </div>
+
+            <div className="flex flex-wrap gap-3.5">
+              {coursVitrine ? (
+                <Link
+                  href={`/decouvrir/${coursVitrine.id}`}
+                  className="btn-arcade rounded-[13px] border-2 px-[22px] py-3.5 font-heading text-[16px] font-bold"
+                  style={{ background: NSI, color: "#1a0a14", borderColor: BG }}
+                >
+                  ▶ Lancer un cours
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="btn-arcade cursor-pointer rounded-[13px] border-2 px-[22px] py-3.5 font-heading text-[16px] font-bold"
+                  style={{ background: NSI, color: "#1a0a14", borderColor: BG }}
+                  onClick={() => {
+                    dessineRosace();
+                    svgRef.current?.parentElement?.scrollIntoView({ block: "center" });
+                  }}
+                >
+                  ▶ Lancer un cours
+                </button>
+              )}
               <a
                 href="#fonctionnalites"
                 className="btn-arcade rounded-[13px] border-2 px-[22px] py-3.5 font-heading text-[16px] font-bold"
@@ -247,13 +288,6 @@ export function LandingPage({ coursVitrine }: { coursVitrine: CoursVitrine | nul
               >
                 Découvrir
               </a>
-            </div>
-
-            <div className="mt-5">
-              <p className="mb-2 text-[13px]" style={{ ...MONO, color: MUTED }}>
-                // sans compte, en lecture seule
-              </p>
-              <DemoButtons />
             </div>
           </div>
 
@@ -370,9 +404,6 @@ export function LandingPage({ coursVitrine }: { coursVitrine: CoursVitrine | nul
                 </div>
                 <h4 className="section-title">{f.label}</h4>
                 <p className="text-sm text-ink-secondary">{f.desc}</p>
-                <span className="mt-2 inline-block self-start rounded-[7px] border border-dashed border-space-border px-2.5 py-1 text-[11px] text-ink-muted" style={MONO}>
-                  {f.badge}
-                </span>
               </div>
             ))}
           </div>
@@ -380,32 +411,33 @@ export function LandingPage({ coursVitrine }: { coursVitrine: CoursVitrine | nul
       </section>
 
       {/* ═══════════════════════════════════════════
-          Découvrez un cours (vitrine, sans compte)
+          Ce qui différencie la plateforme
           ══════════════════════════════════════════ */}
-      {coursVitrine && (
-        <section className="py-16">
-          <div className="mx-auto max-w-[1180px] px-6">
-            <div className="card flex flex-col items-center gap-4 overflow-hidden p-8 text-center sm:p-12">
-              {coursVitrine.imageUrl && (
-                <div className="-m-8 mb-0 h-40 w-[calc(100%+4rem)] overflow-hidden sm:-m-12 sm:mb-0 sm:h-52 sm:w-[calc(100%+6rem)]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={coursVitrine.imageUrl} alt="" className="h-full w-full object-cover" />
-                </div>
-              )}
-              <span className={coursVitrine.imageUrl ? "eyebrow mt-4" : "eyebrow"}>// accès libre</span>
-              <h2 className="page-title">Découvrez un cours</h2>
-              <p className="max-w-[52ch] text-ink-secondary">
-                Essayez tout de suite <strong className="text-ink-primary">{coursVitrine.titre}</strong>{" "}
-                ({coursVitrine.matiere} · {coursVitrine.niveau}) — aucun compte à créer.
-              </p>
-              <Link href={`/decouvrir/${coursVitrine.id}`} className="btn-primary">
-                <PlayCircle className="h-4 w-4" />
-                Lancer ce cours
-              </Link>
-            </div>
+      <section className="py-16">
+        <div className="mx-auto max-w-[1180px] px-6">
+          <div className="mb-8 text-center">
+            <span className="eyebrow">// ce qui nous différencie</span>
+            <h2 className="page-title mt-3">Une plateforme qui code avec toi</h2>
+            <p className="mx-auto mt-3 max-w-[56ch] text-ink-secondary">
+              Pas de vidéos passives ni de PDF à lire : chaque notion se pratique en direct, dans le navigateur.
+            </p>
           </div>
-        </section>
-      )}
+          <div className="grid grid-cols-1 gap-[18px] sm:grid-cols-3">
+            {ATOUTS.map((a) => (
+              <div key={a.title} className="card-interactive flex flex-col items-center gap-3 p-6 text-center">
+                <div
+                  className="flex h-[56px] w-[56px] items-center justify-center rounded-[14px] border-2 text-[26px]"
+                  style={{ background: a.bg, borderColor: BG, boxShadow: `3px 3px 0 ${BG}` }}
+                >
+                  {a.icon}
+                </div>
+                <h4 className="section-title">{a.title}</h4>
+                <p className="text-sm text-ink-secondary">{a.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ═══════════════════════════════════════════
           À propos
