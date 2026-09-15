@@ -17,7 +17,7 @@ const SNT = "#3dd6f5";
 const NSI = "#ff5da2";
 const BG = "#0d0926";
 
-const PHRASES = ["bienvenue.py", "prof_nader@plateforme:~$", "prêt à coder ?"];
+const PHRASES = ["bienvenue.py", "Nadtech@plateforme:~$", "prêt à coder ?"];
 
 const FEATURES = [
   { icon: "▶", bg: NSI,       label: "Code en ligne",        desc: "Écris et exécute du Python dans ton navigateur. Rien à installer, jamais." },
@@ -194,7 +194,7 @@ export function LandingPage({ coursVitrine }: { coursVitrine: CoursVitrine | nul
           </div>
           {/* Nom de fenêtre */}
           <span className="hidden truncate text-[13px] sm:block" style={{ ...MONO, color: MUTED }}>
-            prof-nader://plateforme — techno · snt · nsi
+            Nadtech://plateforme — techno · snt · nsi
           </span>
           {/* Actions */}
           <div className="ml-auto flex shrink-0 items-center gap-2">
