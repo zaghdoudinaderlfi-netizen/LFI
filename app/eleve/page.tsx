@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Award, BookOpen, ListChecks, Star } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { listerDerniersCoursPublies, MATIERE_LABELS } from "@/lib/cours";
+import { listerCoursRecherche, listerDerniersCoursPublies, MATIERE_LABELS } from "@/lib/cours";
+import { RechercheCours, type ItemRecherche } from "@/components/recherche-cours";
 import { listerDevoirsAFaire } from "@/lib/devoirs";
 import { listerNotesEleve } from "@/lib/soumissions";
 import { NIVEAU_LABELS } from "@/lib/classes";
@@ -39,7 +40,7 @@ export default async function ElevePage() {
       })
     : null;
 
-  const [derniersCours, devoirs, notes, scoreLudique, progression, annonce] = user?.classe
+  const [derniersCours, devoirs, notes, scoreLudique, progression, annonce, coursRecherche] = user?.classe
     ? await Promise.all([
         listerDerniersCoursPublies(user.classe.niveau, 3),
         listerDevoirsAFaire(user.id, user.classe.niveau),
@@ -47,11 +48,20 @@ export default async function ElevePage() {
         obtenirScoreLudiqueActuel(user.id),
         obtenirProgressionEleve(user.id),
         obtenirAnnonceActive(),
+        listerCoursRecherche(user.classe.niveau),
       ])
-    : [[], [], [], null, null, null];
+    : [[], [], [], null, null, null, []];
 
   const devoirsAFaire = devoirs.filter((devoir) => !devoir.soumission).slice(0, 4);
   const dernieresNotes = notes.slice(0, 4);
+
+  const itemsRecherche: ItemRecherche[] = coursRecherche.map((c) => ({
+    id: c.id,
+    titre: c.titreInteractif ?? c.titre,
+    sousTitre: `${MATIERE_LABELS[c.matiere]}${c.chapitre != null ? ` · Chapitre ${c.chapitre}` : ""}`,
+    href: c.pageInteractive ? `/cours/${c.pageInteractive}` : `/eleve/cours/${c.slug}`,
+    externe: !!c.pageInteractive,
+  }));
 
   const svgMascotte = user
     ? genererAvatarSvg(configAvatarUtilisateur(user), user.id, 96)
@@ -87,6 +97,8 @@ export default async function ElevePage() {
           )}
         </div>
       </div>
+
+      {user?.classe && <RechercheCours items={itemsRecherche} />}
 
       {/* Toujours monté : même sans annonce au chargement, le polling
           interne détecte une diffusion lancée par le prof en direct. */}

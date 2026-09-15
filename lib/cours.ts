@@ -354,6 +354,32 @@ export async function listerDerniersCoursPublies(niveau: Niveau, limit = 5) {
   });
 }
 
+// Sélection minimale pour la barre de recherche du dashboard (voir
+// components/recherche-cours.tsx) — pas besoin du contenu du cours ni des
+// autres champs, seulement de quoi afficher un résultat et construire son lien.
+export async function listerCoursRecherche(niveau: Niveau) {
+  return prisma.cours.findMany({
+    where: { niveau, matiere: MATIERE_PAR_NIVEAU[niveau], publie: true, visibleEleves: true },
+    select: {
+      id: true,
+      titre: true,
+      titreInteractif: true,
+      slug: true,
+      pageInteractive: true,
+      chapitre: true,
+      matiere: true,
+    },
+    orderBy: [{ matiere: "asc" }, { chapitre: "asc" }, { ordre: "asc" }],
+  });
+}
+
+export async function listerCoursRechercheProf() {
+  return prisma.cours.findMany({
+    select: { id: true, titre: true, titreInteractif: true, chapitre: true, matiere: true, niveau: true },
+    orderBy: [{ niveau: "asc" }, { matiere: "asc" }, { chapitre: "asc" }, { ordre: "asc" }],
+  });
+}
+
 export async function basculerVisibiliteEleves(id: string, visible: boolean) {
   return prisma.cours.update({
     where: { id },

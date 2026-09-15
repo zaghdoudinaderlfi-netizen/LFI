@@ -6,9 +6,10 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { listerClasses, NIVEAU_LABELS } from "@/lib/classes";
 import { NIVEAU_PAR_MATIERE, estMatiereValide } from "@/lib/classes-constants";
-import { MATIERE_LABELS } from "@/lib/cours";
+import { MATIERE_LABELS, listerCoursRechercheProf } from "@/lib/cours";
 import { AvatarDisplay } from "@/components/avatar/avatar-display";
 import { MatiereTabs } from "@/components/matiere-tabs";
+import { RechercheCours, type ItemRecherche } from "@/components/recherche-cours";
 import { obtenirAnnonceActive } from "@/lib/annonces";
 import { obtenirCycleActif } from "@/lib/trimestre";
 import { compterComptesRendus } from "@/lib/comptes-rendus";
@@ -27,7 +28,7 @@ export default async function ProfPage({
 
   const niveauFiltré = matiere ? NIVEAU_PAR_MATIERE[matiere] : undefined;
 
-  const [user, comptesRendusCount, classes, annonceActive, cycleTrimestre] = await Promise.all([
+  const [user, comptesRendusCount, classes, annonceActive, cycleTrimestre, coursRecherche] = await Promise.all([
     session?.user?.id
       ? prisma.user.findUnique({
           where: { id: session.user.id },
@@ -38,6 +39,7 @@ export default async function ProfPage({
     listerClasses({ estDemo: isDemo }),
     obtenirAnnonceActive(),
     obtenirCycleActif(),
+    listerCoursRechercheProf(),
   ]);
 
   const classesFiltrees = niveauFiltré
@@ -45,6 +47,13 @@ export default async function ProfPage({
     : classes;
 
   const labelMatiere = matiere ? MATIERE_LABELS[matiere] : null;
+
+  const itemsRecherche: ItemRecherche[] = coursRecherche.map((c) => ({
+    id: c.id,
+    titre: c.titreInteractif ?? c.titre,
+    sousTitre: `${NIVEAU_LABELS[c.niveau]} · ${MATIERE_LABELS[c.matiere]}${c.chapitre != null ? ` · Chapitre ${c.chapitre}` : ""}`,
+    href: `/prof/cours/${c.id}`,
+  }));
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -60,6 +69,8 @@ export default async function ProfPage({
           </h1>
         </div>
       </div>
+
+      <RechercheCours items={itemsRecherche} />
 
       {/* Onglets matière */}
       <Suspense fallback={null}>
