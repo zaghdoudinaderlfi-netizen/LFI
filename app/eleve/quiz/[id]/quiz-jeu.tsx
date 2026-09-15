@@ -191,14 +191,19 @@ export function QuizJeu({
             </p>
           )}
 
-          <button
-            type="button"
-            onClick={demarrer}
-            disabled={etat === "chargement"}
-            className="btn-primary mt-2 px-8 py-3 text-base"
-          >
-            {etat === "chargement" ? "Chargement..." : meilleurScore !== null ? "Rejouer" : "Jouer"}
-          </button>
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={demarrer}
+              disabled={etat === "chargement"}
+              className="btn-primary px-8 py-3 text-base"
+            >
+              {etat === "chargement" ? "Chargement..." : meilleurScore !== null ? "Rejouer" : "Jouer"}
+            </button>
+            <Link href={`/eleve/quiz/${quizId}/flashcards`} className="btn-secondary px-6 py-3 text-base">
+              🃏 Réviser en flashcards
+            </Link>
+          </div>
         </div>
       </div>
     );

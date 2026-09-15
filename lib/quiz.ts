@@ -793,3 +793,50 @@ export async function apercuStatistiques(): Promise<ApercuStatistiques> {
     nbQuizActifs,
   };
 }
+
+// ───────────────────────────────────────────────
+//  CÔTÉ ÉLÈVE — FLASHCARDS DE RÉVISION
+// ───────────────────────────────────────────────
+
+export type QuestionFlashcard = {
+  id: string;
+  enonce: string;
+  bonneReponseTexte: string;
+  index: number;
+  total: number;
+};
+
+export type QuizFlashcards = {
+  titre: string;
+  questions: QuestionFlashcard[];
+};
+
+/**
+ * Questions d'un quiz avec leur bonne réponse, pour le mode révision libre
+ * (voir app/eleve/quiz/[id]/flashcards) — contrairement au mode jeu, la
+ * réponse est envoyée directement : ce n'est pas une évaluation.
+ */
+export async function obtenirQuizPourFlashcards(
+  quizId: string,
+  niveauEleve: Niveau
+): Promise<QuizFlashcards | null> {
+  const quiz = await obtenirQuizVisibleEleve(quizId, niveauEleve);
+  if (!quiz) return null;
+
+  const questions = await prisma.questionQuiz.findMany({
+    where: { quizId },
+    orderBy: { ordre: "asc" },
+  });
+
+  const total = questions.length;
+  return {
+    titre: quiz.titre,
+    questions: questions.map((q, i) => ({
+      id: q.id,
+      enonce: q.enonce,
+      bonneReponseTexte: [q.choixA, q.choixB, q.choixC, q.choixD][q.bonneReponse],
+      index: i + 1,
+      total,
+    })),
+  };
+}
