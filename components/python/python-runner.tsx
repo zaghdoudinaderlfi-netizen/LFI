@@ -163,14 +163,26 @@ export function PythonRunner({
         inputfunTakesPrompt: true,
         __future__: Sk.python3,
         // Évite de bloquer l'onglet si l'élève écrit une boucle infinie.
-        execLimit: 10000,
+        // 30s (et non 10s) : un tracé Turtle avec beaucoup de points est
+        // nettement plus lent à exécuter dans Skulpt qu'un calcul pur, et
+        // déclenchait cette limite sur des exercices par ailleurs valides.
+        execLimit: 30000,
       });
 
       Sk.TurtleGraphics = { target: turtleId, width: 400, height: 400 };
 
       await Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("<stdin>", false, code, true));
     } catch (err) {
-      setErreur(String(err));
+      const messageBrut = String(err);
+      // Message Skulpt par défaut, en anglais et peu clair pour un élève
+      // ("Program exceeded run time limit...") — remplacé par une explication
+      // concrète : un tracé Turtle avec beaucoup de points est lent à
+      // exécuter, ce n'est pas forcément une boucle infinie.
+      setErreur(
+        messageBrut.includes("exceeded run time limit")
+          ? "Le code met trop de temps à s'exécuter (30s max) — vérifie qu'il n'y a pas de boucle infinie, ou réduis le nombre de tracés/calculs."
+          : messageBrut
+      );
     } finally {
       setADessin((turtleRef.current?.childElementCount ?? 0) > 0);
     }
