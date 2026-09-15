@@ -2,20 +2,17 @@ import fs from "fs";
 import path from "path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Code2, FileText, Image as ImageIcon, Layers, MonitorPlay, Paperclip } from "lucide-react";
+import { ArrowLeft, Code2, FileText, Image as ImageIcon, MonitorPlay, Paperclip } from "lucide-react";
 import { SupprimerCoursButton } from "./supprimer-cours-button";
 import { obtenirCoursParId, MATIERE_LABELS, urlImageCouverture } from "@/lib/cours";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { listerPiecesJointes, formaterTaille } from "@/lib/pieces-jointes";
 import { listerExercicesCodeCours, TYPE_EXERCICE_CODE_LABELS } from "@/lib/exercices-code";
 import { listerVerrousActifs } from "@/lib/examen";
-import { listerBlocsCours } from "@/lib/blocs";
 import { listerQuizProf } from "@/lib/quiz";
-import { BlocListeProf } from "@/components/blocs/bloc-liste-prof";
 import { modifierCoursAction } from "../actions";
 import { CoursForm } from "../cours-form";
 import { ContenuForm } from "./contenu-form";
-import { BlocsForm } from "./blocs-form";
 import { PieceJointeForm } from "./pieces-jointes-form";
 import { supprimerPieceJointeAction } from "./pieces-jointes-actions";
 import { ExerciceCodeForm } from "./exercices-code-form";
@@ -64,7 +61,6 @@ export default async function ModifierCoursPage({
   }
 
   const piecesJointes = await listerPiecesJointes(id);
-  const blocs = await listerBlocsCours(id);
   const exercicesCode = await listerExercicesCodeCours(id);
   const verrousParExercice = new Map(
     await Promise.all(
@@ -183,22 +179,6 @@ export default async function ModifierCoursPage({
             <ContenuForm coursId={cours.id} />
           </div>
         )}
-
-        <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:120ms]">
-          <div>
-            <h2 className="section-title flex items-center gap-2">
-              <Layers className="h-5 w-5 text-neon-violet" />
-              Contenu en blocs
-            </h2>
-            <p className="mt-1 text-sm text-ink-secondary">
-              Compose le cours en empilant des blocs (texte, image, PDF, vidéo, activité, lien),
-              affichés dans l&apos;ordre ci-dessous pour les élèves.
-            </p>
-          </div>
-
-          <BlocListeProf coursId={cours.id} blocs={blocs} />
-          <BlocsForm coursId={cours.id} />
-        </div>
 
         <div className="card animate-fade-in-up flex flex-col gap-4 p-6 [animation-delay:150ms]">
           <div>

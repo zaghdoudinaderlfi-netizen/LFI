@@ -126,8 +126,8 @@ export function CoursForm({
       {!cours?.id && (
         <p className="rounded-lg border border-space-border bg-space-surface2/60 p-3 text-sm text-ink-secondary">
           Choisis un format ci-dessous, ou laisse la sélection vide pour créer un cours{" "}
-          <strong className="text-ink-primary">vierge</strong> et composer le contenu (blocs texte/image/vidéo,
-          import Word ou PDF, cours interactif HTML…) depuis la page d&apos;édition.
+          <strong className="text-ink-primary">vierge</strong> et composer le contenu (import Word ou PDF,
+          cours interactif HTML…) depuis la page d&apos;édition.
         </p>
       )}
 

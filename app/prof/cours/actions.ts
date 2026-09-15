@@ -149,7 +149,7 @@ export async function creerCoursAction(
 
   // Un des 5 boutons a été choisi : cours mono-contenu créé directement.
   // Sinon (aucun bouton cliqué) : cours vierge, à composer ensuite avec
-  // l'éditeur avancé (blocs, page interactive, import Word/PDF...), comme
+  // l'éditeur avancé (page interactive, import Word/PDF...), comme
   // avant l'ajout du formulaire simplifié.
   const typeSimple = lireTypeSimple(formData);
 

@@ -198,9 +198,9 @@ export async function creerCours(data: CoursInfoInput, contenuFichier: ContenuFi
     ? await resoudreContenu(randomUUID(), contenuFichier)
     : CONTENU_VIDE;
 
-  // Sans fichier ni blocs, on ne peut pas publier directement depuis le formulaire de création.
+  // Sans fichier importé, on ne peut pas publier directement depuis le formulaire de création.
   if (data.publie && contenuEstVide(champsContenu)) {
-    throw new CoursError("Ajoute du contenu (blocs ou fichier importé) avant de publier ce cours.");
+    throw new CoursError("Ajoute du contenu (fichier importé) avant de publier ce cours.");
   }
 
   const cours = await prisma.cours.create({
@@ -228,10 +228,7 @@ export async function creerCours(data: CoursInfoInput, contenuFichier: ContenuFi
 }
 
 export async function modifierCours(id: string, data: CoursInfoInput) {
-  const cours = await prisma.cours.findUnique({
-    where: { id },
-    include: { _count: { select: { blocs: true } } },
-  });
+  const cours = await prisma.cours.findUnique({ where: { id } });
   if (!cours) {
     throw new CoursError("Cours introuvable.");
   }
@@ -240,11 +237,10 @@ export async function modifierCours(id: string, data: CoursInfoInput) {
     throw new CoursError("Le titre est obligatoire.");
   }
 
-  const aContenu =
-    !contenuEstVide(cours) || cours._count.blocs > 0 || !!cours.pageInteractive;
+  const aContenu = !contenuEstVide(cours) || !!cours.pageInteractive;
   if (data.publie && !aContenu) {
     throw new CoursError(
-      "Ce cours n'a pas encore de contenu : ajoute des blocs, importe un fichier ou associe une page interactive avant de le publier."
+      "Ce cours n'a pas encore de contenu : importe un fichier ou associe une page interactive avant de le publier."
     );
   }
 
@@ -477,7 +473,6 @@ export async function supprimerCours(id: string) {
   const cours = await prisma.cours.findUnique({
     where: { id },
     include: {
-      blocs: { select: { fichierChemin: true } },
       piecesJointes: { select: { chemin: true } },
       exercices: {
         select: {
@@ -495,14 +490,6 @@ export async function supprimerCours(id: string) {
     .filter((c): c is string => !!c);
   if (cheminsSoumissions.length > 0) {
     await supabaseAdmin.storage.from(BUCKET_RENDUS_DEVOIRS).remove(cheminsSoumissions);
-  }
-
-  // Supprimer les fichiers des blocs IMAGE/PDF (fichiers-lfi)
-  const cheminsBlocs = cours.blocs
-    .map((b) => b.fichierChemin)
-    .filter((c): c is string => !!c);
-  if (cheminsBlocs.length > 0) {
-    await supabaseAdmin.storage.from(BUCKET_PIECES_JOINTES).remove(cheminsBlocs);
   }
 
   // Supprimer les pièces jointes (fichiers-lfi)
@@ -529,6 +516,6 @@ export async function supprimerCours(id: string) {
   // Supprimer le fichier du formulaire simplifié (bucket "cours"), si présent
   await supprimerFichierCoursSimple(cours.fichierUrl);
 
-  // Supprimer le cours en DB (cascade gère exercices, soumissions, blocs, PJ)
+  // Supprimer le cours en DB (cascade gère exercices, soumissions, PJ)
   await prisma.cours.delete({ where: { id } });
 }

@@ -2,11 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MonitorPlay } from "lucide-react";
 import { CoursContenu } from "@/components/cours-contenu";
-import { BlocsAffichage } from "@/components/blocs/blocs-affichage";
 import { PiecesJointesListe } from "@/components/pieces-jointes-liste";
 import { obtenirCoursPublicParId, MATIERE_LABELS, urlImageCouverture } from "@/lib/cours";
 import { CouvertureCours } from "@/components/couverture-cours";
-import { listerBlocsCours } from "@/lib/blocs";
 import { listerPiecesJointes } from "@/lib/pieces-jointes";
 import { NIVEAU_LABELS } from "@/lib/classes";
 import { LegalLinks } from "@/components/legal-links";
@@ -27,7 +25,6 @@ export default async function CoursDecouvertePage({
   }
 
   const piecesJointes = await listerPiecesJointes(cours.id);
-  const blocs = await listerBlocsCours(cours.id);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6">
@@ -113,12 +110,6 @@ export default async function CoursDecouvertePage({
             </a>
           ) : (
             <CoursContenu cours={cours} />
-          )}
-
-          {blocs.length > 0 && (
-            <div className="mt-8">
-              <BlocsAffichage blocs={blocs} />
-            </div>
           )}
         </div>
       </article>

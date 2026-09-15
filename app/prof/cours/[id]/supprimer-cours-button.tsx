@@ -16,7 +16,7 @@ export function SupprimerCoursButton({
   function handleClick() {
     if (
       !confirm(
-        `Supprimer le cours « ${titreCours} » ?\n\nAction irréversible — tous les blocs, devoirs, exercices et travaux des élèves seront définitivement supprimés.`,
+        `Supprimer le cours « ${titreCours} » ?\n\nAction irréversible — tous les exercices et travaux des élèves seront définitivement supprimés.`,
       )
     )
       return;

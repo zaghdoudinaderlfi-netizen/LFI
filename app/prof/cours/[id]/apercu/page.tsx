@@ -2,11 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { CoursContenu } from "@/components/cours-contenu";
-import { BlocsAffichage } from "@/components/blocs/blocs-affichage";
 import { PiecesJointesListe } from "@/components/pieces-jointes-liste";
 import { ReadingProgress } from "@/components/ui/reading-progress";
 import { obtenirCoursParId, MATIERE_LABELS } from "@/lib/cours";
-import { listerBlocsCours } from "@/lib/blocs";
 import { listerPiecesJointes } from "@/lib/pieces-jointes";
 import { NIVEAU_LABELS } from "@/lib/classes";
 
@@ -23,7 +21,6 @@ export default async function ApercuCoursPage({
   }
 
   const piecesJointes = await listerPiecesJointes(id);
-  const blocs = await listerBlocsCours(id);
 
   return (
     <div>
@@ -53,11 +50,6 @@ export default async function ApercuCoursPage({
           <h1 className="page-title mb-6">{cours.titre}</h1>
           <PiecesJointesListe pieces={piecesJointes} />
           <CoursContenu cours={cours} estProf />
-          {blocs.length > 0 && (
-            <div className="mt-8">
-              <BlocsAffichage blocs={blocs} />
-            </div>
-          )}
         </article>
       </div>
     </div>

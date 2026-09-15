@@ -56,16 +56,6 @@ enum TypeCoursSimple {
   QCM
 }
 
-enum TypeBloc {
-  TEXTE
-  IMAGE
-  PDF
-  VIDEO
-  ACTIVITE
-  LIEN
-  EDITEUR_PYTHON
-}
-
 // Trimestre scolaire — déterminé automatiquement à partir de la date de
 // l'entrée de suivi (voir trimestreDeDate() dans lib/suivi-oral.ts), pas
 // saisi manuellement : T1 = sept-déc, T2 = janv-mars, T3 = avril-août.
@@ -306,8 +296,8 @@ model Cours {
   enVitrine Boolean @default(false)
 
   // ── Mode de création simplifié (5 boutons : HTML / PDF / WORD / VIDEO / QCM) ──
-  // Null si le cours a été composé via l'éditeur avancé existant (blocs,
-  // page interactive, import classique). Voir TypeCoursSimple ci-dessus.
+  // Null si le cours a été composé via l'éditeur avancé existant (page
+  // interactive, import classique). Voir TypeCoursSimple ci-dessus.
   typeSimple TypeCoursSimple?
 
   // HTML / PDF / WORD (mode simplifié) : URL publique du fichier déposé
@@ -326,7 +316,6 @@ model Cours {
 
   exercices             Exercice[]
   piecesJointes         PieceJointe[]
-  blocs                 Bloc[]
   comptesRendus         CompteRendu[]
   progressionsExercices ProgressionExercice[]
   feedbacks             CoursFeedback[]
@@ -481,40 +470,6 @@ model EntreeSuivi {
 
   @@index([eleveId])
   @@index([classeId])
-}
-
-// Bloc de contenu de la "boîte à outils" : le prof compose un cours en
-// empilant des blocs de différents types, affichés dans l'ordre (champ
-// `ordre`) côté élève.
-model Bloc {
-  id      String   @id @default(cuid())
-  cours   Cours    @relation(fields: [coursId], references: [id], onDelete: Cascade)
-  coursId String
-  type    TypeBloc
-  ordre   Int      @default(0)
-
-  // TEXTE : HTML (Tiptap, sanitizé) — VIDEO / LIEN / ACTIVITE : URL —
-  // EDITEUR_PYTHON : consigne (texte brut)
-  contenu String? @db.Text
-
-  // EDITEUR_PYTHON : code Python pré-rempli dans l'éditeur (optionnel)
-  codeDepart String? @db.Text
-
-  // LIEN / ACTIVITE : libellé du bouton/lien
-  titre String?
-
-  // ACTIVITE : outil choisi (clé de OUTILS_ACTIVITE, ou nom libre si "Autre")
-  outil String?
-
-  // IMAGE / PDF : fichier stocké dans Supabase Storage
-  fichierNom      String?
-  fichierChemin   String?
-  fichierTaille   Int?
-  fichierTypeMime String?
-
-  createdAt DateTime @default(now())
-
-  @@index([coursId])
 }
 
 model PieceJointe {

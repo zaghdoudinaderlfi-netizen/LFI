@@ -4,11 +4,9 @@ import { ArrowLeft, CalendarDays, Code2, Download, MonitorPlay } from "lucide-re
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { CoursContenu } from "@/components/cours-contenu";
-import { BlocsAffichage } from "@/components/blocs/blocs-affichage";
 import { PiecesJointesListe } from "@/components/pieces-jointes-liste";
 import { ReadingProgress } from "@/components/ui/reading-progress";
 import { obtenirCoursPublieParSlug, MATIERE_LABELS, urlImageCouverture } from "@/lib/cours";
-import { listerBlocsCours } from "@/lib/blocs";
 import { listerPiecesJointes } from "@/lib/pieces-jointes";
 import { listerExercicesCodeCours } from "@/lib/exercices-code";
 import { obtenirSoumissionEleve } from "@/lib/soumissions";
@@ -44,7 +42,6 @@ export default async function CoursLecturePage({
   }
 
   const piecesJointes = await listerPiecesJointes(cours.id);
-  const blocs = await listerBlocsCours(cours.id);
 
   const exercicesCode = await listerExercicesCodeCours(cours.id);
   const exercicesCodeAvecSoumission = await Promise.all(
@@ -192,12 +189,6 @@ export default async function CoursLecturePage({
               </a>
             ) : (
               <CoursContenu cours={cours} />
-            )}
-
-            {blocs.length > 0 && (
-              <div className="mt-8">
-                <BlocsAffichage blocs={blocs} />
-              </div>
             )}
           </div>
         </article>

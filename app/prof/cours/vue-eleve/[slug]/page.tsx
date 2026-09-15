@@ -2,11 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Eye, MonitorPlay } from "lucide-react";
 import { CoursContenu } from "@/components/cours-contenu";
-import { BlocsAffichage } from "@/components/blocs/blocs-affichage";
 import { PiecesJointesListe } from "@/components/pieces-jointes-liste";
 import { ReadingProgress } from "@/components/ui/reading-progress";
 import { obtenirCoursPublieParSlugPourProf, MATIERE_LABELS, urlImageCouverture } from "@/lib/cours";
-import { listerBlocsCours } from "@/lib/blocs";
 import { listerPiecesJointes } from "@/lib/pieces-jointes";
 import { NIVEAU_LABELS } from "@/lib/classes";
 
@@ -30,7 +28,6 @@ export default async function VueEleveCoursDetailPage({
   }
 
   const piecesJointes = await listerPiecesJointes(cours.id);
-  const blocs = await listerBlocsCours(cours.id);
 
   const retourHref = matiere ? `/prof/cours/vue-eleve?matiere=${matiere}` : "/prof/cours/vue-eleve";
 
@@ -98,12 +95,6 @@ export default async function VueEleveCoursDetailPage({
             </a>
           ) : (
             <CoursContenu cours={cours} estProf />
-          )}
-
-          {blocs.length > 0 && (
-            <div className="mt-8">
-              <BlocsAffichage blocs={blocs} />
-            </div>
           )}
         </article>
       </div>
