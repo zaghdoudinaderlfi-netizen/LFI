@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Search } from "lucide-react";
 import { normaliserRecherche } from "@/lib/texte";
 
@@ -12,8 +13,12 @@ export type ItemRecherche = {
   externe?: boolean;
 };
 
+type Position = { top: number; left: number; width: number };
+
 export function RechercheCours({ items }: { items: ItemRecherche[] }) {
   const [terme, setTerme] = useState("");
+  const [position, setPosition] = useState<Position | null>(null);
+  const conteneurRef = useRef<HTMLDivElement>(null);
 
   const resultats = useMemo(() => {
     const termeNormalise = normaliserRecherche(terme);
@@ -25,16 +30,29 @@ export function RechercheCours({ items }: { items: ItemRecherche[] }) {
 
   const recherche = terme.trim().length > 0;
 
+  // Le menu déroulant est rendu dans un portail (voir plus bas) : aucun
+  // positionnement CSS relatif au flux normal ne peut alors le placer sous
+  // l'input, il faut calculer ses coordonnées écran nous-mêmes.
+  useEffect(() => {
+    if (!recherche) return;
+
+    function recalculer() {
+      const rect = conteneurRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setPosition({ top: rect.bottom + 8, left: rect.left, width: rect.width });
+    }
+
+    recalculer();
+    window.addEventListener("resize", recalculer);
+    window.addEventListener("scroll", recalculer, true);
+    return () => {
+      window.removeEventListener("resize", recalculer);
+      window.removeEventListener("scroll", recalculer, true);
+    };
+  }, [recherche]);
+
   return (
-    // z-10 : `animate-fade-in-up` laisse un transform actif après coup
-    // (fill-mode "both", translateY(0) ≠ none), ce qui crée un contexte
-    // d'empilement CSS pour ce conteneur ET pour les onglets matière juste
-    // en dessous (même animation). Sans z-index explicite ici, les deux
-    // contextes ont un z-index "auto" et se départagent par ordre du DOM :
-    // les onglets, plus bas dans le HTML, passaient devant le menu déroulant
-    // des résultats malgré son z-20 interne (invisible en dehors de son
-    // propre contexte d'empilement).
-    <div className="relative z-10 animate-fade-in-up">
+    <div ref={conteneurRef} className="relative animate-fade-in-up">
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
         <input
@@ -47,31 +65,42 @@ export function RechercheCours({ items }: { items: ItemRecherche[] }) {
         />
       </div>
 
-      {recherche && (
-        <div className="card absolute z-20 mt-2 w-full max-h-80 overflow-y-auto p-2">
-          {resultats.length === 0 ? (
-            <p className="p-3 text-sm text-ink-muted">
-              Aucun cours trouvé pour « {terme.trim()} ».
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-1">
-              {resultats.map((item) => (
-                <li key={item.id}>
-                  <a
-                    href={item.href}
-                    target={item.externe ? "_blank" : undefined}
-                    rel={item.externe ? "noopener noreferrer" : undefined}
-                    className="flex flex-col gap-0.5 rounded-lg px-3 py-2 hover:bg-space-surface2"
-                  >
-                    <span className="text-sm font-medium text-ink-primary">{item.titre}</span>
-                    <span className="text-xs text-ink-muted">{item.sousTitre}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
+      {recherche &&
+        position &&
+        createPortal(
+          // Rendu directement dans <body> plutôt qu'à sa place naturelle
+          // dans le flux : place le menu hors de portée de tout contexte
+          // d'empilement CSS créé par un élément de la page (ex: un
+          // conteneur animé avec `transform`, comme les onglets matière
+          // juste en dessous) qui le ferait sinon passer derrière.
+          <div
+            className="card fixed z-50 max-h-80 overflow-y-auto p-2"
+            style={{ top: position.top, left: position.left, width: position.width }}
+          >
+            {resultats.length === 0 ? (
+              <p className="p-3 text-sm text-ink-muted">
+                Aucun cours trouvé pour « {terme.trim()} ».
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {resultats.map((item) => (
+                  <li key={item.id}>
+                    <a
+                      href={item.href}
+                      target={item.externe ? "_blank" : undefined}
+                      rel={item.externe ? "noopener noreferrer" : undefined}
+                      className="flex flex-col gap-0.5 rounded-lg px-3 py-2 hover:bg-space-surface2"
+                    >
+                      <span className="text-sm font-medium text-ink-primary">{item.titre}</span>
+                      <span className="text-xs text-ink-muted">{item.sousTitre}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
