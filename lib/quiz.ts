@@ -491,7 +491,19 @@ export type StatQuestion = {
   tauxReussite: number; // 0-100 ; 0 par défaut si personne n'a répondu
 };
 
-/** Taux de bonnes réponses par question, toutes tentatives confondues. */
+// Classement du plus raté au moins raté : une question jamais tentée
+// (nbReponses = 0) n'est pas "ratée", elle est sans donnée — reléguée en fin
+// de liste plutôt que mélangée avec les vrais 0% de réussite.
+function trierParTauxCroissant<T extends { tauxReussite: number; nbReponses: number }>(stats: T[]): T[] {
+  return [...stats].sort((a, b) => {
+    if (a.nbReponses === 0 && b.nbReponses === 0) return 0;
+    if (a.nbReponses === 0) return 1;
+    if (b.nbReponses === 0) return -1;
+    return a.tauxReussite - b.tauxReussite;
+  });
+}
+
+/** Taux de bonnes réponses par question, classé du plus raté au moins raté. */
 export async function statsQuestionsQuiz(quizId: string): Promise<StatQuestion[]> {
   const questions = await prisma.questionQuiz.findMany({
     where: { quizId },
@@ -499,7 +511,7 @@ export async function statsQuestionsQuiz(quizId: string): Promise<StatQuestion[]
     include: { reponses: { select: { correct: true } } },
   });
 
-  return questions.map((q) => {
+  const stats = questions.map((q) => {
     const nbReponses = q.reponses.length;
     const nbCorrectes = q.reponses.filter((r) => r.correct).length;
     return {
@@ -510,6 +522,53 @@ export async function statsQuestionsQuiz(quizId: string): Promise<StatQuestion[]
       tauxReussite: nbReponses > 0 ? Math.round((nbCorrectes / nbReponses) * 100) : 0,
     };
   });
+
+  return trierParTauxCroissant(stats);
+}
+
+export type StatQuestionGlobale = StatQuestion & {
+  quizId: string;
+  quizTitre: string;
+  niveau: Niveau;
+  matiere: Matiere;
+  chapitre: number | null;
+};
+
+const NB_QUESTIONS_RATEES_GLOBAL = 15;
+
+/**
+ * Questions les plus ratées tous quiz confondus (limité aux
+ * NB_QUESTIONS_RATEES_GLOBAL pires) — pour la page Statistiques prof.
+ * N'inclut que les questions ayant reçu au moins une réponse : une question
+ * jamais jouée n'est pas "ratée", elle manque simplement de données.
+ */
+export async function statsQuestionsRateesGlobal(): Promise<StatQuestionGlobale[]> {
+  const quizzes = await prisma.quiz.findMany({
+    include: { questions: { include: { reponses: { select: { correct: true } } } } },
+  });
+
+  const stats: StatQuestionGlobale[] = [];
+  for (const quiz of quizzes) {
+    for (const q of quiz.questions) {
+      const nbReponses = q.reponses.length;
+      if (nbReponses === 0) continue;
+      const nbCorrectes = q.reponses.filter((r) => r.correct).length;
+      stats.push({
+        id: q.id,
+        enonce: q.enonce,
+        nbReponses,
+        nbCorrectes,
+        tauxReussite: Math.round((nbCorrectes / nbReponses) * 100),
+        quizId: quiz.id,
+        quizTitre: quiz.titre,
+        niveau: quiz.niveau,
+        matiere: quiz.matiere,
+        chapitre: quiz.chapitre,
+      });
+    }
+  }
+
+  return trierParTauxCroissant(stats).slice(0, NB_QUESTIONS_RATEES_GLOBAL);
 }
 
 export type ResultatReponse = {
