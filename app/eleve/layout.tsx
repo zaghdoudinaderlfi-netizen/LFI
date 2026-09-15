@@ -8,6 +8,7 @@ import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 import { PresenceHeartbeat } from "@/components/eleve/presence-heartbeat";
 import { LeverMainBouton } from "@/components/eleve/lever-main-bouton";
 import { DemoBanner } from "@/components/demo/demo-banner";
+import { PopupDateNaissance } from "@/components/eleve/popup-date-naissance";
 
 export default async function EleveLayout({
   children,
@@ -28,6 +29,8 @@ export default async function EleveLayout({
             avatarStyle: true,
             avatarOptions: true,
             doitChangerMdp: true,
+            email: true,
+            dateNaissance: true,
           },
         }),
         compterNotificationsNonLues(session.user.id),
@@ -52,6 +55,9 @@ export default async function EleveLayout({
       <PWAInstallPrompt />
       {!isDemo && <PresenceHeartbeat />}
       {session?.user?.id && !isDemo && <LeverMainBouton initial={mainLevee} />}
+      {!isDemo && !user?.doitChangerMdp && user?.email && !user?.dateNaissance && (
+        <PopupDateNaissance />
+      )}
     </>
   );
 }
