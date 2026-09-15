@@ -74,7 +74,12 @@ export function RechercheCours({ items }: { items: ItemRecherche[] }) {
           // conteneur animé avec `transform`, comme les onglets matière
           // juste en dessous) qui le ferait sinon passer derrière.
           <div
-            className="card fixed z-50 max-h-80 overflow-y-auto p-2"
+            // Fond opaque (pas la classe .card, translucide avec flou —
+            // pensée pour une carte de contenu, pas pour un menu qui doit
+            // rester lisible par-dessus n'importe quel contenu arbitraire en
+            // dessous). Même traitement que le menu utilisateur dans
+            // app-shell.tsx.
+            className="fixed z-50 max-h-80 overflow-y-auto rounded-2xl border-2 border-space-border bg-space-surface p-2 shadow-2xl"
             style={{ top: position.top, left: position.left, width: position.width }}
           >
             {resultats.length === 0 ? (
